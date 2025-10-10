@@ -43,6 +43,10 @@ export default function AnalyticsPage() {
         const reportData = await reportRes.json()
         const itemsData = await itemsRes.json()
 
+        console.log("[Analytics Debug] Report Data:", reportData)
+        console.log("[Analytics Debug] Items Data:", itemsData)
+        console.log("[Analytics Debug] Sales Transactions:", reportData.transactions?.filter((t: Transaction) => t.type === "sale") || [])
+
         setReport(reportData)
         setItems(itemsData)
 
