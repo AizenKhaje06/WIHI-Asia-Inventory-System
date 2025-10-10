@@ -152,9 +152,12 @@
     background-clip: text;
   }
   .dark .bg-gradient-light {
-    @apply bg-gradient-dark;
+    background: linear-gradient(135deg, #000000 0%, #FF6B35 100%);
   }
   .dark .text-gradient-light {
-    @apply text-gradient-dark;
+    background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }

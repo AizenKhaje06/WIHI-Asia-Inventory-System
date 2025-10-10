@@ -11,6 +11,31 @@ exports.id = "vendor-chunks/next-themes@0.4.6_react-dom_c91534e86f74096d96960622
 exports.ids = ["vendor-chunks/next-themes@0.4.6_react-dom_c91534e86f74096d969606227a1c49a3"];
 exports.modules = {
 
+/***/ "(rsc)/./node_modules/.pnpm/next-themes@0.4.6_react-dom_c91534e86f74096d969606227a1c49a3/node_modules/next-themes/dist/index.mjs":
+/*!*********************************************************************************************************************************!*\
+  !*** ./node_modules/.pnpm/next-themes@0.4.6_react-dom_c91534e86f74096d969606227a1c49a3/node_modules/next-themes/dist/index.mjs ***!
+  \*********************************************************************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ThemeProvider: () => (/* binding */ ThemeProvider),
+/* harmony export */   useTheme: () => (/* binding */ useTheme)
+/* harmony export */ });
+/* harmony import */ var react_server_dom_webpack_server_edge__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react-server-dom-webpack/server.edge */ "(rsc)/./node_modules/.pnpm/next@15.2.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-webpack-server-edge.js");
+
+const ThemeProvider = (0,react_server_dom_webpack_server_edge__WEBPACK_IMPORTED_MODULE_0__.registerClientReference)(
+function() { throw new Error("Attempted to call ThemeProvider() from the server but ThemeProvider is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component."); },
+"C:\\Users\\Aizen06\\Documents\\Inventory-Management-System\\lib\\Inventory-Management-System\\node_modules\\.pnpm\\next-themes@0.4.6_react-dom_c91534e86f74096d969606227a1c49a3\\node_modules\\next-themes\\dist\\index.mjs",
+"ThemeProvider",
+);const useTheme = (0,react_server_dom_webpack_server_edge__WEBPACK_IMPORTED_MODULE_0__.registerClientReference)(
+function() { throw new Error("Attempted to call useTheme() from the server but useTheme is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component."); },
+"C:\\Users\\Aizen06\\Documents\\Inventory-Management-System\\lib\\Inventory-Management-System\\node_modules\\.pnpm\\next-themes@0.4.6_react-dom_c91534e86f74096d969606227a1c49a3\\node_modules\\next-themes\\dist\\index.mjs",
+"useTheme",
+);
+
+/***/ }),
+
 /***/ "(ssr)/./node_modules/.pnpm/next-themes@0.4.6_react-dom_c91534e86f74096d969606227a1c49a3/node_modules/next-themes/dist/index.mjs":
 /*!*********************************************************************************************************************************!*\
   !*** ./node_modules/.pnpm/next-themes@0.4.6_react-dom_c91534e86f74096d969606227a1c49a3/node_modules/next-themes/dist/index.mjs ***!
