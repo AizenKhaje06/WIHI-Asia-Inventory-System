@@ -151,7 +151,7 @@ export default function POSPage() {
                         <p className="font-medium text-foreground">{item.name}</p>
                         <p className="text-sm text-muted-foreground">Stock: {item.quantity}</p>
                       </div>
-                      <p className="text-lg font-semibold text-foreground">${item.sellingPrice.toFixed(2)}</p>
+                      <p className="text-lg font-semibold text-foreground">₱{item.sellingPrice.toFixed(2)}</p>
                     </div>
                   </button>
                 ))}
@@ -183,7 +183,7 @@ export default function POSPage() {
                           <div className="flex-1">
                             <p className="font-medium text-foreground">{cartItem.item.name}</p>
                             <p className="text-sm text-muted-foreground">
-                              ${cartItem.item.sellingPrice.toFixed(2)} each
+                              ₱{cartItem.item.sellingPrice.toFixed(2)} each
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -200,7 +200,7 @@ export default function POSPage() {
                             </Button>
                           </div>
                           <p className="font-semibold text-foreground">
-                            ${(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
+                            ₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
                           </p>
                         </div>
                       ))}
@@ -209,7 +209,7 @@ export default function POSPage() {
                     <div className="border-t border-border pt-4">
                       <div className="mb-4 flex items-center justify-between">
                         <p className="text-lg font-semibold text-foreground">Total</p>
-                        <p className="text-2xl font-bold text-foreground">${total.toFixed(2)}</p>
+                        <p className="text-2xl font-bold text-foreground">₱{total.toFixed(2)}</p>
                       </div>
                       <Button onClick={handleCheckout} disabled={loading} className="w-full" size="lg">
                         {loading ? "Processing..." : "Complete Sale"}

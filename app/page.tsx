@@ -72,7 +72,7 @@ export default function DashboardPage() {
             <DollarSign className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">${stats?.totalValue.toFixed(2) || "0.00"}</div>
+            <div className="text-2xl font-bold text-foreground">₱{stats?.totalValue.toFixed(2) || "0.00"}</div>
           </CardContent>
         </Card>
 

@@ -129,8 +129,8 @@ export default function InventoryPage() {
                     <td className="py-4 text-right text-sm text-foreground">
                       <span className={item.quantity <= item.reorderLevel ? "text-warning" : ""}>{item.quantity}</span>
                     </td>
-                    <td className="py-4 text-right text-sm text-foreground">${item.costPrice.toFixed(2)}</td>
-                    <td className="py-4 text-right text-sm text-foreground">${item.sellingPrice.toFixed(2)}</td>
+                    <td className="py-4 text-right text-sm text-foreground">₱{item.costPrice.toFixed(2)}</td>
+                    <td className="py-4 text-right text-sm text-foreground">₱{item.sellingPrice.toFixed(2)}</td>
                     <td className="py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
