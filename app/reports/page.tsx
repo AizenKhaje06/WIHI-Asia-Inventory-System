@@ -76,7 +76,7 @@ export default function ReportsPage() {
                 <DollarSign className="h-4 w-4 text-success" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">${report.totalRevenue.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-foreground">₱{report.totalRevenue.toFixed(2)}</div>
               </CardContent>
             </Card>
 
@@ -86,7 +86,7 @@ export default function ReportsPage() {
                 <TrendingUp className="h-4 w-4 text-warning" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">${report.totalCost.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-foreground">₱{report.totalCost.toFixed(2)}</div>
               </CardContent>
             </Card>
 
@@ -96,7 +96,7 @@ export default function ReportsPage() {
                 <DollarSign className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">${report.totalProfit.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-foreground">₱{report.totalProfit.toFixed(2)}</div>
               </CardContent>
             </Card>
 
@@ -137,10 +137,10 @@ export default function ReportsPage() {
                         <td className="py-4 text-sm text-foreground">{transaction.itemName}</td>
                         <td className="py-4 text-right text-sm text-foreground">{transaction.quantity}</td>
                         <td className="py-4 text-right text-sm text-foreground">
-                          ${transaction.totalRevenue.toFixed(2)}
+                          ₱{transaction.totalRevenue.toFixed(2)}
                         </td>
-                        <td className="py-4 text-right text-sm text-foreground">${transaction.totalCost.toFixed(2)}</td>
-                        <td className="py-4 text-right text-sm text-success">${transaction.profit.toFixed(2)}</td>
+                        <td className="py-4 text-right text-sm text-foreground">₱{transaction.totalCost.toFixed(2)}</td>
+                        <td className="py-4 text-right text-sm text-success">₱{transaction.profit.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
