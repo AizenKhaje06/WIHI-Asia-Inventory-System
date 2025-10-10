@@ -202,10 +202,6 @@
   }
 }
 @layer utilities {
-  .\@container\/card-header {
-    container-type: inline-size;
-    container-name: card-header;
-  }
   .\@container\/field-group {
     container-type: inline-size;
     container-name: field-group;
@@ -349,12 +345,6 @@
   }
   .col-start-2 {
     grid-column-start: 2;
-  }
-  .row-span-2 {
-    grid-row: span 2 / span 2;
-  }
-  .row-start-1 {
-    grid-row-start: 1;
   }
   .\!m-0 {
     margin: calc(var(--spacing) * 0) !important;
@@ -866,14 +856,8 @@
   .list-none {
     list-style-type: none;
   }
-  .auto-rows-min {
-    grid-auto-rows: min-content;
-  }
   .grid-cols-\[0_1fr\] {
     grid-template-columns: 0 1fr;
-  }
-  .grid-rows-\[auto_auto\] {
-    grid-template-rows: auto auto;
   }
   .flex-col {
     flex-direction: column;
@@ -986,14 +970,8 @@
   .gap-y-0\.5 {
     row-gap: calc(var(--spacing) * 0.5);
   }
-  .self-start {
-    align-self: flex-start;
-  }
   .self-stretch {
     align-self: stretch;
-  }
-  .justify-self-end {
-    justify-self: flex-end;
   }
   .overflow-auto {
     overflow: auto;
@@ -1036,9 +1014,6 @@
   }
   .rounded-sm {
     border-radius: calc(var(--radius) - 4px);
-  }
-  .rounded-xl {
-    border-radius: calc(var(--radius) + 4px);
   }
   .rounded-xs {
     border-radius: var(--radius-xs);
@@ -1805,16 +1780,6 @@
       translate: var(--tw-translate-x) var(--tw-translate-y);
     }
   }
-  .group-data-\[disabled\=true\]\:pointer-events-none {
-    &:is(:where(.group)[data-disabled="true"] *) {
-      pointer-events: none;
-    }
-  }
-  .group-data-\[disabled\=true\]\:opacity-50 {
-    &:is(:where(.group)[data-disabled="true"] *) {
-      opacity: 50%;
-    }
-  }
   .group-data-\[disabled\=true\]\/field\:opacity-50 {
     &:is(:where(.group\/field)[data-disabled="true"] *) {
       opacity: 50%;
@@ -2001,11 +1966,6 @@
       cursor: not-allowed;
     }
   }
-  .peer-disabled\:opacity-50 {
-    &:is(:where(.peer):disabled ~ *) {
-      opacity: 50%;
-    }
-  }
   .peer-disabled\:opacity-70 {
     &:is(:where(.peer):disabled ~ *) {
       opacity: 70%;
@@ -2031,32 +1991,6 @@
       top: calc(var(--spacing) * 1);
     }
   }
-  .selection\:bg-primary {
-    & *::selection {
-      background-color: var(--primary);
-    }
-    &::selection {
-      background-color: var(--primary);
-    }
-  }
-  .selection\:text-primary-foreground {
-    & *::selection {
-      color: var(--primary-foreground);
-    }
-    &::selection {
-      color: var(--primary-foreground);
-    }
-  }
-  .file\:inline-flex {
-    &::file-selector-button {
-      display: inline-flex;
-    }
-  }
-  .file\:h-7 {
-    &::file-selector-button {
-      height: calc(var(--spacing) * 7);
-    }
-  }
   .file\:border-0 {
     &::file-selector-button {
       border-style: var(--tw-border-style);
@@ -2078,11 +2012,6 @@
     &::file-selector-button {
       --tw-font-weight: var(--font-weight-medium);
       font-weight: var(--font-weight-medium);
-    }
-  }
-  .file\:text-foreground {
-    &::file-selector-button {
-      color: var(--foreground);
     }
   }
   .placeholder\:text-muted-foreground {
@@ -2598,11 +2527,6 @@
       opacity: 50%;
     }
   }
-  .has-data-\[slot\=card-action\]\:grid-cols-\[1fr_auto\] {
-    &:has(*[data-slot="card-action"]) {
-      grid-template-columns: 1fr auto;
-    }
-  }
   .has-data-\[state\=checked\]\:border-primary {
     &:has(*[data-state="checked"]) {
       border-color: var(--primary);
@@ -2757,16 +2681,6 @@
   .has-\[\>svg\]\:px-2\.5 {
     &:has(>svg) {
       padding-inline: calc(var(--spacing) * 2.5);
-    }
-  }
-  .has-\[\>svg\]\:px-3 {
-    &:has(>svg) {
-      padding-inline: calc(var(--spacing) * 3);
-    }
-  }
-  .has-\[\>svg\]\:px-4 {
-    &:has(>svg) {
-      padding-inline: calc(var(--spacing) * 4);
     }
   }
   .has-\[\>textarea\]\:h-auto {
@@ -4060,11 +3974,6 @@
       }
     }
   }
-  .dark\:border-input {
-    &:is(.dark *) {
-      border-color: var(--input);
-    }
-  }
   .dark\:bg-destructive\/60 {
     &:is(.dark *) {
       background-color: var(--destructive);
@@ -4089,18 +3998,6 @@
   .dark\:text-muted-foreground {
     &:is(.dark *) {
       color: var(--muted-foreground);
-    }
-  }
-  .dark\:hover\:bg-accent\/50 {
-    &:is(.dark *) {
-      &:hover {
-        @media (hover: hover) {
-          background-color: var(--accent);
-          @supports (color: color-mix(in lab, red, red)) {
-            background-color: color-mix(in oklab, var(--accent) 50%, transparent);
-          }
-        }
-      }
     }
   }
   .dark\:hover\:bg-input\/50 {
@@ -4476,19 +4373,9 @@
       padding-bottom: calc(var(--spacing) * 3);
     }
   }
-  .\[\.border-b\]\:pb-6 {
-    &:is(.border-b) {
-      padding-bottom: calc(var(--spacing) * 6);
-    }
-  }
   .\[\.border-t\]\:pt-3 {
     &:is(.border-t) {
       padding-top: calc(var(--spacing) * 3);
-    }
-  }
-  .\[\.border-t\]\:pt-6 {
-    &:is(.border-t) {
-      padding-top: calc(var(--spacing) * 6);
     }
   }
   .rtl\:\*\*\:\[\.rdp-button\\_next\>svg\]\:rotate-180 {
@@ -5144,6 +5031,11 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
+    background-image: url('/corporate-building.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
   }
 }
 @layer utilities {
