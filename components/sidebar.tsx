@@ -2,7 +2,9 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Package, ShoppingCart, BarChart3, Settings, Activity } from "lucide-react"
+import { useTheme } from "next-themes"
+import { LayoutDashboard, Package, ShoppingCart, BarChart3, Settings, Activity, Sun, Moon } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 const navigation = [
@@ -16,6 +18,7 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { theme, setTheme } = useTheme()
 
   return (
     <div className="flex h-screen w-64 flex-col border-r border-border bg-card">
@@ -42,6 +45,17 @@ export function Sidebar() {
           )
         })}
       </nav>
+      <div className="p-4 border-t border-border">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          <span className="ml-2 capitalize">Toggle Theme</span>
+        </Button>
+      </div>
     </div>
   )
 }
