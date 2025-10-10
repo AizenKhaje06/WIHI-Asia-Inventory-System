@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DollarSign, TrendingUp, Users, Target } from "lucide-react"
 import {
@@ -17,57 +17,122 @@ import {
   PieChart,
   Pie,
   Cell,
-  RadialBarChart,
-  RadialBar,
 } from "recharts"
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"]
 
-// Top cards data
-const stats = [
-  { title: "Current Purchases", value: "2,07k", icon: Users, color: "text-blue-600" },
-  { title: "Current Purchase Value", value: "₱55.20", icon: DollarSign, color: "text-green-600" },
-  { title: "Average Purchase Value", value: "₱46.57", icon: DollarSign, color: "text-green-600" },
-  { title: "Win Rate", value: "30%", icon: Target, color: "text-orange-600" },
-]
-
-// Line chart data for Average Monthly Sales
-const monthlySalesData = [
-  { month: "Jan", sales: 400 },
-  { month: "Feb", sales: 300 },
-  { month: "Mar", sales: 500 },
-  { month: "Apr", sales: 280 },
-  { month: "May", sales: 600 },
-  { month: "Jun", sales: 779 },
-]
-
-// Donut chart data for Average Weekly Sales
-const weeklySalesData = [
-  { name: "Week 1", value: 400 },
-  { name: "Week 2", value: 300 },
-  { name: "Week 3", value: 200 },
-  { name: "Week 4", value: 278 },
-]
-
-// Bar chart data for Sales Growth vs Target
-const growthData = [
-  { month: "Jan", sales: 400, target: 500 },
-  { month: "Feb", sales: 300, target: 450 },
-  { month: "Mar", sales: 500, target: 550 },
-  { month: "Apr", sales: 280, target: 400 },
-  { month: "May", sales: 600, target: 650 },
-  { month: "Jun", sales: 779, target: 800 },
-]
-
-// Pie chart data for Country Performance
-const countryData = [
-  { name: "United States", value: 40, fill: "#0088FE" },
-  { name: "Canada", value: 30, fill: "#00C49F" },
-  { name: "UK", value: 20, fill: "#FFBB28" },
-  { name: "Germany", value: 10, fill: "#FF8042" },
-]
+import type { SalesReport, InventoryItem, Transaction } from "@/lib/types"
 
 export default function AnalyticsPage() {
+  const [report, setReport] = useState<SalesReport | null>(null)
+  const [items, setItems] = useState<InventoryItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [monthlySalesData, setMonthlySalesData] = useState<{ month: string; sales: number }[]>([])
+  const [weeklySalesData, setWeeklySalesData] = useState<{ name: string; value: number }[]>([])
+  const [growthData, setGrowthData] = useState<{ month: string; sales: number; target: number }[]>([])
+  const [productData, setProductData] = useState<{ name: string; value: number; fill: string }[]>([])
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [reportRes, itemsRes] = await Promise.all([
+          fetch("/api/reports"),
+          fetch("/api/items")
+        ])
+
+        const reportData = await reportRes.json()
+        const itemsData = await itemsRes.json()
+
+        console.log("[Analytics Debug] Report Data:", reportData)
+        console.log("[Analytics Debug] Items Data:", itemsData)
+        console.log("[Analytics Debug] Sales Transactions:", reportData.transactions?.filter((t: Transaction) => t.type === "sale") || [])
+
+        setReport(reportData)
+        setItems(itemsData)
+
+        // Compute monthly sales (last 6 months)
+        const salesTransactions = reportData.transactions.filter((t: Transaction) => t.type === "sale")
+        const monthlyMap = new Map<string, number>()
+        salesTransactions.forEach((t: Transaction) => {
+          const date = new Date(t.timestamp)
+          const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+          monthlyMap.set(monthKey, (monthlyMap.get(monthKey) || 0) + t.totalRevenue)
+        })
+        const sortedMonthly: [string, number][] = Array.from(monthlyMap.entries())
+          .sort((a, b) => new Date(a[0] + ' 1').getTime() - new Date(b[0] + ' 1').getTime())
+          .slice(-6) // Last 6 months
+        setMonthlySalesData(sortedMonthly.map(([month, sales]) => ({ month, sales })))
+
+        // Compute weekly sales (last 4 weeks)
+        const now = new Date()
+        const fourWeeksAgo = new Date(now.getTime() - 4 * 7 * 24 * 60 * 60 * 1000)
+        const weeklyMap = new Map<string, number>()
+        salesTransactions
+          .filter((t: Transaction) => new Date(t.timestamp) >= fourWeeksAgo)
+          .forEach((t: Transaction) => {
+            const date = new Date(t.timestamp)
+            const weekStart = new Date(date.setDate(date.getDate() - date.getDay())) // Sunday start
+            const weekKey = `Week ${Math.ceil((now.getTime() - weekStart.getTime()) / (7 * 24 * 60 * 60 * 1000))}`
+            weeklyMap.set(weekKey, (weeklyMap.get(weekKey) || 0) + t.totalRevenue)
+          })
+        const sortedWeekly: [string, number][] = Array.from(weeklyMap.entries()).slice(-4).reverse()
+        setWeeklySalesData(sortedWeekly.map(([name, value]) => ({ name, value })))
+
+        // Compute growth vs target (using monthly data)
+        const growth = sortedMonthly.map((m, index) => {
+          const month = m[0]
+          const sales = m[1]
+          const prevSales = index > 0 ? sortedMonthly[index - 1][1] : sales
+          const target = prevSales * 1.1 // 10% growth target
+          return { month, sales, target }
+        })
+        setGrowthData(growth)
+
+        // Compute product performance by category (top 4)
+        const categoryMap = new Map<string, number>()
+        salesTransactions.forEach((t: Transaction) => {
+          const item = itemsData.find((i: InventoryItem) => i.id === t.itemId)
+          const category = item?.category || 'Unknown'
+          categoryMap.set(category, (categoryMap.get(category) || 0) + t.totalRevenue)
+        })
+        const sortedCategories: [string, number][] = Array.from(categoryMap.entries())
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 4)
+        setProductData(sortedCategories.map(([name, value], index) => ({
+          name,
+          value,
+          fill: COLORS[index % COLORS.length]
+        })))
+
+      } catch (error) {
+        console.error("[Analytics] Error fetching data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-muted-foreground">Loading analytics...</div>
+      </div>
+    )
+  }
+
+  const totalRevenue = report?.totalRevenue ?? 0
+  const itemsSold = report?.itemsSold ?? 0
+  const profitMargin = report?.profitMargin ?? 0
+  const avgPurchaseValue = itemsSold > 0 ? totalRevenue / itemsSold : 0
+  const stats = [
+    { title: "Current Purchases", value: itemsSold.toLocaleString(), icon: Users, color: "text-blue-600" },
+    { title: "Current Purchase Value", value: `₱${totalRevenue.toFixed(2)}`, icon: DollarSign, color: "text-green-600" },
+    { title: "Average Purchase Value", value: `₱${avgPurchaseValue.toFixed(2)}`, icon: DollarSign, color: "text-green-600" },
+    { title: "Win Rate", value: `${profitMargin.toFixed(1)}%`, icon: Target, color: "text-orange-600" },
+  ]
+
   return (
     <div className="p-8">
       <div className="mb-8">
@@ -106,7 +171,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip formatter={(value: number) => [`₱${value.toFixed(2)}`, 'Sales']} />
                 <Legend />
                 <Line type="monotone" dataKey="sales" stroke="#8884d8" />
               </LineChart>
@@ -135,7 +200,7 @@ export default function AnalyticsPage() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip formatter={(value: number) => [`₱${value.toFixed(2)}`, 'Sales']} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -155,7 +220,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip formatter={(value: number) => [`₱${value.toFixed(2)}`, 'Sales']} />
                 <Legend />
                 <Bar dataKey="sales" fill="#8884d8" name="Sales" />
                 <Bar dataKey="target" fill="#82ca9d" name="Target" />
@@ -164,16 +229,16 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Pie Chart - Country Performance */}
+        {/* Pie Chart - Product Performance */}
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-foreground">Sales Country Performance</CardTitle>
+            <CardTitle className="text-foreground">Product Performance</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={countryData}
+                  data={productData}
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
@@ -181,11 +246,11 @@ export default function AnalyticsPage() {
                   dataKey="value"
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 >
-                  {countryData.map((entry, index) => (
+                  {productData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip formatter={(value: number) => [`₱${value.toFixed(2)}`, 'Revenue']} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
