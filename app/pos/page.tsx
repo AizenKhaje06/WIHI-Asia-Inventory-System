@@ -1,0 +1,227 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Search, ShoppingCart, Trash2 } from "lucide-react"
+import type { InventoryItem } from "@/lib/types"
+
+interface CartItem {
+  item: InventoryItem
+  quantity: number
+}
+
+export default function POSPage() {
+  const [items, setItems] = useState<InventoryItem[]>([])
+  const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [search, setSearch] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    fetchItems()
+  }, [])
+
+  useEffect(() => {
+    if (search) {
+      const searchLower = search.toLowerCase()
+      setFilteredItems(
+        items.filter(
+          (item) => item.name.toLowerCase().includes(searchLower) || item.sku.toLowerCase().includes(searchLower),
+        ),
+      )
+    } else {
+      setFilteredItems(items)
+    }
+  }, [search, items])
+
+  async function fetchItems() {
+    try {
+      const res = await fetch("/api/items")
+      const data = await res.json()
+      setItems(data)
+      setFilteredItems(data)
+    } catch (error) {
+      console.error("[v0] Error fetching items:", error)
+    }
+  }
+
+  function addToCart(item: InventoryItem) {
+    const existingItem = cart.find((cartItem) => cartItem.item.id === item.id)
+
+    if (existingItem) {
+      if (existingItem.quantity < item.quantity) {
+        setCart(
+          cart.map((cartItem) =>
+            cartItem.item.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem,
+          ),
+        )
+      }
+    } else {
+      setCart([...cart, { item, quantity: 1 }])
+    }
+  }
+
+  function updateQuantity(itemId: string, quantity: number) {
+    const cartItem = cart.find((ci) => ci.item.id === itemId)
+    if (!cartItem) return
+
+    if (quantity <= 0) {
+      removeFromCart(itemId)
+      return
+    }
+
+    if (quantity <= cartItem.item.quantity) {
+      setCart(cart.map((ci) => (ci.item.id === itemId ? { ...ci, quantity } : ci)))
+    }
+  }
+
+  function removeFromCart(itemId: string) {
+    setCart(cart.filter((cartItem) => cartItem.item.id !== itemId))
+  }
+
+  async function handleCheckout() {
+    if (cart.length === 0) return
+
+    setLoading(true)
+    try {
+      const saleItems = cart.map((cartItem) => ({
+        itemId: cartItem.item.id,
+        quantity: cartItem.quantity,
+      }))
+
+      await fetch("/api/sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: saleItems }),
+      })
+
+      setCart([])
+      fetchItems()
+      alert("Sale completed successfully!")
+    } catch (error) {
+      console.error("[v0] Error processing sale:", error)
+      alert("Failed to process sale")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const total = cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0)
+
+  return (
+    <div className="p-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-foreground">Point of Sale</h1>
+        <p className="text-muted-foreground">Process sales transactions</p>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div>
+          <Card className="mb-6 bg-card border-border">
+            <CardContent className="pt-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search products..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="text-foreground">Products</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-[600px] space-y-2 overflow-y-auto">
+                {filteredItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => addToCart(item)}
+                    className="w-full rounded-lg border border-border bg-secondary p-4 text-left transition-colors hover:bg-secondary/80"
+                    disabled={item.quantity === 0}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-foreground">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">Stock: {item.quantity}</p>
+                      </div>
+                      <p className="text-lg font-semibold text-foreground">${item.sellingPrice.toFixed(2)}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div>
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <ShoppingCart className="h-5 w-5" />
+                Cart ({cart.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {cart.length === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">Cart is empty</p>
+                ) : (
+                  <>
+                    <div className="max-h-[400px] space-y-4 overflow-y-auto">
+                      {cart.map((cartItem) => (
+                        <div
+                          key={cartItem.item.id}
+                          className="flex items-center gap-4 rounded-lg border border-border p-4"
+                        >
+                          <div className="flex-1">
+                            <p className="font-medium text-foreground">{cartItem.item.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              ${cartItem.item.sellingPrice.toFixed(2)} each
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              min="1"
+                              max={cartItem.item.quantity}
+                              value={cartItem.quantity}
+                              onChange={(e) => updateQuantity(cartItem.item.id, Number.parseInt(e.target.value))}
+                              className="w-20"
+                            />
+                            <Button variant="ghost" size="sm" onClick={() => removeFromCart(cartItem.item.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <p className="font-semibold text-foreground">
+                            ${(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="border-t border-border pt-4">
+                      <div className="mb-4 flex items-center justify-between">
+                        <p className="text-lg font-semibold text-foreground">Total</p>
+                        <p className="text-2xl font-bold text-foreground">${total.toFixed(2)}</p>
+                      </div>
+                      <Button onClick={handleCheckout} disabled={loading} className="w-full" size="lg">
+                        {loading ? "Processing..." : "Complete Sale"}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}
