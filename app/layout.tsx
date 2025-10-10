@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { Sidebar } from "@/components/sidebar"
 import { Suspense } from "react"
+import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -19,15 +20,22 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <div className="flex h-screen">
-            <Sidebar />
-            <main className="flex-1 overflow-auto">{children}</main>
-          </div>
-          <Analytics />
-        </Suspense>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Suspense fallback={<div>Loading...</div>}>
+            <div className="flex h-screen bg-background">
+              <Sidebar />
+              <main className="flex-1 overflow-auto p-6">{children}</main>
+            </div>
+            <Analytics />
+          </Suspense>
+        </ThemeProvider>
       </body>
     </html>
   )
