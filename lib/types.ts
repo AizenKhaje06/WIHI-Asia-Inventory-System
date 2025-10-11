@@ -34,6 +34,13 @@ export interface DailySales {
   profit: number
 }
 
+export interface MonthlySales {
+  month: string
+  revenue: number
+  itemsSold: number
+  profit: number
+}
+
 export interface SalesReport {
   totalRevenue: number
   totalCost: number
@@ -42,6 +49,7 @@ export interface SalesReport {
   itemsSold: number
   transactions: Transaction[]
   dailySales?: DailySales[]
+  monthlySales?: MonthlySales[]
 }
 
 export interface DashboardStats {
