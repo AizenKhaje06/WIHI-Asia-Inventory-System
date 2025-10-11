@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
@@ -138,24 +139,31 @@ export default function AnalyticsPage() {
 
                 {/* Calendar Days */}
                 {generateCalendarDays(currentMonth, dailySales).map((cell, index) => (
-                  <div key={index} className="relative">
+                  <div key={index} className="relative h-20">
                     {cell.day !== null ? (
-                      <div className="p-0.5 border border-border rounded bg-background">
-                        <div className="text-xs text-foreground mb-0.5 text-center">{cell.day}</div>
+                      <div 
+                        className={cn(
+                          "h-full p-1 border border-border rounded bg-background flex flex-col justify-between",
+                          cell.revenue > 0 && "border-r-4 border-orange-500"
+                        )}
+                      >
+                        <div className="text-xs text-foreground text-center">{cell.day}</div>
+                        <div className="text-xs text-muted-foreground text-center mb-1">
+                          {cell.revenue > 0 ? `₱${cell.revenue.toFixed(2)}` : '₱0.00'}
+                        </div>
                         {cell.revenue > 0 ? (
                           <div
-                            className="w-full bg-orange-500 rounded transition-all duration-300"
+                            className="w-full bg-green-500 rounded transition-all duration-300"
                             style={{
-                              height: `${(cell.revenue / maxRevenue) * 60}px`,
+                              height: `${(cell.revenue / maxRevenue) * 40}px`,
                             }}
-                            title={`₱${cell.revenue.toFixed(2)}`}
                           />
                         ) : (
                           <div className="w-full h-0 bg-transparent" />
                         )}
                       </div>
                     ) : (
-                      <div className="p-0.5" />
+                      <div className="h-full p-1 opacity-50" />
                     )}
                   </div>
                 ))}
@@ -218,7 +226,6 @@ function generateCalendarDays(month: Date, dailySales: { date: string; revenue: 
   const salesMap = new Map(dailySales.map(d => [d.date, d.revenue]))
 
   const calendar = []
-  let day = 1
 
   // Empty cells before first day
   for (let i = 0; i < startingDayOfWeek; i++) {
