@@ -1,7 +1,10 @@
 import { getLogs } from "@/lib/google-sheets"
+import type { Log } from "@/lib/types"
 import { format } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+
+export const dynamic = 'force-dynamic'
 
 export default async function LogPage() {
   const logs = await getLogs()
