@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface AddItemDialogProps {
   open: boolean
@@ -91,12 +92,23 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
               <Label htmlFor="category" className="text-foreground">
                 Category
               </Label>
-              <Input
-                id="category"
-                required
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              />
+              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })} required>
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Electronics & Gadgets">Electronics & Gadgets</SelectItem>
+                  <SelectItem value="Fashion & Apparel">Fashion & Apparel</SelectItem>
+                  <SelectItem value="Health, Beauty & Personal Care">Health, Beauty & Personal Care</SelectItem>
+                  <SelectItem value="Home & Living">Home & Living</SelectItem>
+                  <SelectItem value="Sports & Outdoors">Sports & Outdoors</SelectItem>
+                  <SelectItem value="Baby, Kids & Toys">Baby, Kids & Toys</SelectItem>
+                  <SelectItem value="Groceries & Pets">Groceries & Pets</SelectItem>
+                  <SelectItem value="Automotive & Industrial">Automotive & Industrial</SelectItem>
+                  <SelectItem value="Stationery & Books">Stationery & Books</SelectItem>
+                  <SelectItem value="Other / Miscellaneous">Other / Miscellaneous</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="quantity" className="text-foreground">
