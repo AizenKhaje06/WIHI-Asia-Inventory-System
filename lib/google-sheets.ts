@@ -248,7 +248,48 @@ export async function getTransactions(): Promise<Transaction[]> {
   }))
 }
 
+async function initializeLogsSheet() {
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  try {
+    await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: "Logs!A1:F1"
+    })
+  } catch (error) {
+    // Sheet doesn't exist, create it
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [{
+          addSheet: {
+            properties: {
+              title: 'Logs',
+              gridProperties: {
+                rowCount: 1000,
+                columnCount: 6
+              }
+            }
+          }
+        }]
+      }
+    })
+    // Add headers
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: "Logs!A1:F1",
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [["ID", "Operation", "Item ID", "Item Name", "Details", "Timestamp"]]
+      }
+    })
+  }
+}
+
 export async function addLog(log: Omit<Log, "id" | "timestamp">): Promise<Log> {
+  await initializeLogsSheet()
+
   const sheets = await getGoogleSheetsClient()
   const spreadsheetId = process.env.GOOGLE_SHEET_ID
 
@@ -277,6 +318,8 @@ export async function addLog(log: Omit<Log, "id" | "timestamp">): Promise<Log> {
 }
 
 export async function getLogs(): Promise<Log[]> {
+  await initializeLogsSheet()
+
   const sheets = await getGoogleSheetsClient()
   const spreadsheetId = process.env.GOOGLE_SHEET_ID
 
