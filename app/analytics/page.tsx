@@ -93,18 +93,20 @@ export default function AnalyticsPage() {
 
       {/* Filter and Month Navigation */}
       <Card className="mb-6 bg-card border-border">
-        <CardContent className="p-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex space-x-2">
+        <CardContent className="p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-4">
+            <div className="flex space-x-2 w-full sm:w-auto">
               <Button
                 variant={view === 'daily' ? 'default' : 'outline'}
                 onClick={() => setView('daily')}
+                className="flex-1 sm:flex-none"
               >
                 Daily Sales
               </Button>
               <Button
                 variant={view === 'monthly' ? 'default' : 'outline'}
                 onClick={() => setView('monthly')}
+                className="flex-1 sm:flex-none"
               >
                 Monthly Sales
               </Button>
@@ -132,28 +134,28 @@ export default function AnalyticsPage() {
               <div className="grid grid-cols-7 gap-0.5 p-2">
                 {/* Weekday Headers */}
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day} className="py-1 text-xs font-medium text-muted-foreground border-b border-border">
+                  <div key={day} className="py-1 text-xs md:text-sm font-medium text-muted-foreground border-b border-border">
                     {day}
                   </div>
                 ))}
 
                 {/* Calendar Days */}
                 {generateCalendarDays(currentMonth, dailySales).map((cell, index) => (
-                  <div key={index} className="relative h-20">
+                  <div key={index} className="relative h-16 md:h-20">
                     {cell.day !== null ? (
                       <div 
                         className={cn(
-                          "h-full p-1 border border-border rounded bg-background flex flex-col justify-center items-center",
+                          "h-full p-0.5 md:p-1 border border-border rounded bg-background flex flex-col justify-center items-center",
                           cell.revenue > 0 && "border-r-4 border-orange-500"
                         )}
                       >
-                        <div className="text-sm text-foreground text-center">{cell.day}</div>
-                        <div className={`text-sm text-center ${cell.revenue > 0 ? 'text-green-500' : 'text-muted-foreground'}`}>
+                        <div className="text-xs md:text-sm text-foreground text-center">{cell.day}</div>
+                        <div className={`text-xs md:text-sm text-center ${cell.revenue > 0 ? 'text-green-500' : 'text-muted-foreground'}`}>
                           {cell.revenue > 0 ? `₱${cell.revenue.toFixed(2)}` : '₱0.00'}
                         </div>
                       </div>
                     ) : (
-                      <div className="h-full p-1 opacity-50" />
+                      <div className="h-full p-0.5 md:p-1 opacity-50" />
                     )}
                   </div>
                 ))}
