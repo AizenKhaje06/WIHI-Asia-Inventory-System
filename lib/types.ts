@@ -9,6 +9,8 @@ export interface InventoryItem {
   reorderLevel: number
   supplier: string
   lastUpdated: string
+  restockAmount?: number
+  restockDate?: string
 }
 
 export interface Transaction {

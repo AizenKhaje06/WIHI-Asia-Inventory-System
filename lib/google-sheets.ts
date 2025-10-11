@@ -22,7 +22,7 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: "Inventory!A2:J",
+    range: "Inventory!A2:L",
   })
 
   const rows = response.data.values || []
@@ -37,6 +37,8 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
     reorderLevel: Number.parseInt(row[7] || "0"),
     supplier: row[8] || "",
     lastUpdated: row[9] || new Date().toISOString(),
+    restockAmount: Number.parseFloat(row[10] || "0"),
+    restockDate: row[11] || "",
   }))
 }
 
@@ -59,12 +61,14 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpd
       item.reorderLevel,
       item.supplier,
       lastUpdated,
+      0,
+      "",
     ],
   ]
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "Inventory!A:J",
+    range: "Inventory!A:L",
     valueInputOption: "RAW",
     requestBody: { values },
   })
@@ -98,12 +102,14 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
       item.reorderLevel,
       item.supplier,
       item.lastUpdated,
+      item.restockAmount || 0,
+      item.restockDate || "",
     ],
   ]
 
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: `Inventory!A${rowNumber}:J${rowNumber}`,
+    range: `Inventory!A${rowNumber}:L${rowNumber}`,
     valueInputOption: "RAW",
     requestBody: { values },
   })

@@ -1,4 +1,4 @@
-# Payment Method Implementation for POS
+# Restock Feature Implementation for Inventory
 
 ## Current Progress
 - [x] Plan approved by user
@@ -6,34 +6,39 @@
 ## Steps to Complete
 
 1. **Update lib/types.ts**
-   - [x] Add `paymentMethod: 'cash' | 'gcash' | 'paymaya'` and `referenceNumber?: string` to the Transaction interface.
+   - Add `restockAmount?: number` and `restockDate?: string` to the InventoryItem interface.
 
 2. **Update lib/google-sheets.ts**
-   - [x] Modify addTransaction to accept new fields in the parameter type (Omit<Transaction, "id" | "timestamp">).
-   - [x] Extend the values array in addTransaction to include paymentMethod and referenceNumber (positions 12 and 13, for columns L and M).
-   - [x] Update getTransactions to parse the new columns: row[11] for paymentMethod, row[12] for referenceNumber (adjust indices accordingly).
+   - Modify getInventoryItems to parse A2:L (add row[10] for restockAmount: Number.parseFloat(row[10] || "0"), row[11] for restockDate: row[11] || "").
+   - Update addInventoryItem to append A:L (add empty restockAmount=0, restockDate="" after lastUpdated).
+   - Update updateInventoryItem to handle A:L (extend values array to 12 elements, include restock fields if provided).
 
-3. **Update app/api/sales/route.ts**
-   - [x] Destructure paymentMethod and referenceNumber from the request body.
-   - [x] Validate that paymentMethod is provided and referenceNumber is required if not 'cash'.
-   - [x] Pass paymentMethod and referenceNumber to addTransaction for each transaction.
+3. **Create app/api/items/[id]/restock/route.ts**
+   - New POST endpoint: Accept { amount: number } in body.
+   - Validate amount > 0.
+   - Fetch item by id using getInventoryItems.
+   - If not found, return 404 error.
+   - Compute newQuantity = current.quantity + amount.
+   - Call updateInventoryItem(id, { quantity: newQuantity, restockAmount: amount, restockDate: new Date().toISOString(), lastUpdated: new Date().toISOString() }).
+   - Return success with updated item.
 
-4. **Update app/pos/page.tsx**
-   - Add state: paymentMethod ('cash' | 'ewallet'), eWalletType ('gcash' | 'paymaya'), referenceNumber (string).
-   - Import RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Label from "@/components/ui/*".
-   - In the cart section, after total, add payment selection UI:
-     - RadioGroup for Cash / E-Wallet.
-     - If E-Wallet selected, show Select for Gcash / Paymaya and Input for Reference Number.
-   - In handleCheckout, compute full paymentMethod ('cash' | 'gcash' | 'paymaya'), include in body: { items: saleItems, paymentMethod, referenceNumber }.
+4. **Update app/inventory/page.tsx**
+   - Import Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger from "@/components/ui/dialog".
+   - Import Button, Input, Label.
+   - Add state for selectedItemId and restockAmount (number).
+   - For each item row, add Restock button (variant="outline") that sets selectedItemId and opens dialog.
+   - Create RestockDialog: Input for amount (min=1, type=number), on submit call fetch(`/api/items/${selectedItemId}/restock`, { method: 'POST', body: JSON.stringify({ amount }) }), close dialog, refresh items.
+   - Handle errors (e.g., alert on failure).
 
 ## Followup Steps After Edits
-- [ ] Manually update Google Sheets Transactions header: Add "Payment Method" in L1 and "Reference Number" in M1.
+- [ ] Manually update Google Sheets Inventory header: Add "Restock Amount" in K1 and "Restock Date" in L1.
 - [ ] Test: Run `npm install --legacy-peer-deps` if needed, then `npm run dev`.
-- [ ] Verify POS: Add item to cart, select payment (Cash: no ref; E-Wallet: select type, enter ref), complete sale, check Sheets for new columns, stock update, no errors.
-- [ ] Update reports if needed (e.g., filter by payment method in future).
+- [ ] Verify: Navigate to /inventory, click Restock on an item, enter amount >0, submit, check quantity increased, K/L populated in Sheets, no impact on sales/POS.
+- [ ] Ensure existing add/edit/delete inventory still works without breaking new columns.
 - [ ] Commit changes and create PR.
 
 ## Notes
-- Ensure UI is responsive and accessible.
-- For E-Wallet, referenceNumber is required; validate in API.
-- No new dependencies; use existing shadcn/ui components.
+- RestockAmount records the last added amount; if multiple restocks, it overwrites (for simplicity; could extend to log history if needed).
+- Validation: Amount must be positive integer; quantity won't go below 0.
+- No new dependencies; use existing shadcn/ui Dialog and components.
+- Quantity (E) auto-computes as current + restock amount on each restock.

@@ -4,7 +4,9 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, Pencil, Trash2 } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Plus, Search, Pencil, Trash2, PackagePlus } from "lucide-react"
 import type { InventoryItem } from "@/lib/types"
 import { AddItemDialog } from "@/components/add-item-dialog"
 import { EditItemDialog } from "@/components/edit-item-dialog"
@@ -17,6 +19,9 @@ export default function InventoryPage() {
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
+  const [restockDialogOpen, setRestockDialogOpen] = useState(false)
+  const [selectedRestockItem, setSelectedRestockItem] = useState<InventoryItem | null>(null)
+  const [restockAmount, setRestockAmount] = useState(0)
 
   useEffect(() => {
     fetchItems()
@@ -65,6 +70,38 @@ export default function InventoryPage() {
   function handleEdit(item: InventoryItem) {
     setSelectedItem(item)
     setEditDialogOpen(true)
+  }
+
+  function handleRestock(item: InventoryItem) {
+    setSelectedRestockItem(item)
+    setRestockAmount(0)
+    setRestockDialogOpen(true)
+  }
+
+  async function handleRestockSubmit() {
+    if (!selectedRestockItem || restockAmount <= 0) return
+
+    try {
+      const res = await fetch(`/api/items/${selectedRestockItem.id}/restock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: restockAmount }),
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        alert(`Error: ${error.error}`)
+        return
+      }
+
+      setRestockDialogOpen(false)
+      setSelectedRestockItem(null)
+      fetchItems()
+      alert("Item restocked successfully!")
+    } catch (error) {
+      console.error("[v0] Error restocking item:", error)
+      alert("Failed to restock item")
+    }
   }
 
   if (loading) {
@@ -133,6 +170,9 @@ export default function InventoryPage() {
                     <td className="py-4 text-right text-sm text-foreground">₱{item.sellingPrice.toFixed(2)}</td>
                     <td className="py-4 text-right">
                       <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => handleRestock(item)}>
+                          <PackagePlus className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -158,6 +198,37 @@ export default function InventoryPage() {
           item={selectedItem}
           onSuccess={fetchItems}
         />
+      )}
+
+      {selectedRestockItem && (
+        <Dialog open={restockDialogOpen} onOpenChange={setRestockDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Restock {selectedRestockItem.name}</DialogTitle>
+              <DialogDescription>
+                Enter the amount to add to the current stock of {selectedRestockItem.quantity}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="restock-amount">Amount to Restock</Label>
+                <Input
+                  id="restock-amount"
+                  type="number"
+                  min="1"
+                  value={restockAmount}
+                  onChange={(e) => setRestockAmount(Number.parseInt(e.target.value) || 0)}
+                  placeholder="Enter amount"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleRestockSubmit} disabled={restockAmount <= 0}>
+                Restock Item
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   )
