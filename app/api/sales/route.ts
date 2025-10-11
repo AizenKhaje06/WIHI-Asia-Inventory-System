@@ -4,7 +4,15 @@ import { addTransaction, updateInventoryItem, getInventoryItems } from "@/lib/go
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { items } = body
+    const { items, paymentMethod, referenceNumber } = body
+
+    if (!paymentMethod) {
+      return NextResponse.json({ error: "Payment method is required" }, { status: 400 })
+    }
+
+    if (paymentMethod !== 'cash' && !referenceNumber) {
+      return NextResponse.json({ error: "Reference number is required for E-Wallet payments" }, { status: 400 })
+    }
 
     const allItems = await getInventoryItems()
     const transactions = []
@@ -34,6 +42,8 @@ export async function POST(request: NextRequest) {
         totalRevenue,
         profit,
         type: "sale",
+        paymentMethod,
+        referenceNumber: paymentMethod === 'cash' ? undefined : referenceNumber,
       })
 
       await updateInventoryItem(inventoryItem.id, {

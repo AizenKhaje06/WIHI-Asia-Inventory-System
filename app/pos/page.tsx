@@ -4,6 +4,9 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, ShoppingCart, Trash2 } from "lucide-react"
 import type { InventoryItem } from "@/lib/types"
 
@@ -18,6 +21,9 @@ export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'ewallet'>('cash')
+  const [eWalletType, setEWalletType] = useState<'gcash' | 'paymaya'>('gcash')
+  const [referenceNumber, setReferenceNumber] = useState('')
 
   useEffect(() => {
     fetchItems()
@@ -84,6 +90,8 @@ export default function POSPage() {
   async function handleCheckout() {
     if (cart.length === 0) return
 
+    const fullPaymentMethod = paymentMethod === 'cash' ? 'cash' : eWalletType
+
     setLoading(true)
     try {
       const saleItems = cart.map((cartItem) => ({
@@ -94,7 +102,11 @@ export default function POSPage() {
       await fetch("/api/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: saleItems }),
+        body: JSON.stringify({ 
+          items: saleItems, 
+          paymentMethod: fullPaymentMethod,
+          referenceNumber: paymentMethod === 'cash' ? undefined : referenceNumber 
+        }),
       })
 
       setCart([])
@@ -211,7 +223,54 @@ export default function POSPage() {
                         <p className="text-lg font-semibold text-foreground">Total</p>
                         <p className="text-2xl font-bold text-foreground">₱{total.toFixed(2)}</p>
                       </div>
-                      <Button onClick={handleCheckout} disabled={loading} className="w-full" size="lg">
+
+                      <div className="space-y-4 mb-4">
+                        <div>
+                          <Label className="text-sm font-medium text-foreground">Payment Method</Label>
+                          <RadioGroup
+                            value={paymentMethod}
+                            onValueChange={(value) => setPaymentMethod(value as 'cash' | 'ewallet')}
+                            className="flex items-center space-x-4 mt-2"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="cash" id="cash" />
+                              <Label htmlFor="cash">Cash</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="ewallet" id="ewallet" />
+                              <Label htmlFor="ewallet">E-Wallet</Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+
+                        {paymentMethod === 'ewallet' && (
+                          <div className="space-y-4">
+                            <div>
+                              <Label className="text-sm font-medium text-foreground">E-Wallet Type</Label>
+                              <Select value={eWalletType} onValueChange={(value) => setEWalletType(value as 'gcash' | 'paymaya')}>
+                                <SelectTrigger className="mt-2">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="gcash">GCash</SelectItem>
+                                  <SelectItem value="paymaya">PayMaya</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-foreground">Reference Number</Label>
+                              <Input
+                                placeholder="Enter reference number"
+                                value={referenceNumber}
+                                onChange={(e) => setReferenceNumber(e.target.value)}
+                                className="mt-2"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <Button onClick={handleCheckout} disabled={loading || (paymentMethod === 'ewallet' && !referenceNumber)} className="w-full" size="lg">
                         {loading ? "Processing..." : "Complete Sale"}
                       </Button>
                     </div>
