@@ -51,3 +51,13 @@ export interface Log {
   details: string
   timestamp: string
 }
+
+export interface Restock {
+  id: string
+  itemId: string
+  itemName: string
+  quantity: number
+  costPrice: number
+  totalCost: number
+  timestamp: string
+}

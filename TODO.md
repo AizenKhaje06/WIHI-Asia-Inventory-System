@@ -1,39 +1,40 @@
-# Restock Feature Implementation TODO
+# Revised Restock Feature Implementation TODO (Dedicated Sheet Version)
 
 ## Current Work
-Implementing restock history by removing restock columns from Inventory sheet/type, recording restocks as transactions (type="restock"), adding sidebar nav and dedicated /restock page for viewing history.
+Reverting UI changes (remove Restock nav and page), keeping Inventory sheet clean (A:J), creating dedicated "Restock" Google Sheet tab for historical records (appended via API on restock). Restocks recorded with ID, Item ID, Item Name, Quantity Added, Cost Price, Total Cost, Timestamp. Transactions remain for sales only.
 
 ## Key Technical Concepts
-- Google Sheets API: Adjust ranges for Inventory (A:J), reuse Transactions sheet for restock records.
-- Next.js App Router: New server page /restock with dynamic fetch.
-- TypeScript: Update InventoryItem interface.
-- UI: shadcn/ui Table, date-fns for formatting, lucide-react PackagePlus icon.
+- Google Sheets API: New "Restock" sheet (A:G), auto-init with headers; append records.
+- Next.js App Router: No new page; API-only.
+- TypeScript: Add Restock interface.
+- Backend: Update restock route to use addRestock instead of addTransaction; keep addLog.
 
 ## Relevant Files and Code
-- lib/types.ts: Remove `restockAmount?: number` and `restockDate?: string` from InventoryItem.
+- lib/types.ts: Add interface Restock { id: string; itemId: string; itemName: string; quantity: number; costPrice: number; totalCost: number; timestamp: string; }.
 - lib/google-sheets.ts:
-  - getInventoryItems: Change range "Inventory!A2:J"; remove row[10]/row[11] parsing.
-  - addInventoryItem: Append 10 values (up to lastUpdated); range "Inventory!A:J".
-  - updateInventoryItem: Remove fieldToColumn for restockAmount (10), restockDate (11).
-- app/api/items/[id]/restock/route.ts: After updateInventoryItem, call addTransaction({ type: "restock", quantity: amount, totalCost: item.costPrice * amount, totalRevenue: 0, profit: 0, ... }); keep addLog.
-- components/sidebar.tsx: Add to navigation: { name: "Restock", href: "/restock", icon: PackagePlus } (import PackagePlus).
-- app/restock/page.tsx (new): Fetch getTransactions(), filter type==="restock", table with Date (formatted), Item Name, Quantity Added, Cost Price, Total Cost; dynamic export; empty state.
-- app/inventory/page.tsx: No changes (table doesn't use restock fields).
+  - Add initializeRestockSheet(): Create "Restock" sheet if missing, headers ["ID", "Item ID", "Item Name", "Quantity Added", "Cost Price", "Total Cost", "Timestamp"] (A:G).
+  - Add addRestock(restock: Omit<Restock, "id" | "timestamp">): Promise<Restock> – Generate id/timestamp, append to "Restock!A:G".
+  - Add getRestocks(): Promise<Restock[]> – Fetch "Restock!A2:G", parse, sort descending by timestamp (optional, for future).
+- app/api/items/[id]/restock/route.ts: After updateInventoryItem(quantity), call addRestock({ itemId, itemName, quantity: amount, costPrice, totalCost: costPrice * amount }); remove addTransaction; keep addLog.
+- components/sidebar.tsx: Revert – Remove PackagePlus import and { name: "Restock", href: "/restock", icon: PackagePlus } from navigation.
+- Delete: app/restock/page.tsx (no UI needed).
+- lib/google-sheets.ts: Existing Inventory changes (A:J) remain.
 
 ## Problem Solving
-- Sheet Structure: Existing data in K:L (restock) will be ignored after range change; manual cleanup if needed.
-- Transaction Reuse: Set paymentMethod/referenceNumber to null/empty for restocks; profit=0.
-- No Separate Sheet: Reusing Transactions avoids redundancy; filter on client/server.
+- Sheet Init: Auto-create on first addRestock, like Logs.
+- Data: Total Cost = costPrice * quantity; no payment/profit for restocks.
+- Revert: Clean up UI code; no impact on other nav/pages.
+- Existing Data: Inventory K:L ignored; suggest manual delete if needed.
 
 ## Pending Tasks and Next Steps
-1. [x] Update lib/types.ts (remove restock fields from InventoryItem).
-2. [x] Update lib/google-sheets.ts (adjust Inventory ranges/parsing in getInventoryItems/addInventoryItem/updateInventoryItem).
-3. [x] Update app/api/items/[id]/restock/route.ts (add addTransaction call for restock record).
-4. [x] Update components/sidebar.tsx (add Restock nav item with PackagePlus icon).
-5. [x] Create app/restock/page.tsx (new page: fetch/filter transactions, display table).
-6. [ ] Test: Run `npm run dev`; restock an item via API/UI (if integrated), verify transaction in sheet, /restock page shows entry, no errors in inventory fetches.
-7. [ ] Verify sheet: Inventory appends to A:J; Transactions has restock entry.
-8. [ ] Edge cases: Restock amount=0 (error), non-existent item (404), multiple restocks.
+1. [x] Add Restock interface to lib/types.ts.
+2. [x] Update lib/google-sheets.ts (add initializeRestockSheet, addRestock, getRestocks).
+3. [x] Update app/api/items/[id]/restock/route.ts (use addRestock, remove addTransaction).
+4. [x] Revert components/sidebar.tsx (remove Restock nav and PackagePlus).
+5. [x] Delete app/restock/page.tsx.
+6. [ ] Test: Run `npm run dev`; POST to /api/items/[id]/restock {amount: 10}; verify quantity update, new row in Restock sheet (A:G), log entry, no transaction, errors handled.
+7. [ ] Verify sheets: Inventory A:J only; Restock created/appended correctly.
+8. [ ] Edge cases: amount <=0 (400), invalid ID (404), first restock (sheet init).
 9. [ ] Update this TODO.md with [x] as steps complete.
 
-"User confirmed plan: Proceed with reusing Transactions sheet (filter type='restock'). No additional columns specified (use Date, Item Name, Quantity Added, Cost Price, Total Cost)."
+"User confirmed revised plan: Proceed with dedicated Restock sheet (columns: ID, Item ID, Item Name, Quantity Added, Cost Price, Total Cost, Timestamp). No additional columns specified."
