@@ -1,5 +1,5 @@
 import { google } from "googleapis"
-import type { InventoryItem, Transaction, Log } from "./types"
+import type { InventoryItem, Transaction, Log, Restock } from "./types"
 
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
@@ -330,5 +330,98 @@ export async function getLogs(): Promise<Log[]> {
     itemName: row[3] || "",
     details: row[4] || "",
     timestamp: row[5] || "",
+  })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+}
+
+async function initializeRestockSheet() {
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  try {
+    await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: "Restock!A1:G1"
+    })
+  } catch (error) {
+    // Sheet doesn't exist, create it
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [{
+          addSheet: {
+            properties: {
+              title: 'Restock',
+              gridProperties: {
+                rowCount: 1000,
+                columnCount: 7
+              }
+            }
+          }
+        }]
+      }
+    })
+    // Add headers
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: "Restock!A1:G1",
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [["ID", "Item ID", "Item Name", "Quantity Added", "Cost Price", "Total Cost", "Timestamp"]]
+      }
+    })
+  }
+}
+
+export async function addRestock(restock: Omit<Restock, "id" | "timestamp">): Promise<Restock> {
+  await initializeRestockSheet()
+
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  const id = `RSTK-${Date.now()}`
+  const timestamp = new Date().toISOString()
+
+  const values = [
+    [
+      id,
+      restock.itemId,
+      restock.itemName,
+      restock.quantity,
+      restock.costPrice,
+      restock.totalCost,
+      timestamp,
+    ],
+  ]
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: "Restock!A:G",
+    valueInputOption: "RAW",
+    requestBody: { values },
+  })
+
+  return { ...restock, id, timestamp }
+}
+
+export async function getRestocks(): Promise<Restock[]> {
+  await initializeRestockSheet()
+
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: "Restock!A2:G",
+  })
+
+  const rows = response.data.values || []
+  return rows.map((row) => ({
+    id: row[0] || "",
+    itemId: row[1] || "",
+    itemName: row[2] || "",
+    quantity: Number.parseInt(row[3] || "0"),
+    costPrice: Number.parseFloat(row[4] || "0"),
+    totalCost: Number.parseFloat(row[5] || "0"),
+    timestamp: row[6] || "",
   })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 }

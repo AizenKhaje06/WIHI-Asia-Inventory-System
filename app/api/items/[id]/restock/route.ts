@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { updateInventoryItem, getInventoryItems, addTransaction, addLog } from "@/lib/google-sheets"
+import { updateInventoryItem, getInventoryItems, addRestock, addLog } from "@/lib/google-sheets"
 
 export async function POST(
   request: NextRequest,
@@ -26,19 +26,13 @@ export async function POST(
       quantity: newQuantity,
     })
 
-    // Record as transaction
-    await addTransaction({
+    // Record as restock
+    await addRestock({
       itemId: params.id,
       itemName: item.name,
       quantity: amount,
       costPrice: item.costPrice,
-      sellingPrice: item.sellingPrice,
       totalCost: item.costPrice * amount,
-      totalRevenue: 0,
-      profit: 0,
-      type: "restock",
-      paymentMethod: "",
-      referenceNumber: "",
     })
 
     // Log the operation
