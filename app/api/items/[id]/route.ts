@@ -1,10 +1,23 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { updateInventoryItem, deleteInventoryItem } from "@/lib/google-sheets"
+import { updateInventoryItem, deleteInventoryItem, getInventoryItems, addLog } from "@/lib/google-sheets"
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const body = await request.json()
-    await updateInventoryItem(params.id, body)
+    const items = await getInventoryItems()
+    const item = items.find(i => i.id === id)
+    if (!item) {
+      return NextResponse.json({ error: "Item not found" }, { status: 404 })
+    }
+    await updateInventoryItem(id, body)
+    const changes = Object.entries(body).map(([key, value]) => `${key}: ${value}`).join(', ')
+    await addLog({
+      operation: "update",
+      itemId: id,
+      itemName: item.name,
+      details: `Updated "${item.name}" - Changes: ${changes}`
+    })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("[v0] Error updating item:", error)
@@ -12,9 +25,21 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await deleteInventoryItem(params.id)
+    const { id } = await params
+    const items = await getInventoryItems()
+    const item = items.find(i => i.id === id)
+    if (!item) {
+      return NextResponse.json({ error: "Item not found" }, { status: 404 })
+    }
+    await deleteInventoryItem(id)
+    await addLog({
+      operation: "delete",
+      itemId: id,
+      itemName: item.name,
+      details: `Deleted "${item.name}" (SKU: ${item.sku})`
+    })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("[v0] Error deleting item:", error)

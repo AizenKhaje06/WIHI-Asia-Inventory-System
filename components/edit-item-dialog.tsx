@@ -105,14 +105,14 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-quantity" className="text-foreground">
-                Quantity
+                Quantity (Read-only for safety)
               </Label>
               <Input
                 id="edit-quantity"
                 type="number"
                 required
                 value={formData.quantity}
-                onChange={(e) => setFormData({ ...formData, quantity: Number.parseInt(e.target.value) })}
+                readOnly
               />
             </div>
             <div className="space-y-2">

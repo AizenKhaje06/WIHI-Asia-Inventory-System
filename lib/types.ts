@@ -23,6 +23,8 @@ export interface Transaction {
   profit: number
   timestamp: string
   type: "sale" | "restock"
+  paymentMethod?: 'cash' | 'gcash' | 'paymaya'
+  referenceNumber?: string
 }
 
 export interface SalesReport {
@@ -39,4 +41,23 @@ export interface DashboardStats {
   lowStockItems: number
   totalValue: number
   recentSales: number
+}
+
+export interface Log {
+  id: string
+  operation: string
+  itemId?: string
+  itemName?: string
+  details: string
+  timestamp: string
+}
+
+export interface Restock {
+  id: string
+  itemId: string
+  itemName: string
+  quantity: number
+  costPrice: number
+  totalCost: number
+  timestamp: string
 }

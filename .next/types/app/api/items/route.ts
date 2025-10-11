@@ -1,4 +1,4 @@
-// File: C:\Users\Aizen06\Documents\Inventory-Management-System\lib\Inventory-Management-System\app\api\items\route.ts
+// File: C:\Inventory Management System\Inventory-Management-System\app\api\items\route.ts
 import * as entry from '../../../../../app/api/items/route.js'
 import type { NextRequest } from 'next/server.js'
 

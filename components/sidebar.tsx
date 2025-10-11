@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useTheme } from "next-themes"
-import { LayoutDashboard, Package, ShoppingCart, BarChart3, Settings, Activity, Sun, Moon } from "lucide-react"
+import { LayoutDashboard, Package, ShoppingCart, BarChart3, Activity, Sun, Moon, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -13,7 +13,7 @@ const navigation = [
   { name: "Point of Sale", href: "/pos", icon: ShoppingCart },
   { name: "Analytics", href: "/analytics", icon: Activity },
   { name: "Reports", href: "/reports", icon: BarChart3 },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Log", href: "/log", icon: FileText },
 ]
 
 export function Sidebar() {
@@ -21,9 +21,9 @@ export function Sidebar() {
   const { theme, setTheme } = useTheme()
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r border-border bg-card">
-      <div className="flex h-16 items-center border-b border-border px-6">
-        <h1 className="text-xl font-semibold text-foreground">Inventory Pro</h1>
+    <div className="flex h-screen w-56 flex-col border-r border-gray-800 bg-black/90 backdrop-blur-sm text-white">
+      <div className="flex h-16 items-center border-b border-gray-800 px-6">
+        <h1 className="text-xl font-semibold">Inventory Pro</h1>
       </div>
       <nav className="flex-1 space-y-1 p-4">
         {navigation.map((item) => {
@@ -35,8 +35,8 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                  ? "bg-orange-500 text-white"
+                  : "text-gray-300 hover:bg-gray-800 hover:text-white",
               )}
             >
               <item.icon className="h-5 w-5" />
@@ -45,11 +45,11 @@ export function Sidebar() {
           )
         })}
       </nav>
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-gray-800">
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start"
+          className="w-full justify-start text-white hover:bg-gray-800"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         >
           {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

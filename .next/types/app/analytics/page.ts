@@ -1,4 +1,4 @@
-// File: C:\Users\Aizen06\Documents\Inventory-Management-System\lib\Inventory-Management-System\app\analytics\page.tsx
+// File: C:\Inventory Management System\Inventory-Management-System\app\analytics\page.tsx
 import * as entry from '../../../../app/analytics/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
