@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { updateInventoryItem, getInventoryItems, addLog } from "@/lib/google-sheets"
+import { updateInventoryItem, getInventoryItems, addTransaction, addLog } from "@/lib/google-sheets"
 
 export async function POST(
   request: NextRequest,
@@ -21,21 +21,39 @@ export async function POST(
     }
 
     const newQuantity = item.quantity + amount
-    const restockDate = new Date().toISOString()
 
     await updateInventoryItem(params.id, {
       quantity: newQuantity,
-      restockAmount: amount,
-      restockDate,
+    })
+
+    // Record as transaction
+    await addTransaction({
+      itemId: params.id,
+      itemName: item.name,
+      quantity: amount,
+      costPrice: item.costPrice,
+      sellingPrice: item.sellingPrice,
+      totalCost: item.costPrice * amount,
+      totalRevenue: 0,
+      profit: 0,
+      type: "restock",
+      paymentMethod: "",
+      referenceNumber: "",
+    })
+
+    // Log the operation
+    await addLog({
+      operation: "restock",
+      itemId: params.id,
+      itemName: item.name,
+      details: `Added ${amount} units (total cost: $${(item.costPrice * amount).toFixed(2)})`,
     })
 
     return NextResponse.json({ 
       success: true, 
       item: { 
         ...item, 
-        quantity: newQuantity, 
-        restockAmount: amount, 
-        restockDate 
+        quantity: newQuantity 
       } 
     })
   } catch (error) {

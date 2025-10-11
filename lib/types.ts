@@ -9,8 +9,6 @@ export interface InventoryItem {
   reorderLevel: number
   supplier: string
   lastUpdated: string
-  restockAmount?: number
-  restockDate?: string
 }
 
 export interface Transaction {
@@ -25,7 +23,7 @@ export interface Transaction {
   profit: number
   timestamp: string
   type: "sale" | "restock"
-  paymentMethod: 'cash' | 'gcash' | 'paymaya'
+  paymentMethod?: 'cash' | 'gcash' | 'paymaya'
   referenceNumber?: string
 }
 
