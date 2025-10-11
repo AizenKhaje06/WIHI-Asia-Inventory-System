@@ -148,19 +148,9 @@ export default function AnalyticsPage() {
                         )}
                       >
                         <div className="text-xs text-foreground text-center">{cell.day}</div>
-                        <div className="text-xs text-muted-foreground text-center mb-1">
+                        <div className={`text-xs text-center mb-1 ${cell.revenue > 0 ? 'text-green-500' : 'text-muted-foreground'}`}>
                           {cell.revenue > 0 ? `₱${cell.revenue.toFixed(2)}` : '₱0.00'}
                         </div>
-                        {cell.revenue > 0 ? (
-                          <div
-                            className="w-full bg-green-500 rounded transition-all duration-300"
-                            style={{
-                              height: `${(cell.revenue / maxRevenue) * 40}px`,
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-0 bg-transparent" />
-                        )}
                       </div>
                     ) : (
                       <div className="h-full p-1 opacity-50" />
