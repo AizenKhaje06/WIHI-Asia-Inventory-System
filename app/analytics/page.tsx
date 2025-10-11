@@ -147,8 +147,8 @@ export default function AnalyticsPage() {
                           cell.revenue > 0 && "border-r-4 border-orange-500"
                         )}
                       >
-                        <div className="text-xs text-foreground text-center">{cell.day}</div>
-                        <div className={`text-xs text-center mb-1 ${cell.revenue > 0 ? 'text-green-500' : 'text-muted-foreground'}`}>
+                        <div className="text-sm text-foreground text-center">{cell.day}</div>
+                        <div className={`text-sm text-center ${cell.revenue > 0 ? 'text-green-500' : 'text-muted-foreground'}`}>
                           {cell.revenue > 0 ? `₱${cell.revenue.toFixed(2)}` : '₱0.00'}
                         </div>
                       </div>
