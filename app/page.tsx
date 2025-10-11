@@ -39,56 +39,53 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="relative min-h-full p-8">
-      <div className="absolute inset-0 bg-[url('/Corporate%20Building.png')] bg-cover bg-center bg-no-repeat"></div>
-      <div className="absolute inset-0 bg-background/60"></div>
-      <div className="relative z-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">Overview of your inventory system</p>
-        </div>
+    <div className="p-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground">Overview of your inventory system</p>
+      </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
-              <Package className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stats?.totalItems || 0}</div>
-            </CardContent>
-          </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-card border-border">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
+            <Package className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">{stats?.totalItems || 0}</div>
+          </CardContent>
+        </Card>
 
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Low Stock Alerts</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-warning" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stats?.lowStockItems || 0}</div>
-            </CardContent>
-          </Card>
+        <Card className="bg-card border-border">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Low Stock Alerts</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-warning" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">{stats?.lowStockItems || 0}</div>
+          </CardContent>
+        </Card>
 
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Value</CardTitle>
-              <DollarSign className="h-4 w-4 text-success" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">₱{stats?.totalValue.toFixed(2) || "0.00"}</div>
-            </CardContent>
-          </Card>
+        <Card className="bg-card border-border">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Value</CardTitle>
+            <DollarSign className="h-4 w-4 text-success" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">₱{stats?.totalValue.toFixed(2) || "0.00"}</div>
+          </CardContent>
+        </Card>
 
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Today's Sales</CardTitle>
-              <TrendingUp className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stats?.recentSales || 0}</div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card className="bg-card border-border">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Today's Sales</CardTitle>
+            <TrendingUp className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">{stats?.recentSales || 0}</div>
+          </CardContent>
+        </Card>
+      </div>
 
       {lowStockItems.length > 0 && (
         <Card className="mt-6 bg-card border-border">
@@ -116,7 +113,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       )}
-      </div>
     </div>
   )
 }
