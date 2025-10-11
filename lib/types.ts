@@ -23,6 +23,8 @@ export interface Transaction {
   profit: number
   timestamp: string
   type: "sale" | "restock"
+  paymentMethod: 'cash' | 'gcash' | 'paymaya'
+  referenceNumber?: string
 }
 
 export interface SalesReport {
