@@ -21,7 +21,7 @@ export function Sidebar() {
   const { theme, setTheme } = useTheme()
 
   return (
-    <div className="flex h-screen w-56 flex-col border-r border-gray-800 bg-black text-white">
+    <div className="flex h-screen w-56 flex-col border-r border-gray-800 bg-black/90 backdrop-blur-sm text-white">
       <div className="flex h-16 items-center border-b border-gray-800 px-6">
         <h1 className="text-xl font-semibold">Inventory Pro</h1>
       </div>
