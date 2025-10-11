@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getTransactions } from "@/lib/google-sheets"
-import type { SalesReport, DailySales } from "@/lib/types"
+import type { SalesReport, DailySales, MonthlySales } from "@/lib/types"
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,8 +27,11 @@ export async function GET(request: NextRequest) {
     const itemsSold = salesTransactions.reduce((sum, t) => sum + t.quantity, 0)
 
     let dailySales: DailySales[] = []
+    let monthlySales: MonthlySales[] = []
 
-    if (searchParams.has("daily")) {
+    const view = searchParams.get("view")
+
+    if (view === "daily") {
       const dailyMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
 
       salesTransactions.forEach((t) => {
@@ -45,6 +48,23 @@ export async function GET(request: NextRequest) {
       dailySales = Array.from(dailyMap.entries())
         .map(([date, data]) => ({ date, ...data }))
         .sort((a, b) => a.date.localeCompare(b.date))
+    } else if (view === "monthly") {
+      const monthlyMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
+
+      salesTransactions.forEach((t) => {
+        const month = new Date(t.timestamp).toISOString().slice(0, 7)
+        if (!monthlyMap.has(month)) {
+          monthlyMap.set(month, { revenue: 0, itemsSold: 0, profit: 0 })
+        }
+        const monthData = monthlyMap.get(month)!
+        monthData.revenue += t.totalRevenue
+        monthData.itemsSold += t.quantity
+        monthData.profit += t.profit
+      })
+
+      monthlySales = Array.from(monthlyMap.entries())
+        .map(([month, data]) => ({ month, ...data }))
+        .sort((a, b) => a.month.localeCompare(b.month))
     }
 
     const report: SalesReport = {
@@ -55,6 +75,7 @@ export async function GET(request: NextRequest) {
       itemsSold,
       transactions: salesTransactions,
       dailySales,
+      monthlySales,
     }
 
     return NextResponse.json(report)
