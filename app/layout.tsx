@@ -29,9 +29,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Suspense fallback={<div>Loading...</div>}>
-            <div className="flex h-screen bg-background">
-              <Sidebar />
-              <main className="flex-1 overflow-auto p-6">{children}</main>
+            <div className="relative flex h-screen">
+              <div className="absolute inset-0 bg-[url('/Corporate%20Building.png')] bg-cover bg-center bg-no-repeat"></div>
+              <div className="absolute inset-0 bg-background/60"></div>
+              <div className="relative z-10 flex h-full w-full">
+                <Sidebar />
+                <main className="flex-1 overflow-auto p-6">{children}</main>
+              </div>
             </div>
             <Analytics />
           </Suspense>
