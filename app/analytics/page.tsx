@@ -143,7 +143,7 @@ export default function AnalyticsPage() {
                     {cell.day !== null ? (
                       <div 
                         className={cn(
-                          "h-full p-1 border border-border rounded bg-background flex flex-col justify-between",
+                          "h-full p-1 border border-border rounded bg-background flex flex-col justify-center items-center",
                           cell.revenue > 0 && "border-r-4 border-orange-500"
                         )}
                       >
