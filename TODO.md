@@ -1,40 +1,42 @@
-# Revised Restock Feature Implementation TODO (Dedicated Sheet Version)
+# Analytics Page Daily Sales Charts Implementation
 
 ## Current Work
-Reverting UI changes (remove Restock nav and page), keeping Inventory sheet clean (A:J), creating dedicated "Restock" Google Sheet tab for historical records (appended via API on restock). Restocks recorded with ID, Item ID, Item Name, Quantity Added, Cost Price, Total Cost, Timestamp. Transactions remain for sales only.
+Adding daily sales charts to the Analytics page, inspired by the provided image. This includes a bar chart for daily revenue (calendar-style) and a line chart for sales trend over a selected time range (e.g., last 30/90 days). Existing stats cards remain. API will be updated to provide daily breakdowns.
 
 ## Key Technical Concepts
-- Google Sheets API: New "Restock" sheet (A:G), auto-init with headers; append records.
-- Next.js App Router: No new page; API-only.
-- TypeScript: Add Restock interface.
-- Backend: Update restock route to use addRestock instead of addTransaction; keep addLog.
+- Recharts: Using BarChart and LineChart wrapped in ChartContainer for responsive, themed charts.
+- Date Grouping: Aggregate sales transactions by day (YYYY-MM-DD) in the API.
+- Time Range: Frontend state for '30' or '90' days, compute startDate dynamically.
+- Next.js: Update API route to accept ?daily=true and ?startDate, return dailySales array.
+- TypeScript: Extend SalesReport with optional dailySales field.
 
 ## Relevant Files and Code
-- lib/types.ts: Add interface Restock { id: string; itemId: string; itemName: string; quantity: number; costPrice: number; totalCost: number; timestamp: string; }.
-- lib/google-sheets.ts:
-  - Add initializeRestockSheet(): Create "Restock" sheet if missing, headers ["ID", "Item ID", "Item Name", "Quantity Added", "Cost Price", "Total Cost", "Timestamp"] (A:G).
-  - Add addRestock(restock: Omit<Restock, "id" | "timestamp">): Promise<Restock> – Generate id/timestamp, append to "Restock!A:G".
-  - Add getRestocks(): Promise<Restock[]> – Fetch "Restock!A2:G", parse, sort descending by timestamp (optional, for future).
-- app/api/items/[id]/restock/route.ts: After updateInventoryItem(quantity), call addRestock({ itemId, itemName, quantity: amount, costPrice, totalCost: costPrice * amount }); remove addTransaction; keep addLog.
-- components/sidebar.tsx: Revert – Remove PackagePlus import and { name: "Restock", href: "/restock", icon: PackagePlus } from navigation.
-- Delete: app/restock/page.tsx (no UI needed).
-- lib/google-sheets.ts: Existing Inventory changes (A:J) remain.
+- lib/types.ts:
+  - Add interface DailySales { date: string; revenue: number; itemsSold: number; profit: number; }
+  - Update SalesReport to include dailySales?: DailySales[]
+- app/api/reports/route.ts:
+  - In GET handler, if searchParams.has('daily'), group salesTransactions by date using Map<Date, aggregates>, compute daily revenue/itemsSold/profit, sort by date.
+  - Add dailySales to report object.
+- app/analytics/page.tsx:
+  - Add state: timeRange: '30' | '90' = '30'
+  - Compute startDate: new Date() - parseInt(timeRange) days, format YYYY-MM-DD.
+  - Fetch: `/api/reports?startDate=${startDate}&daily=true`
+  - Render: Keep existing stats. Add section with selector (buttons for 30/90 days). Below: ChartContainer with BarChart (x=date, y=revenue bars). Then LineChart (x=date, y=revenue line).
+  - Chart config: { revenue: { label: 'Daily Revenue', color: 'hsl(var(--primary))' } }
+  - Use ChartTooltipContent for tooltips showing ₱{revenue.toFixed(2)} on hover.
 
 ## Problem Solving
-- Sheet Init: Auto-create on first addRestock, like Logs.
-- Data: Total Cost = costPrice * quantity; no payment/profit for restocks.
-- Revert: Clean up UI code; no impact on other nav/pages.
-- Existing Data: Inventory K:L ignored; suggest manual delete if needed.
+- Data Availability: If no sales data, show empty chart or placeholder message.
+- Date Formatting: Use toLocaleDateString for x-axis labels (e.g., 'Oct 1'), ensure sorting ascending.
+- Performance: Transactions array may grow; grouping is O(n), fine for now.
+- Currency: Format values as ₱{value.toFixed(2)} in tooltips/formatter.
+- Responsiveness: ResponsiveContainer handles mobile/desktop.
 
 ## Pending Tasks and Next Steps
-1. [x] Add Restock interface to lib/types.ts.
-2. [x] Update lib/google-sheets.ts (add initializeRestockSheet, addRestock, getRestocks).
-3. [x] Update app/api/items/[id]/restock/route.ts (use addRestock, remove addTransaction).
-4. [x] Revert components/sidebar.tsx (remove Restock nav and PackagePlus).
-5. [x] Delete app/restock/page.tsx.
-6. [x] Test: Run `npm run dev`; POST to /api/items/[id]/restock {amount: 10}; verify quantity update, new row in Restock sheet (A:G), log entry, no transaction, errors handled.
-7. [x] Verify sheets: Inventory A:J only; Restock created/appended correctly.
-8. [x] Edge cases: amount <=0 (400), invalid ID (404), first restock (sheet init).
-9. [x] Update this TODO.md with [x] as steps complete.
-
-"User confirmed revised plan: Proceed with dedicated Restock sheet (columns: ID, Item ID, Item Name, Quantity Added, Cost Price, Total Cost, Timestamp). No additional columns specified."
+1. [ ] Update lib/types.ts: Add DailySales interface and extend SalesReport.
+2. [ ] Update app/api/reports/route.ts: Implement daily grouping logic when ?daily=true.
+3. [ ] Update app/analytics/page.tsx: Add timeRange state, dynamic fetch with params, render bar and line charts using Recharts components.
+4. [ ] Test: Run `npm run dev`, navigate to /analytics, verify charts render with sample data (add test sales if needed), switch time ranges update charts.
+5. [ ] Verify API: Manually fetch /api/reports?daily=true&startDate=2023-10-01, confirm dailySales array in response.
+6. [ ] Edge cases: No data (empty charts), invalid dates (fallback to all), large date ranges (performance).
+7. [ ] Update this TODO.md with [x] as steps complete.

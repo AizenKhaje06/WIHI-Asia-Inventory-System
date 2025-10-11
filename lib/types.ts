@@ -27,6 +27,13 @@ export interface Transaction {
   referenceNumber?: string
 }
 
+export interface DailySales {
+  date: string
+  revenue: number
+  itemsSold: number
+  profit: number
+}
+
 export interface SalesReport {
   totalRevenue: number
   totalCost: number
@@ -34,6 +41,7 @@ export interface SalesReport {
   profitMargin: number
   itemsSold: number
   transactions: Transaction[]
+  dailySales?: DailySales[]
 }
 
 export interface DashboardStats {
