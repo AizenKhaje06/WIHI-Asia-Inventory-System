@@ -128,30 +128,34 @@ export default function AnalyticsPage() {
               <CardTitle className="text-foreground">Sales Calendar</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="grid grid-cols-7 gap-1 p-4 text-center">
+              <div className="grid grid-cols-7 gap-0.5 p-2">
                 {/* Weekday Headers */}
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day} className="py-2 font-medium text-muted-foreground">
+                  <div key={day} className="py-1 text-xs font-medium text-muted-foreground border-b border-border">
                     {day}
                   </div>
                 ))}
 
                 {/* Calendar Days */}
                 {generateCalendarDays(currentMonth, dailySales).map((cell, index) => (
-                  <div key={index} className="relative p-1">
-                    {cell.day !== null && (
-                      <div className="text-xs text-foreground mb-1">{cell.day}</div>
-                    )}
-                    {cell.revenue > 0 ? (
-                      <div
-                        className="w-full bg-primary rounded transition-all duration-300"
-                        style={{
-                          height: `${(cell.revenue / maxRevenue) * 80}px`,
-                        }}
-                        title={`₱${cell.revenue.toFixed(2)}`}
-                      />
+                  <div key={index} className="relative">
+                    {cell.day !== null ? (
+                      <div className="p-0.5 border border-border rounded bg-background">
+                        <div className="text-xs text-foreground mb-0.5 text-center">{cell.day}</div>
+                        {cell.revenue > 0 ? (
+                          <div
+                            className="w-full bg-orange-500 rounded transition-all duration-300"
+                            style={{
+                              height: `${(cell.revenue / maxRevenue) * 60}px`,
+                            }}
+                            title={`₱${cell.revenue.toFixed(2)}`}
+                          />
+                        ) : (
+                          <div className="w-full h-0 bg-transparent" />
+                        )}
+                      </div>
                     ) : (
-                      <div className="w-full h-0" />
+                      <div className="p-0.5" />
                     )}
                   </div>
                 ))}
