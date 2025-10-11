@@ -40,7 +40,7 @@ export default function DashboardPage() {
 
   return (
     <div className="relative min-h-full p-8">
-      <div className="absolute inset-0 bg-[url('/Corporate Building.png')] bg-cover bg-center bg-no-repeat"></div>
+      <div className="absolute inset-0 bg-[url('/Corporate%20Building.png')] bg-cover bg-center bg-no-repeat"></div>
       <div className="absolute inset-0 bg-background/60"></div>
       <div className="relative z-10">
         <div className="mb-8">
