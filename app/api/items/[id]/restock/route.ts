@@ -3,9 +3,10 @@ import { updateInventoryItem, getInventoryItems, addRestock, addLog } from "@/li
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
     const { amount } = body
 
@@ -14,7 +15,7 @@ export async function POST(
     }
 
     const items = await getInventoryItems()
-    const item = items.find((i) => i.id === params.id)
+    const item = items.find((i) => i.id === id)
 
     if (!item) {
       return NextResponse.json({ error: "Item not found" }, { status: 404 })
@@ -22,13 +23,13 @@ export async function POST(
 
     const newQuantity = item.quantity + amount
 
-    await updateInventoryItem(params.id, {
+    await updateInventoryItem(id, {
       quantity: newQuantity,
     })
 
     // Record as restock
     await addRestock({
-      itemId: params.id,
+      itemId: id,
       itemName: item.name,
       quantity: amount,
       costPrice: item.costPrice,
@@ -38,7 +39,7 @@ export async function POST(
     // Log the operation
     await addLog({
       operation: "restock",
-      itemId: params.id,
+      itemId: id,
       itemName: item.name,
       details: `Added ${amount} units (total cost: $${(item.costPrice * amount).toFixed(2)})`,
     })

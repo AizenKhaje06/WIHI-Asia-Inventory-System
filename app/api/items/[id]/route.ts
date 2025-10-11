@@ -1,19 +1,20 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { updateInventoryItem, deleteInventoryItem, getInventoryItems, addLog } from "@/lib/google-sheets"
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const body = await request.json()
     const items = await getInventoryItems()
-    const item = items.find(i => i.id === params.id)
+    const item = items.find(i => i.id === id)
     if (!item) {
       return NextResponse.json({ error: "Item not found" }, { status: 404 })
     }
-    await updateInventoryItem(params.id, body)
+    await updateInventoryItem(id, body)
     const changes = Object.entries(body).map(([key, value]) => `${key}: ${value}`).join(', ')
     await addLog({
       operation: "update",
-      itemId: params.id,
+      itemId: id,
       itemName: item.name,
       details: `Updated "${item.name}" - Changes: ${changes}`
     })
@@ -24,17 +25,18 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const items = await getInventoryItems()
-    const item = items.find(i => i.id === params.id)
+    const item = items.find(i => i.id === id)
     if (!item) {
       return NextResponse.json({ error: "Item not found" }, { status: 404 })
     }
-    await deleteInventoryItem(params.id)
+    await deleteInventoryItem(id)
     await addLog({
       operation: "delete",
-      itemId: params.id,
+      itemId: id,
       itemName: item.name,
       details: `Deleted "${item.name}" (SKU: ${item.sku})`
     })

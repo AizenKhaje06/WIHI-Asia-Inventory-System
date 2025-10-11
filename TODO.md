@@ -32,9 +32,9 @@ Reverting UI changes (remove Restock nav and page), keeping Inventory sheet clea
 3. [x] Update app/api/items/[id]/restock/route.ts (use addRestock, remove addTransaction).
 4. [x] Revert components/sidebar.tsx (remove Restock nav and PackagePlus).
 5. [x] Delete app/restock/page.tsx.
-6. [ ] Test: Run `npm run dev`; POST to /api/items/[id]/restock {amount: 10}; verify quantity update, new row in Restock sheet (A:G), log entry, no transaction, errors handled.
-7. [ ] Verify sheets: Inventory A:J only; Restock created/appended correctly.
-8. [ ] Edge cases: amount <=0 (400), invalid ID (404), first restock (sheet init).
-9. [ ] Update this TODO.md with [x] as steps complete.
+6. [x] Test: Run `npm run dev`; POST to /api/items/[id]/restock {amount: 10}; verify quantity update, new row in Restock sheet (A:G), log entry, no transaction, errors handled.
+7. [x] Verify sheets: Inventory A:J only; Restock created/appended correctly.
+8. [x] Edge cases: amount <=0 (400), invalid ID (404), first restock (sheet init).
+9. [x] Update this TODO.md with [x] as steps complete.
 
 "User confirmed revised plan: Proceed with dedicated Restock sheet (columns: ID, Item ID, Item Name, Quantity Added, Cost Price, Total Cost, Timestamp). No additional columns specified."
