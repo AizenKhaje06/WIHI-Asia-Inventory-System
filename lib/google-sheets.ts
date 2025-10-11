@@ -1,7 +1,10 @@
 import { google } from "googleapis"
+import { format, parse } from "date-fns"
 import type { InventoryItem, Transaction, Log, Restock } from "./types"
 
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+
+const formatTimestamp = (date: Date) => format(date, "yyyy-MM-dd / hh:mm a")
 
 export async function getGoogleSheetsClient() {
   const auth = new google.auth.GoogleAuth({
@@ -36,7 +39,7 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
     sellingPrice: Number.parseFloat(row[6] || "0"),
     reorderLevel: Number.parseInt(row[7] || "0"),
     supplier: row[8] || "",
-    lastUpdated: row[9] || new Date().toISOString(),
+    lastUpdated: row[9] || formatTimestamp(new Date()),
   }))
 }
 
@@ -45,7 +48,7 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpd
   const spreadsheetId = process.env.GOOGLE_SHEET_ID
 
   const id = `ITEM-${Date.now()}`
-  const lastUpdated = new Date().toISOString()
+  const lastUpdated = formatTimestamp(new Date())
 
   const values = [
     [
@@ -87,7 +90,7 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
 
   // Always update lastUpdated if not provided
   if (!updates.lastUpdated) {
-    updates.lastUpdated = new Date().toISOString()
+    updates.lastUpdated = formatTimestamp(new Date())
   }
 
   const fieldToColumn: Record<keyof InventoryItem, number> = {
@@ -185,7 +188,7 @@ export async function addTransaction(transaction: Omit<Transaction, "id" | "time
   const spreadsheetId = process.env.GOOGLE_SHEET_ID
 
   const id = `TXN-${Date.now()}`
-  const timestamp = new Date().toISOString()
+  const timestamp = formatTimestamp(new Date())
 
   const values = [
     [
@@ -288,7 +291,7 @@ export async function addLog(log: Omit<Log, "id" | "timestamp">): Promise<Log> {
   const spreadsheetId = process.env.GOOGLE_SHEET_ID
 
   const id = `LOG-${Date.now()}`
-  const timestamp = new Date().toISOString()
+  const timestamp = formatTimestamp(new Date())
 
   const values = [
     [
@@ -330,7 +333,7 @@ export async function getLogs(): Promise<Log[]> {
     itemName: row[3] || "",
     details: row[4] || "",
     timestamp: row[5] || "",
-  })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  })).sort((a, b) => parse(b.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime() - parse(a.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime())
 }
 
 async function initializeRestockSheet() {
@@ -379,7 +382,7 @@ export async function addRestock(restock: Omit<Restock, "id" | "timestamp">): Pr
   const spreadsheetId = process.env.GOOGLE_SHEET_ID
 
   const id = `RSTK-${Date.now()}`
-  const timestamp = new Date().toISOString()
+  const timestamp = formatTimestamp(new Date())
 
   const values = [
     [
@@ -423,5 +426,5 @@ export async function getRestocks(): Promise<Restock[]> {
     costPrice: Number.parseFloat(row[4] || "0"),
     totalCost: Number.parseFloat(row[5] || "0"),
     timestamp: row[6] || "",
-  })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  })).sort((a, b) => parse(b.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime() - parse(a.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime())
 }
