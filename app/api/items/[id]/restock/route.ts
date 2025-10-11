@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { updateInventoryItem, getInventoryItems } from "@/lib/google-sheets"
+import { updateInventoryItem, getInventoryItems, addLog } from "@/lib/google-sheets"
 
 export async function POST(
   request: NextRequest,

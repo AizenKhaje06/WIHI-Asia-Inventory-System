@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useTheme } from "next-themes"
-import { LayoutDashboard, Package, ShoppingCart, BarChart3, Settings, Activity, Sun, Moon } from "lucide-react"
+import { LayoutDashboard, Package, ShoppingCart, BarChart3, Activity, Sun, Moon, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -13,7 +13,7 @@ const navigation = [
   { name: "Point of Sale", href: "/pos", icon: ShoppingCart },
   { name: "Analytics", href: "/analytics", icon: Activity },
   { name: "Reports", href: "/reports", icon: BarChart3 },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Log", href: "/log", icon: FileText },
 ]
 
 export function Sidebar() {

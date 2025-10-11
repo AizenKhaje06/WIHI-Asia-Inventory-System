@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getInventoryItems, addInventoryItem } from "@/lib/google-sheets"
+import { getInventoryItems, addInventoryItem, addLog } from "@/lib/google-sheets"
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,6 +29,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const item = await addInventoryItem(body)
+    await addLog({
+      operation: "create",
+      itemId: item.id,
+      itemName: item.name,
+      details: `Added "${item.name}" (SKU: ${item.sku}) - Qty: ${item.quantity}, Cost: ₱${item.costPrice.toFixed(2)}, Sell: ₱${item.sellingPrice.toFixed(2)}`
+    })
     return NextResponse.json(item)
   } catch (error) {
     console.error("[v0] Error creating item:", error)
