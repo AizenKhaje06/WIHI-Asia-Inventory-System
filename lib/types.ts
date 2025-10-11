@@ -44,3 +44,12 @@ export interface DashboardStats {
   totalValue: number
   recentSales: number
 }
+
+export interface Log {
+  id: string
+  operation: string
+  itemId?: string
+  itemName?: string
+  details: string
+  timestamp: string
+}

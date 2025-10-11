@@ -1,5 +1,5 @@
 import { google } from "googleapis"
-import type { InventoryItem, Transaction } from "./types"
+import type { InventoryItem, Transaction, Log } from "./types"
 
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
@@ -246,4 +246,52 @@ export async function getTransactions(): Promise<Transaction[]> {
     paymentMethod: (row[11] || "cash") as 'cash' | 'gcash' | 'paymaya',
     referenceNumber: row[12] || "",
   }))
+}
+
+export async function addLog(log: Omit<Log, "id" | "timestamp">): Promise<Log> {
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  const id = `LOG-${Date.now()}`
+  const timestamp = new Date().toISOString()
+
+  const values = [
+    [
+      id,
+      log.operation,
+      log.itemId || "",
+      log.itemName || "",
+      log.details,
+      timestamp,
+    ],
+  ]
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: "Logs!A:F",
+    valueInputOption: "RAW",
+    requestBody: { values },
+  })
+
+  return { ...log, id, timestamp }
+}
+
+export async function getLogs(): Promise<Log[]> {
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: "Logs!A2:F",
+  })
+
+  const rows = response.data.values || []
+  return rows.map((row) => ({
+    id: row[0] || "",
+    operation: row[1] || "",
+    itemId: row[2] || "",
+    itemName: row[3] || "",
+    details: row[4] || "",
+    timestamp: row[5] || "",
+  })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 }
