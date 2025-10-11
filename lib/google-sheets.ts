@@ -87,32 +87,71 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
     throw new Error("Item not found")
   }
 
-  const item = { ...items[index], ...updates, lastUpdated: new Date().toISOString() }
   const rowNumber = index + 2
 
-  const values = [
-    [
-      item.id,
-      item.name,
-      item.sku,
-      item.category,
-      item.quantity,
-      item.costPrice,
-      item.sellingPrice,
-      item.reorderLevel,
-      item.supplier,
-      item.lastUpdated,
-      item.restockAmount || 0,
-      item.restockDate || "",
-    ],
-  ]
+  // Always update lastUpdated if not provided
+  if (!updates.lastUpdated) {
+    updates.lastUpdated = new Date().toISOString()
+  }
 
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: `Inventory!A${rowNumber}:L${rowNumber}`,
-    valueInputOption: "RAW",
-    requestBody: { values },
-  })
+  const fieldToColumn: Record<keyof InventoryItem, number> = {
+    id: 0,
+    name: 1,
+    sku: 2,
+    category: 3,
+    quantity: 4,
+    costPrice: 5,
+    sellingPrice: 6,
+    reorderLevel: 7,
+    supplier: 8,
+    lastUpdated: 9,
+    restockAmount: 10,
+    restockDate: 11,
+  }
+
+  const requests = []
+
+  for (const [key, value] of Object.entries(updates)) {
+    const fieldKey = key as keyof InventoryItem
+    const col = fieldToColumn[fieldKey]
+    if (col !== undefined && value !== undefined) {
+      let userEnteredValue: any
+      if (typeof value === 'number') {
+        userEnteredValue = { numberValue: value }
+      } else if (typeof value === 'string') {
+        userEnteredValue = { stringValue: value }
+      } else {
+        continue
+      }
+
+      requests.push({
+        updateCells: {
+          range: {
+            sheetId: 0,
+            startRowIndex: rowNumber - 1,
+            endRowIndex: rowNumber,
+            startColumnIndex: col,
+            endColumnIndex: col + 1,
+          },
+          fields: "userEnteredValue",
+          rows: [{
+            values: [{
+              userEnteredValue
+            }]
+          }]
+        }
+      })
+    }
+  }
+
+  if (requests.length > 0) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests
+      }
+    })
+  }
 }
 
 export async function deleteInventoryItem(id: string): Promise<void> {
