@@ -28,10 +28,10 @@ export default function ClientLayout({
       disableTransitionOnChange
     >
       <Suspense fallback={<div>Loading...</div>}>
-        <div className="relative flex h-screen">
+        <div className="relative flex min-h-screen">
           <div className="absolute inset-0 bg-[url('/Corporate%20Building.png')] bg-cover bg-center bg-no-repeat"></div>
           <div className="absolute inset-0 bg-background/60"></div>
-          <div className="relative z-10 flex h-full w-full">
+          <div className="relative z-10 flex h-full w-full flex-1">
             {/* Menu Button */}
             {!isSidebarOpen && (
               <Button
@@ -55,17 +55,14 @@ export default function ClientLayout({
             {/* Sidebar */}
             <div
               className={cn(
-                "flex h-full flex-col border-r border-gray-800 bg-black/90 backdrop-blur-sm text-white transition-transform duration-300 z-20",
-                isSidebarOpen ? "w-56 translate-x-0" : "-translate-x-full w-0"
+                "fixed inset-y-0 left-0 z-30 w-56 flex h-full flex-col border-r border-gray-800 bg-black/90 backdrop-blur-sm text-white transition-transform duration-300",
+                isSidebarOpen ? "translate-x-0" : "-translate-x-full"
               )}
             >
               <Sidebar onNavClick={closeSidebar} />
             </div>
 
-            <main className={cn(
-              "flex-1 overflow-auto p-6 transition-all duration-300",
-              isSidebarOpen ? "ml-56" : "ml-0"
-            )}>
+            <main className="flex-1 overflow-auto p-6 ml-0">
               {children}
             </main>
             <Clock />
