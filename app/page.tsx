@@ -61,6 +61,12 @@ export default function DashboardPage() {
   // Filter salesOverTime based on timePeriod (simplified - in real app, adjust data fetching)
   const filteredSalesData = stats?.salesOverTime?.slice(-24) || [] // For ID (hourly), adjust for others
 
+  // Format date to remove time
+  const formattedSalesData = filteredSalesData.map(item => ({
+    ...item,
+    date: item.date.split(' ')[0] // Remove time part, keep only date
+  }))
+
   const topCategoriesData = stats?.topCategories?.map((cat) => ({
     name: cat.name,
     sales: cat.sales,
@@ -100,7 +106,7 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={filteredSalesData}>
+            <LineChart data={formattedSalesData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis dataKey="date" stroke="#9CA3AF" />
               <YAxis stroke="#9CA3AF" />
