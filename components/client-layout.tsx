@@ -4,9 +4,7 @@ import type React from "react"
 import { Analytics } from "@vercel/analytics/next"
 import { Sidebar } from "@/components/sidebar"
 import { Clock } from "@/components/clock"
-import { Suspense, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 
 export default function ClientLayout({
@@ -28,7 +26,7 @@ export default function ClientLayout({
             <div
               className="fixed inset-y-0 left-0 z-30 flex h-full flex-col border-r border-gray-800 bg-black/90 backdrop-blur-sm text-white w-52"
             >
-              <Sidebar />
+              <Sidebar isHovered={true} />
             </div>
 
             <main className="flex-1 overflow-auto pt-4 px-6 pb-6 ml-52">
