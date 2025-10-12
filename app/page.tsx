@@ -2,13 +2,34 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, AlertTriangle, DollarSign, TrendingUp } from "lucide-react"
-import type { DashboardStats, InventoryItem } from "@/lib/types"
+import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart3, ShoppingCart, TrendingDown, Users, PieChart } from "lucide-react"
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+} from "recharts"
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs"
+import type { DashboardStats, InventoryItem, Transaction } from "@/lib/types"
+
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"]
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [lowStockItems, setLowStockItems] = useState<InventoryItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [timePeriod, setTimePeriod] = useState<"ID" | "1W" | "1M" | "3M" | "6M" | "1Y">("ID")
 
   useEffect(() => {
     async function fetchData() {
@@ -38,14 +59,58 @@ export default function DashboardPage() {
     )
   }
 
+  // Filter salesOverTime based on timePeriod (simplified - in real app, adjust data fetching)
+  const filteredSalesData = stats?.salesOverTime?.slice(-24) || [] // For ID (hourly), adjust for others
+
+  const topCategoriesData = stats?.topCategories?.map((cat, index) => ({
+    name: cat.name,
+    value: cat.sales,
+    fill: COLORS[index % COLORS.length],
+  })) || []
+
   return (
     <div className="p-8">
-      <div className="mb-8">
+      <div className="mb-4">
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
         <p className="text-muted-foreground">Overview of your inventory system</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {/* Sales & Purchase Chart */}
+      <Card className="mb-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Sales & Purchase
+            </CardTitle>
+            <Tabs value={timePeriod} onValueChange={(value) => setTimePeriod(value as any)}>
+              <TabsList>
+                <TabsTrigger value="ID">ID</TabsTrigger>
+                <TabsTrigger value="1W">1W</TabsTrigger>
+                <TabsTrigger value="1M">1M</TabsTrigger>
+                <TabsTrigger value="3M">3M</TabsTrigger>
+                <TabsTrigger value="6M">6M</TabsTrigger>
+                <TabsTrigger value="1Y">1Y</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={filteredSalesData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis dataKey="date" stroke="#9CA3AF" />
+              <YAxis stroke="#9CA3AF" />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="sales" stroke="#F59E0B" strokeWidth={2} name="Sales" />
+              <Line type="monotone" dataKey="purchases" stroke="#10B981" strokeWidth={2} name="Purchases" />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-6">
         <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
@@ -87,8 +152,125 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
+        {/* Top Products */}
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Top Products
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {stats?.topProducts?.map((product, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-orange-500" />
+                    <span className="text-sm font-medium">{product.name}</span>
+                  </div>
+                  <span className="text-sm font-semibold text-[#00FF00]">{product.sales}</span>
+                </div>
+              )) || <p className="text-muted-foreground">No data</p>}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Low Stock Products */}
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
+              Low Stock Products
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {lowStockItems.slice(0, 4).map((item) => (
+                <div key={item.id} className="flex items-center justify-between">
+                  <span className="text-sm">{item.name}</span>
+                  <span className="text-sm text-warning">{item.quantity}</span>
+                </div>
+              )) || <p className="text-muted-foreground">No low stock items</p>}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Sales */}
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShoppingCart className="h-4 w-4" />
+              Recent Sales
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {stats?.recentTransactions?.map((tx, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span className="text-sm">{tx.itemName}</span>
+                  <span className="text-sm text-[#00FF00]">₱{tx.totalRevenue.toFixed(2)}</span>
+                </div>
+              )) || <p className="text-muted-foreground">No recent sales</p>}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 mb-6">
+        {/* Top Categories Pie Chart */}
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PieChart className="h-4 w-4" />
+              Top Categories
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <RechartsPieChart>
+                <Pie
+                  data={topCategoriesData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {topCategoriesData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </RechartsPieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Category Statistics */}
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <CardHeader>
+            <CardTitle>Category Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Total Number of Categories</span>
+                <span className="font-bold text-[#00FF00]">{stats?.totalCategories || 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Total Number of Products</span>
+                <span className="font-bold text-[#00FF00]">{stats?.totalProducts || 0}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Detailed Low Stock Items */}
       {lowStockItems.length > 0 && (
-        <Card className="mt-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader>
             <CardTitle className="text-foreground">Low Stock Items</CardTitle>
           </CardHeader>

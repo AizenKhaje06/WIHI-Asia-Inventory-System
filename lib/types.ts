@@ -57,6 +57,12 @@ export interface DashboardStats {
   lowStockItems: number
   totalValue: number
   recentSales: number
+  salesOverTime: { date: string; purchases: number; sales: number }[]
+  topProducts: { name: string; sales: number }[]
+  recentTransactions: Transaction[]
+  topCategories: { name: string; sales: number }[]
+  totalCategories: number
+  totalProducts: number
 }
 
 export interface Log {
