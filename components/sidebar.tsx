@@ -41,8 +41,15 @@ export function Sidebar({ onNavClick }: SidebarProps) {
   }
 
   return (
-    <div className="flex h-full flex-col border-r border-gray-800 bg-black/90 backdrop-blur-sm text-white">
-      <div className="flex h-16 items-center justify-center border-b border-gray-800 px-4">
+    <div className={cn(
+      "flex h-full flex-col border-r",
+      theme === 'light'
+        ? "border-gray-200 bg-gray-100 text-gray-800"
+        : "border-gray-800 bg-black/90 text-white backdrop-blur-sm"
+    )}>
+      <div className={cn("flex h-16 items-center justify-center border-b px-4",
+        theme === 'light' ? "border-gray-200" : "border-gray-800"
+      )}>
         <h1 className="text-xl font-semibold">Inventory Pro</h1>
       </div>
       <nav className="flex-1 space-y-4 p-2">
@@ -59,18 +66,19 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
-                    ? "bg-orange-500 text-white"
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                    ? (theme === 'light' ? "bg-slate-900 text-white" : "bg-orange-500 text-white")
+                    : (theme === 'light' ? "text-gray-600 hover:bg-gray-200 hover:text-gray-900" : "text-gray-300 hover:bg-gray-800 hover:text-white")
                 )}
               >
                 <item.icon className={cn(
-                  isActive ? "h-4 w-4 text-white flex-shrink-0" : "h-4 w-4 text-[#00fff6] flex-shrink-0"
+                  "h-4 w-4 flex-shrink-0",
+                  isActive ? "text-white" : (theme === 'light' ? "text-slate-700" : "text-[#00fff6]")
                 )} />
                 <span>{item.name}</span>
               </Link>
             )
           })}
-          <Separator className="my-2 bg-gray-700" />
+          <Separator className={cn("my-2", theme === 'light' ? "bg-gray-200" : "bg-gray-700")} />
         </div>
 
         {/* Products Section */}
@@ -86,18 +94,19 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
-                    ? "bg-orange-500 text-white"
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                    ? (theme === 'light' ? "bg-slate-900 text-white" : "bg-orange-500 text-white")
+                    : (theme === 'light' ? "text-gray-600 hover:bg-gray-200 hover:text-gray-900" : "text-gray-300 hover:bg-gray-800 hover:text-white")
                 )}
               >
                 <item.icon className={cn(
-                  isActive ? "h-4 w-4 text-white flex-shrink-0" : "h-4 w-4 text-[#00fff6] flex-shrink-0"
+                  "h-4 w-4 flex-shrink-0",
+                  isActive ? "text-white" : (theme === 'light' ? "text-slate-700" : "text-[#00fff6]")
                 )} />
                 <span>{item.name}</span>
               </Link>
             )
           })}
-          <Separator className="my-2 bg-gray-700" />
+          <Separator className={cn("my-2", theme === 'light' ? "bg-gray-200" : "bg-gray-700")} />
         </div>
 
         {/* Cash Flow Section */}
@@ -113,18 +122,19 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
-                    ? "bg-orange-500 text-white"
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                    ? (theme === 'light' ? "bg-slate-900 text-white" : "bg-orange-500 text-white")
+                    : (theme === 'light' ? "text-gray-600 hover:bg-gray-200 hover:text-gray-900" : "text-gray-300 hover:bg-gray-800 hover:text-white")
                 )}
               >
                 <item.icon className={cn(
-                  isActive ? "h-4 w-4 text-white flex-shrink-0" : "h-4 w-4 text-[#00fff6] flex-shrink-0"
+                  "h-4 w-4 flex-shrink-0",
+                  isActive ? "text-white" : (theme === 'light' ? "text-slate-700" : "text-[#00fff6]")
                 )} />
                 <span>{item.name}</span>
               </Link>
             )
           })}
-          <Separator className="my-2 bg-gray-700" />
+          <Separator className={cn("my-2", theme === 'light' ? "bg-gray-200" : "bg-gray-700")} />
         </div>
 
         {/* Operation Section */}
@@ -140,12 +150,13 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
-                    ? "bg-orange-500 text-white"
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                    ? (theme === 'light' ? "bg-slate-900 text-white" : "bg-orange-500 text-white")
+                    : (theme === 'light' ? "text-gray-600 hover:bg-gray-200 hover:text-gray-900" : "text-gray-300 hover:bg-gray-800 hover:text-white")
                 )}
               >
                 <item.icon className={cn(
-                  isActive ? "h-4 w-4 text-white flex-shrink-0" : "h-4 w-4 text-[#00fff6] flex-shrink-0"
+                  "h-4 w-4 flex-shrink-0",
+                  isActive ? "text-white" : (theme === 'light' ? "text-slate-700" : "text-[#00fff6]")
                 )} />
                 <span>{item.name}</span>
               </Link>
@@ -153,14 +164,18 @@ export function Sidebar({ onNavClick }: SidebarProps) {
           })}
         </div>
       </nav>
-      <div className="border-t border-gray-800 p-2">
+      <div className={cn("border-t p-2", theme === 'light' ? "border-gray-200" : "border-gray-800")}>
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center gap-2 w-full text-white hover:bg-gray-800 transition-all py-2 px-2"
+          className={cn("flex items-center gap-2 w-full transition-all py-2 px-2",
+            theme === 'light'
+              ? "text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+              : "text-white hover:bg-gray-800"
+          )}
           onClick={handleThemeClick}
         >
-          {theme === 'dark' ? <Sun className="h-4 w-4 text-[#00fff6]" /> : <Moon className="h-4 w-4 text-[#00fff6]" />}
+          {theme === 'dark' ? <Sun className="h-4 w-4 text-[#00fff6]" /> : <Moon className="h-4 w-4 text-slate-700" />}
           <span className="capitalize">Toggle Theme</span>
         </Button>
       </div>
