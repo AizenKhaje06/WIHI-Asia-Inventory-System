@@ -40,7 +40,7 @@ export function Sidebar({ onNavClick, isHovered = false }: SidebarProps) {
 
   return (
     <div className="flex h-full flex-col border-r border-gray-800 bg-black/90 backdrop-blur-sm text-white">
-      <div className="flex h-16 items-center border-b border-gray-800 px-4">
+      <div className={cn("flex h-16 items-center justify-center border-b border-gray-800", isHovered ? "px-4" : "px-2")}>
         {isHovered ? (
           <h1 className="text-xl font-semibold">Inventory Pro</h1>
         ) : (
@@ -56,7 +56,7 @@ export function Sidebar({ onNavClick, isHovered = false }: SidebarProps) {
               href={item.href}
               onClick={handleNavClick}
               className={cn(
-                "flex items-center justify-center gap-3 rounded-lg px-2 py-2 text-xs font-medium transition-colors",
+                "flex items-center justify-center gap-2 rounded-lg py-2 px-2 text-xs font-medium transition-colors w-full",
                 isActive
                   ? "bg-orange-500 text-white"
                   : "text-gray-300 hover:bg-gray-800 hover:text-white",
@@ -69,18 +69,18 @@ export function Sidebar({ onNavClick, isHovered = false }: SidebarProps) {
           )
         })}
       </nav>
-      <div className={cn("p-2 border-t border-gray-800", !isHovered && "p-2")}>
+      <div className={cn("border-t border-gray-800", isHovered ? "p-2" : "p-1")}>
         <Button
           variant="ghost"
           size="sm"
           className={cn(
-            "w-full justify-start text-white hover:bg-gray-800 transition-all",
-            !isHovered && "justify-center w-full px-2"
+            "flex items-center justify-center gap-2 w-full text-white hover:bg-gray-800 transition-all py-2 px-2",
+            !isHovered && "px-1 gap-0"
           )}
           onClick={handleThemeClick}
         >
           {theme === 'dark' ? <Sun className={cn("h-4 w-4", iconClass)} /> : <Moon className={cn("h-4 w-4", iconClass)} />}
-          {isHovered && <span className="ml-2 capitalize">Toggle Theme</span>}
+          {isHovered && <span className="capitalize">Toggle Theme</span>}
         </Button>
       </div>
     </div>
