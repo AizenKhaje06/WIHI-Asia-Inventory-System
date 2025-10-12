@@ -17,7 +17,7 @@ export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
   const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
   const [search, setSearch] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("all")
   const [loading, setLoading] = useState(true)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -43,7 +43,7 @@ export default function InventoryPage() {
       )
     }
 
-    if (categoryFilter) {
+    if (categoryFilter && categoryFilter !== "all") {
       filtered = filtered.filter((item) => item.category === categoryFilter)
     }
 
@@ -168,7 +168,7 @@ export default function InventoryPage() {
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                 </SelectContent>
               </Select>
