@@ -85,7 +85,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Sales & Purchase Chart */}
-      <Card className="mb-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+      <Card className="mb-6">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -120,53 +120,53 @@ export default function DashboardPage() {
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-6">
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
             <Package className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#00FF00]">{stats?.totalItems || 0}</div>
+            <div className="text-2xl font-bold text-foreground">{stats?.totalItems || 0}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Low Stock Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-warning" />
+            <AlertTriangle className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#00FF00]">{stats?.lowStockItems || 0}</div>
+            <div className="text-2xl font-bold text-foreground">{stats?.lowStockItems || 0}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-success" />
+            <DollarSign className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#00FF00]">₱{stats?.totalValue.toFixed(2) || "0.00"}</div>
+            <div className="text-2xl font-bold text-foreground">₱{stats?.totalValue.toFixed(2) || "0.00"}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Today's Sales</CardTitle>
-            <TrendingUp className="h-4 w-4 text-primary" />
+            <TrendingUp className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#00FF00]">{stats?.recentSales || 0}</div>
+            <div className="text-2xl font-bold text-foreground">{stats?.recentSales || 0}</div>
           </CardContent>
         </Card>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
         {/* Top Products */}
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
+              <TrendingUp className="h-4 w-4 text-blue-500" />
               Top Products
             </CardTitle>
           </CardHeader>
@@ -176,9 +176,9 @@ export default function DashboardPage() {
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-orange-500" />
-                    <span className="text-sm font-medium">{product.name}</span>
+                    <span className="text-sm font-medium text-foreground">{product.name}</span>
                   </div>
-                  <span className="text-sm font-semibold text-[#00FF00]">{product.sales}</span>
+                  <span className="text-sm font-semibold text-foreground">{product.sales}</span>
                 </div>
               )) || <p className="text-muted-foreground">No data</p>}
             </div>
@@ -186,10 +186,10 @@ export default function DashboardPage() {
         </Card>
 
         {/* Low Stock Products */}
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
               Low Stock Products
             </CardTitle>
           </CardHeader>
@@ -197,8 +197,8 @@ export default function DashboardPage() {
             <div className="space-y-3">
               {lowStockItems.slice(0, 4).map((item) => (
                 <div key={item.id} className="flex items-center justify-between">
-                  <span className="text-sm">{item.name}</span>
-                  <span className="text-sm text-warning">{item.quantity}</span>
+                  <span className="text-sm text-foreground">{item.name}</span>
+                  <span className="text-sm text-orange-500">{item.quantity}</span>
                 </div>
               )) || <p className="text-muted-foreground">No low stock items</p>}
             </div>
@@ -206,10 +206,10 @@ export default function DashboardPage() {
         </Card>
 
         {/* Recent Sales */}
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ShoppingCart className="h-4 w-4" />
+              <ShoppingCart className="h-4 w-4 text-green-500" />
               Recent Sales
             </CardTitle>
           </CardHeader>
@@ -217,8 +217,8 @@ export default function DashboardPage() {
             <div className="space-y-3">
               {stats?.recentTransactions?.map((tx, index) => (
                 <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm">{tx.itemName}</span>
-                  <span className="text-sm text-[#00FF00]">₱{tx.totalRevenue.toFixed(2)}</span>
+                  <span className="text-sm text-foreground">{tx.itemName}</span>
+                  <span className="text-sm text-green-500">₱{tx.totalRevenue.toFixed(2)}</span>
                 </div>
               )) || <p className="text-muted-foreground">No recent sales</p>}
             </div>
@@ -228,10 +228,10 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         {/* Top Categories Bar Chart */}
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart2 className="h-4 w-4" />
+              <BarChart2 className="h-4 w-4 text-blue-500" />
               Top Categories
             </CardTitle>
           </CardHeader>
@@ -250,10 +250,10 @@ export default function DashboardPage() {
         </Card>
 
         {/* Category Statistics Bar Chart */}
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart2 className="h-4 w-4" />
+              <BarChart2 className="h-4 w-4 text-green-500" />
               Category Statistics
             </CardTitle>
           </CardHeader>

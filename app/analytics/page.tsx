@@ -94,49 +94,49 @@ export default function AnalyticsPage() {
 
       {/* Sales Performance Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">
+            <div className="text-2xl font-bold text-foreground">
               ₱{(report?.totalRevenue || 0).toFixed(2)}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Cost</CardTitle>
             <TrendingDown className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">
+            <div className="text-2xl font-bold text-foreground">
               ₱{(report?.totalCost || 0).toFixed(2)}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Profit</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">
+            <div className="text-2xl font-bold text-foreground">
               ₱{(report?.totalProfit || 0).toFixed(2)}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Profit Margin</CardTitle>
             <Percent className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">
+            <div className="text-2xl font-bold text-foreground">
               {(report?.profitMargin || 0).toFixed(1)}%
             </div>
           </CardContent>
@@ -144,7 +144,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Filter and Month Navigation */}
-      <Card className="mb-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+      <Card className="mb-6">
         <CardContent className="p-4 md:p-6">
           <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-4">
             <div className="flex space-x-2 w-full sm:w-auto">
@@ -178,7 +178,7 @@ export default function AnalyticsPage() {
 
       {view === 'daily' ? (
         dailySales.length > 0 ? (
-          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <Card>
             <CardHeader>
               <CardTitle className="text-foreground">Sales Calendar</CardTitle>
             </CardHeader>
@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
                 {generateCalendarDays(currentMonth, dailySales).map((cell, index) => (
                   <div key={index} className="relative h-16 md:h-20">
                     {cell.day !== null ? (
-                      <div 
+                      <div
                         className={cn(
                           "h-full p-0.5 md:p-1 border border-border rounded bg-background flex flex-col justify-center items-center",
                           cell.revenue > 0 && "border-r-4 border-orange-500"
@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <Card>
             <CardContent className="p-8 text-center">
               <p className="text-muted-foreground">No sales data available for {monthYear}.</p>
             </CardContent>
@@ -223,7 +223,7 @@ export default function AnalyticsPage() {
         )
       ) : (
         monthlySales.length > 0 ? (
-          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <Card>
             <CardHeader>
               <CardTitle className="text-foreground">Monthly Sales Revenue</CardTitle>
             </CardHeader>
@@ -248,7 +248,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <Card>
             <CardContent className="p-8 text-center">
               <p className="text-muted-foreground">No monthly sales data available.</p>
             </CardContent>

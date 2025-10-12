@@ -139,7 +139,7 @@ export default function InventoryPage() {
         <p className="text-muted-foreground">Manage your product inventory</p>
       </div>
 
-      <Card className="mb-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+      <Card className="mb-6">
         <CardContent className="pt-6">
           <div className="flex gap-4 items-end">
             <div className="flex-1">
@@ -177,7 +177,7 @@ export default function InventoryPage() {
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+      <Card>
         <CardHeader>
           <CardTitle className="text-foreground">Items ({filteredItems.length})</CardTitle>
         </CardHeader>
@@ -202,10 +202,10 @@ export default function InventoryPage() {
                     <td className="py-4 text-sm text-muted-foreground w-[10%]">{item.sku}</td>
                     <td className="py-4 text-sm text-muted-foreground w-[15%]">{item.category}</td>
                     <td className="py-4 text-right text-sm w-[8%]">
-                      <span className={cn("font-bold", item.quantity <= item.reorderLevel ? "text-warning" : "text-[#00FF00]")}>{item.quantity}</span>
+                      <span className={cn("font-bold", item.quantity <= item.reorderLevel ? "text-orange-500" : "text-green-500")}>{item.quantity}</span>
                     </td>
-                    <td className="py-4 text-right text-sm text-[#00FF00] w-[10%]">₱{item.costPrice.toFixed(2)}</td>
-                    <td className="py-4 text-right text-sm text-[#00FF00] w-[10%]">₱{item.sellingPrice.toFixed(2)}</td>
+                    <td className="py-4 text-right text-sm text-foreground w-[10%]">₱{item.costPrice.toFixed(2)}</td>
+                    <td className="py-4 text-right text-sm text-foreground w-[10%]">₱{item.sellingPrice.toFixed(2)}</td>
                     <td className="py-4 text-right w-[17%]">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm" onClick={() => handleRestock(item)}>

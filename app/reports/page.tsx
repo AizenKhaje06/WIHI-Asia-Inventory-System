@@ -42,7 +42,7 @@ export default function ReportsPage() {
         <p className="text-muted-foreground">View sales analytics and COGS</p>
       </div>
 
-      <Card className="mb-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-foreground">Filter Reports</CardTitle>
         </CardHeader>
@@ -70,48 +70,48 @@ export default function ReportsPage() {
       {report && (
         <>
           <div className="mb-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-                <DollarSign className="h-4 w-4 text-success" />
+                <DollarSign className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-[#00FF00]">₱{report.totalRevenue.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-foreground">₱{report.totalRevenue.toFixed(2)}</div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Cost (COGS)</CardTitle>
-                <TrendingUp className="h-4 w-4 text-warning" />
+                <TrendingUp className="h-4 w-4 text-orange-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-[#00FF00]">₱{report.totalCost.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-foreground">₱{report.totalCost.toFixed(2)}</div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Profit</CardTitle>
-                <DollarSign className="h-4 w-4 text-primary" />
+                <DollarSign className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-[#00FF00]">₱{report.totalProfit.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-foreground">₱{report.totalProfit.toFixed(2)}</div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Profit Margin</CardTitle>
-                <Percent className="h-4 w-4 text-primary" />
+                <Percent className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-[#00FF00]">{report.profitMargin.toFixed(2)}%</div>
+                <div className="text-2xl font-bold text-foreground">{report.profitMargin.toFixed(2)}%</div>
               </CardContent>
             </Card>
           </div>
 
-          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <Card>
             <CardHeader>
               <CardTitle className="text-foreground">Recent Transactions ({report.transactions.length})</CardTitle>
             </CardHeader>
@@ -135,12 +135,12 @@ export default function ReportsPage() {
                           {new Date(transaction.timestamp).toLocaleDateString()}
                         </td>
                         <td className="py-4 text-sm text-foreground w-[25%]">{transaction.itemName}</td>
-                        <td className="py-4 text-right text-sm text-[#00FF00] w-[8%]">{transaction.quantity}</td>
-                        <td className="py-4 text-right text-sm text-[#00FF00] w-[15%]">
+                        <td className="py-4 text-right text-sm text-foreground w-[8%]">{transaction.quantity}</td>
+                        <td className="py-4 text-right text-sm text-foreground w-[15%]">
                           ₱{transaction.totalRevenue.toFixed(2)}
                         </td>
-                        <td className="py-4 text-right text-sm text-[#00FF00] w-[15%]">₱{transaction.totalCost.toFixed(2)}</td>
-                        <td className="py-4 text-right text-sm text-[#00FF00] w-[22%]">₱{transaction.profit.toFixed(2)}</td>
+                        <td className="py-4 text-right text-sm text-foreground w-[15%]">₱{transaction.totalCost.toFixed(2)}</td>
+                        <td className="py-4 text-right text-sm text-foreground w-[22%]">₱{transaction.profit.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
