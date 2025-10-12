@@ -22,23 +22,23 @@ export default async function LogPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date & Time</TableHead>
-                  <TableHead>Operation</TableHead>
-                  <TableHead>Item</TableHead>
-                  <TableHead>Details</TableHead>
+                  <TableHead className="w-[20%]">Date & Time</TableHead>
+                  <TableHead className="w-[15%]">Operation</TableHead>
+                  <TableHead className="w-[25%]">Item</TableHead>
+                  <TableHead className="w-[40%]">Details</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {logs.map((log) => (
                   <TableRow key={log.id}>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium w-[20%]">
                       {format(new Date(log.timestamp), "MMM dd, yyyy HH:mm:ss")}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="w-[15%]">
                       <span className="capitalize">{log.operation}</span>
                     </TableCell>
-                    <TableCell>{log.itemName || '-'}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{log.details}</TableCell>
+                    <TableCell className="w-[25%]">{log.itemName || '-'}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground w-[40%]">{log.details}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

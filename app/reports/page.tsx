@@ -120,27 +120,27 @@ export default function ReportsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Date</th>
-                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Item</th>
-                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground">Qty</th>
-                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground">Revenue</th>
-                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground">Cost</th>
-                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground">Profit</th>
+                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[15%]">Date</th>
+                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[25%]">Item</th>
+                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[8%]">Qty</th>
+                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[15%]">Revenue</th>
+                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[15%]">Cost</th>
+                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[22%]">Profit</th>
                     </tr>
                   </thead>
                   <tbody>
                     {report.transactions.map((transaction) => (
                       <tr key={transaction.id} className="border-b border-border last:border-0">
-                        <td className="py-4 text-sm text-muted-foreground">
+                        <td className="py-4 text-sm text-muted-foreground w-[15%]">
                           {new Date(transaction.timestamp).toLocaleDateString()}
                         </td>
-                        <td className="py-4 text-sm text-foreground">{transaction.itemName}</td>
-                        <td className="py-4 text-right text-sm text-[#00FF00]">{transaction.quantity}</td>
-                        <td className="py-4 text-right text-sm text-[#00FF00]">
+                        <td className="py-4 text-sm text-foreground w-[25%]">{transaction.itemName}</td>
+                        <td className="py-4 text-right text-sm text-[#00FF00] w-[8%]">{transaction.quantity}</td>
+                        <td className="py-4 text-right text-sm text-[#00FF00] w-[15%]">
                           ₱{transaction.totalRevenue.toFixed(2)}
                         </td>
-                        <td className="py-4 text-right text-sm text-[#00FF00]">₱{transaction.totalCost.toFixed(2)}</td>
-                        <td className="py-4 text-right text-sm text-[#00FF00]">₱{transaction.profit.toFixed(2)}</td>
+                        <td className="py-4 text-right text-sm text-[#00FF00] w-[15%]">₱{transaction.totalCost.toFixed(2)}</td>
+                        <td className="py-4 text-right text-sm text-[#00FF00] w-[22%]">₱{transaction.profit.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>

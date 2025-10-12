@@ -149,27 +149,27 @@ export default function InventoryPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Name</th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">SKU</th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Category</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground">Quantity</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground">Cost</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground">Price</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground">Actions</th>
+                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[30%]">Name</th>
+                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[10%]">SKU</th>
+                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[15%]">Category</th>
+                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[8%]">Quantity</th>
+                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[10%]">Cost</th>
+                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[10%]">Price</th>
+                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[17%]">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredItems.map((item) => (
                   <tr key={item.id} className="border-b border-border last:border-0">
-                    <td className="py-4 text-sm text-foreground">{item.name}</td>
-                    <td className="py-4 text-sm text-muted-foreground">{item.sku}</td>
-                    <td className="py-4 text-sm text-muted-foreground">{item.category}</td>
-                    <td className="py-4 text-right text-sm">
+                    <td className="py-4 text-sm text-foreground w-[30%]">{item.name}</td>
+                    <td className="py-4 text-sm text-muted-foreground w-[10%]">{item.sku}</td>
+                    <td className="py-4 text-sm text-muted-foreground w-[15%]">{item.category}</td>
+                    <td className="py-4 text-right text-sm w-[8%]">
                       <span className={cn("font-bold", item.quantity <= item.reorderLevel ? "text-warning" : "text-[#00FF00]")}>{item.quantity}</span>
                     </td>
-                    <td className="py-4 text-right text-sm text-[#00FF00]">₱{item.costPrice.toFixed(2)}</td>
-                    <td className="py-4 text-right text-sm text-[#00FF00]">₱{item.sellingPrice.toFixed(2)}</td>
-                    <td className="py-4 text-right">
+                    <td className="py-4 text-right text-sm text-[#00FF00] w-[10%]">₱{item.costPrice.toFixed(2)}</td>
+                    <td className="py-4 text-right text-sm text-[#00FF00] w-[10%]">₱{item.sellingPrice.toFixed(2)}</td>
+                    <td className="py-4 text-right w-[17%]">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm" onClick={() => handleRestock(item)}>
                           <PackagePlus className="h-4 w-4" />
