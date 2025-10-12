@@ -15,7 +15,7 @@ const navigation = [
   { name: "Transactions", href: "/reports", icon: BarChart3 },
   // Products Section (renamed from Inventory)
   { name: "Products", href: "/inventory", icon: Package },
-  { name: "Category", href: "/inventory/categories", icon: Tags },
+  { name: "Create Product", href: "/inventory/create", icon: PackagePlus },
   { name: "Restock", href: "/inventory/restock", icon: PackagePlus },
   { name: "Low Stocks", href: "/inventory/low-stock", icon: AlertTriangle },
   { name: "Out of Stocks", href: "/inventory/out-of-stock", icon: XCircle },
