@@ -52,7 +52,7 @@ export default function DashboardPage() {
             <Package className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{stats?.totalItems || 0}</div>
+            <div className="text-2xl font-bold text-green-500">{stats?.totalItems || 0}</div>
           </CardContent>
         </Card>
 
@@ -62,7 +62,7 @@ export default function DashboardPage() {
             <AlertTriangle className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{stats?.lowStockItems || 0}</div>
+            <div className="text-2xl font-bold text-green-500">{stats?.lowStockItems || 0}</div>
           </CardContent>
         </Card>
 
@@ -72,7 +72,7 @@ export default function DashboardPage() {
             <DollarSign className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">₱{stats?.totalValue.toFixed(2) || "0.00"}</div>
+            <div className="text-2xl font-bold text-green-500">₱{stats?.totalValue.toFixed(2) || "0.00"}</div>
           </CardContent>
         </Card>
 
@@ -82,7 +82,7 @@ export default function DashboardPage() {
             <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{stats?.recentSales || 0}</div>
+            <div className="text-2xl font-bold text-green-500">{stats?.recentSales || 0}</div>
           </CardContent>
         </Card>
       </div>

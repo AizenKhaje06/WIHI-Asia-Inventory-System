@@ -100,7 +100,7 @@ export default function AnalyticsPage() {
             <DollarSign className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-green-500">
               ₱{(report?.totalRevenue || 0).toFixed(2)}
             </div>
           </CardContent>
@@ -112,7 +112,7 @@ export default function AnalyticsPage() {
             <TrendingDown className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-green-500">
               ₱{(report?.totalCost || 0).toFixed(2)}
             </div>
           </CardContent>
@@ -124,7 +124,7 @@ export default function AnalyticsPage() {
             <TrendingUp className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-green-500">
               ₱{(report?.totalProfit || 0).toFixed(2)}
             </div>
           </CardContent>
@@ -136,7 +136,7 @@ export default function AnalyticsPage() {
             <Percent className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-green-500">
               {(report?.profitMargin || 0).toFixed(1)}%
             </div>
           </CardContent>
