@@ -25,7 +25,9 @@ export function Sidebar({ onNavClick, isHovered = false }: SidebarProps) {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
 
-  const iconClass = "h-5 w-5 bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent flex-shrink-0"
+  const iconClass = isHovered 
+    ? "h-5 w-5 bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent flex-shrink-0"
+    : "h-5 w-5 text-[#00fff6] flex-shrink-0"
 
   const handleNavClick = (e: React.MouseEvent) => {
     onNavClick?.()
