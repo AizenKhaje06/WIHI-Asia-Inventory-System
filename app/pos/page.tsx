@@ -161,9 +161,9 @@ export default function POSPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-foreground">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">Stock: {item.quantity}</p>
+                        <p className="text-sm text-[#00FF00]">Stock: {item.quantity}</p>
                       </div>
-                      <p className="text-lg font-semibold text-foreground">₱{item.sellingPrice.toFixed(2)}</p>
+                      <p className="text-lg font-semibold text-[#00FF00]">₱{item.sellingPrice.toFixed(2)}</p>
                     </div>
                   </button>
                 ))}
@@ -188,40 +188,40 @@ export default function POSPage() {
                   <>
                     <div className="max-h-[400px] space-y-4 overflow-y-auto">
                       {cart.map((cartItem) => (
-                        <div
-                          key={cartItem.item.id}
-                          className="flex items-center gap-4 rounded-lg border border-border p-4"
-                        >
-                          <div className="flex-1">
-                            <p className="font-medium text-foreground">{cartItem.item.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              ₱{cartItem.item.sellingPrice.toFixed(2)} each
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              min="1"
-                              max={cartItem.item.quantity}
-                              value={cartItem.quantity}
-                              onChange={(e) => updateQuantity(cartItem.item.id, Number.parseInt(e.target.value))}
-                              className="w-20"
-                            />
-                            <Button variant="ghost" size="sm" onClick={() => removeFromCart(cartItem.item.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <p className="font-semibold text-foreground">
-                            ₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
+                      <div
+                        key={cartItem.item.id}
+                        className="flex items-center gap-4 rounded-lg border border-border p-4"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium text-foreground">{cartItem.item.name}</p>
+                          <p className="text-sm text-[#00FF00]">
+                            ₱{cartItem.item.sellingPrice.toFixed(2)} each
                           </p>
                         </div>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="1"
+                            max={cartItem.item.quantity}
+                            value={cartItem.quantity}
+                            onChange={(e) => updateQuantity(cartItem.item.id, Number.parseInt(e.target.value))}
+                            className="w-20"
+                          />
+                          <Button variant="ghost" size="sm" onClick={() => removeFromCart(cartItem.item.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="font-semibold text-[#00FF00]">
+                          ₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
+                        </p>
+                      </div>
                       ))}
                     </div>
 
                     <div className="border-t border-border pt-4">
                       <div className="mb-4 flex items-center justify-between">
                         <p className="text-lg font-semibold text-foreground">Total</p>
-                        <p className="text-2xl font-bold text-foreground">₱{total.toFixed(2)}</p>
+                        <p className="text-2xl font-bold text-[#00FF00]">₱{total.toFixed(2)}</p>
                       </div>
 
                       <div className="space-y-4 mb-4">

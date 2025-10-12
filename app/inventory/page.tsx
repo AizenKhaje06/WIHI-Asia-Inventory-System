@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Plus, Search, Pencil, Trash2, PackagePlus } from "lucide-react"
 import type { InventoryItem } from "@/lib/types"
 import { AddItemDialog } from "@/components/add-item-dialog"
+import { cn } from "@/lib/utils"
 import { EditItemDialog } from "@/components/edit-item-dialog"
 
 export default function InventoryPage() {
@@ -163,11 +164,11 @@ export default function InventoryPage() {
                     <td className="py-4 text-sm text-foreground">{item.name}</td>
                     <td className="py-4 text-sm text-muted-foreground">{item.sku}</td>
                     <td className="py-4 text-sm text-muted-foreground">{item.category}</td>
-                    <td className="py-4 text-right text-sm text-foreground">
-                      <span className={item.quantity <= item.reorderLevel ? "text-warning" : ""}>{item.quantity}</span>
+                    <td className="py-4 text-right text-sm">
+                      <span className={cn("font-bold", item.quantity <= item.reorderLevel ? "text-warning" : "text-[#00FF00]")}>{item.quantity}</span>
                     </td>
-                    <td className="py-4 text-right text-sm text-foreground">₱{item.costPrice.toFixed(2)}</td>
-                    <td className="py-4 text-right text-sm text-foreground">₱{item.sellingPrice.toFixed(2)}</td>
+                    <td className="py-4 text-right text-sm text-[#00FF00]">₱{item.costPrice.toFixed(2)}</td>
+                    <td className="py-4 text-right text-sm text-[#00FF00]">₱{item.sellingPrice.toFixed(2)}</td>
                     <td className="py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm" onClick={() => handleRestock(item)}>
