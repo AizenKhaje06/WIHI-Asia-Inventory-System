@@ -64,7 +64,7 @@ export default function ClientLayout({
 
             <main className={cn(
               "flex-1 overflow-auto p-6 transition-all duration-300",
-              isSidebarOpen ? "ml-0" : "ml-0"
+              isSidebarOpen ? "ml-56" : "ml-0"
             )}>
               {children}
             </main>
