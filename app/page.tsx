@@ -120,7 +120,7 @@ export default function DashboardPage() {
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-6">
-        <Card className="bg-orange-100">
+        <Card className="bg-orange-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
             <Package className="h-4 w-4 text-primary" />
@@ -140,7 +140,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-teal-100">
+        <Card className="bg-teal-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Value</CardTitle>
             <DollarSign className="h-4 w-4 text-green-500" />
@@ -150,7 +150,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-blue-100">
+        <Card className="bg-blue-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Today's Sales</CardTitle>
             <TrendingUp className="h-4 w-4 text-blue-500" />
