@@ -42,7 +42,7 @@ export default function ClientLayout({
             </div>
 
             <main className={cn(
-              "flex-1 overflow-auto pt-16 px-6 pb-6 transition-all duration-300",
+              "flex-1 overflow-auto pt-4 px-6 pb-6 transition-all duration-300",
               isSidebarHovered ? "ml-52" : "ml-16"
             )}>
               {children}

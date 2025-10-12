@@ -144,7 +144,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Filter and Month Navigation */}
-      <Card className="mb-6 bg-card border-border">
+      <Card className="mb-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
         <CardContent className="p-4 md:p-6">
           <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-4">
             <div className="flex space-x-2 w-full sm:w-auto">
@@ -178,7 +178,7 @@ export default function AnalyticsPage() {
 
       {view === 'daily' ? (
         dailySales.length > 0 ? (
-          <Card className="bg-card border-border">
+          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
             <CardHeader>
               <CardTitle className="text-foreground">Sales Calendar</CardTitle>
             </CardHeader>
@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="bg-card border-border">
+          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
             <CardContent className="p-8 text-center">
               <p className="text-muted-foreground">No sales data available for {monthYear}.</p>
             </CardContent>
@@ -223,7 +223,7 @@ export default function AnalyticsPage() {
         )
       ) : (
         monthlySales.length > 0 ? (
-          <Card className="bg-card border-border">
+          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
             <CardHeader>
               <CardTitle className="text-foreground">Monthly Sales Revenue</CardTitle>
             </CardHeader>
@@ -248,7 +248,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="bg-card border-border">
+          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
             <CardContent className="p-8 text-center">
               <p className="text-muted-foreground">No monthly sales data available.</p>
             </CardContent>
