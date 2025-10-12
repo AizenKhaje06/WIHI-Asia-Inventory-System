@@ -94,7 +94,7 @@ export default function AnalyticsPage() {
 
       {/* Sales Performance Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <Card className="bg-card border-border">
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-green-500" />
@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border">
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Cost</CardTitle>
             <TrendingDown className="h-4 w-4 text-orange-500" />
@@ -118,7 +118,7 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border">
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Profit</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-500" />
@@ -130,7 +130,7 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border">
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Profit Margin</CardTitle>
             <Percent className="h-4 w-4 text-green-500" />
