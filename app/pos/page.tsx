@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, ShoppingCart, Trash2 } from "lucide-react"
+import { Search, ShoppingCart, Trash2, CheckCircle } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import type { InventoryItem } from "@/lib/types"
 
 interface CartItem {
@@ -24,6 +25,12 @@ export default function POSPage() {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'ewallet'>('cash')
   const [eWalletType, setEWalletType] = useState<'gcash' | 'paymaya'>('gcash')
   const [referenceNumber, setReferenceNumber] = useState('')
+  const [amountPaid, setAmountPaid] = useState('')
+  const [change, setChange] = useState(0)
+  const [orderSummaryOpen, setOrderSummaryOpen] = useState(false)
+  const [successModalOpen, setSuccessModalOpen] = useState(false)
+
+  const total = cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0)
 
   useEffect(() => {
     fetchItems()
@@ -41,6 +48,15 @@ export default function POSPage() {
       setFilteredItems(items)
     }
   }, [search, items])
+
+  useEffect(() => {
+    if (paymentMethod === 'cash' && amountPaid) {
+      const paid = parseFloat(amountPaid) || 0
+      setChange(paid - total)
+    } else {
+      setChange(0)
+    }
+  }, [amountPaid, total, paymentMethod])
 
   async function fetchItems() {
     try {
@@ -102,16 +118,17 @@ export default function POSPage() {
       await fetch("/api/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          items: saleItems, 
+        body: JSON.stringify({
+          items: saleItems,
           paymentMethod: fullPaymentMethod,
-          referenceNumber: paymentMethod === 'cash' ? undefined : referenceNumber 
+          referenceNumber: paymentMethod === 'cash' ? undefined : referenceNumber
         }),
       })
 
       setCart([])
       fetchItems()
-      alert("Sale completed successfully!")
+      setOrderSummaryOpen(false)
+      setSuccessModalOpen(true)
     } catch (error) {
       console.error("[v0] Error processing sale:", error)
       alert("Failed to process sale")
@@ -119,8 +136,6 @@ export default function POSPage() {
       setLoading(false)
     }
   }
-
-  const total = cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0)
 
   return (
     <div className="p-8">
@@ -243,6 +258,30 @@ export default function POSPage() {
                           </RadioGroup>
                         </div>
 
+                        {paymentMethod === 'cash' && (
+                          <div className="space-y-4">
+                            <div>
+                              <Label className="text-sm font-medium text-foreground">Amount Paid</Label>
+                              <Input
+                                type="number"
+                                placeholder="Enter amount paid"
+                                value={amountPaid}
+                                onChange={(e) => setAmountPaid(e.target.value)}
+                                className="mt-2"
+                                min={total}
+                              />
+                            </div>
+                            {change !== 0 && (
+                              <div className="flex items-center justify-between">
+                                <Label className="text-sm font-medium text-foreground">Change</Label>
+                                <p className={`text-lg font-semibold ${change < 0 ? 'text-red-500' : 'text-[#00FF00]'}`}>
+                                  ₱{change.toFixed(2)}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         {paymentMethod === 'ewallet' && (
                           <div className="space-y-4">
                             <div>
@@ -270,8 +309,8 @@ export default function POSPage() {
                         )}
                       </div>
 
-                      <Button onClick={handleCheckout} disabled={loading || (paymentMethod === 'ewallet' && !referenceNumber)} className="w-full" size="lg">
-                        {loading ? "Processing..." : "Complete Sale"}
+                      <Button onClick={() => setOrderSummaryOpen(true)} disabled={loading || (paymentMethod === 'ewallet' && !referenceNumber) || (paymentMethod === 'cash' && (!amountPaid || change < 0))} className="w-full" size="lg">
+                        Proceed
                       </Button>
                     </div>
                   </>
@@ -281,6 +320,75 @@ export default function POSPage() {
           </Card>
         </div>
       </div>
+
+      <Dialog open={orderSummaryOpen} onOpenChange={setOrderSummaryOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Order Summary</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              {cart.map((cartItem) => (
+                <div key={cartItem.item.id} className="flex justify-between">
+                  <span>{cartItem.item.name} x{cartItem.quantity}</span>
+                  <span>₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+            <div className="border-t pt-2">
+              <div className="flex justify-between font-semibold">
+                <span>Total</span>
+                <span>₱{total.toFixed(2)}</span>
+              </div>
+              {paymentMethod === 'cash' && (
+                <>
+                  <div className="flex justify-between">
+                    <span>Amount Paid</span>
+                    <span>₱{parseFloat(amountPaid).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Change</span>
+                    <span>₱{change.toFixed(2)}</span>
+                  </div>
+                </>
+              )}
+              {paymentMethod === 'ewallet' && (
+                <div className="flex justify-between">
+                  <span>Payment Method</span>
+                  <span>{eWalletType.toUpperCase()}</span>
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOrderSummaryOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCheckout} disabled={loading}>
+              {loading ? "Processing..." : "Complete Sale"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-6 w-6 text-green-500" />
+              Sale Completed Successfully!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-center">
+            <p>The transaction has been processed and inventory updated.</p>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setSuccessModalOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
