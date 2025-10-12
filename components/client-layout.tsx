@@ -28,9 +28,7 @@ export default function ClientLayout({
       disableTransitionOnChange
     >
       <Suspense fallback={<div>Loading...</div>}>
-        <div className="relative flex min-h-screen">
-          <div className="absolute inset-0 bg-[url('/Corporate%20Building.png')] bg-cover bg-center bg-no-repeat"></div>
-          <div className="absolute inset-0 bg-background/60"></div>
+        <div className="relative flex min-h-screen bg-black">
           <div className="relative z-10 flex h-full w-full flex-1">
             {/* Menu Button */}
             {!isSidebarOpen && (
