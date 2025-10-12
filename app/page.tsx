@@ -150,7 +150,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-green-500">
+        <Card className="bg-blue-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-white">Profit Margin</CardTitle>
             <TrendingUp className="h-4 w-4 text-white" />
