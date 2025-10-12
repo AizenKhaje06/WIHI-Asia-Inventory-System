@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
+import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -17,6 +18,7 @@ interface CartItem {
 }
 
 export default function POSPage() {
+  const { theme } = useTheme()
   const [items, setItems] = useState<InventoryItem[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
   const [search, setSearch] = useState("")
@@ -30,7 +32,7 @@ export default function POSPage() {
 
   const total = useMemo(() => cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0), [cart])
 
-  const change = paymentMethod === 'cash' && amountPaid ? parseFloat(amountPaid) - total : 0
+  const change = useMemo(() => paymentMethod === 'cash' && amountPaid ? parseFloat(amountPaid) - total : 0, [paymentMethod, amountPaid, total])
 
   const filteredItems = useMemo(() => {
     if (search) {
@@ -130,13 +132,13 @@ export default function POSPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Point of Sale</h1>
+        <h1 className={`text-3xl font-bold ${theme === 'light' ? 'text-blue-900' : 'text-foreground'}`}>Point of Sale</h1>
         <p className="text-muted-foreground">Process sales transactions</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div>
-          <Card className="mb-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <Card className={`mb-6 bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-100 shadow-lg shadow-orange-200' : 'from-black via-black/50 to-gray-900'} border-border`}>
             <CardContent className="pt-6">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -150,7 +152,7 @@ export default function POSPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <Card className={`bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-100 shadow-lg shadow-orange-200' : 'from-black via-black/50 to-gray-900'} border-border`}>
             <CardHeader>
               <CardTitle className="text-foreground">Products</CardTitle>
             </CardHeader>
@@ -166,9 +168,9 @@ export default function POSPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-foreground">{item.name}</p>
-                        <p className="text-sm text-[#00FF00]">Stock: {item.quantity}</p>
+                        <p className={`text-sm ${theme === 'light' ? 'text-blue-900' : 'text-[#00FF00]'}`}>Stock: {item.quantity}</p>
                       </div>
-                      <p className="text-lg font-semibold text-[#00FF00]">₱{item.sellingPrice.toFixed(2)}</p>
+                      <p className={`text-lg font-semibold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>₱{item.sellingPrice.toFixed(2)}</p>
                     </div>
                   </button>
                 ))}
@@ -178,7 +180,7 @@ export default function POSPage() {
         </div>
 
         <div>
-          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
+          <Card className={`bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-100 shadow-lg shadow-orange-200' : 'from-black via-black/50 to-gray-900'} border-border`}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
                 <ShoppingCart className="h-5 w-5" />
@@ -199,7 +201,7 @@ export default function POSPage() {
                       >
                         <div className="flex-1">
                           <p className="font-medium text-foreground">{cartItem.item.name}</p>
-                          <p className="text-sm text-[#00FF00]">
+                          <p className={`text-sm ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>
                             ₱{cartItem.item.sellingPrice.toFixed(2)} each
                           </p>
                         </div>
@@ -216,7 +218,7 @@ export default function POSPage() {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        <p className="font-semibold text-[#00FF00]">
+                        <p className={`font-semibold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>
                           ₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
                         </p>
                       </div>
@@ -226,7 +228,7 @@ export default function POSPage() {
                     <div className="border-t border-border pt-4">
                       <div className="mb-4 flex items-center justify-between">
                         <p className="text-lg font-semibold text-foreground">Total</p>
-                        <p className="text-2xl font-bold text-[#00FF00]">₱{total.toFixed(2)}</p>
+                        <p className={`text-2xl font-bold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>₱{total.toFixed(2)}</p>
                       </div>
 
                       <div className="space-y-4 mb-4">
@@ -264,7 +266,7 @@ export default function POSPage() {
                             {change !== 0 && (
                               <div className="flex items-center justify-between">
                                 <Label className="text-sm font-medium text-foreground">Change</Label>
-                                <p className={`text-lg font-semibold ${change < 0 ? 'text-red-500' : 'text-[#00FF00]'}`}>
+                                <p className={`text-lg font-semibold ${change < 0 ? 'text-red-500' : theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>
                                   ₱{change.toFixed(2)}
                                 </p>
                               </div>
