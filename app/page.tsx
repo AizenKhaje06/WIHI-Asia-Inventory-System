@@ -265,33 +265,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Detailed Low Stock Items */}
-      {lowStockItems.length > 0 && (
-        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
-          <CardHeader>
-            <CardTitle className="text-foreground">Low Stock Items</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {lowStockItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between border-b border-border pb-4 last:border-0 last:pb-0"
-                >
-                  <div>
-                    <p className="font-medium text-foreground">{item.name}</p>
-                    <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-warning">{item.quantity} units</p>
-                    <p className="text-sm text-muted-foreground">Reorder at {item.reorderLevel}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }
