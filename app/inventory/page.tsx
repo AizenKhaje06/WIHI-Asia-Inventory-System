@@ -134,15 +134,9 @@ export default function InventoryPage() {
 
   return (
     <div className="p-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Inventory Management</h1>
-          <p className="text-muted-foreground">Manage your product inventory</p>
-        </div>
-        <Button onClick={() => setAddDialogOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Product
-        </Button>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-foreground">Inventory Management</h1>
+        <p className="text-muted-foreground">Manage your product inventory</p>
       </div>
 
       <Card className="mb-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
@@ -172,6 +166,12 @@ export default function InventoryPage() {
                   {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="flex-shrink-0">
+              <Button onClick={() => setAddDialogOpen(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add Product
+              </Button>
             </div>
           </div>
         </CardContent>
