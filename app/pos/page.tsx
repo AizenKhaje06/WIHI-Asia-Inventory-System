@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,6 @@ interface CartItem {
 
 export default function POSPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
-  const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(false)
@@ -26,44 +25,33 @@ export default function POSPage() {
   const [eWalletType, setEWalletType] = useState<'gcash' | 'paymaya'>('gcash')
   const [referenceNumber, setReferenceNumber] = useState('')
   const [amountPaid, setAmountPaid] = useState('')
-  const [change, setChange] = useState(0)
   const [orderSummaryOpen, setOrderSummaryOpen] = useState(false)
   const [successModalOpen, setSuccessModalOpen] = useState(false)
 
-  const total = cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0)
+  const total = useMemo(() => cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0), [cart])
 
-  useEffect(() => {
-    fetchItems()
-  }, [])
+  const change = paymentMethod === 'cash' && amountPaid ? parseFloat(amountPaid) - total : 0
 
-  useEffect(() => {
+  const filteredItems = useMemo(() => {
     if (search) {
       const searchLower = search.toLowerCase()
-      setFilteredItems(
-        items.filter(
-          (item) => item.name.toLowerCase().includes(searchLower) || item.sku.toLowerCase().includes(searchLower),
-        ),
+      return items.filter(
+        (item) => item.name.toLowerCase().includes(searchLower) || item.sku.toLowerCase().includes(searchLower),
       )
     } else {
-      setFilteredItems(items)
+      return items
     }
   }, [search, items])
 
   useEffect(() => {
-    if (paymentMethod === 'cash' && amountPaid) {
-      const paid = parseFloat(amountPaid) || 0
-      setChange(paid - total)
-    } else {
-      setChange(0)
-    }
-  }, [amountPaid, total, paymentMethod])
+    fetchItems()
+  }, [])
 
   async function fetchItems() {
     try {
       const res = await fetch("/api/items")
       const data = await res.json()
       setItems(data)
-      setFilteredItems(data)
     } catch (error) {
       console.error("[v0] Error fetching items:", error)
     }
