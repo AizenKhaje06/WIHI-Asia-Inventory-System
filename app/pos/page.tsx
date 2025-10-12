@@ -121,7 +121,9 @@ export default function POSPage() {
         body: JSON.stringify({
           items: saleItems,
           paymentMethod: fullPaymentMethod,
-          referenceNumber: paymentMethod === 'cash' ? undefined : referenceNumber
+          referenceNumber: paymentMethod === 'cash' ? undefined : referenceNumber,
+          amountPaid: paymentMethod === 'cash' ? parseFloat(amountPaid) : undefined,
+          change: paymentMethod === 'cash' ? change : undefined
         }),
       })
 
