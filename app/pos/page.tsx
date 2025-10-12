@@ -30,7 +30,7 @@ export default function POSPage() {
 
   const total = useMemo(() => cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0), [cart])
 
-  const change = paymentMethod === 'cash' && amountPaid ? parseFloat(amountPaid) - total : 0
+  const change = useMemo(() => paymentMethod === 'cash' && amountPaid ? parseFloat(amountPaid) - total : 0, [paymentMethod, amountPaid, total])
 
   const filteredItems = useMemo(() => {
     if (search) {
