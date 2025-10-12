@@ -56,15 +56,15 @@ export function Sidebar({ onNavClick, isHovered = false }: SidebarProps) {
               href={item.href}
               onClick={handleNavClick}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors justify-center",
+                "flex items-center justify-center gap-3 rounded-lg px-2 py-2 text-xs font-medium transition-colors",
                 isActive
                   ? "bg-orange-500 text-white"
                   : "text-gray-300 hover:bg-gray-800 hover:text-white",
-                !isHovered && "justify-center px-2"
+                !isHovered && "justify-center px-1 py-2 gap-0"
               )}
             >
               <item.icon className={cn(iconClass, isActive ? "text-white" : "")} />
-              {isHovered && <span>{item.name}</span>}
+              {isHovered && <span className="text-center">{item.name}</span>}
             </Link>
           )
         })}

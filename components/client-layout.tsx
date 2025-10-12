@@ -33,7 +33,7 @@ export default function ClientLayout({
             <div
               className={cn(
                 "fixed inset-y-0 left-0 z-30 flex h-full flex-col border-r border-gray-800 bg-black/90 backdrop-blur-sm text-white transition-all duration-300",
-                isSidebarHovered ? "w-56" : "w-16"
+                isSidebarHovered ? "w-48" : "w-16"
               )}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
@@ -43,7 +43,7 @@ export default function ClientLayout({
 
             <main className={cn(
               "flex-1 overflow-auto pt-16 px-6 pb-6 transition-all duration-300",
-              isSidebarHovered ? "ml-56" : "ml-16"
+              isSidebarHovered ? "ml-48" : "ml-16"
             )}>
               {children}
             </main>
