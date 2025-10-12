@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart3, ShoppingCart, TrendingDown, Users, PieChart } from "lucide-react"
+import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart3, ShoppingCart, TrendingDown, Users, BarChart2 } from "lucide-react"
 import {
   LineChart,
   Line,
@@ -12,9 +12,8 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart as RechartsPieChart,
-  Pie,
-  Cell,
+  BarChart,
+  Bar,
 } from "recharts"
 import {
   Tabs,
@@ -62,11 +61,15 @@ export default function DashboardPage() {
   // Filter salesOverTime based on timePeriod (simplified - in real app, adjust data fetching)
   const filteredSalesData = stats?.salesOverTime?.slice(-24) || [] // For ID (hourly), adjust for others
 
-  const topCategoriesData = stats?.topCategories?.map((cat, index) => ({
+  const topCategoriesData = stats?.topCategories?.map((cat) => ({
     name: cat.name,
-    value: cat.sales,
-    fill: COLORS[index % COLORS.length],
+    sales: cat.sales,
   })) || []
+
+  const categoryStatsData = [
+    { name: 'Total Categories', value: stats?.totalCategories || 0 },
+    { name: 'Total Products', value: stats?.totalProducts || 0 },
+  ]
 
   return (
     <div className="p-8">
@@ -218,52 +221,46 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 mb-6">
-        {/* Top Categories Pie Chart */}
+        {/* Top Categories Bar Chart */}
         <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-4 w-4" />
+              <BarChart2 className="h-4 w-4" />
               Top Categories
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <RechartsPieChart>
-                <Pie
-                  data={topCategoriesData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {topCategoriesData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
+              <BarChart data={topCategoriesData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="name" stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" />
                 <Tooltip />
-              </RechartsPieChart>
+                <Legend />
+                <Bar dataKey="sales" fill="#8884d8" />
+              </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Category Statistics */}
+        {/* Category Statistics Bar Chart */}
         <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader>
-            <CardTitle>Category Statistics</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart2 className="h-4 w-4" />
+              Category Statistics
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Total Number of Categories</span>
-                <span className="font-bold text-[#00FF00]">{stats?.totalCategories || 0}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Total Number of Products</span>
-                <span className="font-bold text-[#00FF00]">{stats?.totalProducts || 0}</span>
-              </div>
-            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={categoryStatsData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="name" stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" />
+                <Tooltip />
+                <Bar dataKey="value" fill="#10B981" />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
