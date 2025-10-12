@@ -14,11 +14,6 @@ export default function ClientLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const [isSidebarHovered, setIsSidebarHovered] = useState(false)
-
-  const handleMouseEnter = () => setIsSidebarHovered(true)
-  const handleMouseLeave = () => setIsSidebarHovered(false)
-
   return (
     <ThemeProvider
       attribute="class"
@@ -31,20 +26,12 @@ export default function ClientLayout({
           <div className="relative z-10 flex h-full w-full flex-1">
             {/* Sidebar */}
             <div
-              className={cn(
-                "fixed inset-y-0 left-0 z-30 flex h-full flex-col border-r border-gray-800 bg-black/90 backdrop-blur-sm text-white transition-all duration-300",
-                isSidebarHovered ? "w-52" : "w-16"
-              )}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
+              className="fixed inset-y-0 left-0 z-30 flex h-full flex-col border-r border-gray-800 bg-black/90 backdrop-blur-sm text-white w-52"
             >
-              <Sidebar isHovered={isSidebarHovered} />
+              <Sidebar />
             </div>
 
-            <main className={cn(
-              "flex-1 overflow-auto pt-4 px-6 pb-6 transition-all duration-300",
-              isSidebarHovered ? "ml-52" : "ml-16"
-            )}>
+            <main className="flex-1 overflow-auto pt-4 px-6 pb-6 ml-52">
               {children}
             </main>
             <Clock />
