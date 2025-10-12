@@ -170,7 +170,7 @@ export default function POSPage() {
                         <p className="font-medium text-foreground">{item.name}</p>
                         <p className={`text-sm ${theme === 'light' ? 'text-blue-900' : 'text-[#00FF00]'}`}>Stock: {item.quantity}</p>
                       </div>
-                      <p className={`text-lg font-semibold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>₱{item.sellingPrice.toFixed(2)}</p>
+                        <p className={`text-lg font-semibold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>₱{item.sellingPrice.toFixed(2)}</p>
                     </div>
                   </button>
                 ))}
