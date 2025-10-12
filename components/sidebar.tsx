@@ -15,8 +15,6 @@ const navigation = [
   { name: "Transactions", href: "/reports", icon: BarChart3 },
   // Products Section (renamed from Inventory)
   { name: "Products", href: "/inventory", icon: Package },
-  { name: "Create Product", href: "/inventory/create", icon: PackagePlus },
-  { name: "Restock", href: "/inventory/restock", icon: PackagePlus },
   { name: "Low Stocks", href: "/inventory/low-stock", icon: AlertTriangle },
   { name: "Out of Stocks", href: "/inventory/out-of-stock", icon: XCircle },
   // Cash Flow Section
@@ -78,7 +76,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         {/* Products Section */}
         <div>
           <div className="px-2 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Products</div>
-          {navigation.slice(3, 8).map((item) => {
+          {navigation.slice(3, 6).map((item) => {
             const isActive = pathname === item.href
             return (
               <Link
@@ -105,7 +103,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         {/* Cash Flow Section */}
         <div>
           <div className="px-2 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Cash Flow</div>
-          {navigation.slice(8, 9).map((item) => {
+          {navigation.slice(6, 7).map((item) => {
             const isActive = pathname === item.href
             return (
               <Link
@@ -132,7 +130,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         {/* Operation Section */}
         <div>
           <div className="px-2 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Operation</div>
-          {navigation.slice(9, 10).map((item) => {
+          {navigation.slice(7, 8).map((item) => {
             const isActive = pathname === item.href
             return (
               <Link
