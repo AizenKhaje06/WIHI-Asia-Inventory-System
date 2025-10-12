@@ -5,40 +5,40 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #1f2937;
+  --foreground: #1e293b;
   --card: #ffffff;
-  --card-foreground: #1f2937;
+  --card-foreground: #1e293b;
   --popover: #ffffff;
-  --popover-foreground: #1f2937;
-  --primary: #007BFF;
+  --popover-foreground: #1e293b;
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
-  --secondary: #f8fafc;
-  --secondary-foreground: #1f2937;
-  --muted: #f1f5f9;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1e293b;
+  --muted: #e2e8f0;
   --muted-foreground: #64748b;
-  --accent: #e2e8f0;
-  --accent-foreground: #1f2937;
-  --destructive: #ef4444;
+  --accent: #cbd5e1;
+  --accent-foreground: #1e293b;
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
+  --border: #cbd5e1;
   --input: #ffffff;
-  --ring: #007BFF;
-  --chart-1: #007BFF;
-  --chart-2: #00C49F;
-  --chart-3: #FFBB28;
-  --chart-4: #FF8042;
-  --chart-5: #8884d8;
-  --success: #10B981;
-  --warning: #F59E0B;
+  --ring: #2563eb;
+  --chart-1: #2563eb;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #ef4444;
+  --chart-5: #8b5cf6;
+  --success: #10b981;
+  --warning: #f59e0b;
   --radius: 0.5rem;
   --sidebar: #ffffff;
-  --sidebar-foreground: #1f2937;
-  --sidebar-primary: #007BFF;
+  --sidebar-foreground: #1e293b;
+  --sidebar-primary: #2563eb;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f8fafc;
-  --sidebar-accent-foreground: #1f2937;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #007BFF;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #1e293b;
+  --sidebar-border: #cbd5e1;
+  --sidebar-ring: #2563eb;
 }
 
 .dark {
@@ -135,17 +135,21 @@
     background-attachment: fixed;
     background-repeat: no-repeat;
   }
+  :not(.dark) body {
+    background-image: none;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  }
 }
 
 @layer utilities {
   .bg-gradient-light {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
   }
   .bg-gradient-dark {
     background: linear-gradient(135deg, #000000 0%, #FF6B35 100%);
   }
   .text-gradient-light {
-    background: linear-gradient(135deg, #007BFF 0%, #0056B3 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
