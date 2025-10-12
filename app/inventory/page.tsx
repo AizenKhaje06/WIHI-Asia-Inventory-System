@@ -16,6 +16,7 @@ export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
   const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
   const [search, setSearch] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("")
   const [loading, setLoading] = useState(true)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -29,20 +30,24 @@ export default function InventoryPage() {
   }, [])
 
   useEffect(() => {
+    let filtered = items
+
     if (search) {
       const searchLower = search.toLowerCase()
-      setFilteredItems(
-        items.filter(
-          (item) =>
-            item.name.toLowerCase().includes(searchLower) ||
-            item.sku.toLowerCase().includes(searchLower) ||
-            item.category.toLowerCase().includes(searchLower),
-        ),
+      filtered = filtered.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchLower) ||
+          item.sku.toLowerCase().includes(searchLower) ||
+          item.category.toLowerCase().includes(searchLower),
       )
-    } else {
-      setFilteredItems(items)
     }
-  }, [search, items])
+
+    if (categoryFilter) {
+      filtered = filtered.filter((item) => item.category === categoryFilter)
+    }
+
+    setFilteredItems(filtered)
+  }, [search, categoryFilter, items])
 
   async function fetchItems() {
     try {
@@ -113,6 +118,8 @@ export default function InventoryPage() {
     )
   }
 
+  const categories = [...new Set(items.map(item => item.category))]
+
   return (
     <div className="p-8">
       <div className="mb-8 flex items-center justify-between">
@@ -128,14 +135,28 @@ export default function InventoryPage() {
 
       <Card className="mb-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
         <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, SKU, or category..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, SKU, or category..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex-1">
+              <Label htmlFor="category-filter">Filter by Category</Label>
+              <select
+                id="category-filter"
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="w-full p-2 border border-border rounded bg-background text-foreground"
+              >
+                <option value="">All Categories</option>
+                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
+            </div>
           </div>
         </CardContent>
       </Card>
