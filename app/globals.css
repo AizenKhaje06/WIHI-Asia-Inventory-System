@@ -137,7 +137,7 @@
   }
   :not(.dark) body {
     background-image: none;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    background: #ffffff;
   }
 }
 
