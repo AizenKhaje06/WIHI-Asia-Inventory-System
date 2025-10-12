@@ -131,7 +131,7 @@ export default function POSPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div>
-          <Card className="mb-6 bg-card border-border">
+          <Card className="mb-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
             <CardContent className="pt-6">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -145,7 +145,7 @@ export default function POSPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border-border">
+          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
             <CardHeader>
               <CardTitle className="text-foreground">Products</CardTitle>
             </CardHeader>
@@ -173,7 +173,7 @@ export default function POSPage() {
         </div>
 
         <div>
-          <Card className="bg-card border-border">
+          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
                 <ShoppingCart className="h-5 w-5" />

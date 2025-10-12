@@ -46,7 +46,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-card border-border">
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
             <Package className="h-4 w-4 text-primary" />
@@ -56,7 +56,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border">
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Low Stock Alerts</CardTitle>
             <AlertTriangle className="h-4 w-4 text-warning" />
@@ -66,7 +66,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border">
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Value</CardTitle>
             <DollarSign className="h-4 w-4 text-success" />
@@ -76,7 +76,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border">
+        <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Today's Sales</CardTitle>
             <TrendingUp className="h-4 w-4 text-primary" />
@@ -88,7 +88,7 @@ export default function DashboardPage() {
       </div>
 
       {lowStockItems.length > 0 && (
-        <Card className="mt-6 bg-card border-border">
+        <Card className="mt-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
           <CardHeader>
             <CardTitle className="text-foreground">Low Stock Items</CardTitle>
           </CardHeader>

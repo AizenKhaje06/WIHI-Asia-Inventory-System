@@ -125,7 +125,7 @@ export default function InventoryPage() {
         </Button>
       </div>
 
-      <Card className="mb-6 bg-card border-border">
+      <Card className="mb-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
         <CardContent className="pt-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -139,7 +139,7 @@ export default function InventoryPage() {
         </CardContent>
       </Card>
 
-      <Card className="bg-card border-border">
+      <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
         <CardHeader>
           <CardTitle className="text-foreground">Items ({filteredItems.length})</CardTitle>
         </CardHeader>

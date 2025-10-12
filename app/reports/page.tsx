@@ -42,7 +42,7 @@ export default function ReportsPage() {
         <p className="text-muted-foreground">View sales analytics and COGS</p>
       </div>
 
-      <Card className="mb-6 bg-card border-border">
+      <Card className="mb-6 bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
         <CardHeader>
           <CardTitle className="text-foreground">Filter Reports</CardTitle>
         </CardHeader>
@@ -70,7 +70,7 @@ export default function ReportsPage() {
       {report && (
         <>
           <div className="mb-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="bg-card border-border">
+            <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
                 <DollarSign className="h-4 w-4 text-success" />
@@ -80,7 +80,7 @@ export default function ReportsPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Cost (COGS)</CardTitle>
                 <TrendingUp className="h-4 w-4 text-warning" />
@@ -90,7 +90,7 @@ export default function ReportsPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Profit</CardTitle>
                 <DollarSign className="h-4 w-4 text-primary" />
@@ -100,7 +100,7 @@ export default function ReportsPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Profit Margin</CardTitle>
                 <Percent className="h-4 w-4 text-primary" />
@@ -111,7 +111,7 @@ export default function ReportsPage() {
             </Card>
           </div>
 
-          <Card className="bg-card border-border">
+          <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border">
             <CardHeader>
               <CardTitle className="text-foreground">Recent Transactions ({report.transactions.length})</CardTitle>
             </CardHeader>
