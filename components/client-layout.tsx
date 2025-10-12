@@ -37,7 +37,7 @@ export default function ClientLayout({
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute left-4 top-4 z-20 m-2 bg-black/50 backdrop-blur-sm border-gray-800 text-white hover:bg-gray-800"
+                className="absolute left-2 top-2 z-20 m-4 bg-black/50 backdrop-blur-sm border-gray-800 text-white hover:bg-gray-800"
                 onClick={toggleSidebar}
               >
                 <Menu className="h-5 w-5" />
