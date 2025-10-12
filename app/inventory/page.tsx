@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Search, Pencil, Trash2, PackagePlus } from "lucide-react"
 import type { InventoryItem } from "@/lib/types"
 import { AddItemDialog } from "@/components/add-item-dialog"
@@ -118,7 +119,18 @@ export default function InventoryPage() {
     )
   }
 
-  const categories = [...new Set(items.map(item => item.category))]
+  const categories = [
+    "Electronics & Gadgets",
+    "Fashion & Apparel",
+    "Health, Beauty & Personal Care",
+    "Home & Living",
+    "Sports & Outdoors",
+    "Baby, Kids & Toys",
+    "Groceries & Pets",
+    "Automotive & Industrial",
+    "Stationery & Books",
+    "Other / Miscellaneous",
+  ]
 
   return (
     <div className="p-8">
@@ -129,7 +141,7 @@ export default function InventoryPage() {
         </div>
         <Button onClick={() => setAddDialogOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
-          Add Item
+          Add Product
         </Button>
       </div>
 
@@ -150,16 +162,16 @@ export default function InventoryPage() {
               </div>
             </div>
             <div className="flex-1">
-              <Label htmlFor="category-filter">Filter by Category</Label>
-              <select
-                id="category-filter"
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-full p-2 border border-border rounded bg-background text-foreground"
-              >
-                <option value="">All Categories</option>
-                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-              </select>
+              <Label htmlFor="category-filter">Category</Label>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger id="category-filter">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Categories</SelectItem>
+                  {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>

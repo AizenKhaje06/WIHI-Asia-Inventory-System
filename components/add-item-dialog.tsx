@@ -62,7 +62,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-foreground">Add New Item</DialogTitle>
+          <DialogTitle className="text-foreground">Add New Product</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -177,7 +177,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Adding..." : "Add Item"}
+              {loading ? "Adding..." : "Add Product"}
             </Button>
           </div>
         </form>
