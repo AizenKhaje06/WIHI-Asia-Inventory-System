@@ -61,10 +61,10 @@ export default function DashboardPage() {
   // Filter salesOverTime based on timePeriod (simplified - in real app, adjust data fetching)
   const filteredSalesData = stats?.salesOverTime?.slice(-24) || [] // For ID (hourly), adjust for others
 
-  // Format date to remove time
+  // Format date to show time only
   const formattedSalesData = filteredSalesData.map(item => ({
     ...item,
-    date: item.date.split(' ')[0] // Remove time part, keep only date
+    date: item.date.split(' ')[1] // Keep only time part
   }))
 
   const topCategoriesData = stats?.topCategories?.map((cat) => ({
