@@ -140,7 +140,7 @@
     background: #ffffff;
   }
   .dark body {
-    background: linear-gradient(135deg, #000000 0%, #FF6B35 100%);
+    background: #000000;
     background-attachment: fixed;
     background-image: none;
   }
