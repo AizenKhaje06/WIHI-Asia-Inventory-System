@@ -208,13 +208,13 @@ export default function ProductEditPage() {
                     <td className="py-4 text-right text-sm text-foreground w-[10%]">₱{item.sellingPrice.toFixed(2)}</td>
                     <td className="py-4 text-right w-[17%]">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleRestock(item)}>
+                        <Button variant="ghost" size="sm" onClick={() => handleRestock(item)} className="text-orange-500 hover:text-orange-600 hover:bg-orange-50">
                           <PackagePlus className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(item)} className="text-orange-500 hover:text-orange-600 hover:bg-orange-50">
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)} className="text-orange-500 hover:text-orange-600 hover:bg-orange-50">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
