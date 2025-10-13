@@ -1,12 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
+import { useState } from "react"
 import { LayoutDashboard, ShoppingCart, BarChart3, Package, Tags, PackagePlus, AlertTriangle, XCircle, TrendingUp, FileText, Sun, Moon, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { SettingsModal } from "@/components/settings-modal"
 
 const navigation = [
   // Main Section
@@ -29,7 +31,9 @@ interface SidebarProps {
 
 export function Sidebar({ onNavClick }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const { theme, setTheme } = useTheme()
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
 
   const handleNavClick = (e: React.MouseEvent) => {
     onNavClick?.()
@@ -38,6 +42,16 @@ export function Sidebar({ onNavClick }: SidebarProps) {
   const handleThemeClick = (e: React.MouseEvent) => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
     onNavClick?.()
+  }
+
+  const handleSettingsClick = () => {
+    setIsSettingsModalOpen(true)
+    onNavClick?.()
+  }
+
+  const handleCodeSubmit = (code: string) => {
+    // Navigate to admin panel
+    router.push('/admin/instructions')
   }
 
   return (
@@ -178,21 +192,19 @@ export function Sidebar({ onNavClick }: SidebarProps) {
           {theme === 'dark' ? <Sun className="h-4 w-4 text-[#00fff6]" /> : <Moon className="h-4 w-4 text-primary" />}
           <span className="capitalize">Toggle Theme</span>
         </Button>
-        <Link href="/dashboard/settings">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 mt-2 justify-start",
-              theme === 'light'
-                ? "text-foreground hover:bg-accent hover:text-accent-foreground"
-                : "text-white hover:bg-gray-800"
-            )}
-            onClick={handleNavClick}
-          >
-            <Settings className={cn("h-4 w-4", theme === 'light' ? "text-primary" : "text-[#00fff6]")} />
-            <span>Settings</span>
-          </Button>
-        </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 mt-2 justify-start",
+            theme === 'light'
+              ? "text-foreground hover:bg-accent hover:text-accent-foreground"
+              : "text-white hover:bg-gray-800"
+          )}
+          onClick={handleSettingsClick}
+        >
+          <Settings className={cn("h-4 w-4", theme === 'light' ? "text-primary" : "text-[#00fff6]")} />
+          <span>Settings</span>
+        </Button>
         <Button
           variant="ghost"
           size="sm"
@@ -210,6 +222,12 @@ export function Sidebar({ onNavClick }: SidebarProps) {
           <span>Logout</span>
         </Button>
       </div>
+      
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        onCodeSubmit={handleCodeSubmit}
+      />
     </div>
   )
 }
