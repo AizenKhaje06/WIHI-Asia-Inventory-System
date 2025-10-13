@@ -13,7 +13,7 @@ export default async function LogPage() {
     <div className="container mx-auto py-10">
       <Card>
         <CardHeader>
-          <CardTitle className="text-foreground">Operation History</CardTitle>
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Operation History</CardTitle>
         </CardHeader>
         <CardContent>
           {logs.length === 0 ? (

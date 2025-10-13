@@ -88,7 +88,7 @@ export default function AnalyticsPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">{view === 'daily' ? 'Daily Sales' : 'Monthly Sales'}</h1>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">{view === 'daily' ? 'Daily Sales' : 'Monthly Sales'}</h1>
         <p className="text-muted-foreground">Sales performance overview</p>
       </div>
 

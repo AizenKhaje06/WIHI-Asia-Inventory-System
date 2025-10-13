@@ -132,7 +132,7 @@ export default function POSPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className={`text-3xl font-bold ${theme === 'light' ? 'text-blue-900' : 'text-foreground'}`}>Point of Sale</h1>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Point of Sale</h1>
         <p className="text-muted-foreground">Process sales transactions</p>
       </div>
 

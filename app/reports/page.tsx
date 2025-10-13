@@ -38,7 +38,7 @@ export default function ReportsPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Sales Reports</h1>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Sales Reports</h1>
         <p className="text-muted-foreground">View sales analytics and COGS</p>
       </div>
 
