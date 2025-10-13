@@ -21,6 +21,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import type { DashboardStats, InventoryItem, Transaction } from "@/lib/types"
+import { formatNumber } from "@/lib/utils"
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"]
 
@@ -126,7 +127,7 @@ export default function DashboardPage() {
             <DollarSign className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">₱{stats?.totalValue.toFixed(2) || "0.00"}</div>
+            <div className="text-2xl font-bold text-white">₱{formatNumber(stats?.totalValue || 0)}</div>
           </CardContent>
         </Card>
 
@@ -136,7 +137,7 @@ export default function DashboardPage() {
             <DollarSign className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">₱{(stats?.lowStockItems || 0).toFixed(2)}</div>
+            <div className="text-2xl font-bold text-white">₱{formatNumber(stats?.lowStockItems || 0)}</div>
           </CardContent>
         </Card>
 
@@ -218,7 +219,7 @@ export default function DashboardPage() {
               {stats?.recentTransactions?.map((tx, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <span className="text-sm text-foreground">{tx.itemName}</span>
-                  <span className="text-sm text-green-500">₱{tx.totalRevenue.toFixed(2)}</span>
+                  <span className="text-sm text-green-500">₱{formatNumber(tx.totalRevenue)}</span>
                 </div>
               )) || <p className="text-muted-foreground">No recent sales</p>}
             </div>

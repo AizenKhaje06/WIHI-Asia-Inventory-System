@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { SalesReport } from "@/lib/types"
 import { DollarSign, TrendingUp, Percent } from "lucide-react"
+import { formatNumber } from "@/lib/utils"
 
 export default function ReportsPage() {
   const [report, setReport] = useState<SalesReport | null>(null)
@@ -76,7 +77,7 @@ export default function ReportsPage() {
                 <DollarSign className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">₱{report.totalRevenue.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-foreground">₱{formatNumber(report.totalRevenue)}</div>
               </CardContent>
             </Card>
 
@@ -86,7 +87,7 @@ export default function ReportsPage() {
                 <TrendingUp className="h-4 w-4 text-orange-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">₱{report.totalCost.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-foreground">₱{formatNumber(report.totalCost)}</div>
               </CardContent>
             </Card>
 
@@ -96,7 +97,7 @@ export default function ReportsPage() {
                 <DollarSign className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">₱{report.totalProfit.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-foreground">₱{formatNumber(report.totalProfit)}</div>
               </CardContent>
             </Card>
 
@@ -137,10 +138,10 @@ export default function ReportsPage() {
                         <td className="py-4 text-sm text-foreground w-[25%]">{transaction.itemName}</td>
                         <td className="py-4 text-right text-sm text-foreground w-[8%]">{transaction.quantity}</td>
                         <td className="py-4 text-right text-sm text-foreground w-[15%]">
-                          ₱{transaction.totalRevenue.toFixed(2)}
+                          ₱{formatNumber(transaction.totalRevenue)}
                         </td>
-                        <td className="py-4 text-right text-sm text-foreground w-[15%]">₱{transaction.totalCost.toFixed(2)}</td>
-                        <td className="py-4 text-right text-sm text-foreground w-[22%]">₱{transaction.profit.toFixed(2)}</td>
+                        <td className="py-4 text-right text-sm text-foreground w-[15%]">₱{formatNumber(transaction.totalCost)}</td>
+                        <td className="py-4 text-right text-sm text-foreground w-[22%]">₱{formatNumber(transaction.profit)}</td>
                       </tr>
                     ))}
                   </tbody>
