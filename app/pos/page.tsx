@@ -157,23 +157,23 @@ export default function POSPage() {
               <CardTitle className="text-foreground">Products</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="max-h-[600px] space-y-2 overflow-y-auto">
-                {filteredItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => addToCart(item)}
-                    className="w-full rounded-lg border border-border bg-secondary p-4 text-left transition-colors hover:bg-secondary/80"
-                    disabled={item.quantity === 0}
-                  >
-                    <div className="flex items-center justify-between">
+              <div className="max-h-[600px] overflow-y-auto">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {filteredItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => addToCart(item)}
+                      className="h-32 rounded-lg border border-border bg-secondary p-4 text-center transition-colors hover:bg-secondary/80 flex flex-col justify-between"
+                      disabled={item.quantity === 0}
+                    >
                       <div>
-                        <p className="font-medium text-foreground">{item.name}</p>
-                        <p className={`text-sm ${theme === 'light' ? 'text-blue-900' : 'text-[#00FF00]'}`}>Stock: {item.quantity}</p>
+                        <p className="font-medium text-foreground text-sm line-clamp-2">{item.name}</p>
+                        <p className={`text-xs ${theme === 'light' ? 'text-blue-900' : 'text-[#00FF00]'}`}>Stock: {item.quantity}</p>
                       </div>
-                        <p className={`text-lg font-semibold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>₱{item.sellingPrice.toFixed(2)}</p>
-                    </div>
-                  </button>
-                ))}
+                      <p className={`text-lg font-semibold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>₱{item.sellingPrice.toFixed(2)}</p>
+                    </button>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
