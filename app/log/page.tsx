@@ -10,7 +10,7 @@ export default async function LogPage() {
   const logs = await getLogs()
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-10 bg-gradient-to-b from-white to-gray-100">
       <Card>
         <CardHeader>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Operation History</CardTitle>

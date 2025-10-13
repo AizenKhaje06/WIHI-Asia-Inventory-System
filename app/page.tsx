@@ -78,7 +78,7 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-gradient-to-b from-white to-gray-100">
       <div className="mb-4">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Dashboard</h1>
         <p className="text-muted-foreground">Overview of your inventory system</p>
