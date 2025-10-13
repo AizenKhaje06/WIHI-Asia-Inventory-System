@@ -180,7 +180,7 @@ export default function AnalyticsPage() {
         dailySales.length > 0 ? (
           <Card>
             <CardHeader>
-              <CardTitle className="text-foreground">Sales Calendar</CardTitle>
+              <CardTitle className="text-foreground">Product Calendar</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="grid grid-cols-7 gap-0.5 p-2">
