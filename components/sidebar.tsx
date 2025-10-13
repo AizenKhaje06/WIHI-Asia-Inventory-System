@@ -168,7 +168,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         <Button
           variant="ghost"
           size="sm"
-          className={cn("flex items-center gap-2 w-full transition-all py-2 px-2",
+          className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 justify-start",
             theme === 'light'
               ? "text-foreground hover:bg-accent hover:text-accent-foreground"
               : "text-white hover:bg-gray-800"
@@ -182,7 +182,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
           <Button
             variant="ghost"
             size="sm"
-            className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 mt-2",
+            className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 mt-2 justify-start",
               theme === 'light'
                 ? "text-foreground hover:bg-accent hover:text-accent-foreground"
                 : "text-white hover:bg-gray-800"
@@ -196,7 +196,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         <Button
           variant="ghost"
           size="sm"
-          className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 mt-2",
+          className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 mt-2 justify-start",
             theme === 'light'
               ? "text-foreground hover:bg-accent hover:text-accent-foreground"
               : "text-white hover:bg-gray-800"
