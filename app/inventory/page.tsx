@@ -133,7 +133,7 @@ export default function InventoryPage() {
   ]
 
   return (
-    <div className="p-8 bg-gradient-to-b from-white to-gray-100">
+    <div className="p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Inventory Management</h1>
         <p className="text-muted-foreground">Manage your product inventory</p>
