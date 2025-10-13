@@ -22,7 +22,7 @@ const adminNavigation = [
   { name: "Instructions", href: "/admin/instructions", icon: FileText },
   { name: "Login Credentials", href: "/admin/credentials", icon: UserCog },
   { name: "Settings Code", href: "/admin/settings-code", icon: Key },
-  { name: "System Settings", href: "/admin/system", icon: Settings },
+  { name: "Product Edit", href: "/admin/product-edit", icon: Settings },
   { name: "Database", href: "/admin/database", icon: Database },
 ]
 
