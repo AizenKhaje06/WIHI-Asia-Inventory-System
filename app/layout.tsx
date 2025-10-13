@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`min-h-screen font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <ClientLayout>{children}</ClientLayout>
+        {children}
       </body>
     </html>
   )
