@@ -81,9 +81,9 @@ export function Sidebar({ onNavClick }: SidebarProps) {
           <Separator className={cn("my-2", theme === 'light' ? "bg-border" : "bg-gray-700")} />
         </div>
 
-        {/* Products Section */}
+        {/* Inventory Section */}
         <div>
-          <div className="px-2 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Products</div>
+          <div className="px-2 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Inventory</div>
           {navigation.slice(3, 6).map((item) => {
             const isActive = pathname === item.href
             return (
