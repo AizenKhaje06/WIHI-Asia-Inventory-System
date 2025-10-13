@@ -22,12 +22,10 @@ export default function LoginPage() {
   const DEFAULT_PASSWORD = "password123"
 
   useEffect(() => {
-    // Check if already logged in
-    const isLoggedIn = localStorage.getItem("isLoggedIn")
-    if (isLoggedIn === "true") {
-      router.push("/dashboard")
-    }
-  }, [router])
+    // Clear any existing login state on login page load to force re-authentication
+    localStorage.removeItem("isLoggedIn")
+    // Note: We keep stored credentials for convenience, but clear login state
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
