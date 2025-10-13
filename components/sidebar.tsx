@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useTheme } from "next-themes"
-import { LayoutDashboard, ShoppingCart, BarChart3, Package, Tags, PackagePlus, AlertTriangle, XCircle, TrendingUp, FileText, Sun, Moon, LogOut } from "lucide-react"
+import { LayoutDashboard, ShoppingCart, BarChart3, Package, Tags, PackagePlus, AlertTriangle, XCircle, TrendingUp, FileText, Sun, Moon, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
@@ -178,6 +178,21 @@ export function Sidebar({ onNavClick }: SidebarProps) {
           {theme === 'dark' ? <Sun className="h-4 w-4 text-[#00fff6]" /> : <Moon className="h-4 w-4 text-primary" />}
           <span className="capitalize">Toggle Theme</span>
         </Button>
+        <Link href="/dashboard/settings">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 mt-2",
+              theme === 'light'
+                ? "text-foreground hover:bg-accent hover:text-accent-foreground"
+                : "text-white hover:bg-gray-800"
+            )}
+            onClick={handleNavClick}
+          >
+            <Settings className={cn("h-4 w-4", theme === 'light' ? "text-primary" : "text-[#00fff6]")} />
+            <span>Settings</span>
+          </Button>
+        </Link>
         <Button
           variant="ghost"
           size="sm"
