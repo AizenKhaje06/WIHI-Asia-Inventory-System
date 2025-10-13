@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import ClientLayout from "@/components/client-layout"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -18,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`min-h-screen font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <ClientLayout>{children}</ClientLayout>
+        {children}
       </body>
     </html>
   )
