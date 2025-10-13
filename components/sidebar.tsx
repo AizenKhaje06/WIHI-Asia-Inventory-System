@@ -3,24 +3,24 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useTheme } from "next-themes"
-import { LayoutDashboard, ShoppingCart, BarChart3, Package, Tags, PackagePlus, AlertTriangle, XCircle, TrendingUp, FileText, Sun, Moon } from "lucide-react"
+import { LayoutDashboard, ShoppingCart, BarChart3, Package, Tags, PackagePlus, AlertTriangle, XCircle, TrendingUp, FileText, Sun, Moon, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 
 const navigation = [
   // Main Section
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Point of Sales", href: "/pos", icon: ShoppingCart },
-  { name: "Transactions", href: "/reports", icon: BarChart3 },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Point of Sales", href: "/dashboard/pos", icon: ShoppingCart },
+  { name: "Transactions", href: "/dashboard/reports", icon: BarChart3 },
   // Products Section (renamed from Inventory)
-  { name: "Products", href: "/inventory", icon: Package },
-  { name: "Low Stocks", href: "/inventory/low-stock", icon: AlertTriangle },
-  { name: "Out of Stocks", href: "/inventory/out-of-stock", icon: XCircle },
+  { name: "Products", href: "/dashboard/inventory", icon: Package },
+  { name: "Low Stocks", href: "/dashboard/inventory/low-stock", icon: AlertTriangle },
+  { name: "Out of Stocks", href: "/dashboard/inventory/out-of-stock", icon: XCircle },
   // Cash Flow Section
-  { name: "Daily Sales", href: "/analytics", icon: TrendingUp },
+  { name: "Daily Sales", href: "/dashboard/analytics", icon: TrendingUp },
   // Operation Section
-  { name: "Logs", href: "/log", icon: FileText },
+  { name: "Logs", href: "/dashboard/log", icon: FileText },
 ]
 
 interface SidebarProps {
@@ -47,7 +47,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         ? "border-border bg-sidebar text-sidebar-foreground"
         : "border-gray-800 bg-black/90 text-white backdrop-blur-sm"
     )}>
-      <div className={cn("flex h-16 items-center justify-center border-b px-4", 
+      <div className={cn("flex h-16 items-center justify-center border-b px-4",
         theme === 'light' ? "border-sidebar-border" : "border-gray-800"
       )}>
         <h1 className="text-xl font-semibold">Inventory Pro</h1>
@@ -177,6 +177,22 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         >
           {theme === 'dark' ? <Sun className="h-4 w-4 text-[#00fff6]" /> : <Moon className="h-4 w-4 text-primary" />}
           <span className="capitalize">Toggle Theme</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 mt-2",
+            theme === 'light'
+              ? "text-foreground hover:bg-accent hover:text-accent-foreground"
+              : "text-white hover:bg-gray-800"
+          )}
+          onClick={() => {
+            localStorage.removeItem("isLoggedIn")
+            window.location.href = "/"
+          }}
+        >
+          <LogOut className="h-4 w-4" />
+          <span>Logout</span>
         </Button>
       </div>
     </div>
