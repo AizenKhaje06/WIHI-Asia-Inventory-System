@@ -120,43 +120,43 @@ export default function DashboardPage() {
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-6">
-        <Card>
+        <Card className="bg-orange-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
-            <Package className="h-4 w-4 text-primary" />
+            <CardTitle className="text-sm font-medium text-white">Total Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{stats?.totalItems || 0}</div>
+            <div className="text-2xl font-bold text-white">₱{stats?.totalValue.toFixed(2) || "0.00"}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-blue-900">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Low Stock Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium text-white">Total Cost</CardTitle>
+            <DollarSign className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{stats?.lowStockItems || 0}</div>
+            <div className="text-2xl font-bold text-white">₱{(stats?.lowStockItems || 0).toFixed(2)}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-teal-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-500" />
+            <CardTitle className="text-sm font-medium text-white">Total Profit</CardTitle>
+            <TrendingUp className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">₱{stats?.totalValue.toFixed(2) || "0.00"}</div>
+            <div className="text-2xl font-bold text-white">{stats?.totalItems.toLocaleString() || 0}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-blue-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Today's Sales</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-medium text-white">Profit Margin</CardTitle>
+            <TrendingUp className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{stats?.recentSales || 0}</div>
+            <div className="text-2xl font-bold text-white">{stats?.recentSales.toLocaleString() || 0}%</div>
           </CardContent>
         </Card>
       </div>
@@ -178,7 +178,7 @@ export default function DashboardPage() {
                     <div className="w-2 h-2 rounded-full bg-orange-500" />
                     <span className="text-sm font-medium text-foreground">{product.name}</span>
                   </div>
-                  <span className="text-sm font-semibold text-foreground">{product.sales}</span>
+                  <span className="text-sm font-semibold text-foreground">{product.sales.toLocaleString()}</span>
                 </div>
               )) || <p className="text-muted-foreground">No data</p>}
             </div>
