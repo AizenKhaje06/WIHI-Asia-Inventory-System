@@ -202,7 +202,7 @@ export default function ProductEditPage() {
                     <td className="py-4 text-sm text-muted-foreground w-[10%]">{item.sku}</td>
                     <td className="py-4 text-sm text-muted-foreground w-[15%]">{item.category}</td>
                     <td className="py-4 text-right text-sm w-[8%]">
-                      <span className={cn("font-bold", item.quantity <= item.reorderLevel ? "text-orange-500" : "text-green-500")}>{item.quantity}</span>
+                      <span className="font-bold text-black">{item.quantity}</span>
                     </td>
                     <td className="py-4 text-right text-sm text-foreground w-[10%]">₱{item.costPrice.toFixed(2)}</td>
                     <td className="py-4 text-right text-sm text-foreground w-[10%]">₱{item.sellingPrice.toFixed(2)}</td>
