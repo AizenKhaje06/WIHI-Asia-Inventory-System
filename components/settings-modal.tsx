@@ -103,7 +103,6 @@ export function SettingsModal({ isOpen, onClose, onCodeSubmit }: SettingsModalPr
               >
                 {isLoading ? "Verifying..." : "Access Settings"}
               </Button>
-            </Button>
             </div>
           </form>
 
