@@ -96,57 +96,49 @@ export default function AnalyticsPage() {
 
       {/* Sales Performance Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <Card className="group border-0 shadow-lg bg-gradient-to-br from-slate-600 to-slate-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-100">Total Revenue</CardTitle>
-            <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
-              <DollarSign className="h-4 w-4 text-white" />
-            </div>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-foreground">
               ₱{(report?.totalRevenue || 0).toFixed(2)}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group border-0 shadow-lg bg-gradient-to-br from-gray-600 to-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-100">Total Cost</CardTitle>
-            <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
-              <TrendingDown className="h-4 w-4 text-white" />
-            </div>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Cost</CardTitle>
+            <TrendingDown className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-foreground">
               ₱{(report?.totalCost || 0).toFixed(2)}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group border-0 shadow-lg bg-gradient-to-br from-zinc-600 to-zinc-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-100">Total Profit</CardTitle>
-            <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
-              <TrendingUp className="h-4 w-4 text-white" />
-            </div>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Profit</CardTitle>
+            <TrendingUp className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-foreground">
               ₱{(report?.totalProfit || 0).toFixed(2)}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group border-0 shadow-lg bg-gradient-to-br from-neutral-600 to-neutral-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-100">Profit Margin</CardTitle>
-            <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
-              <Percent className="h-4 w-4 text-white" />
-            </div>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Profit Margin</CardTitle>
+            <Percent className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-foreground">
               {(report?.profitMargin || 0).toFixed(1)}%
             </div>
           </CardContent>
