@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, ShoppingCart, Trash2, CheckCircle } from "lucide-react"
+import { Search, ShoppingCart, Trash2, CheckCircle, CreditCard, Smartphone, Filter } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import type { InventoryItem } from "@/lib/types"
 
@@ -130,10 +131,12 @@ export default function POSPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Point of Sale</h1>
-        <p className="text-muted-foreground">Process sales transactions</p>
+    <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800">
+      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
+          Point of Sale
+        </h1>
+        <p className="text-slate-600 dark:text-slate-300 text-lg">Professional sales transaction processing system</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
