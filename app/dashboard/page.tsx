@@ -175,64 +175,64 @@ export default function DashboardPage() {
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-8">
-        <Card className="group border-0 shadow-lg bg-gradient-to-br from-blue-600 to-blue-700 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
+        <Card className="group border-0 shadow-lg bg-gradient-to-br from-slate-600 to-slate-700 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-blue-100">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-100">Total Revenue</CardTitle>
             <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
               <DollarSign className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white mb-1">₱{formatNumber(stats?.totalValue || 0)}</div>
-            <div className="flex items-center gap-1 text-blue-200 text-sm">
+            <div className="text-3xl font-bold text-white mb-1">₱{formatNumber(stats?.totalRevenue || 0)}</div>
+            <div className="flex items-center gap-1 text-slate-200 text-sm">
               <ArrowUpRight className="h-3 w-3" />
               <span>+12.5% from last month</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group border-0 shadow-lg bg-gradient-to-br from-emerald-600 to-emerald-700 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-300">
+        <Card className="group border-0 shadow-lg bg-gradient-to-br from-gray-600 to-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-300">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-emerald-100">Total Cost</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-100">Total Cost</CardTitle>
             <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
               <TrendingDown className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white mb-1">₱{formatNumber(stats?.lowStockItems || 0)}</div>
-            <div className="flex items-center gap-1 text-emerald-200 text-sm">
+            <div className="text-3xl font-bold text-white mb-1">₱{formatNumber(stats?.totalCost || 0)}</div>
+            <div className="flex items-center gap-1 text-gray-200 text-sm">
               <ArrowDownRight className="h-3 w-3" />
               <span>-8.2% from last month</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group border-0 shadow-lg bg-gradient-to-br from-purple-600 to-purple-700 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-400">
+        <Card className="group border-0 shadow-lg bg-gradient-to-br from-zinc-600 to-zinc-700 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-400">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-purple-100">Total Products</CardTitle>
+            <CardTitle className="text-sm font-medium text-zinc-100">Total Profit</CardTitle>
             <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
-              <Package className="h-4 w-4 text-white" />
+              <TrendingUp className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white mb-1">{stats?.totalItems.toLocaleString() || 0}</div>
-            <div className="flex items-center gap-1 text-purple-200 text-sm">
+            <div className="text-3xl font-bold text-white mb-1">₱{formatNumber(stats?.totalProfit || 0)}</div>
+            <div className="flex items-center gap-1 text-zinc-200 text-sm">
               <ArrowUpRight className="h-3 w-3" />
               <span>+5.3% from last month</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group border-0 shadow-lg bg-gradient-to-br from-amber-600 to-amber-700 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-500">
+        <Card className="group border-0 shadow-lg bg-gradient-to-br from-neutral-600 to-neutral-700 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-amber-100">Profit Margin</CardTitle>
+            <CardTitle className="text-sm font-medium text-neutral-100">Profit Margin</CardTitle>
             <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
-              <TrendingUp className="h-4 w-4 text-white" />
+              <Percent className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white mb-1">{stats?.recentSales.toLocaleString() || 0}%</div>
-            <div className="flex items-center gap-1 text-amber-200 text-sm">
+            <div className="text-3xl font-bold text-white mb-1">{stats?.profitMargin?.toFixed(1) || 0}%</div>
+            <div className="flex items-center gap-1 text-neutral-200 text-sm">
               <ArrowUpRight className="h-3 w-3" />
               <span>+2.1% from last month</span>
             </div>

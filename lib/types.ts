@@ -57,6 +57,10 @@ export interface DashboardStats {
   lowStockItems: number
   totalValue: number
   recentSales: number
+  totalRevenue: number
+  totalCost: number
+  totalProfit: number
+  profitMargin: number
   salesOverTime: { date: string; purchases: number; sales: number }[]
   topProducts: { name: string; sales: number }[]
   recentTransactions: Transaction[]

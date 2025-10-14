@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { SalesReport } from "@/lib/types"
-import { DollarSign, TrendingUp, Percent } from "lucide-react"
+import { DollarSign, TrendingUp, Percent, TrendingDown } from "lucide-react"
 import { formatNumber } from "@/lib/utils"
 
 export default function ReportsPage() {
@@ -71,43 +71,51 @@ export default function ReportsPage() {
       {report && (
         <>
           <div className="mb-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
+            <Card className="group border-0 shadow-lg bg-gradient-to-br from-slate-600 to-slate-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-                <DollarSign className="h-4 w-4 text-green-500" />
+                <CardTitle className="text-sm font-medium text-slate-100">Total Revenue</CardTitle>
+                <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                  <DollarSign className="h-4 w-4 text-white" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">₱{formatNumber(report.totalRevenue)}</div>
+                <div className="text-2xl font-bold text-white">₱{formatNumber(report.totalRevenue)}</div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="group border-0 shadow-lg bg-gradient-to-br from-gray-600 to-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Cost (COGS)</CardTitle>
-                <TrendingUp className="h-4 w-4 text-orange-500" />
+                <CardTitle className="text-sm font-medium text-gray-100">Total Cost (COGS)</CardTitle>
+                <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                  <TrendingDown className="h-4 w-4 text-white" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">₱{formatNumber(report.totalCost)}</div>
+                <div className="text-2xl font-bold text-white">₱{formatNumber(report.totalCost)}</div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="group border-0 shadow-lg bg-gradient-to-br from-zinc-600 to-zinc-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Profit</CardTitle>
-                <DollarSign className="h-4 w-4 text-green-500" />
+                <CardTitle className="text-sm font-medium text-zinc-100">Total Profit</CardTitle>
+                <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                  <TrendingUp className="h-4 w-4 text-white" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">₱{formatNumber(report.totalProfit)}</div>
+                <div className="text-2xl font-bold text-white">₱{formatNumber(report.totalProfit)}</div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="group border-0 shadow-lg bg-gradient-to-br from-neutral-600 to-neutral-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Profit Margin</CardTitle>
-                <Percent className="h-4 w-4 text-green-500" />
+                <CardTitle className="text-sm font-medium text-neutral-100">Profit Margin</CardTitle>
+                <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                  <Percent className="h-4 w-4 text-white" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">{report.profitMargin.toFixed(2)}%</div>
+                <div className="text-2xl font-bold text-white">{report.profitMargin.toFixed(2)}%</div>
               </CardContent>
             </Card>
           </div>
