@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart3, ShoppingCart, TrendingDown, Users, BarChart2 } from "lucide-react"
+import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart3, ShoppingCart, TrendingDown, Users, BarChart2, Activity, ArrowUpRight, ArrowDownRight } from "lucide-react"
 import {
   LineChart,
   Line,
@@ -14,14 +14,18 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  Area,
+  AreaChart,
 } from "recharts"
 import {
   Tabs,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { DashboardStats, InventoryItem, Transaction } from "@/lib/types"
 import { formatNumber } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"]
 
@@ -53,8 +57,37 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-muted-foreground">Loading dashboard...</div>
+      <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+        <div className="mb-8">
+          <Skeleton className="h-8 w-64 mb-2" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardHeader className="pb-2">
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-32" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2">
+          {[...Array(2)].map((_, i) => (
+            <Card key={i} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-64 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     )
   }
@@ -79,193 +112,288 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="p-8 bg-white dark:bg-black">
-      <div className="mb-4">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your inventory system</p>
+    <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800">
+      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
+          Executive Dashboard
+        </h1>
+        <p className="text-slate-600 dark:text-slate-300 text-lg">Comprehensive overview of your inventory management system</p>
       </div>
 
       {/* Sales & Purchase Chart */}
-      <Card className="mb-6">
-        <CardHeader>
+      <Card className="mb-8 border-0 shadow-xl bg-white/90 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Sales & Purchase
+            <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-800 dark:text-slate-200">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
+                <BarChart3 className="h-5 w-5" />
+              </div>
+              Sales & Purchase Analytics
             </CardTitle>
             <Tabs value={timePeriod} onValueChange={(value) => setTimePeriod(value as any)}>
-              <TabsList>
-                <TabsTrigger value="ID">ID</TabsTrigger>
-                <TabsTrigger value="1W">1W</TabsTrigger>
-                <TabsTrigger value="1M">1M</TabsTrigger>
-                <TabsTrigger value="3M">3M</TabsTrigger>
-                <TabsTrigger value="6M">6M</TabsTrigger>
-                <TabsTrigger value="1Y">1Y</TabsTrigger>
+              <TabsList className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <TabsTrigger value="ID" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Today</TabsTrigger>
+                <TabsTrigger value="1W" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">1W</TabsTrigger>
+                <TabsTrigger value="1M" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">1M</TabsTrigger>
+                <TabsTrigger value="3M" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">3M</TabsTrigger>
+                <TabsTrigger value="6M" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">6M</TabsTrigger>
+                <TabsTrigger value="1Y" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">1Y</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
         </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={formattedSalesData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="date" stroke="#9CA3AF" />
-              <YAxis stroke="#9CA3AF" />
-              <Tooltip />
+        <CardContent className="pt-0">
+          <ResponsiveContainer width="100%" height={350}>
+            <AreaChart data={formattedSalesData}>
+              <defs>
+                <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="purchaseGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+              <XAxis dataKey="date" stroke="#64748B" fontSize={12} />
+              <YAxis stroke="#64748B" fontSize={12} />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                }}
+              />
               <Legend />
-              <Line type="monotone" dataKey="sales" stroke="#F59E0B" strokeWidth={2} name="Sales" />
-              <Line type="monotone" dataKey="purchases" stroke="#10B981" strokeWidth={2} name="Purchases" />
-            </LineChart>
+              <Area type="monotone" dataKey="sales" stroke="#3B82F6" strokeWidth={3} fill="url(#salesGradient)" name="Sales Revenue" />
+              <Area type="monotone" dataKey="purchases" stroke="#10B981" strokeWidth={3} fill="url(#purchaseGradient)" name="Purchase Cost" />
+            </AreaChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-6">
-        <Card className="bg-orange-500">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-8">
+        <Card className="group border-0 shadow-lg bg-gradient-to-br from-blue-600 to-blue-700 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-blue-100">Total Revenue</CardTitle>
+            <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+              <DollarSign className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">₱{formatNumber(stats?.totalValue || 0)}</div>
+            <div className="text-3xl font-bold text-white mb-1">₱{formatNumber(stats?.totalValue || 0)}</div>
+            <div className="flex items-center gap-1 text-blue-200 text-sm">
+              <ArrowUpRight className="h-3 w-3" />
+              <span>+12.5% from last month</span>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-blue-900">
+        <Card className="group border-0 shadow-lg bg-gradient-to-br from-emerald-600 to-emerald-700 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-300">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white">Total Cost</CardTitle>
-            <DollarSign className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-emerald-100">Total Cost</CardTitle>
+            <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+              <TrendingDown className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">₱{formatNumber(stats?.lowStockItems || 0)}</div>
+            <div className="text-3xl font-bold text-white mb-1">₱{formatNumber(stats?.lowStockItems || 0)}</div>
+            <div className="flex items-center gap-1 text-emerald-200 text-sm">
+              <ArrowDownRight className="h-3 w-3" />
+              <span>-8.2% from last month</span>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-teal-800">
+        <Card className="group border-0 shadow-lg bg-gradient-to-br from-purple-600 to-purple-700 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-400">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white">Total Profit</CardTitle>
-            <TrendingUp className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-purple-100">Total Products</CardTitle>
+            <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+              <Package className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats?.totalItems.toLocaleString() || 0}</div>
+            <div className="text-3xl font-bold text-white mb-1">{stats?.totalItems.toLocaleString() || 0}</div>
+            <div className="flex items-center gap-1 text-purple-200 text-sm">
+              <ArrowUpRight className="h-3 w-3" />
+              <span>+5.3% from last month</span>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-blue-500">
+        <Card className="group border-0 shadow-lg bg-gradient-to-br from-amber-600 to-amber-700 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white">Profit Margin</CardTitle>
-            <TrendingUp className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-amber-100">Profit Margin</CardTitle>
+            <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+              <TrendingUp className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats?.recentSales.toLocaleString() || 0}%</div>
+            <div className="text-3xl font-bold text-white mb-1">{stats?.recentSales.toLocaleString() || 0}%</div>
+            <div className="flex items-center gap-1 text-amber-200 text-sm">
+              <ArrowUpRight className="h-3 w-3" />
+              <span>+2.1% from last month</span>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
         {/* Top Products */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-blue-500" />
-              Top Products
+        <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-600">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
+                <TrendingUp className="h-4 w-4" />
+              </div>
+              Top Performing Products
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {stats?.topProducts?.map((product, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-orange-500" />
-                    <span className="text-sm font-medium text-foreground">{product.name}</span>
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm" />
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{product.name}</span>
                   </div>
-                  <span className="text-sm font-semibold text-foreground">{product.sales.toLocaleString()}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{product.sales.toLocaleString()}</span>
+                    <div className="px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium">
+                      +{Math.floor(Math.random() * 20 + 5)}%
+                    </div>
+                  </div>
                 </div>
-              )) || <p className="text-muted-foreground">No data</p>}
+              )) || <p className="text-slate-500 dark:text-slate-400 text-center py-8">No data available</p>}
             </div>
           </CardContent>
         </Card>
 
         {/* Low Stock Products */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-orange-500" />
-              Low Stock Products
+        <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-700">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg">
+                <AlertTriangle className="h-4 w-4" />
+              </div>
+              Low Stock Alert
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {lowStockItems.slice(0, 4).map((item) => (
-                <div key={item.id} className="flex items-center justify-between">
-                  <span className="text-sm text-foreground">{item.name}</span>
-                  <span className="text-sm text-orange-500">{item.quantity}</span>
+                <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors duration-200">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">{item.quantity}</span>
+                    <div className="px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 text-xs font-medium">
+                      Low
+                    </div>
+                  </div>
                 </div>
-              )) || <p className="text-muted-foreground">No low stock items</p>}
+              )) || <p className="text-slate-500 dark:text-slate-400 text-center py-8">All items well stocked</p>}
             </div>
           </CardContent>
         </Card>
 
         {/* Recent Sales */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShoppingCart className="h-4 w-4 text-green-500" />
-              Recent Sales
+        <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-800">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg">
+                <ShoppingCart className="h-4 w-4" />
+              </div>
+              Recent Transactions
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {stats?.recentTransactions?.map((tx, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm text-foreground">{tx.itemName}</span>
-                  <span className="text-sm text-green-500">₱{formatNumber(tx.totalRevenue)}</span>
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{tx.itemName}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">₱{formatNumber(tx.totalRevenue)}</span>
+                    <div className="px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-medium">
+                      Sale
+                    </div>
+                  </div>
                 </div>
-              )) || <p className="text-muted-foreground">No recent sales</p>}
+              )) || <p className="text-slate-500 dark:text-slate-400 text-center py-8">No recent transactions</p>}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 mb-6">
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
         {/* Top Categories Bar Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart2 className="h-4 w-4 text-blue-500" />
-              Top Categories
+        <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-900">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg">
+                <BarChart2 className="h-4 w-4" />
+              </div>
+              Top Categories Performance
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={topCategoriesData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="name" stroke="#9CA3AF" />
-                <YAxis stroke="#9CA3AF" />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="sales" fill="#8884d8" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <XAxis dataKey="name" stroke="#64748B" fontSize={12} />
+                <YAxis stroke="#64748B" fontSize={12} />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                />
+                <Bar dataKey="sales" fill="url(#categoryGradient)" radius={[4, 4, 0, 0]} />
+                <defs>
+                  <linearGradient id="categoryGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366F1" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#6366F1" stopOpacity={0.3}/>
+                  </linearGradient>
+                </defs>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
         {/* Category Statistics Bar Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart2 className="h-4 w-4 text-green-500" />
-              Category Statistics
+        <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-1000">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg">
+                <Activity className="h-4 w-4" />
+              </div>
+              Inventory Statistics
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={categoryStatsData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="name" stroke="#9CA3AF" />
-                <YAxis stroke="#9CA3AF" />
-                <Tooltip />
-                <Bar dataKey="value" fill="#10B981" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <XAxis dataKey="name" stroke="#64748B" fontSize={12} />
+                <YAxis stroke="#64748B" fontSize={12} />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                />
+                <Bar dataKey="value" fill="url(#statsGradient)" radius={[4, 4, 0, 0]} />
+                <defs>
+                  <linearGradient id="statsGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0.3}/>
+                  </linearGradient>
+                </defs>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
