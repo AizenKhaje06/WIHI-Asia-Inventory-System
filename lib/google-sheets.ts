@@ -25,7 +25,7 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: "Inventory!A2:I",
+    range: "Inventory!A2:J",
   })
 
   const rows = response.data.values || []
@@ -39,6 +39,7 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
     reorderLevel: Number.parseInt(row[6] || "0"),
     supplier: row[7] || "",
     lastUpdated: row[8] || formatTimestamp(new Date()),
+    totalCOGS: Number.parseFloat(row[9] || "0"),
   }))
 }
 
@@ -48,6 +49,7 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpd
 
   const id = `ITEM-${Date.now()}`
   const lastUpdated = formatTimestamp(new Date())
+  const totalCOGS = item.quantity * item.costPrice
 
   const values = [
     [
@@ -60,17 +62,18 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpd
       item.reorderLevel,
       item.supplier,
       lastUpdated,
+      totalCOGS,
     ],
   ]
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "Inventory!A:I",
+    range: "Inventory!A:J",
     valueInputOption: "RAW",
     requestBody: { values },
   })
 
-  return { ...item, id, lastUpdated }
+  return { ...item, id, lastUpdated, totalCOGS }
 }
 
 export async function updateInventoryItem(id: string, updates: Partial<InventoryItem>): Promise<void> {
@@ -101,6 +104,7 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
     reorderLevel: 6,
     supplier: 7,
     lastUpdated: 8,
+    totalCOGS: 9,
   }
 
   const requests = []

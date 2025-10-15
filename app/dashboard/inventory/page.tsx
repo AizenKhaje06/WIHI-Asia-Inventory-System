@@ -233,10 +233,10 @@ export default function InventoryPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 w-[30%]">Product Name</th>
-
-                  <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 w-[15%]">Category</th>
-                  <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[8%]">Stock</th>
+                  <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 w-[25%]">Product Name</th>
+                  <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 w-[12%]">Category</th>
+                  <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[6%]">Stock</th>
+                  <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[10%]">Total COGS</th>
                   <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[10%]">Cost</th>
                   <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[10%]">Price</th>
                   <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[17%]">Actions</th>
@@ -245,35 +245,35 @@ export default function InventoryPage() {
               <tbody>
                 {filteredItems.map((item) => (
                   <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
-                    <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200 w-[30%]">{item.name}</td>
-
-                    <td className="py-4 text-sm text-slate-600 dark:text-slate-400 w-[15%]">{item.category}</td>
-                    <td className="py-4 text-right text-sm w-[8%]">
+                    <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200 w-[25%]">{item.name}</td>
+                    <td className="py-4 text-sm text-slate-600 dark:text-slate-400 w-[12%]">{item.category}</td>
+                    <td className="py-4 text-right text-sm w-[6%]">
                       <span className="font-bold text-slate-800 dark:text-slate-200">{item.quantity}</span>
                     </td>
+                    <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">₱{item.totalCOGS.toFixed(2)}</td>
                     <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">₱{item.costPrice.toFixed(2)}</td>
                     <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">₱{item.sellingPrice.toFixed(2)}</td>
                     <td className="py-4 text-right w-[17%]">
                       <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleRestock(item)}
                           className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200"
                         >
                           <PackagePlus className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleEdit(item)}
                           className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleDelete(item.id)}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
                         >
