@@ -29,18 +29,25 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
   })
 
   const rows = response.data.values || []
-  return rows.map((row) => ({
-    id: row[0] || "",
-    name: row[1] || "",
-    category: row[2] || "",
-    quantity: Number.parseInt(row[3] || "0"),
-    costPrice: Number.parseFloat(row[4] || "0"),
-    sellingPrice: Number.parseFloat(row[5] || "0"),
-    reorderLevel: Number.parseInt(row[6] || "0"),
-    supplier: row[7] || "",
-    lastUpdated: row[8] || formatTimestamp(new Date()),
-    totalCOGS: Number.parseFloat(row[9] || "0"),
-  }))
+  return rows.map((row) => {
+    const quantity = Number.parseInt(row[3] || "0")
+    const costPrice = Number.parseFloat(row[4] || "0")
+    const storedTotalCOGS = Number.parseFloat(row[9] || "0")
+    const totalCOGS = storedTotalCOGS > 0 ? storedTotalCOGS : quantity * costPrice
+
+    return {
+      id: row[0] || "",
+      name: row[1] || "",
+      category: row[2] || "",
+      quantity,
+      costPrice,
+      sellingPrice: Number.parseFloat(row[5] || "0"),
+      reorderLevel: Number.parseInt(row[6] || "0"),
+      supplier: row[7] || "",
+      lastUpdated: row[8] || formatTimestamp(new Date()),
+      totalCOGS,
+    }
+  })
 }
 
 export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpdated">): Promise<InventoryItem> {
@@ -140,6 +147,30 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
         }
       })
     }
+  }
+
+  // If quantity or costPrice is being updated, recalculate totalCOGS
+  if (updates.quantity !== undefined || updates.costPrice !== undefined) {
+    const updatedItem = { ...items[index], ...updates }
+    const newTotalCOGS = updatedItem.quantity * updatedItem.costPrice
+
+    requests.push({
+      updateCells: {
+        range: {
+          sheetId: 0,
+          startRowIndex: rowNumber - 1,
+          endRowIndex: rowNumber,
+          startColumnIndex: 9,
+          endColumnIndex: 10,
+        },
+        fields: "userEnteredValue",
+        rows: [{
+          values: [{
+            userEnteredValue: { numberValue: newTotalCOGS }
+          }]
+        }]
+      }
+    })
   }
 
   if (requests.length > 0) {
