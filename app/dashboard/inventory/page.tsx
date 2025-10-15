@@ -250,7 +250,7 @@ export default function InventoryPage() {
                     <td className="py-4 text-right text-sm w-[6%]">
                       <span className="font-bold text-slate-800 dark:text-slate-200">{item.quantity}</span>
                     </td>
-                    <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">₱{item.totalCOGS.toFixed(2)}</td>
+                    <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">₱{(item.totalCOGS ?? 0).toFixed(2)}</td>
                     <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">₱{item.costPrice.toFixed(2)}</td>
                     <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">₱{item.sellingPrice.toFixed(2)}</td>
                     <td className="py-4 text-right w-[17%]">
