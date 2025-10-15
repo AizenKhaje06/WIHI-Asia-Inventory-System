@@ -29,18 +29,25 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
   })
 
   const rows = response.data.values || []
-  return rows.map((row) => ({
-    id: row[0] || "",
-    name: row[1] || "",
-    category: row[2] || "",
-    quantity: Number.parseInt(row[3] || "0"),
-    costPrice: Number.parseFloat(row[4] || "0"),
-    sellingPrice: Number.parseFloat(row[5] || "0"),
-    reorderLevel: Number.parseInt(row[6] || "0"),
-    supplier: row[7] || "",
-    lastUpdated: row[8] || formatTimestamp(new Date()),
-    totalCOGS: Number.parseFloat(row[9] || "0"),
-  }))
+  return rows.map((row) => {
+    const quantity = Number.parseInt(row[3] || "0")
+    const storedTotalCOGS = Number.parseFloat(row[4] || "0")
+    const costPrice = Number.parseFloat(row[5] || "0")
+    const totalCOGS = storedTotalCOGS > 0 ? storedTotalCOGS : quantity * costPrice
+
+    return {
+      id: row[0] || "",
+      name: row[1] || "",
+      category: row[2] || "",
+      quantity,
+      totalCOGS,
+      costPrice,
+      sellingPrice: Number.parseFloat(row[6] || "0"),
+      reorderLevel: Number.parseInt(row[7] || "0"),
+      supplier: row[8] || "",
+      lastUpdated: row[9] || formatTimestamp(new Date()),
+    }
+  })
 }
 
 export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpdated">): Promise<InventoryItem> {
@@ -57,12 +64,12 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpd
       item.name,
       item.category,
       item.quantity,
+      totalCOGS,
       item.costPrice,
       item.sellingPrice,
       item.reorderLevel,
       item.supplier,
       lastUpdated,
-      totalCOGS,
     ],
   ]
 
@@ -99,12 +106,12 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
     name: 1,
     category: 2,
     quantity: 3,
-    costPrice: 4,
-    sellingPrice: 5,
-    reorderLevel: 6,
-    supplier: 7,
-    lastUpdated: 8,
-    totalCOGS: 9,
+    totalCOGS: 4,
+    costPrice: 5,
+    sellingPrice: 6,
+    reorderLevel: 7,
+    supplier: 8,
+    lastUpdated: 9,
   }
 
   const requests = []
@@ -140,6 +147,30 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
         }
       })
     }
+  }
+
+  // If quantity or costPrice is being updated, recalculate totalCOGS
+  if (updates.quantity !== undefined || updates.costPrice !== undefined) {
+    const updatedItem = { ...items[index], ...updates }
+    const newTotalCOGS = updatedItem.quantity * updatedItem.costPrice
+
+    requests.push({
+      updateCells: {
+        range: {
+          sheetId: 0,
+          startRowIndex: rowNumber - 1,
+          endRowIndex: rowNumber,
+          startColumnIndex: 4,
+          endColumnIndex: 5,
+        },
+        fields: "userEnteredValue",
+        rows: [{
+          values: [{
+            userEnteredValue: { numberValue: newTotalCOGS }
+          }]
+        }]
+      }
+    })
   }
 
   if (requests.length > 0) {
