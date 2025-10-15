@@ -1,3 +1,4 @@
+
 import { google } from "googleapis"
 import { format, parse } from "date-fns"
 import type { InventoryItem, Transaction, Log, Restock } from "./types"
@@ -30,9 +31,9 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
 
   const rows = response.data.values || []
   return rows.map((row) => {
-    const quantity = Number.parseInt(row[3] || "0")
-    const storedTotalCOGS = Number.parseFloat(row[4] || "0")
-    const costPrice = Number.parseFloat(row[5] || "0")
+    const quantity = Number.parseInt(row[3] || "0") || 0
+    const storedTotalCOGS = Number.parseFloat(row[4] || "0") || 0
+    const costPrice = Number.parseFloat(row[5] || "0") || 0
     const totalCOGS = storedTotalCOGS > 0 ? storedTotalCOGS : quantity * costPrice
 
     return {
@@ -40,10 +41,10 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
       name: row[1] || "",
       category: row[2] || "",
       quantity,
-      totalCOGS,
+      totalCOGS: isNaN(totalCOGS) ? 0 : totalCOGS,
       costPrice,
-      sellingPrice: Number.parseFloat(row[6] || "0"),
-      reorderLevel: Number.parseInt(row[7] || "0"),
+      sellingPrice: Number.parseFloat(row[6] || "0") || 0,
+      reorderLevel: Number.parseInt(row[7] || "0") || 0,
       supplier: row[8] || "",
       lastUpdated: row[9] || formatTimestamp(new Date()),
     }

@@ -20,7 +20,6 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: item.name,
-    sku: item.sku,
     category: item.category,
     quantity: item.quantity,
     costPrice: item.costPrice,
@@ -32,7 +31,6 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
   useEffect(() => {
     setFormData({
       name: item.name,
-      sku: item.sku,
       category: item.category,
       quantity: item.quantity,
       costPrice: item.costPrice,
@@ -81,17 +79,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-sku" className="text-foreground">
-                SKU
-              </Label>
-              <Input
-                id="edit-sku"
-                required
-                value={formData.sku}
-                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-              />
-            </div>
+
             <div className="space-y-2">
               <Label htmlFor="edit-category" className="text-foreground">
                 Category
