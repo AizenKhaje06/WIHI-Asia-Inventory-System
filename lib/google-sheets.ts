@@ -25,21 +25,20 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: "Inventory!A2:J",
+    range: "Inventory!A2:I",
   })
 
   const rows = response.data.values || []
   return rows.map((row) => ({
     id: row[0] || "",
     name: row[1] || "",
-    sku: row[2] || "",
-    category: row[3] || "",
-    quantity: Number.parseInt(row[4] || "0"),
-    costPrice: Number.parseFloat(row[5] || "0"),
-    sellingPrice: Number.parseFloat(row[6] || "0"),
-    reorderLevel: Number.parseInt(row[7] || "0"),
-    supplier: row[8] || "",
-    lastUpdated: row[9] || formatTimestamp(new Date()),
+    category: row[2] || "",
+    quantity: Number.parseInt(row[3] || "0"),
+    costPrice: Number.parseFloat(row[4] || "0"),
+    sellingPrice: Number.parseFloat(row[5] || "0"),
+    reorderLevel: Number.parseInt(row[6] || "0"),
+    supplier: row[7] || "",
+    lastUpdated: row[8] || formatTimestamp(new Date()),
   }))
 }
 
@@ -54,7 +53,6 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpd
     [
       id,
       item.name,
-      item.sku,
       item.category,
       item.quantity,
       item.costPrice,
@@ -67,7 +65,7 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpd
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "Inventory!A:J",
+    range: "Inventory!A:I",
     valueInputOption: "RAW",
     requestBody: { values },
   })
@@ -96,14 +94,13 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
   const fieldToColumn: Record<keyof InventoryItem, number> = {
     id: 0,
     name: 1,
-    sku: 2,
-    category: 3,
-    quantity: 4,
-    costPrice: 5,
-    sellingPrice: 6,
-    reorderLevel: 7,
-    supplier: 8,
-    lastUpdated: 9,
+    category: 2,
+    quantity: 3,
+    costPrice: 4,
+    sellingPrice: 5,
+    reorderLevel: 6,
+    supplier: 7,
+    lastUpdated: 8,
   }
 
   const requests = []

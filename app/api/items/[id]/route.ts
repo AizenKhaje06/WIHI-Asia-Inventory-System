@@ -38,7 +38,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       operation: "delete",
       itemId: id,
       itemName: item.name,
-      details: `Deleted "${item.name}" (SKU: ${item.sku})`
+      details: `Deleted "${item.name}"`
     })
     return NextResponse.json({ success: true })
   } catch (error) {

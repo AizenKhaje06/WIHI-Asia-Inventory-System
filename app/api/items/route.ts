@@ -10,10 +10,9 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       const searchLower = search.toLowerCase()
-      items = items.filter(
+    items = items.filter(
         (item) =>
           item.name.toLowerCase().includes(searchLower) ||
-          item.sku.toLowerCase().includes(searchLower) ||
           item.category.toLowerCase().includes(searchLower),
       )
     }
@@ -33,7 +32,7 @@ export async function POST(request: NextRequest) {
       operation: "create",
       itemId: item.id,
       itemName: item.name,
-      details: `Added "${item.name}" (SKU: ${item.sku}) - Qty: ${item.quantity}, Cost: ₱${item.costPrice.toFixed(2)}, Sell: ₱${item.sellingPrice.toFixed(2)}`
+      details: `Added "${item.name}" - Qty: ${item.quantity}, Cost: ₱${item.costPrice.toFixed(2)}, Sell: ₱${item.sellingPrice.toFixed(2)}`
     })
     return NextResponse.json(item)
   } catch (error) {
