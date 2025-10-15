@@ -1,14 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { useTheme } from "next-themes"
-import { useState } from "react"
-import { LayoutDashboard, ShoppingCart, BarChart3, Package, Tags, PackagePlus, AlertTriangle, XCircle, TrendingUp, FileText, Sun, Moon, LogOut, Settings } from "lucide-react"
+import { usePathname } from "next/navigation"
+
+import { LayoutDashboard, ShoppingCart, BarChart3, Package, Tags, PackagePlus, AlertTriangle, XCircle, TrendingUp, FileText, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
-import { SettingsModal } from "@/components/settings-modal"
+
 
 const navigation = [
   // Main Section
@@ -31,38 +30,18 @@ interface SidebarProps {
 
 export function Sidebar({ onNavClick }: SidebarProps) {
   const pathname = usePathname()
-  const router = useRouter()
-  const { theme, setTheme } = useTheme()
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
 
   const handleNavClick = (e: React.MouseEvent) => {
     onNavClick?.()
   }
 
-  const handleThemeClick = (e: React.MouseEvent) => {
-    setTheme(theme === 'dark' ? 'light' : 'dark')
-    onNavClick?.()
-  }
-
-  const handleSettingsClick = () => {
-    setIsSettingsModalOpen(true)
-    onNavClick?.()
-  }
-
-  const handleCodeSubmit = (code: string) => {
-    // Navigate to admin panel
-    router.push('/admin/instructions')
-  }
-
   return (
     <div className={cn(
       "flex h-full flex-col border-r",
-      theme === 'light'
-        ? "border-border bg-sidebar text-sidebar-foreground"
-        : "border-gray-800 bg-black/90 text-white backdrop-blur-sm"
+      "border-border bg-sidebar text-sidebar-foreground"
     )}>
       <div className={cn("flex h-16 items-center justify-center border-b px-4",
-        theme === 'light' ? "border-sidebar-border" : "border-gray-800"
+        "border-sidebar-border"
       )}>
         <h1 className="text-xl font-semibold">Inventory Pro</h1>
       </div>
@@ -80,19 +59,19 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
-                    ? (theme === 'light' ? "bg-primary text-primary-foreground" : "bg-orange-500 text-white")
-                    : (theme === 'light' ? "text-foreground hover:bg-accent hover:text-accent-foreground" : "text-gray-300 hover:bg-gray-800 hover:text-white")
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 <item.icon className={cn(
                   "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : (theme === 'light' ? "text-primary" : "text-[#00fff6]")
+                  isActive ? "text-white" : "text-primary"
                 )} />
                 <span>{item.name}</span>
               </Link>
             )
           })}
-          <Separator className={cn("my-2", theme === 'light' ? "bg-border" : "bg-gray-700")} />
+          <Separator className={cn("my-2", "bg-border")} />
         </div>
 
         {/* Inventory Section */}
@@ -108,19 +87,19 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
-                    ? (theme === 'light' ? "bg-primary text-primary-foreground" : "bg-orange-500 text-white")
-                    : (theme === 'light' ? "text-foreground hover:bg-accent hover:text-accent-foreground" : "text-gray-300 hover:bg-gray-800 hover:text-white")
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 <item.icon className={cn(
                   "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : (theme === 'light' ? "text-primary" : "text-[#00fff6]")
+                  isActive ? "text-white" : "text-primary"
                 )} />
                 <span>{item.name}</span>
               </Link>
             )
           })}
-          <Separator className={cn("my-2", theme === 'light' ? "bg-border" : "bg-gray-700")} />
+          <Separator className={cn("my-2", "bg-border")} />
         </div>
 
         {/* Cash Flow Section */}
@@ -136,19 +115,19 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
-                    ? (theme === 'light' ? "bg-primary text-primary-foreground" : "bg-orange-500 text-white")
-                    : (theme === 'light' ? "text-foreground hover:bg-accent hover:text-accent-foreground" : "text-gray-300 hover:bg-gray-800 hover:text-white")
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 <item.icon className={cn(
                   "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : (theme === 'light' ? "text-primary" : "text-[#00fff6]")
+                  isActive ? "text-white" : "text-primary"
                 )} />
                 <span>{item.name}</span>
               </Link>
             )
           })}
-          <Separator className={cn("my-2", theme === 'light' ? "bg-border" : "bg-gray-700")} />
+          <Separator className={cn("my-2", "bg-border")} />
         </div>
 
         {/* Operation Section */}
@@ -164,13 +143,13 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
-                    ? (theme === 'light' ? "bg-primary text-primary-foreground" : "bg-orange-500 text-white")
-                    : (theme === 'light' ? "text-foreground hover:bg-accent hover:text-accent-foreground" : "text-gray-300 hover:bg-gray-800 hover:text-white")
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 <item.icon className={cn(
                   "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : (theme === 'light' ? "text-primary" : "text-[#00fff6]")
+                  isActive ? "text-white" : "text-primary"
                 )} />
                 <span>{item.name}</span>
               </Link>
@@ -178,40 +157,12 @@ export function Sidebar({ onNavClick }: SidebarProps) {
           })}
         </div>
       </nav>
-      <div className={cn("border-t p-2", theme === 'light' ? "border-border" : "border-gray-800")}>
+      <div className={cn("border-t p-2", "border-border")}>
         <Button
           variant="ghost"
           size="sm"
           className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 justify-start",
-            theme === 'light'
-              ? "text-foreground hover:bg-accent hover:text-accent-foreground"
-              : "text-white hover:bg-gray-800"
-          )}
-          onClick={handleThemeClick}
-        >
-          {theme === 'dark' ? <Sun className="h-4 w-4 text-[#00fff6]" /> : <Moon className="h-4 w-4 text-primary" />}
-          <span className="capitalize">Toggle Theme</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 mt-2 justify-start",
-            theme === 'light'
-              ? "text-foreground hover:bg-accent hover:text-accent-foreground"
-              : "text-white hover:bg-gray-800"
-          )}
-          onClick={handleSettingsClick}
-        >
-          <Settings className={cn("h-4 w-4", theme === 'light' ? "text-primary" : "text-[#00fff6]")} />
-          <span>Settings</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 mt-2 justify-start",
-            theme === 'light'
-              ? "text-foreground hover:bg-accent hover:text-accent-foreground"
-              : "text-white hover:bg-gray-800"
+            "text-foreground hover:bg-accent hover:text-accent-foreground"
           )}
           onClick={() => {
             localStorage.removeItem("isLoggedIn")
@@ -222,12 +173,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
           <span>Logout</span>
         </Button>
       </div>
-      
-      <SettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
-        onCodeSubmit={handleCodeSubmit}
-      />
+
     </div>
   )
 }
