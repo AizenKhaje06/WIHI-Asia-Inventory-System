@@ -262,7 +262,7 @@ export default function DashboardPage() {
               <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg">
                 <AlertTriangle className="h-4 w-4" />
               </div>
-              Low Stock Alert
+              Low Stock Alert | Out Of Stock Alert
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -273,7 +273,7 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">{item.quantity}</span>
                     <div className="px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 text-xs font-medium">
-                      Low
+                      {item.quantity === 0 ? "Out of Stock" : "Low"}
                     </div>
                   </div>
                 </div>
