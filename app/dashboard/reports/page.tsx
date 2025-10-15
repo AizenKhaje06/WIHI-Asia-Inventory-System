@@ -73,7 +73,7 @@ export default function ReportsPage() {
           <div className="mb-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Stocks Value</CardTitle>
                 <DollarSign className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
@@ -83,7 +83,7 @@ export default function ReportsPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Cost (COGS)</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
                 <TrendingDown className="h-4 w-4 text-orange-500" />
               </CardHeader>
               <CardContent>
@@ -93,7 +93,7 @@ export default function ReportsPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Profit</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Cost</CardTitle>
                 <TrendingUp className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>

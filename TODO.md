@@ -1,11 +1,8 @@
-# TODO: Update Header Styles to Orange Gradient
+# TODO: Rename and Change Values in Dashboard Pages
 
 ## Tasks
-- [x] Update h1 in app/page.tsx to orange gradient (Dashboard)
-- [x] Update h1 in app/pos/page.tsx to orange gradient (Point of Sale)
-- [x] Update h1 in app/reports/page.tsx to orange gradient (Sales Reports)
-- [x] Update h1 in app/inventory/page.tsx to orange gradient (Inventory Management)
-- [x] Update h1 in app/inventory/low-stock/page.tsx to orange gradient (Low Stock Items)
-- [x] Update h1 in app/inventory/out-of-stock/page.tsx to orange gradient (Out of Stock Items)
-- [x] Update h1 in app/analytics/page.tsx to orange gradient (Daily Sales/Monthly Sales)
-- [x] Update app/log/page.tsx to use h1 with orange gradient (Operation History)
+- [ ] Update app/dashboard/page.tsx: Change card titles and data bindings according to mappings
+- [ ] Update app/dashboard/analytics/page.tsx: Change card titles and data bindings
+- [ ] Update app/dashboard/reports/page.tsx: Change card titles and data bindings
+- [ ] Verify API calculations are correct for the new mappings
+- [ ] Test the changes to ensure values display correctly
