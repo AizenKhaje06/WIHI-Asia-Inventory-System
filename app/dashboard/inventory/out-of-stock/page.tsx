@@ -131,7 +131,7 @@ export default function OutOfStockPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Out of Stock Items</h1>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent">Out of Stock Items</h1>
         <p className="text-muted-foreground">Items that are completely out of stock</p>
       </div>
 
