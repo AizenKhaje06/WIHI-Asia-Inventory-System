@@ -96,49 +96,49 @@ export default function AnalyticsPage() {
 
       {/* Sales Performance Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <Card>
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-500" />
+            <CardTitle className="text-sm font-medium text-blue-100">Total Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-white">
               ₱{(report?.totalRevenue || 0).toFixed(2)}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Cost</CardTitle>
-            <TrendingDown className="h-4 w-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium text-purple-100">Total Cost</CardTitle>
+            <TrendingDown className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-white">
               ₱{(report?.totalCost || 0).toFixed(2)}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Profit</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-medium text-orange-100">Total Profit</CardTitle>
+            <TrendingUp className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-white">
               ₱{(report?.totalProfit || 0).toFixed(2)}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-green-500 to-green-600 border-0 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Profit Margin</CardTitle>
-            <Percent className="h-4 w-4 text-purple-500" />
+            <CardTitle className="text-sm font-medium text-green-100">Profit Margin</CardTitle>
+            <Percent className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-white">
               {(report?.profitMargin || 0).toFixed(1)}%
             </div>
           </CardContent>
