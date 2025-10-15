@@ -19,7 +19,6 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
-    sku: "",
     category: "",
     quantity: 0,
     costPrice: 0,
@@ -43,7 +42,6 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
       onOpenChange(false)
       setFormData({
         name: "",
-        sku: "",
         category: "",
         quantity: 0,
         costPrice: 0,
@@ -77,17 +75,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="sku" className="text-foreground">
-                SKU
-              </Label>
-              <Input
-                id="sku"
-                required
-                value={formData.sku}
-                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-              />
-            </div>
+
             <div className="space-y-2">
               <Label htmlFor="category" className="text-foreground">
                 Category

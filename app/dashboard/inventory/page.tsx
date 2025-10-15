@@ -39,7 +39,6 @@ export default function InventoryPage() {
       filtered = filtered.filter(
         (item) =>
           item.name.toLowerCase().includes(searchLower) ||
-          item.sku.toLowerCase().includes(searchLower) ||
           item.category.toLowerCase().includes(searchLower),
       )
     }
@@ -185,7 +184,7 @@ export default function InventoryPage() {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   id="search"
-                  placeholder="Search by name, SKU, or category..."
+                  placeholder="Search by name or category..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
@@ -235,7 +234,7 @@ export default function InventoryPage() {
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-700">
                   <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 w-[30%]">Product Name</th>
-                  <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 w-[10%]">SKU</th>
+
                   <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 w-[15%]">Category</th>
                   <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[8%]">Stock</th>
                   <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[10%]">Cost</th>
@@ -247,7 +246,7 @@ export default function InventoryPage() {
                 {filteredItems.map((item) => (
                   <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
                     <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200 w-[30%]">{item.name}</td>
-                    <td className="py-4 text-sm text-slate-600 dark:text-slate-400 w-[10%]">{item.sku}</td>
+
                     <td className="py-4 text-sm text-slate-600 dark:text-slate-400 w-[15%]">{item.category}</td>
                     <td className="py-4 text-right text-sm w-[8%]">
                       <span className="font-bold text-slate-800 dark:text-slate-200">{item.quantity}</span>

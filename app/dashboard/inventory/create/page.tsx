@@ -14,7 +14,6 @@ export default function CreateProductPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
     name: "",
-    sku: "",
     category: "",
     quantity: 0,
     costPrice: 0,
@@ -99,17 +98,7 @@ export default function CreateProductPage() {
                   placeholder="Enter product name"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="sku">SKU</Label>
-                <Input
-                  id="sku"
-                  name="sku"
-                  value={formData.sku}
-                  onChange={handleChange}
-                  required
-                  placeholder="Enter SKU"
-                />
-              </div>
+
             </div>
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
