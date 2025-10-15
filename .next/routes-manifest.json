@@ -1,0 +1,150 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "dynamicRoutes": [
+    {
+      "page": "/api/items/[id]",
+      "regex": "^/api/items/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/items/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/items/[id]/restock",
+      "regex": "^/api/items/([^/]+?)/restock(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/items/(?<nxtPid>[^/]+?)/restock(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/admin/credentials",
+      "regex": "^/admin/credentials(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/credentials(?:/)?$"
+    },
+    {
+      "page": "/admin/instructions",
+      "regex": "^/admin/instructions(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/instructions(?:/)?$"
+    },
+    {
+      "page": "/admin/product-edit",
+      "regex": "^/admin/product\\-edit(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/product\\-edit(?:/)?$"
+    },
+    {
+      "page": "/admin/settings-code",
+      "regex": "^/admin/settings\\-code(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/settings\\-code(?:/)?$"
+    },
+    {
+      "page": "/dashboard",
+      "regex": "^/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard(?:/)?$"
+    },
+    {
+      "page": "/dashboard/analytics",
+      "regex": "^/dashboard/analytics(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/analytics(?:/)?$"
+    },
+    {
+      "page": "/dashboard/inventory",
+      "regex": "^/dashboard/inventory(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/inventory(?:/)?$"
+    },
+    {
+      "page": "/dashboard/inventory/create",
+      "regex": "^/dashboard/inventory/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/inventory/create(?:/)?$"
+    },
+    {
+      "page": "/dashboard/inventory/low-stock",
+      "regex": "^/dashboard/inventory/low\\-stock(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/inventory/low\\-stock(?:/)?$"
+    },
+    {
+      "page": "/dashboard/inventory/out-of-stock",
+      "regex": "^/dashboard/inventory/out\\-of\\-stock(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/inventory/out\\-of\\-stock(?:/)?$"
+    },
+    {
+      "page": "/dashboard/log",
+      "regex": "^/dashboard/log(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/log(?:/)?$"
+    },
+    {
+      "page": "/dashboard/pos",
+      "regex": "^/dashboard/pos(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/pos(?:/)?$"
+    },
+    {
+      "page": "/dashboard/reports",
+      "regex": "^/dashboard/reports(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/reports(?:/)?$"
+    },
+    {
+      "page": "/dashboard/settings",
+      "regex": "^/dashboard/settings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/settings(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "RSC",
+    "varyHeader": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch",
+    "prefetchHeader": "Next-Router-Prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "Next-Router-Segment-Prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  },
+  "rewrites": []
+}

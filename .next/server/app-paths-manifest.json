@@ -1,1 +1,24 @@
-{}
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/items/[id]/route": "app/api/items/[id]/route.js",
+  "/api/dashboard/route": "app/api/dashboard/route.js",
+  "/api/items/route": "app/api/items/route.js",
+  "/api/sales/route": "app/api/sales/route.js",
+  "/api/reports/route": "app/api/reports/route.js",
+  "/api/items/[id]/restock/route": "app/api/items/[id]/restock/route.js",
+  "/page": "app/page.js",
+  "/admin/product-edit/page": "app/admin/product-edit/page.js",
+  "/admin/settings-code/page": "app/admin/settings-code/page.js",
+  "/admin/instructions/page": "app/admin/instructions/page.js",
+  "/admin/credentials/page": "app/admin/credentials/page.js",
+  "/dashboard/analytics/page": "app/dashboard/analytics/page.js",
+  "/dashboard/inventory/low-stock/page": "app/dashboard/inventory/low-stock/page.js",
+  "/dashboard/inventory/create/page": "app/dashboard/inventory/create/page.js",
+  "/dashboard/inventory/out-of-stock/page": "app/dashboard/inventory/out-of-stock/page.js",
+  "/dashboard/inventory/page": "app/dashboard/inventory/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/pos/page": "app/dashboard/pos/page.js",
+  "/dashboard/reports/page": "app/dashboard/reports/page.js",
+  "/dashboard/settings/page": "app/dashboard/settings/page.js",
+  "/dashboard/log/page": "app/dashboard/log/page.js"
+}
