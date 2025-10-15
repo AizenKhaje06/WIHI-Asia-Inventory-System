@@ -66,11 +66,26 @@ export async function GET() {
     const totalCategories = new Set(items.map((item: InventoryItem) => item.category)).size
     const totalProducts = totalItems
 
+    // Calculate financial metrics
+    const totalRevenue = transactions
+      .filter((t: Transaction) => t.type === "sale")
+      .reduce((sum, t) => sum + t.totalRevenue, 0)
+
+    const totalCost = transactions.reduce((sum, t) => sum + t.totalCost, 0)
+
+    const totalProfit = totalRevenue - totalCost
+
+    const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
+
     const stats: DashboardStats = {
       totalItems,
       lowStockItems,
       totalValue,
       recentSales,
+      totalRevenue,
+      totalCost,
+      totalProfit,
+      profitMargin,
       salesOverTime,
       topProducts,
       recentTransactions,
