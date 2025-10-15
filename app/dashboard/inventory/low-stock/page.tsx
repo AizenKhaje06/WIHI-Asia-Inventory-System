@@ -36,7 +36,6 @@ export default function LowStockPage() {
       filtered = filtered.filter(
         (item) =>
           item.name.toLowerCase().includes(searchLower) ||
-          item.sku.toLowerCase().includes(searchLower) ||
           item.category.toLowerCase().includes(searchLower),
       )
     }
@@ -145,7 +144,7 @@ export default function LowStockPage() {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder="Search by name, SKU, or category..."
+                  placeholder="Search by name or category..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10"
@@ -177,27 +176,25 @@ export default function LowStockPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[30%]">Name</th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[10%]">SKU</th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[15%]">Category</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[8%]">Quantity</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[10%]">Cost</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[10%]">Price</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[17%]">Actions</th>
+                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[35%]">Name</th>
+                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[20%]">Category</th>
+                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[10%]">Quantity</th>
+                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[12%]">Cost</th>
+                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[12%]">Price</th>
+                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[11%]">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredItems.map((item) => (
                   <tr key={item.id} className="border-b border-border last:border-0">
-                    <td className="py-4 text-sm text-foreground w-[30%]">{item.name}</td>
-                    <td className="py-4 text-sm text-muted-foreground w-[10%]">{item.sku}</td>
-                    <td className="py-4 text-sm text-muted-foreground w-[15%]">{item.category}</td>
-                    <td className="py-4 text-right text-sm w-[8%]">
+                    <td className="py-4 text-sm text-foreground w-[35%]">{item.name}</td>
+                    <td className="py-4 text-sm text-muted-foreground w-[20%]">{item.category}</td>
+                    <td className="py-4 text-right text-sm w-[10%]">
                       <span className={cn("font-bold", item.quantity <= item.reorderLevel ? "text-orange-500" : "text-green-500")}>{item.quantity}</span>
                     </td>
-                    <td className="py-4 text-right text-sm text-foreground w-[10%]">₱{item.costPrice.toFixed(2)}</td>
-                    <td className="py-4 text-right text-sm text-foreground w-[10%]">₱{item.sellingPrice.toFixed(2)}</td>
-                    <td className="py-4 text-right w-[17%]">
+                    <td className="py-4 text-right text-sm text-foreground w-[12%]">₱{item.costPrice.toFixed(2)}</td>
+                    <td className="py-4 text-right text-sm text-foreground w-[12%]">₱{item.sellingPrice.toFixed(2)}</td>
+                    <td className="py-4 text-right w-[11%]">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm" onClick={() => handleRestock(item)}>
                           <PackagePlus className="h-4 w-4" />
