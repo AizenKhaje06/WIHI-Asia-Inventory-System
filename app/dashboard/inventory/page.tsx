@@ -26,6 +26,7 @@ export default function InventoryPage() {
   const [restockDialogOpen, setRestockDialogOpen] = useState(false)
   const [selectedRestockItem, setSelectedRestockItem] = useState<InventoryItem | null>(null)
   const [restockAmount, setRestockAmount] = useState(0)
+  const [restockReason, setRestockReason] = useState("")
 
   useEffect(() => {
     fetchItems()
@@ -82,17 +83,18 @@ export default function InventoryPage() {
   function handleRestock(item: InventoryItem) {
     setSelectedRestockItem(item)
     setRestockAmount(0)
+    setRestockReason("")
     setRestockDialogOpen(true)
   }
 
   async function handleRestockSubmit() {
-    if (!selectedRestockItem || restockAmount <= 0) return
+    if (!selectedRestockItem || restockAmount <= 0 || !restockReason) return
 
     try {
       const res = await fetch(`/api/items/${selectedRestockItem.id}/restock`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: restockAmount }),
+        body: JSON.stringify({ amount: restockAmount, reason: restockReason }),
       })
 
       if (!res.ok) {
@@ -103,6 +105,7 @@ export default function InventoryPage() {
 
       setRestockDialogOpen(false)
       setSelectedRestockItem(null)
+      setRestockReason("")
       fetchItems()
       alert("Item restocked successfully!")
     } catch (error) {
@@ -321,9 +324,24 @@ export default function InventoryPage() {
                   placeholder="Enter amount"
                 />
               </div>
+              <div>
+                <Label htmlFor="restock-reason">Reason for Restock</Label>
+                <Select value={restockReason} onValueChange={setRestockReason}>
+                  <SelectTrigger id="restock-reason">
+                    <SelectValue placeholder="Select a reason" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new-stock">New Stock Arrival</SelectItem>
+                    <SelectItem value="damaged-return">Damaged Item Return</SelectItem>
+                    <SelectItem value="supplier-return">Supplier Return</SelectItem>
+                    <SelectItem value="inventory-adjustment">Inventory Adjustment</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <DialogFooter>
-              <Button type="submit" onClick={handleRestockSubmit} disabled={restockAmount <= 0}>
+              <Button type="submit" onClick={handleRestockSubmit} disabled={restockAmount <= 0 || !restockReason}>
                 Restock Item
               </Button>
             </DialogFooter>

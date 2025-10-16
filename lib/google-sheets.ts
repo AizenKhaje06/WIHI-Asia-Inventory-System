@@ -376,7 +376,7 @@ async function initializeRestockSheet() {
   try {
     await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "Restock!A1:G1"
+      range: "Restock!A1:H1"
     })
   } catch (error) {
     // Sheet doesn't exist, create it
@@ -389,7 +389,7 @@ async function initializeRestockSheet() {
               title: 'Restock',
               gridProperties: {
                 rowCount: 1000,
-                columnCount: 7
+                columnCount: 8
               }
             }
           }
@@ -399,10 +399,10 @@ async function initializeRestockSheet() {
     // Add headers
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: "Restock!A1:G1",
+      range: "Restock!A1:H1",
       valueInputOption: "RAW",
       requestBody: {
-        values: [["ID", "Item ID", "Item Name", "Quantity Added", "Cost Price", "Total Cost", "Timestamp"]]
+        values: [["ID", "Item ID", "Item Name", "Quantity Added", "Cost Price", "Total Cost", "Timestamp", "Reason"]]
       }
     })
   }
@@ -426,12 +426,13 @@ export async function addRestock(restock: Omit<Restock, "id" | "timestamp">): Pr
       restock.costPrice,
       restock.totalCost,
       timestamp,
+      restock.reason,
     ],
   ]
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "Restock!A:G",
+    range: "Restock!A:H",
     valueInputOption: "RAW",
     requestBody: { values },
   })
@@ -447,7 +448,7 @@ export async function getRestocks(): Promise<Restock[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: "Restock!A2:G",
+    range: "Restock!A2:H",
   })
 
   const rows = response.data.values || []
@@ -459,5 +460,6 @@ export async function getRestocks(): Promise<Restock[]> {
     costPrice: Number.parseFloat(row[4] || "0"),
     totalCost: Number.parseFloat(row[5] || "0"),
     timestamp: row[6] || "",
+    reason: row[7] || "",
   })).sort((a, b) => parse(b.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime() - parse(a.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime())
 }

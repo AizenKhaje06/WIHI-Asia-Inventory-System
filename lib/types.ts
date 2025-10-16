@@ -86,4 +86,5 @@ export interface Restock {
   costPrice: number
   totalCost: number
   timestamp: string
+  reason: string
 }

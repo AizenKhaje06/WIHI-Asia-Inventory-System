@@ -8,10 +8,14 @@ export async function POST(
   try {
     const { id } = await params
     const body = await request.json()
-    const { amount } = body
+    const { amount, reason } = body
 
     if (!amount || amount <= 0) {
       return NextResponse.json({ error: "Amount must be a positive number" }, { status: 400 })
+    }
+
+    if (!reason) {
+      return NextResponse.json({ error: "Reason is required" }, { status: 400 })
     }
 
     const items = await getInventoryItems()
@@ -34,6 +38,7 @@ export async function POST(
       quantity: amount,
       costPrice: item.costPrice,
       totalCost: item.costPrice * amount,
+      reason,
     })
 
     // Log the operation
