@@ -130,9 +130,9 @@ export default function LowStockPage() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Low Stock Items</h1>
-        <p className="text-muted-foreground">Items that need restocking</p>
+      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">Low Stock Items</h1>
+        <p className="text-slate-600 dark:text-slate-300 text-lg">Items that need restocking</p>
       </div>
 
       <Card className="mb-6">

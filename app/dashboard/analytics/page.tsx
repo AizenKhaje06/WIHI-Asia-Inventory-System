@@ -89,7 +89,7 @@ export default function AnalyticsPage() {
     <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800">
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
-          {view === 'daily' ? 'Daily Sales Analytics' : 'Monthly Sales Analytics'}
+          Transactions
         </h1>
         <p className="text-slate-600 dark:text-slate-300 text-lg">Comprehensive sales performance analysis and insights</p>
       </div>

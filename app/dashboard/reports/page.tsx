@@ -38,9 +38,9 @@ export default function ReportsPage() {
 
   return (
     <div className="p-8 bg-white dark:bg-black">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Sales Reports</h1>
-        <p className="text-muted-foreground">View sales analytics and COGS</p>
+      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">Sales Reports</h1>
+        <p className="text-slate-600 dark:text-slate-300 text-lg">View sales analytics and COGS</p>
       </div>
 
       <Card className="mb-6 border-0 shadow-xl bg-white/90 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
