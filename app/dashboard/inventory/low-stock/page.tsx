@@ -29,7 +29,7 @@ export default function LowStockPage() {
   }, [])
 
   useEffect(() => {
-    let filtered = items.filter((item) => item.quantity <= item.reorderLevel)
+    let filtered = items.filter((item) => item.quantity <= item.reorderLevel && item.quantity > 0)
 
     if (search) {
       const searchLower = search.toLowerCase()
