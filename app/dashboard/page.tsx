@@ -262,7 +262,7 @@ export default function DashboardPage() {
               <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg">
                 <AlertTriangle className="h-4 w-4" />
               </div>
-              Low Stock Alert | Out Of Stock Alert
+              Stock Warning
             </CardTitle>
           </CardHeader>
           <CardContent>
