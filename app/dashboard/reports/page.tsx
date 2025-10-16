@@ -43,25 +43,22 @@ export default function ReportsPage() {
         <p className="text-muted-foreground">View sales analytics and COGS</p>
       </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-foreground">Filter Reports</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Card className="mb-6 border-0 shadow-xl bg-white/90 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+        <CardContent className="pt-6">
           <div className="flex flex-wrap items-end gap-4">
             <div className="flex-1 space-y-2">
-              <Label htmlFor="startDate" className="text-foreground">
+              <Label htmlFor="startDate" className="text-slate-700 dark:text-slate-300 font-medium">
                 Start Date
               </Label>
-              <Input id="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <Input id="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20" />
             </div>
             <div className="flex-1 space-y-2">
-              <Label htmlFor="endDate" className="text-foreground">
+              <Label htmlFor="endDate" className="text-slate-700 dark:text-slate-300 font-medium">
                 End Date
               </Label>
-              <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20" />
             </div>
-            <Button onClick={fetchReport} disabled={loading}>
+            <Button onClick={fetchReport} disabled={loading} className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300">
               {loading ? "Loading..." : "Generate Report"}
             </Button>
           </div>

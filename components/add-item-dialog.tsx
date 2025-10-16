@@ -65,7 +65,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-foreground">
+              <Label htmlFor="name" className="text-slate-700 dark:text-slate-300 font-medium">
                 Name
               </Label>
               <Input
@@ -73,15 +73,16 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category" className="text-foreground">
+              <Label htmlFor="category" className="text-slate-700 dark:text-slate-300 font-medium">
                 Category
               </Label>
               <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })} required>
-                <SelectTrigger id="category">
+                <SelectTrigger id="category" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -99,7 +100,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="quantity" className="text-foreground">
+              <Label htmlFor="quantity" className="text-slate-700 dark:text-slate-300 font-medium">
                 Quantity
               </Label>
               <Input
@@ -108,10 +109,11 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: Number.parseInt(e.target.value) })}
+                className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="costPrice" className="text-foreground">
+              <Label htmlFor="costPrice" className="text-slate-700 dark:text-slate-300 font-medium">
                 Cost Price
               </Label>
               <Input
@@ -121,10 +123,11 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.costPrice}
                 onChange={(e) => setFormData({ ...formData, costPrice: Number.parseFloat(e.target.value) })}
+                className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sellingPrice" className="text-foreground">
+              <Label htmlFor="sellingPrice" className="text-slate-700 dark:text-slate-300 font-medium">
                 Selling Price
               </Label>
               <Input
@@ -134,10 +137,11 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.sellingPrice}
                 onChange={(e) => setFormData({ ...formData, sellingPrice: Number.parseFloat(e.target.value) })}
+                className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="reorderLevel" className="text-foreground">
+              <Label htmlFor="reorderLevel" className="text-slate-700 dark:text-slate-300 font-medium">
                 Reorder Level
               </Label>
               <Input
@@ -146,10 +150,11 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.reorderLevel}
                 onChange={(e) => setFormData({ ...formData, reorderLevel: Number.parseInt(e.target.value) })}
+                className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="supplier" className="text-foreground">
+              <Label htmlFor="supplier" className="text-slate-700 dark:text-slate-300 font-medium">
                 Supplier
               </Label>
               <Input
@@ -157,6 +162,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.supplier}
                 onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
+                className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
               />
             </div>
           </div>
