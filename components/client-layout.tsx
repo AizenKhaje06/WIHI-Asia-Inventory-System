@@ -32,7 +32,6 @@ export default function ClientLayout({
             <main className="flex-1 overflow-auto pt-4 px-6 pb-6 ml-52">
               {children}
             </main>
-            <Clock />
           </div>
         </div>
         <Analytics />
