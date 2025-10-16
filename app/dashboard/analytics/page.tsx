@@ -195,21 +195,21 @@ export default function AnalyticsPage() {
 
                 {/* Calendar Days */}
                 {generateCalendarDays(currentMonth, dailySales).map((cell, index) => (
-                  <div key={index} className="relative h-16 md:h-20">
+                  <div key={index} className="relative h-20 md:h-24">
                     {cell.day !== null ? (
                       <div
                         className={cn(
-                          "h-full p-0.5 md:p-1 border border-border rounded bg-background flex flex-col justify-center items-center",
-                          cell.revenue > 0 && "border-r-4 border-orange-500"
+                          "h-full p-1 md:p-2 border border-border rounded-lg bg-background hover:bg-muted/50 transition-colors flex flex-col justify-center items-center shadow-sm",
+                          cell.revenue > 0 && "border-r-4 border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20"
                         )}
                       >
-                        <div className="text-xs md:text-sm text-foreground text-center">{cell.day}</div>
-                        <div className={`text-xs md:text-sm text-center ${cell.revenue > 0 ? 'text-green-500' : 'text-muted-foreground'}`}>
+                        <div className="text-sm md:text-base font-semibold text-foreground text-center mb-1">{cell.day}</div>
+                        <div className={`text-xs md:text-sm text-center font-medium ${cell.revenue > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
                           {cell.revenue > 0 ? `₱${cell.revenue.toFixed(2)}` : '₱0.00'}
                         </div>
                       </div>
                     ) : (
-                      <div className="h-full p-0.5 md:p-1 opacity-50" />
+                      <div className="h-full p-1 md:p-2 opacity-30 rounded-lg bg-muted/20" />
                     )}
                   </div>
                 ))}
