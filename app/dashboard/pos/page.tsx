@@ -171,7 +171,7 @@ export default function POSPage() {
                     >
                       <div>
                         <p className="font-medium text-foreground text-sm line-clamp-2">{item.name}</p>
-                        <p className="text-xs text-white">Stock: {item.quantity}</p>
+                        <p className="text-xs text-muted-foreground">Stock: {item.quantity}</p>
                       </div>
                       <p className={`text-lg font-semibold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>₱{item.sellingPrice.toFixed(2)}</p>
                     </button>
