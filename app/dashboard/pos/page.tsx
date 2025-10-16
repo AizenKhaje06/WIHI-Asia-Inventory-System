@@ -39,7 +39,7 @@ export default function POSPage() {
     if (search) {
       const searchLower = search.toLowerCase()
       return items.filter(
-        (item) => item.name.toLowerCase().includes(searchLower) || item.sku.toLowerCase().includes(searchLower),
+        (item) => item.name.toLowerCase().includes(searchLower),
       )
     } else {
       return items
@@ -144,12 +144,12 @@ export default function POSPage() {
           <Card className={`mb-6 bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-100 shadow-lg' : 'from-black via-black/50 to-gray-900'} border-border`}>
             <CardContent className="pt-6">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   placeholder="Search products..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
                 />
               </div>
             </CardContent>
