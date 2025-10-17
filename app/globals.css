@@ -129,20 +129,12 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: url('/corporate-building.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
   }
   :not(.dark) body {
-    background-image: none;
     background: #ffffff;
   }
   .dark body {
     background: #000000;
-    background-attachment: fixed;
-    background-image: none;
   }
 }
 
