@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { InventoryItem } from "@/lib/types"
 
 interface EditItemDialogProps {
@@ -143,14 +144,20 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-supplier" className="text-foreground">
-                Supplier
+                Stock Room
               </Label>
-              <Input
-                id="edit-supplier"
-                required
-                value={formData.supplier}
-                onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-              />
+              <Select value={formData.supplier} onValueChange={(value) => setFormData({ ...formData, supplier: value })} required>
+                <SelectTrigger id="edit-supplier">
+                  <SelectValue placeholder="Select a stock room" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="A">A</SelectItem>
+                  <SelectItem value="B">B</SelectItem>
+                  <SelectItem value="C">C</SelectItem>
+                  <SelectItem value="D">D</SelectItem>
+                  <SelectItem value="E">E</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="flex justify-end gap-2">

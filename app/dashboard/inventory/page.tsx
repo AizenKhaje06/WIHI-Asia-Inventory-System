@@ -19,6 +19,8 @@ export default function InventoryPage() {
   const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
+  const [priceFilter, setPriceFilter] = useState("all")
+  const [stockRoomFilter, setStockRoomFilter] = useState("all")
   const [loading, setLoading] = useState(true)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -48,8 +50,22 @@ export default function InventoryPage() {
       filtered = filtered.filter((item) => item.category === categoryFilter)
     }
 
+    if (priceFilter && priceFilter !== "all") {
+      if (priceFilter === "low") {
+        filtered = filtered.filter((item) => item.sellingPrice < 100)
+      } else if (priceFilter === "medium") {
+        filtered = filtered.filter((item) => item.sellingPrice >= 100 && item.sellingPrice < 500)
+      } else if (priceFilter === "high") {
+        filtered = filtered.filter((item) => item.sellingPrice >= 500)
+      }
+    }
+
+    if (stockRoomFilter && stockRoomFilter !== "all") {
+      filtered = filtered.filter((item) => item.supplier === stockRoomFilter)
+    }
+
     setFilteredItems(filtered)
-  }, [search, categoryFilter, items])
+  }, [search, categoryFilter, priceFilter, stockRoomFilter, items])
 
   async function fetchItems() {
     try {
@@ -180,8 +196,8 @@ export default function InventoryPage() {
 
       <Card className="mb-8 border-0 shadow-xl bg-white/90 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <CardContent className="pt-6">
-          <div className="flex gap-4 items-end">
-            <div className="flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+            <div>
               <Label htmlFor="search" className="text-slate-700 dark:text-slate-300 font-medium">Search Products</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -194,7 +210,7 @@ export default function InventoryPage() {
                 />
               </div>
             </div>
-            <div className="flex-1">
+            <div>
               <Label htmlFor="category-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Category</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger id="category-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
@@ -209,15 +225,51 @@ export default function InventoryPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex-shrink-0">
-              <Button 
-                onClick={() => setAddDialogOpen(true)} 
-                className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <Plus className="h-4 w-4" />
-                Add Product
-              </Button>
+            <div>
+              <Label htmlFor="price-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Price</Label>
+              <Select value={priceFilter} onValueChange={setPriceFilter}>
+                <SelectTrigger id="price-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4 text-slate-400" />
+                    <SelectValue placeholder="All Prices" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Prices</SelectItem>
+                  <SelectItem value="low">Low (< ₱100)</SelectItem>
+                  <SelectItem value="medium">Medium (₱100 - ₱499)</SelectItem>
+                  <SelectItem value="high">High (≥ ₱500)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+            <div>
+              <Label htmlFor="stock-room-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Stock Room</Label>
+              <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
+                <SelectTrigger id="stock-room-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4 text-slate-400" />
+                    <SelectValue placeholder="All Stock Rooms" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Stock Rooms</SelectItem>
+                  <SelectItem value="A">A</SelectItem>
+                  <SelectItem value="B">B</SelectItem>
+                  <SelectItem value="C">C</SelectItem>
+                  <SelectItem value="D">D</SelectItem>
+                  <SelectItem value="E">E</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setAddDialogOpen(true)}
+              className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <Plus className="h-4 w-4" />
+              Add Product
+            </Button>
           </div>
         </CardContent>
       </Card>

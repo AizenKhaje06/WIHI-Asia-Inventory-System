@@ -155,15 +155,20 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
             </div>
             <div className="space-y-2">
               <Label htmlFor="supplier" className="text-slate-700 dark:text-slate-300 font-medium">
-                Supplier
+                Stock Room
               </Label>
-              <Input
-                id="supplier"
-                required
-                value={formData.supplier}
-                onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
-              />
+              <Select value={formData.supplier} onValueChange={(value) => setFormData({ ...formData, supplier: value })} required>
+                <SelectTrigger id="supplier" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                  <SelectValue placeholder="Select a stock room" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="A">A</SelectItem>
+                  <SelectItem value="B">B</SelectItem>
+                  <SelectItem value="C">C</SelectItem>
+                  <SelectItem value="D">D</SelectItem>
+                  <SelectItem value="E">E</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="flex justify-end gap-2">
