@@ -24,7 +24,7 @@ export default function ClientLayout({
           <div className="relative z-10 flex h-full w-full flex-1">
             {/* Sidebar */}
             <div
-              className="fixed inset-y-0 left-0 z-30 flex h-full flex-col border-r border-gray-800 bg-black/90 backdrop-blur-sm text-white w-52"
+              className="fixed inset-y-0 left-0 z-30 flex h-full flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground w-52"
             >
               <Sidebar />
             </div>
