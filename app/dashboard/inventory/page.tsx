@@ -11,7 +11,6 @@ import { Plus, Search, Pencil, Trash2, PackagePlus, Package, Filter } from "luci
 import { Skeleton } from "@/components/ui/skeleton"
 import type { InventoryItem } from "@/lib/types"
 import { AddItemDialog } from "@/components/add-item-dialog"
-import { cn } from "@/lib/utils"
 import { EditItemDialog } from "@/components/edit-item-dialog"
 
 export default function InventoryPage() {
@@ -236,9 +235,9 @@ export default function InventoryPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Prices</SelectItem>
-                  <SelectItem value="low">Low (< ₱100)</SelectItem>
-                  <SelectItem value="medium">Medium (₱100 - ₱499)</SelectItem>
-                  <SelectItem value="high">High (≥ ₱500)</SelectItem>
+                  <SelectItem value="low">Low ({"< PHP 100"})</SelectItem>
+                  <SelectItem value="medium">Medium (PHP 100 - 499)</SelectItem>
+                  <SelectItem value="high">High (≥ PHP 500)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
