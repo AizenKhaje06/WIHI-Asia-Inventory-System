@@ -15,7 +15,7 @@ export default function ClientLayout({
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="system"
+      defaultTheme="light"
       enableSystem
       disableTransitionOnChange
     >
