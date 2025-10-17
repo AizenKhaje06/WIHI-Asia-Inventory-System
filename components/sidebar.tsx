@@ -38,7 +38,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
   return (
     <div className={cn(
       "flex h-full flex-col border-r",
-      "border-border bg-sidebar text-sidebar-foreground"
+      "border-border bg-gradient-dark text-white"
     )}>
       <div className={cn("flex h-16 items-center justify-center border-b px-4",
         "border-sidebar-border"
@@ -48,7 +48,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
       <nav className="flex-1 space-y-4 p-2">
         {/* Main Section */}
         <div>
-          <div className="px-2 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main</div>
+          <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Main</div>
           {navigation.slice(0, 3).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -59,24 +59,24 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                    ? "bg-orange-500 text-white"
+                    : "text-white hover:bg-white/10 hover:text-white"
                 )}
               >
                 <item.icon className={cn(
                   "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : "text-primary"
+                  isActive ? "text-white" : "text-orange-400"
                 )} />
                 <span>{item.name}</span>
               </Link>
             )
           })}
-          <Separator className={cn("my-2", "bg-border")} />
+          <Separator className={cn("my-2", "bg-white/20")} />
         </div>
 
         {/* Inventory Section */}
         <div>
-          <div className="px-2 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Inventory</div>
+          <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Inventory</div>
           {navigation.slice(3, 6).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -87,24 +87,24 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                    ? "bg-orange-500 text-white"
+                    : "text-white hover:bg-white/10 hover:text-white"
                 )}
               >
                 <item.icon className={cn(
                   "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : "text-primary"
+                  isActive ? "text-white" : "text-orange-400"
                 )} />
                 <span>{item.name}</span>
               </Link>
             )
           })}
-          <Separator className={cn("my-2", "bg-border")} />
+          <Separator className={cn("my-2", "bg-white/20")} />
         </div>
 
         {/* Cash Flow Section */}
         <div>
-          <div className="px-2 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Cash Flow</div>
+          <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Cash Flow</div>
           {navigation.slice(6, 7).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -115,24 +115,24 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                    ? "bg-orange-500 text-white"
+                    : "text-white hover:bg-white/10 hover:text-white"
                 )}
               >
                 <item.icon className={cn(
                   "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : "text-primary"
+                  isActive ? "text-white" : "text-orange-400"
                 )} />
                 <span>{item.name}</span>
               </Link>
             )
           })}
-          <Separator className={cn("my-2", "bg-border")} />
+          <Separator className={cn("my-2", "bg-white/20")} />
         </div>
 
         {/* Operation Section */}
         <div>
-          <div className="px-2 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Operation</div>
+          <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Operation</div>
           {navigation.slice(7, 8).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -143,13 +143,13 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                    ? "bg-orange-500 text-white"
+                    : "text-white hover:bg-white/10 hover:text-white"
                 )}
               >
                 <item.icon className={cn(
                   "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : "text-primary"
+                  isActive ? "text-white" : "text-orange-400"
                 )} />
                 <span>{item.name}</span>
               </Link>
@@ -157,12 +157,12 @@ export function Sidebar({ onNavClick }: SidebarProps) {
           })}
         </div>
       </nav>
-      <div className={cn("border-t p-2", "border-border")}>
+      <div className={cn("border-t p-2", "border-white/20")}>
         <Button
           variant="ghost"
           size="sm"
           className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 justify-start",
-            "text-foreground hover:bg-accent hover:text-accent-foreground"
+            "text-white hover:bg-white/10 hover:text-white"
           )}
           onClick={() => {
             localStorage.removeItem("isLoggedIn")
