@@ -42,7 +42,7 @@
 }
 
 .dark {
-  --background: #000000;
+  --background: #ffffff;
   --foreground: #ffffff;
   --card: #1a1a1a;
   --card-foreground: #ffffff;
@@ -69,7 +69,7 @@
   --success: #10B981;
   --warning: #F59E0B;
   --radius: 0.5rem;
-  --sidebar: #000000;
+  --sidebar: #ffffff;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #FF6B35;
   --sidebar-primary-foreground: #000000;
