@@ -77,7 +77,7 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpd
   await sheets.spreadsheets.values.append({
     spreadsheetId,
     range: "Inventory!A:J",
-    valueInputOption: "RAW",
+    valueInputOption: "USER_ENTERED",
     requestBody: { values },
   })
 
@@ -244,7 +244,7 @@ export async function addTransaction(transaction: Omit<Transaction, "id" | "time
   await sheets.spreadsheets.values.append({
     spreadsheetId,
     range: "Transactions!A:M",
-    valueInputOption: "RAW",
+    valueInputOption: "USER_ENTERED",
     requestBody: { values },
   })
 
@@ -340,7 +340,7 @@ export async function addLog(log: Omit<Log, "id" | "timestamp">): Promise<Log> {
   await sheets.spreadsheets.values.append({
     spreadsheetId,
     range: "Logs!A:F",
-    valueInputOption: "RAW",
+    valueInputOption: "USER_ENTERED",
     requestBody: { values },
   })
 
@@ -433,7 +433,7 @@ export async function addRestock(restock: Omit<Restock, "id" | "timestamp">): Pr
   await sheets.spreadsheets.values.append({
     spreadsheetId,
     range: "Restock!A:H",
-    valueInputOption: "RAW",
+    valueInputOption: "USER_ENTERED",
     requestBody: { values },
   })
 
