@@ -333,7 +333,7 @@ export default function POSPage() {
                                   <SelectValue placeholder="Select department" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="Cwagu">Cwagu</SelectItem>
+                                  <SelectItem value="Facebook">Facebook</SelectItem>
                                   <SelectItem value="Tiktok">Tiktok</SelectItem>
                                   <SelectItem value="Lazada">Lazada</SelectItem>
                                   <SelectItem value="Shopee">Shopee</SelectItem>
