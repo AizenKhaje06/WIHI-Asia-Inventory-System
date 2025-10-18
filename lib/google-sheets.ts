@@ -7,6 +7,45 @@ const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 const formatTimestamp = (date: Date) => format(date, "yyyy-MM-dd / hh:mm a")
 
+async function initializeInventorySheet() {
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  try {
+    await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: "Inventory!A1:J1"
+    })
+  } catch (error) {
+    // Sheet doesn't exist, create it
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [{
+          addSheet: {
+            properties: {
+              title: 'Inventory',
+              gridProperties: {
+                rowCount: 1000,
+                columnCount: 10
+              }
+            }
+          }
+        }]
+      }
+    })
+    // Add headers
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: "Inventory!A1:J1",
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [["ID", "Name", "Category", "Quantity", "Total COGS", "Cost Price", "Selling Price", "Reorder Level", "Storage Room", "Last Updated"]]
+      }
+    })
+  }
+}
+
 export async function getGoogleSheetsClient() {
   const auth = new google.auth.GoogleAuth({
     credentials: {
@@ -21,6 +60,8 @@ export async function getGoogleSheetsClient() {
 }
 
 export async function getInventoryItems(): Promise<InventoryItem[]> {
+  await initializeInventorySheet()
+
   const sheets = await getGoogleSheetsClient()
   const spreadsheetId = process.env.GOOGLE_SHEET_ID
 
@@ -40,13 +81,13 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
       id: row[0] || "",
       name: row[1] || "",
       category: row[2] || "",
-      storageRoom: row[3] || "",
+      storageRoom: row[8] || "",
       quantity,
       totalCOGS: isNaN(totalCOGS) ? 0 : totalCOGS,
       costPrice,
       sellingPrice: Number.parseFloat(row[6] || "0") || 0,
       reorderLevel: Number.parseInt(row[7] || "0") || 0,
-      lastUpdated: row[8] || formatTimestamp(new Date()),
+      lastUpdated: row[9] || formatTimestamp(new Date()),
     }
   })
 }
@@ -64,12 +105,12 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpd
       id,
       item.name,
       item.category,
-      item.storageRoom,
       item.quantity,
       totalCOGS,
       item.costPrice,
       item.sellingPrice,
       item.reorderLevel,
+      item.storageRoom,
       lastUpdated,
     ],
   ]
