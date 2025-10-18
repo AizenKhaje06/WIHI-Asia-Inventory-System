@@ -40,13 +40,13 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
       id: row[0] || "",
       name: row[1] || "",
       category: row[2] || "",
+      storageRoom: row[3] || "",
       quantity,
       totalCOGS: isNaN(totalCOGS) ? 0 : totalCOGS,
       costPrice,
       sellingPrice: Number.parseFloat(row[6] || "0") || 0,
       reorderLevel: Number.parseInt(row[7] || "0") || 0,
-      supplier: row[8] || "",
-      lastUpdated: row[9] || formatTimestamp(new Date()),
+      lastUpdated: row[8] || formatTimestamp(new Date()),
     }
   })
 }
@@ -64,12 +64,12 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpd
       id,
       item.name,
       item.category,
+      item.storageRoom,
       item.quantity,
       totalCOGS,
       item.costPrice,
       item.sellingPrice,
       item.reorderLevel,
-      item.supplier,
       lastUpdated,
     ],
   ]
@@ -106,12 +106,12 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
     id: 0,
     name: 1,
     category: 2,
-    quantity: 3,
-    totalCOGS: 4,
-    costPrice: 5,
-    sellingPrice: 6,
-    reorderLevel: 7,
-    supplier: 8,
+    storageRoom: 3,
+    quantity: 4,
+    totalCOGS: 5,
+    costPrice: 6,
+    sellingPrice: 7,
+    reorderLevel: 8,
     lastUpdated: 9,
   }
 

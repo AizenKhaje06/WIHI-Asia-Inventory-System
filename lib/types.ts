@@ -2,11 +2,11 @@ export interface InventoryItem {
   id: string
   name: string
   category: string
+  storageRoom: string
   quantity: number
   costPrice: number
   sellingPrice: number
   reorderLevel: number
-  supplier: string
   lastUpdated: string
   totalCOGS: number
 }

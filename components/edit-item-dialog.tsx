@@ -22,22 +22,22 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
   const [formData, setFormData] = useState({
     name: item.name,
     category: item.category,
+    storageRoom: item.storageRoom,
     quantity: item.quantity,
     costPrice: item.costPrice,
     sellingPrice: item.sellingPrice,
     reorderLevel: item.reorderLevel,
-    supplier: item.supplier,
   })
 
   useEffect(() => {
     setFormData({
       name: item.name,
       category: item.category,
+      storageRoom: item.storageRoom,
       quantity: item.quantity,
       costPrice: item.costPrice,
       sellingPrice: item.sellingPrice,
       reorderLevel: item.reorderLevel,
-      supplier: item.supplier,
     })
   }, [item])
 
@@ -143,12 +143,12 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-supplier" className="text-foreground">
-                Stock Room
+              <Label htmlFor="edit-storageRoom" className="text-foreground">
+                Storage Room
               </Label>
-              <Select value={formData.supplier} onValueChange={(value) => setFormData({ ...formData, supplier: value })} required>
-                <SelectTrigger id="edit-supplier">
-                  <SelectValue placeholder="Select a stock room" />
+              <Select value={formData.storageRoom} onValueChange={(value) => setFormData({ ...formData, storageRoom: value })} required>
+                <SelectTrigger id="edit-storageRoom">
+                  <SelectValue placeholder="Select a storage room" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="A">A</SelectItem>

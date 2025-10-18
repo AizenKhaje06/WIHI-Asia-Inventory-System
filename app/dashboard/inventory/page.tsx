@@ -60,7 +60,7 @@ export default function InventoryPage() {
     }
 
     if (stockRoomFilter && stockRoomFilter !== "all") {
-      filtered = filtered.filter((item) => item.supplier === stockRoomFilter)
+      filtered = filtered.filter((item) => item.storageRoom === stockRoomFilter)
     }
 
     setFilteredItems(filtered)
@@ -243,16 +243,16 @@ export default function InventoryPage() {
                 </Select>
               </div>
               <div className="w-48">
-                <Label htmlFor="stock-room-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Stock Room</Label>
+                <Label htmlFor="storage-room-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Storage Room</Label>
                 <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
-                  <SelectTrigger id="stock-room-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                  <SelectTrigger id="storage-room-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
                     <div className="flex items-center gap-2">
                       <Filter className="h-4 w-4 text-slate-400" />
-                      <SelectValue placeholder="All Stock Rooms" />
+                      <SelectValue placeholder="All Storage Rooms" />
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Stock Rooms</SelectItem>
+                    <SelectItem value="all">All Storage Rooms</SelectItem>
                     <SelectItem value="A">A</SelectItem>
                     <SelectItem value="B">B</SelectItem>
                     <SelectItem value="C">C</SelectItem>

@@ -20,11 +20,11 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
   const [formData, setFormData] = useState({
     name: "",
     category: "",
+    storageRoom: "",
     quantity: 0,
     costPrice: 0,
     sellingPrice: 0,
     reorderLevel: 0,
-    supplier: "",
   })
 
   async function handleSubmit(e: React.FormEvent) {
@@ -43,11 +43,11 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
       setFormData({
         name: "",
         category: "",
+        storageRoom: "",
         quantity: 0,
         costPrice: 0,
         sellingPrice: 0,
         reorderLevel: 0,
-        supplier: "",
       })
     } catch (error) {
       console.error("[v0] Error adding item:", error)
@@ -154,12 +154,12 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="supplier" className="text-slate-700 dark:text-slate-300 font-medium">
-                Stock Room
+              <Label htmlFor="storageRoom" className="text-slate-700 dark:text-slate-300 font-medium">
+                Storage Room
               </Label>
-              <Select value={formData.supplier} onValueChange={(value) => setFormData({ ...formData, supplier: value })} required>
-                <SelectTrigger id="supplier" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
-                  <SelectValue placeholder="Select a stock room" />
+              <Select value={formData.storageRoom} onValueChange={(value) => setFormData({ ...formData, storageRoom: value })} required>
+                <SelectTrigger id="storageRoom" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                  <SelectValue placeholder="Select a storage room" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="A">A</SelectItem>

@@ -328,12 +328,12 @@ export default function DashboardPage() {
               <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg">
                 <BarChart2 className="h-4 w-4" />
               </div>
-              Stock Percentage by Category
+              Stock Count by Storage Room
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stockPercentageData}>
+              <BarChart data={stocksCountData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                 <XAxis dataKey="name" stroke="#64748B" fontSize={12} />
                 <YAxis stroke="#64748B" fontSize={12} />
@@ -344,9 +344,9 @@ export default function DashboardPage() {
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
-                  formatter={(value: any) => [`${value.toFixed(2)}%`, 'Percentage']}
+                  formatter={(value) => [value, 'Count']}
                 />
-                <Bar dataKey="percentage" fill="url(#stockPercentageGradient)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="count" fill="url(#stockPercentageGradient)" radius={[4, 4, 0, 0]} />
                 <defs>
                   <linearGradient id="stockPercentageGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#6366F1" stopOpacity={0.8}/>
