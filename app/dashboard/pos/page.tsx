@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, ShoppingCart, Trash2, CheckCircle, CreditCard, Smartphone } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -24,7 +24,8 @@ export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'ewallet'>('cash')
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'ewallet' | 'online'>('cash')
+  const [department, setDepartment] = useState('')
   const [eWalletType, setEWalletType] = useState<'gcash' | 'paymaya'>('gcash')
   const [referenceNumber, setReferenceNumber] = useState('')
   const [amountPaid, setAmountPaid] = useState('')
@@ -247,20 +248,29 @@ export default function POSPage() {
                       <div className="space-y-4 mb-4">
                         <div>
                           <Label className="text-sm font-medium text-foreground">Payment Method</Label>
-                          <RadioGroup
-                            value={paymentMethod}
-                            onValueChange={(value) => setPaymentMethod(value as 'cash' | 'ewallet')}
-                            className="flex items-center space-x-4 mt-2"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="cash" id="cash" />
-                              <Label htmlFor="cash">Cash</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="ewallet" id="ewallet" />
-                              <Label htmlFor="ewallet">E-Wallet</Label>
-                            </div>
-                          </RadioGroup>
+                          <div className="flex items-center space-x-4 mt-2">
+                            <Button
+                              variant={paymentMethod === 'cash' ? 'default' : 'outline'}
+                              onClick={() => setPaymentMethod('cash')}
+                              className="flex-1"
+                            >
+                              Cash
+                            </Button>
+                            <Button
+                              variant={paymentMethod === 'ewallet' ? 'default' : 'outline'}
+                              onClick={() => setPaymentMethod('ewallet')}
+                              className="flex-1"
+                            >
+                              E-Wallet
+                            </Button>
+                            <Button
+                              variant={paymentMethod === 'online' ? 'default' : 'outline'}
+                              onClick={() => setPaymentMethod('online')}
+                              className="flex-1"
+                            >
+                              Online
+                            </Button>
+                          </div>
                         </div>
 
                         {paymentMethod === 'cash' && (
@@ -312,9 +322,23 @@ export default function POSPage() {
                             </div>
                           </div>
                         )}
+
+                        {paymentMethod === 'online' && (
+                          <div className="space-y-4">
+                            <div>
+                              <Label className="text-sm font-medium text-foreground">Department</Label>
+                              <Input
+                                placeholder="Enter department"
+                                value={department}
+                                onChange={(e) => setDepartment(e.target.value)}
+                                className="mt-2"
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      <Button onClick={() => setOrderSummaryOpen(true)} disabled={loading || (paymentMethod === 'ewallet' && !referenceNumber) || (paymentMethod === 'cash' && (!amountPaid || change < 0))} className="w-full" size="lg">
+                      <Button onClick={() => setOrderSummaryOpen(true)} disabled={loading || (paymentMethod === 'ewallet' && !referenceNumber) || (paymentMethod === 'cash' && (!amountPaid || change < 0)) || (paymentMethod === 'online' && !department)} className="w-full" size="lg">
                         Proceed
                       </Button>
                     </div>
@@ -361,6 +385,12 @@ export default function POSPage() {
                 <div className="flex justify-between">
                   <span>Payment Method</span>
                   <span>{eWalletType.toUpperCase()}</span>
+                </div>
+              )}
+              {paymentMethod === 'online' && (
+                <div className="flex justify-between">
+                  <span>Payment Method</span>
+                  <span>Online</span>
                 </div>
               )}
             </div>
