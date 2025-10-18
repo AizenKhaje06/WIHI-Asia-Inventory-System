@@ -13,6 +13,7 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import type { SalesReport } from "@/lib/types"
+import { formatCurrency } from "@/lib/utils"
 
 export default function AnalyticsPage() {
   const [report, setReport] = useState<SalesReport | null>(null)
@@ -103,7 +104,7 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              ₱{(report?.totalRevenue || 0).toFixed(2)}
+              {formatCurrency(report?.totalRevenue || 0)}
             </div>
           </CardContent>
         </Card>
@@ -115,7 +116,7 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              ₱{(report?.totalCost || 0).toFixed(2)}
+              {formatCurrency(report?.totalCost || 0)}
             </div>
           </CardContent>
         </Card>
@@ -127,7 +128,7 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              ₱{(report?.totalProfit || 0).toFixed(2)}
+              {formatCurrency(report?.totalProfit || 0)}
             </div>
           </CardContent>
         </Card>
@@ -205,7 +206,7 @@ export default function AnalyticsPage() {
                       >
                         <div className="text-sm md:text-base font-semibold text-foreground text-center mb-1">{cell.day}</div>
                         <div className={`text-xs md:text-sm text-center font-medium ${cell.revenue > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
-                          {cell.revenue > 0 ? `₱${cell.revenue.toFixed(2)}` : '₱0.00'}
+                          {cell.revenue > 0 ? formatCurrency(cell.revenue) : '₱0.00'}
                         </div>
                       </div>
                     ) : (
@@ -242,7 +243,7 @@ export default function AnalyticsPage() {
                   />
                   <YAxis />
                   <ChartTooltipContent
-                    formatter={(value) => [`₱${(value as number).toFixed(2)}`, 'Revenue']}
+                    formatter={(value) => [formatCurrency(value as number), 'Revenue']}
                   />
                   <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
                 </BarChart>

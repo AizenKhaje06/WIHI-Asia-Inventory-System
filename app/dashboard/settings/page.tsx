@@ -51,7 +51,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div>
               <h3 className="mb-2 font-semibold text-foreground">Inventory Sheet</h3>
-              <p className="mb-2 text-sm text-muted-foreground">Create a sheet named "Inventory" with these columns:</p>
+              <p className="mb-2 text-sm text-muted-foreground">Create a sheet named &ldquo;Inventory&rdquo; with these columns:</p>
               <div className="rounded-lg bg-secondary p-4">
                 <code className="text-sm text-foreground">
                   ID | Name | SKU | Category | Quantity | Cost Price | Selling Price | Reorder Level | Supplier | Last
@@ -63,7 +63,7 @@ export default function SettingsPage() {
             <div>
               <h3 className="mb-2 font-semibold text-foreground">Transactions Sheet</h3>
               <p className="mb-2 text-sm text-muted-foreground">
-                Create a sheet named "Transactions" with these columns:
+                Create a sheet named &ldquo;Transactions&rdquo; with these columns:
               </p>
               <div className="rounded-lg bg-secondary p-4">
                 <code className="text-sm text-foreground">

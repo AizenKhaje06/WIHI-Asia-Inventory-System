@@ -292,7 +292,7 @@ export default function SettingsCodePage() {
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          <strong>Important:</strong> After updating the settings code, all users will need to use the new code to access admin settings. 
+          <strong>Important:</strong> After updating the settings code, all users will need to use the new code to access admin settings.
           Make sure to communicate the new code securely to authorized personnel.
         </AlertDescription>
       </Alert>

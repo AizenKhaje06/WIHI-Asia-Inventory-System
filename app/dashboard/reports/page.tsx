@@ -123,7 +123,7 @@ export default function ReportsPage() {
                           {new Date(transaction.timestamp).toLocaleDateString()}
                         </td>
                         <td className="py-4 text-sm text-foreground w-[25%]">{transaction.itemName}</td>
-                        <td className="py-4 text-right text-sm text-foreground w-[8%]">{transaction.quantity}</td>
+                        <td className="py-4 text-right text-sm text-foreground w-[8%]">{formatNumber(transaction.quantity)}</td>
                         <td className="py-4 text-right text-sm text-foreground w-[15%]">
                           ₱{formatNumber(transaction.totalRevenue)}
                         </td>

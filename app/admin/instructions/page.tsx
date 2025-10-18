@@ -89,7 +89,7 @@ export default function AdminInstructionsPage() {
                 <div>
                   <h4 className="font-semibold">Click Settings Button</h4>
                   <p className="text-sm text-gray-600">
-                    In the main sidebar, click the "Settings" button located above the "Logout" button.
+                    In the main sidebar, click the &ldquo;Settings&rdquo; button located above the &ldquo;Logout&rdquo; button.
                   </p>
                 </div>
               </div>
@@ -178,7 +178,7 @@ export default function AdminInstructionsPage() {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            <strong>Default Access Codes:</strong> For initial setup, use <code className="bg-gray-100 px-1 rounded">ADMIN123</code> or <code className="bg-gray-100 px-1 rounded">admin</code> to access the admin panel. 
+            <strong>Default Access Codes:</strong> For initial setup, use <code className="bg-gray-100 px-1 rounded">ADMIN123</code> or <code className="bg-gray-100 px-1 rounded">admin</code> to access the admin panel.
             Change these codes immediately after first login for security.
           </AlertDescription>
         </Alert>

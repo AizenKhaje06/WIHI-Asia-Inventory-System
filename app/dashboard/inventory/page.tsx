@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import type { InventoryItem } from "@/lib/types"
 import { AddItemDialog } from "@/components/add-item-dialog"
 import { EditItemDialog } from "@/components/edit-item-dialog"
+import { formatNumber, formatCurrency } from "@/lib/utils"
 
 export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -302,11 +303,11 @@ export default function InventoryPage() {
                     <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200 w-[25%]">{item.name}</td>
                     <td className="py-4 text-sm text-slate-600 dark:text-slate-400 w-[12%]">{item.category}</td>
                     <td className="py-4 text-right text-sm w-[6%]">
-                      <span className="font-bold text-slate-800 dark:text-slate-200">{item.quantity}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">{formatNumber(item.quantity)}</span>
                     </td>
-                    <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">₱{(item.totalCOGS ?? 0).toFixed(2)}</td>
-                    <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">₱{item.costPrice.toFixed(2)}</td>
-                    <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">₱{item.sellingPrice.toFixed(2)}</td>
+                    <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">{formatCurrency(item.totalCOGS ?? 0)}</td>
+                    <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">{formatCurrency(item.costPrice)}</td>
+                    <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">{formatCurrency(item.sellingPrice)}</td>
                     <td className="py-4 text-right w-[17%]">
                       <div className="flex justify-end gap-2">
                         <Button
