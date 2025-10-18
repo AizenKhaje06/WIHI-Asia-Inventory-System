@@ -17,6 +17,8 @@ export default function OutOfStockPage() {
   const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
+  const [priceFilter, setPriceFilter] = useState("all")
+  const [stockRoomFilter, setStockRoomFilter] = useState("all")
   const [loading, setLoading] = useState(true)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
@@ -44,8 +46,22 @@ export default function OutOfStockPage() {
       filtered = filtered.filter((item) => item.category === categoryFilter)
     }
 
+    if (priceFilter && priceFilter !== "all") {
+      if (priceFilter === "low") {
+        filtered = filtered.filter((item) => item.sellingPrice < 100)
+      } else if (priceFilter === "medium") {
+        filtered = filtered.filter((item) => item.sellingPrice >= 100 && item.sellingPrice < 500)
+      } else if (priceFilter === "high") {
+        filtered = filtered.filter((item) => item.sellingPrice >= 500)
+      }
+    }
+
+    if (stockRoomFilter && stockRoomFilter !== "all") {
+      filtered = filtered.filter((item) => item.storageRoom === stockRoomFilter)
+    }
+
     setFilteredItems(filtered)
-  }, [search, categoryFilter, items])
+  }, [search, categoryFilter, priceFilter, stockRoomFilter, items])
 
   async function fetchItems() {
     try {
@@ -135,9 +151,9 @@ export default function OutOfStockPage() {
         <p className="text-slate-600 dark:text-slate-300 text-lg">Items that are completely out of stock</p>
       </div>
 
-      <Card className="mb-6">
+      <Card className="mb-8 border-0 shadow-xl bg-white/90 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <CardContent className="pt-6">
-          <div className="flex gap-4 items-end">
+          <div className="flex flex-col lg:flex-row gap-4 items-end">
             <div className="flex-1">
               <Label htmlFor="search" className="text-slate-700 dark:text-slate-300 font-medium">Search Products</Label>
               <div className="relative">
@@ -151,20 +167,58 @@ export default function OutOfStockPage() {
                 />
               </div>
             </div>
-            <div className="flex-1">
-              <Label htmlFor="category-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Category</Label>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger id="category-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-slate-400" />
-                    <SelectValue placeholder="All Categories" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                </SelectContent>
-              </Select>
+            <div className="flex gap-4">
+              <div className="w-48">
+                <Label htmlFor="category-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Category</Label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger id="category-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-slate-400" />
+                      <SelectValue placeholder="All Categories" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-48">
+                <Label htmlFor="price-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Price</Label>
+                <Select value={priceFilter} onValueChange={setPriceFilter}>
+                  <SelectTrigger id="price-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-slate-400" />
+                      <SelectValue placeholder="All Prices" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Prices</SelectItem>
+                    <SelectItem value="low">Low ({"< PHP 100"})</SelectItem>
+                    <SelectItem value="medium">Medium (PHP 100 - 499)</SelectItem>
+                    <SelectItem value="high">High (≥ PHP 500)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-48">
+                <Label htmlFor="storage-room-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Storage Room</Label>
+                <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
+                  <SelectTrigger id="storage-room-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-slate-400" />
+                      <SelectValue placeholder="All Storage Rooms" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Storage Rooms</SelectItem>
+                    <SelectItem value="A">A</SelectItem>
+                    <SelectItem value="B">B</SelectItem>
+                    <SelectItem value="C">C</SelectItem>
+                    <SelectItem value="D">D</SelectItem>
+                    <SelectItem value="E">E</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardContent>
