@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, ShoppingCart, Trash2, CheckCircle, CreditCard, Smartphone, Filter } from "lucide-react"
+import { Search, ShoppingCart, Trash2, CheckCircle, CreditCard, Smartphone } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import type { InventoryItem } from "@/lib/types"
@@ -23,9 +23,6 @@ export default function POSPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
   const [search, setSearch] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [priceFilter, setPriceFilter] = useState("all")
-  const [stockRoomFilter, setStockRoomFilter] = useState("all")
   const [loading, setLoading] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'ewallet'>('cash')
   const [eWalletType, setEWalletType] = useState<'gcash' | 'paymaya'>('gcash')
@@ -49,26 +46,8 @@ export default function POSPage() {
       )
     }
 
-    if (categoryFilter && categoryFilter !== "all") {
-      filtered = filtered.filter((item) => item.category === categoryFilter)
-    }
-
-    if (priceFilter && priceFilter !== "all") {
-      if (priceFilter === "low") {
-        filtered = filtered.filter((item) => item.sellingPrice < 100)
-      } else if (priceFilter === "medium") {
-        filtered = filtered.filter((item) => item.sellingPrice >= 100 && item.sellingPrice < 500)
-      } else if (priceFilter === "high") {
-        filtered = filtered.filter((item) => item.sellingPrice >= 500)
-      }
-    }
-
-    if (stockRoomFilter && stockRoomFilter !== "all") {
-      filtered = filtered.filter((item) => item.storageRoom === stockRoomFilter)
-    }
-
     return filtered
-  }, [search, categoryFilter, priceFilter, stockRoomFilter, items])
+  }, [search, items])
 
   useEffect(() => {
     fetchItems()
@@ -181,68 +160,7 @@ export default function POSPage() {
                     />
                   </div>
                 </div>
-                <div className="flex gap-4">
-                  <div className="w-48">
-                    <Label htmlFor="category-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Category</Label>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                      <SelectTrigger id="category-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
-                        <div className="flex items-center gap-2">
-                          <Filter className="h-4 w-4 text-slate-400" />
-                          <SelectValue placeholder="All Categories" />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        <SelectItem value="Electronics & Gadgets">Electronics & Gadgets</SelectItem>
-                        <SelectItem value="Fashion & Apparel">Fashion & Apparel</SelectItem>
-                        <SelectItem value="Health, Beauty & Personal Care">Health, Beauty & Personal Care</SelectItem>
-                        <SelectItem value="Home & Living">Home & Living</SelectItem>
-                        <SelectItem value="Sports & Outdoors">Sports & Outdoors</SelectItem>
-                        <SelectItem value="Baby, Kids & Toys">Baby, Kids & Toys</SelectItem>
-                        <SelectItem value="Groceries & Pets">Groceries & Pets</SelectItem>
-                        <SelectItem value="Automotive & Industrial">Automotive & Industrial</SelectItem>
-                        <SelectItem value="Stationery & Books">Stationery & Books</SelectItem>
-                        <SelectItem value="Other / Miscellaneous">Other / Miscellaneous</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="w-48">
-                    <Label htmlFor="price-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Price</Label>
-                    <Select value={priceFilter} onValueChange={setPriceFilter}>
-                      <SelectTrigger id="price-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
-                        <div className="flex items-center gap-2">
-                          <Filter className="h-4 w-4 text-slate-400" />
-                          <SelectValue placeholder="All Prices" />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Prices</SelectItem>
-                        <SelectItem value="low">Low ({"< PHP 100"})</SelectItem>
-                        <SelectItem value="medium">Medium (PHP 100 - 499)</SelectItem>
-                        <SelectItem value="high">High (≥ PHP 500)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="w-48">
-                    <Label htmlFor="storage-room-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Storage Room</Label>
-                    <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
-                      <SelectTrigger id="storage-room-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
-                        <div className="flex items-center gap-2">
-                          <Filter className="h-4 w-4 text-slate-400" />
-                          <SelectValue placeholder="All Storage Rooms" />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Storage Rooms</SelectItem>
-                        <SelectItem value="A">A</SelectItem>
-                        <SelectItem value="B">B</SelectItem>
-                        <SelectItem value="C">C</SelectItem>
-                        <SelectItem value="D">D</SelectItem>
-                        <SelectItem value="E">E</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+
               </div>
             </CardContent>
           </Card>
