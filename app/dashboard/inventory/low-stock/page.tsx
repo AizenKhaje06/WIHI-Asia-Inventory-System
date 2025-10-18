@@ -224,7 +224,7 @@ export default function LowStockPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="text-foreground">Low Stock Items ({filteredItems.length})</CardTitle>
         </CardHeader>

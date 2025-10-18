@@ -15,7 +15,7 @@ export default async function LogPage() {
         <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">Operation History</h1>
         <p className="text-slate-600 dark:text-slate-300 text-lg">View all system operations and changes</p>
       </div>
-      <Card>
+      <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Operation History</CardTitle>
         </CardHeader>
