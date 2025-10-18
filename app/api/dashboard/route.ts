@@ -99,6 +99,15 @@ export async function GET() {
       .map(([name, count]) => ({ name, count: count as number }))
       .sort((a, b) => b.count - a.count)
 
+    // Stocks count by storage room (total quantity)
+    const stocksCountByStorageRoom = items.reduce((acc: { [key: string]: number }, item: InventoryItem) => {
+      acc[item.storageRoom] = (acc[item.storageRoom] || 0) + item.quantity
+      return acc
+    }, {})
+    const stocksCountByStorageRoomSorted = Object.entries(stocksCountByStorageRoom)
+      .map(([name, count]) => ({ name, count: count as number }))
+      .sort((a, b) => b.count - a.count)
+
     const stats: DashboardStats = {
       totalItems,
       lowStockItems,
@@ -116,6 +125,7 @@ export async function GET() {
       totalProducts,
       stockPercentageByCategory,
       stocksCountByCategory: stocksCountByCategorySorted,
+      stocksCountByStorageRoom: stocksCountByStorageRoomSorted,
     }
 
     return NextResponse.json(stats)

@@ -69,6 +69,7 @@ export interface DashboardStats {
   totalProducts: number
   stockPercentageByCategory: { name: string; percentage: number }[]
   stocksCountByCategory: { name: string; count: number }[]
+  stocksCountByStorageRoom: { name: string; count: number }[]
 }
 
 export interface Log {

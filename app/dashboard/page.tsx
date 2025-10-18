@@ -121,6 +121,11 @@ export default function DashboardPage() {
     count: cat.count,
   })) || []
 
+  const stocksCountByStorageRoomData = stats?.stocksCountByStorageRoom?.map((room) => ({
+    name: room.name,
+    count: room.count,
+  })) || []
+
   return (
     <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800">
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
@@ -333,7 +338,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="pt-0">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stocksCountData}>
+              <BarChart data={stocksCountByStorageRoomData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                 <XAxis dataKey="name" stroke="#64748B" fontSize={12} />
                 <YAxis stroke="#64748B" fontSize={12} />
