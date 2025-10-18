@@ -21,7 +21,7 @@ export default function ClientLayout({
       disableTransitionOnChange
     >
       <Suspense fallback={<div>Loading...</div>}>
-        <div className="relative flex min-h-screen bg-background">
+        <div className="relative flex min-h-screen bg-background" style={{ backgroundImage: 'url("/Login BG.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
           <div className="relative z-10 flex h-full w-full flex-1">
             {/* Sidebar */}
             <div
