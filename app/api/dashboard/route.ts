@@ -77,6 +77,28 @@ export async function GET() {
 
     const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
 
+    // Stock percentage by category (percentage of total stock value)
+    const stockValueByCategory = items.reduce((acc: { [key: string]: number }, item: InventoryItem) => {
+      const value = item.quantity * item.costPrice
+      acc[item.category] = (acc[item.category] || 0) + value
+      return acc
+    }, {})
+    const stockPercentageByCategory = Object.entries(stockValueByCategory)
+      .map(([name, value]) => ({
+        name,
+        percentage: totalValue > 0 ? (value / totalValue) * 100 : 0
+      }))
+      .sort((a, b) => b.percentage - a.percentage)
+
+    // Stocks count by category (total quantity)
+    const stocksCountByCategory = items.reduce((acc: { [key: string]: number }, item: InventoryItem) => {
+      acc[item.category] = (acc[item.category] || 0) + item.quantity
+      return acc
+    }, {})
+    const stocksCountByCategorySorted = Object.entries(stocksCountByCategory)
+      .map(([name, count]) => ({ name, count: count as number }))
+      .sort((a, b) => b.count - a.count)
+
     const stats: DashboardStats = {
       totalItems,
       lowStockItems,
@@ -92,6 +114,8 @@ export async function GET() {
       topCategories,
       totalCategories,
       totalProducts,
+      stockPercentageByCategory,
+      stocksCountByCategory: stocksCountByCategorySorted,
     }
 
     return NextResponse.json(stats)

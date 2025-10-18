@@ -111,6 +111,16 @@ export default function DashboardPage() {
     { name: 'Total Products', value: stats?.totalProducts || 0 },
   ]
 
+  const stockPercentageData = stats?.stockPercentageByCategory?.map((cat) => ({
+    name: cat.name,
+    percentage: cat.percentage,
+  })) || []
+
+  const stocksCountData = stats?.stocksCountByCategory?.map((cat) => ({
+    name: cat.name,
+    count: cat.count,
+  })) || []
+
   return (
     <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800">
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
@@ -311,33 +321,34 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 mb-8">
-        {/* Top Categories Bar Chart */}
+        {/* Stock Percentage Bar Chart */}
         <Card className={cn("border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-900", "dark:card-neon")}>
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
               <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg">
                 <BarChart2 className="h-4 w-4" />
               </div>
-              Top Categories Performance
+              Stock Percentage by Category
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={topCategoriesData}>
+              <BarChart data={stockPercentageData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                 <XAxis dataKey="name" stroke="#64748B" fontSize={12} />
                 <YAxis stroke="#64748B" fontSize={12} />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{
                     backgroundColor: 'white',
                     border: '1px solid #E2E8F0',
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
+                  formatter={(value: any) => [`${value.toFixed(2)}%`, 'Percentage']}
                 />
-                <Bar dataKey="sales" fill="url(#categoryGradient)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="percentage" fill="url(#stockPercentageGradient)" radius={[4, 4, 0, 0]} />
                 <defs>
-                  <linearGradient id="categoryGradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="stockPercentageGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#6366F1" stopOpacity={0.8}/>
                     <stop offset="95%" stopColor="#6366F1" stopOpacity={0.3}/>
                   </linearGradient>
@@ -347,33 +358,34 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Category Statistics Bar Chart */}
+        {/* Stocks Count Bar Chart */}
         <Card className={cn("border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-1000", "dark:card-neon")}>
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
               <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg">
                 <Activity className="h-4 w-4" />
               </div>
-              Inventory Statistics
+              Stocks Count by Category
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={categoryStatsData}>
+              <BarChart data={stocksCountData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                 <XAxis dataKey="name" stroke="#64748B" fontSize={12} />
                 <YAxis stroke="#64748B" fontSize={12} />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{
                     backgroundColor: 'white',
                     border: '1px solid #E2E8F0',
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
+                  formatter={(value) => [value, 'Count']}
                 />
-                <Bar dataKey="value" fill="url(#statsGradient)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="count" fill="url(#stocksCountGradient)" radius={[4, 4, 0, 0]} />
                 <defs>
-                  <linearGradient id="statsGradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="stocksCountGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
                     <stop offset="95%" stopColor="#10B981" stopOpacity={0.3}/>
                   </linearGradient>

@@ -67,6 +67,8 @@ export interface DashboardStats {
   topCategories: { name: string; sales: number }[]
   totalCategories: number
   totalProducts: number
+  stockPercentageByCategory: { name: string; percentage: number }[]
+  stocksCountByCategory: { name: string; count: number }[]
 }
 
 export interface Log {
