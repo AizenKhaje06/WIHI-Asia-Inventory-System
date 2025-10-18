@@ -328,12 +328,17 @@ export default function POSPage() {
                           <div className="space-y-4">
                             <div>
                               <Label className="text-sm font-medium text-foreground">Department</Label>
-                              <Input
-                                placeholder="Enter department"
-                                value={department}
-                                onChange={(e) => setDepartment(e.target.value)}
-                                className="mt-2"
-                              />
+                              <Select value={department} onValueChange={(value) => setDepartment(value)}>
+                                <SelectTrigger className="mt-2">
+                                  <SelectValue placeholder="Select department" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Cwagu">Cwagu</SelectItem>
+                                  <SelectItem value="Tiktok">Tiktok</SelectItem>
+                                  <SelectItem value="Lazada">Lazada</SelectItem>
+                                  <SelectItem value="Shopee">Shopee</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
                           </div>
                         )}
