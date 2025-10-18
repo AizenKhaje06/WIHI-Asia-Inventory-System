@@ -101,7 +101,7 @@ export default function POSPage() {
   async function handleCheckout() {
     if (cart.length === 0) return
 
-    const fullPaymentMethod = paymentMethod === 'cash' ? 'cash' : eWalletType
+    const fullPaymentMethod = paymentMethod === 'cash' ? 'cash' : paymentMethod === 'online' ? 'online' : eWalletType
 
     setLoading(true)
     try {
@@ -118,7 +118,8 @@ export default function POSPage() {
           paymentMethod: fullPaymentMethod,
           referenceNumber: paymentMethod === 'cash' ? undefined : referenceNumber,
           amountPaid: paymentMethod === 'cash' ? parseFloat(amountPaid) : undefined,
-          change: paymentMethod === 'cash' ? change : undefined
+          change: paymentMethod === 'cash' ? change : undefined,
+          department: paymentMethod === 'online' ? department : undefined
         }),
       })
 

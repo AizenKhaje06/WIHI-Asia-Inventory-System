@@ -279,12 +279,13 @@ export async function addTransaction(transaction: Omit<Transaction, "id" | "time
       transaction.type,
       transaction.paymentMethod,
       transaction.referenceNumber || "",
+      transaction.department || "",
     ],
   ]
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "Transactions!A:M",
+    range: "Transactions!A:N",
     valueInputOption: "USER_ENTERED",
     requestBody: { values },
   })
@@ -298,7 +299,7 @@ export async function getTransactions(): Promise<Transaction[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: "Transactions!A2:M",
+    range: "Transactions!A2:N",
   })
 
   const rows = response.data.values || []
@@ -314,8 +315,9 @@ export async function getTransactions(): Promise<Transaction[]> {
     profit: Number.parseFloat(row[8] || "0"),
     timestamp: row[9] || "",
     type: (row[10] || "sale") as "sale" | "restock",
-    paymentMethod: (row[11] || "cash") as 'cash' | 'gcash' | 'paymaya',
+    paymentMethod: (row[11] || "cash") as 'cash' | 'gcash' | 'paymaya' | 'online',
     referenceNumber: row[12] || "",
+    department: row[13] || "",
   }))
 }
 
