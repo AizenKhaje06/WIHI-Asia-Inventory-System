@@ -12,3 +12,10 @@
   - [ ] app/dashboard/inventory/out-of-stock/page.tsx: Add Select component for reason
   - [ ] app/dashboard/inventory/low-stock/page.tsx: Add Select component for reason
   - [ ] app/admin/product-edit/page.tsx: Add Select component for reason
+
+# Filter Implementation for Inventory Pages and POS
+
+## Tasks
+- [x] Update app/dashboard/inventory/low-stock/page.tsx: Add search, category, price, and storage room filters
+- [x] Update app/dashboard/inventory/out-of-stock/page.tsx: Add search, category, price, and storage room filters
+- [x] Update app/dashboard/pos/page.tsx: Add search, category, price, and storage room filters
