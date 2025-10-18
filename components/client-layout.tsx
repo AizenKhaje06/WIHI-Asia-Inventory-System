@@ -31,9 +31,6 @@ export default function ClientLayout({
             </div>
 
             <main className="flex-1 overflow-auto pt-4 px-6 pb-6 ml-52">
-              <div className="flex justify-end mb-4">
-                <ThemeToggle />
-              </div>
               {children}
             </main>
           </div>

@@ -7,6 +7,7 @@ import { LayoutDashboard, ShoppingCart, BarChart3, Package, Tags, PackagePlus, A
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 
 const navigation = [
@@ -40,10 +41,11 @@ export function Sidebar({ onNavClick }: SidebarProps) {
       "flex h-full flex-col border-r",
       "border-border bg-gradient-dark text-white"
     )}>
-      <div className={cn("flex h-16 items-center justify-center border-b px-4",
+      <div className={cn("flex h-16 items-center justify-between border-b px-4",
         "border-sidebar-border"
       )}>
         <h1 className="text-xl font-semibold">Inventory Pro</h1>
+        <ThemeToggle />
       </div>
       <nav className="flex-1 space-y-4 p-2">
         {/* Main Section */}
