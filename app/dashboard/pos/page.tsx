@@ -127,6 +127,13 @@ export default function POSPage() {
       fetchItems()
       setOrderSummaryOpen(false)
       setSuccessModalOpen(true)
+
+      // Reset form fields
+      setPaymentMethod('cash')
+      setDepartment('')
+      setEWalletType('gcash')
+      setReferenceNumber('')
+      setAmountPaid('')
     } catch (error) {
       console.error("[v0] Error processing sale:", error)
       alert("Failed to process sale")

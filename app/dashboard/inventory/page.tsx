@@ -32,6 +32,17 @@ export default function InventoryPage() {
 
   useEffect(() => {
     fetchItems()
+
+    // Refresh data when window regains focus (e.g., after switching tabs)
+    const handleFocus = () => {
+      fetchItems()
+    }
+
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+    }
   }, [])
 
   useEffect(() => {
