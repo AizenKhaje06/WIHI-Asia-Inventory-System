@@ -147,12 +147,12 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
     id: 0,
     name: 1,
     category: 2,
-    storageRoom: 3,
-    quantity: 4,
-    totalCOGS: 5,
-    costPrice: 6,
-    sellingPrice: 7,
-    reorderLevel: 8,
+    quantity: 3,
+    totalCOGS: 4,
+    costPrice: 5,
+    sellingPrice: 6,
+    reorderLevel: 7,
+    storageRoom: 8,
     lastUpdated: 9,
   }
 
