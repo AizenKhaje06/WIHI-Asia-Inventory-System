@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import "./globals.css"
@@ -9,8 +9,6 @@ export const metadata: Metadata = {
   description: "Manage your inventory with Google Sheets integration",
   generator: "v0.app",
   manifest: "/manifest.json",
-  themeColor: "#4f46e5",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -27,6 +25,14 @@ export const metadata: Metadata = {
     "msapplication-TileColor": "#4f46e5",
     "msapplication-config": "/browserconfig.xml",
   },
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#4f46e5",
 }
 
 export default function RootLayout({
