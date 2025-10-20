@@ -21,7 +21,7 @@ export default function ClientLayout({
       disableTransitionOnChange
     >
       <Suspense fallback={<div>Loading...</div>}>
-        <div className="relative flex min-h-screen bg-gradient-to-br from-white to-orange-100">
+        <div className="relative flex min-h-screen bg-gradient-to-br from-white to-bg-white">
           <div className="relative z-10 flex h-full w-full flex-1">
             {/* Sidebar */}
             <div
