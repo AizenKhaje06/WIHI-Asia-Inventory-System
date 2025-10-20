@@ -154,6 +154,7 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
     reorderLevel: 7,
     storageRoom: 8,
     lastUpdated: 9,
+    sku: 10,
   }
 
   const requests = []

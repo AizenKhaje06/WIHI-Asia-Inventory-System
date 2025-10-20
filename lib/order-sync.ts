@@ -1,5 +1,4 @@
 import { google } from "googleapis"
-import type { OrderLogRow } from "./types"
 
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 

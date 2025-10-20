@@ -9,6 +9,7 @@ export interface InventoryItem {
   reorderLevel: number
   lastUpdated: string
   totalCOGS: number
+  sku?: string
 }
 
 export interface Transaction {
