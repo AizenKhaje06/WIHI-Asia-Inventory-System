@@ -7,7 +7,7 @@ const DYNAMIC_CACHE = 'inventory-pro-dynamic-v1';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
-  '/placeholder-logo.png',
+  '/STOCKIFY  ICON.png',
   '/placeholder-logo.svg',
   '/Login BG.png',
   '/Corporate Building.png',
