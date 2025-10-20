@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import "./globals.css"
-import { registerServiceWorker } from "./sw-register"
+
 
 export const metadata: Metadata = {
   title: "Inventory Pro - Professional Inventory Management",
