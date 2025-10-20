@@ -41,6 +41,38 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              let deferredPrompt;
+
+              window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent the mini-infobar from appearing on mobile
+                e.preventDefault();
+                // Stash the event so it can be triggered later.
+                deferredPrompt = e;
+                // Update UI to notify the user they can install the PWA
+                console.log('PWA install prompt available');
+                // Optionally, show a custom install button here
+              });
+
+              window.addEventListener('appinstalled', (evt) => {
+                console.log('PWA was installed');
+                // Optionally, hide the install button
+              });
+
+              // Function to trigger the install prompt
+              window.installPWA = () => {
+                if (deferredPrompt) {
+                  deferredPrompt.prompt();
+                  deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                      console.log('User accepted the install prompt');
+                    } else {
+                      console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                  });
+                }
+              };
+
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/service-worker.js')

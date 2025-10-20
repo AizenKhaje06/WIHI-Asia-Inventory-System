@@ -1,5 +1,10 @@
-# TODO List for Background Change
+# PWA Install Prompt Implementation
 
-- [x] Update components/client-layout.tsx to replace Login BG.png with white-to-orange gradient
-- [x] Update app/dashboard/page.tsx to remove overriding gradient classes
-- [ ] Test the background change on the dashboard page
+## Completed Tasks
+- [x] Added beforeinstallprompt event handling in app/layout.tsx
+- [x] Implemented deferred prompt storage and installPWA function
+- [x] Added appinstalled event listener for tracking installations
+
+## Next Steps
+- [ ] Test the app in a browser to verify the install prompt appears
+- [ ] Optionally add a UI button to trigger the install prompt if needed
