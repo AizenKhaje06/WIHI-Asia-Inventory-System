@@ -26,46 +26,40 @@ export async function GET(request: NextRequest) {
     const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
     const itemsSold = salesTransactions.reduce((sum, t) => sum + t.quantity, 0)
 
-    let dailySales: DailySales[] = []
-    let monthlySales: MonthlySales[] = []
+    // Always populate both daily and monthly sales data
+    const dailyMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
 
-    const view = searchParams.get("view")
+    salesTransactions.forEach((t) => {
+      const date = new Date(t.timestamp).toISOString().split("T")[0]
+      if (!dailyMap.has(date)) {
+        dailyMap.set(date, { revenue: 0, itemsSold: 0, profit: 0 })
+      }
+      const dayData = dailyMap.get(date)!
+      dayData.revenue += t.totalRevenue
+      dayData.itemsSold += t.quantity
+      dayData.profit += t.profit
+    })
 
-    if (view === "daily") {
-      const dailyMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
+    const dailySales: DailySales[] = Array.from(dailyMap.entries())
+      .map(([date, data]) => ({ date, ...data }))
+      .sort((a, b) => a.date.localeCompare(b.date))
 
-      salesTransactions.forEach((t) => {
-        const date = new Date(t.timestamp).toISOString().split("T")[0]
-        if (!dailyMap.has(date)) {
-          dailyMap.set(date, { revenue: 0, itemsSold: 0, profit: 0 })
-        }
-        const dayData = dailyMap.get(date)!
-        dayData.revenue += t.totalRevenue
-        dayData.itemsSold += t.quantity
-        dayData.profit += t.profit
-      })
+    const monthlyMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
 
-      dailySales = Array.from(dailyMap.entries())
-        .map(([date, data]) => ({ date, ...data }))
-        .sort((a, b) => a.date.localeCompare(b.date))
-    } else if (view === "monthly") {
-      const monthlyMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
+    salesTransactions.forEach((t) => {
+      const month = new Date(t.timestamp).toISOString().slice(0, 7)
+      if (!monthlyMap.has(month)) {
+        monthlyMap.set(month, { revenue: 0, itemsSold: 0, profit: 0 })
+      }
+      const monthData = monthlyMap.get(month)!
+      monthData.revenue += t.totalRevenue
+      monthData.itemsSold += t.quantity
+      monthData.profit += t.profit
+    })
 
-      salesTransactions.forEach((t) => {
-        const month = new Date(t.timestamp).toISOString().slice(0, 7)
-        if (!monthlyMap.has(month)) {
-          monthlyMap.set(month, { revenue: 0, itemsSold: 0, profit: 0 })
-        }
-        const monthData = monthlyMap.get(month)!
-        monthData.revenue += t.totalRevenue
-        monthData.itemsSold += t.quantity
-        monthData.profit += t.profit
-      })
-
-      monthlySales = Array.from(monthlyMap.entries())
-        .map(([month, data]) => ({ month, ...data }))
-        .sort((a, b) => a.month.localeCompare(b.month))
-    }
+    const monthlySales: MonthlySales[] = Array.from(monthlyMap.entries())
+      .map(([month, data]) => ({ month, ...data }))
+      .sort((a, b) => a.month.localeCompare(b.month))
 
     const report: SalesReport = {
       totalRevenue,
