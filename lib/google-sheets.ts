@@ -26,7 +26,6 @@ const formatTimestamp = (date: Date) => {
   const ampm = hour24 >= 12 ? 'PM' : 'AM'
   const hour12 = hour24 % 12 || 12
   return `${year}-${month}-${day} / ${hour12}:${minute} ${ampm}`
-}
 
 async function initializeInventorySheet() {
   const sheets = await getGoogleSheetsClient()
@@ -299,8 +298,6 @@ export async function addTransaction(transaction: Omit<Transaction, "id" | "time
       transaction.profit,
       timestamp,
       transaction.type,
-      transaction.paymentMethod,
-      transaction.referenceNumber || "",
       transaction.department || "",
     ],
   ]
@@ -337,9 +334,7 @@ export async function getTransactions(): Promise<Transaction[]> {
     profit: Number.parseFloat(row[8] || "0"),
     timestamp: row[9] || "",
     type: (row[10] || "sale") as "sale" | "restock",
-    paymentMethod: (row[11] || "cash") as 'cash' | 'gcash' | 'paymaya' | 'online',
-    referenceNumber: row[12] || "",
-    department: row[13] || "",
+    department: row[11] || "",
   }))
 }
 

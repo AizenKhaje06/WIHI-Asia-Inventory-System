@@ -4,18 +4,10 @@ import { addTransaction, updateInventoryItem, getInventoryItems, addLog } from "
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { items, paymentMethod, referenceNumber, department } = body
+    const { items, department } = body
 
-    if (!paymentMethod) {
-      return NextResponse.json({ error: "Payment method is required" }, { status: 400 })
-    }
-
-    if (paymentMethod !== 'cash' && paymentMethod !== 'online' && !referenceNumber) {
-      return NextResponse.json({ error: "Reference number is required for E-Wallet payments" }, { status: 400 })
-    }
-
-    if (paymentMethod === 'online' && !department) {
-      return NextResponse.json({ error: "Department is required for online payments" }, { status: 400 })
+    if (!department) {
+      return NextResponse.json({ error: "Department is required" }, { status: 400 })
     }
 
     const allItems = await getInventoryItems()
@@ -46,9 +38,7 @@ export async function POST(request: NextRequest) {
         totalRevenue,
         profit,
         type: "sale",
-        paymentMethod,
-        referenceNumber: paymentMethod === 'cash' ? undefined : referenceNumber,
-        department: paymentMethod === 'online' ? department : undefined,
+        department,
       })
 
       await updateInventoryItem(inventoryItem.id, {
@@ -59,7 +49,7 @@ export async function POST(request: NextRequest) {
         operation: "sale",
         itemId: inventoryItem.id,
         itemName: inventoryItem.name,
-        details: `Sold "${inventoryItem.name}" - Qty: ${saleItem.quantity}, Total: ₱${totalRevenue.toFixed(2)}, Method: ${paymentMethod}${referenceNumber ? ` (Ref: ${referenceNumber})` : ''}`
+        details: `Sold "${inventoryItem.name}" - Qty: ${saleItem.quantity}, Total: ₱${totalRevenue.toFixed(2)}, Department: ${department}`
       })
 
       transactions.push(transaction)

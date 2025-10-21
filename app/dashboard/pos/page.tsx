@@ -24,17 +24,11 @@ export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'ewallet' | 'online'>('cash')
   const [department, setDepartment] = useState('')
-  const [eWalletType, setEWalletType] = useState<'gcash' | 'paymaya'>('gcash')
-  const [referenceNumber, setReferenceNumber] = useState('')
-  const [amountPaid, setAmountPaid] = useState('')
   const [orderSummaryOpen, setOrderSummaryOpen] = useState(false)
   const [successModalOpen, setSuccessModalOpen] = useState(false)
 
   const total = useMemo(() => cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0), [cart])
-
-  const change = useMemo(() => paymentMethod === 'cash' && amountPaid ? parseFloat(amountPaid) - total : 0, [paymentMethod, amountPaid, total])
 
   const filteredItems = useMemo(() => {
     let filtered = items
@@ -101,8 +95,6 @@ export default function POSPage() {
   async function handleCheckout() {
     if (cart.length === 0) return
 
-    const fullPaymentMethod = paymentMethod === 'cash' ? 'cash' : paymentMethod === 'online' ? 'online' : eWalletType
-
     setLoading(true)
     try {
       const saleItems = cart.map((cartItem) => ({
@@ -115,11 +107,7 @@ export default function POSPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: saleItems,
-          paymentMethod: fullPaymentMethod,
-          referenceNumber: paymentMethod === 'cash' ? undefined : referenceNumber,
-          amountPaid: paymentMethod === 'cash' ? parseFloat(amountPaid) : undefined,
-          change: paymentMethod === 'cash' ? change : undefined,
-          department: paymentMethod === 'online' ? department : undefined
+          department,
         }),
       })
 
@@ -129,11 +117,7 @@ export default function POSPage() {
       setSuccessModalOpen(true)
 
       // Reset form fields
-      setPaymentMethod('cash')
       setDepartment('')
-      setEWalletType('gcash')
-      setReferenceNumber('')
-      setAmountPaid('')
     } catch (error) {
       console.error("[v0] Error processing sale:", error)
       alert("Failed to process sale")
@@ -255,103 +239,22 @@ export default function POSPage() {
 
                       <div className="space-y-4 mb-4">
                         <div>
-                          <Label className="text-sm font-medium text-foreground">Payment Method</Label>
-                          <div className="flex items-center space-x-4 mt-2">
-                            <Button
-                              variant={paymentMethod === 'cash' ? 'default' : 'outline'}
-                              onClick={() => setPaymentMethod('cash')}
-                              className="flex-1"
-                            >
-                              Cash
-                            </Button>
-                            <Button
-                              variant={paymentMethod === 'ewallet' ? 'default' : 'outline'}
-                              onClick={() => setPaymentMethod('ewallet')}
-                              className="flex-1"
-                            >
-                              E-Wallet
-                            </Button>
-                            <Button
-                              variant={paymentMethod === 'online' ? 'default' : 'outline'}
-                              onClick={() => setPaymentMethod('online')}
-                              className="flex-1"
-                            >
-                              Online
-                            </Button>
-                          </div>
+                          <Label className="text-sm font-medium text-foreground">Department</Label>
+                          <Select value={department} onValueChange={(value) => setDepartment(value)}>
+                            <SelectTrigger className="mt-2">
+                              <SelectValue placeholder="Select department" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Facebook">Facebook</SelectItem>
+                              <SelectItem value="Tiktok">Tiktok</SelectItem>
+                              <SelectItem value="Lazada">Lazada</SelectItem>
+                              <SelectItem value="Shopee">Shopee</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-
-                        {paymentMethod === 'cash' && (
-                          <div className="space-y-4">
-                            <div>
-                              <Label className="text-sm font-medium text-foreground">Amount Paid</Label>
-                              <Input
-                                type="number"
-                                placeholder="Enter amount paid"
-                                value={amountPaid}
-                                onChange={(e) => setAmountPaid(e.target.value)}
-                                className="mt-2"
-                                min={total}
-                              />
-                            </div>
-                            {change !== 0 && (
-                              <div className="flex items-center justify-between">
-                                <Label className="text-sm font-medium text-foreground">Change</Label>
-                                <p className={`text-lg font-semibold ${change < 0 ? 'text-red-500' : theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>
-                                  ₱{change.toFixed(2)}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {paymentMethod === 'ewallet' && (
-                          <div className="space-y-4">
-                            <div>
-                              <Label className="text-sm font-medium text-foreground">E-Wallet Type</Label>
-                              <Select value={eWalletType} onValueChange={(value) => setEWalletType(value as 'gcash' | 'paymaya')}>
-                                <SelectTrigger className="mt-2">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="gcash">GCash</SelectItem>
-                                  <SelectItem value="paymaya">PayMaya</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium text-foreground">Reference Number</Label>
-                              <Input
-                                placeholder="Enter reference number"
-                                value={referenceNumber}
-                                onChange={(e) => setReferenceNumber(e.target.value)}
-                                className="mt-2"
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        {paymentMethod === 'online' && (
-                          <div className="space-y-4">
-                            <div>
-                              <Label className="text-sm font-medium text-foreground">Department</Label>
-                              <Select value={department} onValueChange={(value) => setDepartment(value)}>
-                                <SelectTrigger className="mt-2">
-                                  <SelectValue placeholder="Select department" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Facebook">Facebook</SelectItem>
-                                  <SelectItem value="Tiktok">Tiktok</SelectItem>
-                                  <SelectItem value="Lazada">Lazada</SelectItem>
-                                  <SelectItem value="Shopee">Shopee</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        )}
                       </div>
 
-                      <Button onClick={() => setOrderSummaryOpen(true)} disabled={loading || (paymentMethod === 'ewallet' && !referenceNumber) || (paymentMethod === 'cash' && (!amountPaid || change < 0)) || (paymentMethod === 'online' && !department)} className="w-full" size="lg">
+                      <Button onClick={() => setOrderSummaryOpen(true)} disabled={loading || !department} className="w-full" size="lg">
                         Proceed
                       </Button>
                     </div>
@@ -382,30 +285,10 @@ export default function POSPage() {
                 <span>Total</span>
                 <span>₱{total.toFixed(2)}</span>
               </div>
-              {paymentMethod === 'cash' && (
-                <>
-                  <div className="flex justify-between">
-                    <span>Amount Paid</span>
-                    <span>₱{parseFloat(amountPaid).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Change</span>
-                    <span>₱{change.toFixed(2)}</span>
-                  </div>
-                </>
-              )}
-              {paymentMethod === 'ewallet' && (
-                <div className="flex justify-between">
-                  <span>Payment Method</span>
-                  <span>{eWalletType.toUpperCase()}</span>
-                </div>
-              )}
-              {paymentMethod === 'online' && (
-                <div className="flex justify-between">
-                  <span>Payment Method</span>
-                  <span>Online</span>
-                </div>
-              )}
+              <div className="flex justify-between">
+                <span>Department</span>
+                <span>{department}</span>
+              </div>
             </div>
           </div>
           <DialogFooter>
