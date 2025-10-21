@@ -247,6 +247,7 @@ export default function POSPage() {
                               <SelectItem value="Tiktok">Tiktok</SelectItem>
                               <SelectItem value="Lazada">Lazada</SelectItem>
                               <SelectItem value="Shopee">Shopee</SelectItem>
+                              <SelectItem value="Warehouse">Warehouse</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
