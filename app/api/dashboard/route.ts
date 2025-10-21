@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getInventoryItems, getTransactions } from "@/lib/google-sheets"
+import { parse } from "date-fns"
 import type { DashboardStats, Transaction, InventoryItem } from "@/lib/types"
 
 export async function GET() {
@@ -13,7 +14,7 @@ export async function GET() {
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const recentSales = transactions.filter((t: Transaction) => t.type === "sale" && new Date(t.timestamp) >= today).length
+    const recentSales = transactions.filter((t: Transaction) => t.type === "sale" && parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date()) >= today).length
 
     // Sales over time (last 24 hours for ID view, adjust for other periods if needed)
     const salesOverTime = Array.from({ length: 24 }, (_, i) => {
@@ -21,11 +22,11 @@ export async function GET() {
       hour.setHours(hour.getHours() - i, 0, 0, 0)
       const hourStr = hour.toISOString().split('T')[0] + ' ' + hour.getHours().toString().padStart(2, '0') + ':00'
       const sales = transactions.filter((t: Transaction) => {
-        const tDate = new Date(t.timestamp)
+        const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
         return t.type === "sale" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
       }).length
       const purchases = transactions.filter((t: Transaction) => {
-        const tDate = new Date(t.timestamp)
+        const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
         return t.type === "restock" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
       }).length
       return { date: hourStr, purchases, sales }
@@ -46,7 +47,7 @@ export async function GET() {
     // Recent transactions (last 5 sales)
     const recentTransactions = transactions
       .filter((t: Transaction) => t.type === "sale")
-      .sort((a: Transaction, b: Transaction) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .sort((a: Transaction, b: Transaction) => parse(b.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime() - parse(a.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime())
       .slice(0, 5)
 
     // Top categories (top 3 by sales)
