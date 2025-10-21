@@ -5,7 +5,28 @@ import type { InventoryItem, Transaction, Log, Restock } from "./types"
 
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
-const formatTimestamp = (date: Date) => format(date, "yyyy-MM-dd / hh:mm a")
+const formatTimestamp = (date: Date) => {
+  // Use Philippines timezone (UTC+8) for accurate local time
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: 'Asia/Manila',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }
+  const formatted = date.toLocaleString('en-US', options)
+  // Convert to format: YYYY-MM-DD / HH:MM AM/PM
+  const [datePart, timePart] = formatted.split(', ')
+  const [month, day, year] = datePart.split('/')
+  const [hour, minute] = timePart.split(':')
+  const hour24 = parseInt(hour)
+  const ampm = hour24 >= 12 ? 'PM' : 'AM'
+  const hour12 = hour24 % 12 || 12
+  return `${year}-${month}-${day} / ${hour12}:${minute} ${ampm}`
+}
 
 async function initializeInventorySheet() {
   const sheets = await getGoogleSheetsClient()
