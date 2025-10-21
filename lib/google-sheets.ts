@@ -26,6 +26,7 @@ const formatTimestamp = (date: Date) => {
   const ampm = hour24 >= 12 ? 'PM' : 'AM'
   const hour12 = hour24 % 12 || 12
   return `${year}-${month}-${day} / ${hour12}:${minute} ${ampm}`
+}
 
 async function initializeInventorySheet() {
   const sheets = await getGoogleSheetsClient()
