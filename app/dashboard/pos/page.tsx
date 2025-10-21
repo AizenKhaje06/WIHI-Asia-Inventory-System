@@ -6,10 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, ShoppingCart, Trash2, CheckCircle, CreditCard, Smartphone } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Search, ShoppingCart, Trash2, CheckCircle } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import type { InventoryItem } from "@/lib/types"
 
@@ -51,6 +49,7 @@ export default function POSPage() {
   async function fetchItems() {
     try {
       const res = await fetch("/api/items")
+      if (!res.ok) throw new Error("Failed to fetch items")
       const data = await res.json()
       setItems(data)
     } catch (error) {
@@ -153,7 +152,6 @@ export default function POSPage() {
                     />
                   </div>
                 </div>
-
               </div>
             </CardContent>
           </Card>
@@ -201,33 +199,33 @@ export default function POSPage() {
                   <>
                     <div className="max-h-[400px] space-y-4 overflow-y-auto">
                       {cart.map((cartItem) => (
-                      <div
-                        key={cartItem.item.id}
-                        className="flex items-center gap-4 rounded-lg border border-border p-4"
-                      >
-                        <div className="flex-1">
-                          <p className="font-medium text-foreground">{cartItem.item.name}</p>
-                          <p className={`text-sm ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>
-                            ₱{cartItem.item.sellingPrice.toFixed(2)} each
+                        <div
+                          key={cartItem.item.id}
+                          className="flex items-center gap-4 rounded-lg border border-border p-4"
+                        >
+                          <div className="flex-1">
+                            <p className="font-medium text-foreground">{cartItem.item.name}</p>
+                            <p className={`text-sm ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>
+                              ₱{cartItem.item.sellingPrice.toFixed(2)} each
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              min="1"
+                              max={cartItem.item.quantity}
+                              value={cartItem.quantity}
+                              onChange={(e) => updateQuantity(cartItem.item.id, Number.parseInt(e.target.value))}
+                              className="w-20"
+                            />
+                            <Button variant="ghost" size="sm" onClick={() => removeFromCart(cartItem.item.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <p className={`font-semibold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>
+                            ₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="number"
-                            min="1"
-                            max={cartItem.item.quantity}
-                            value={cartItem.quantity}
-                            onChange={(e) => updateQuantity(cartItem.item.id, Number.parseInt(e.target.value))}
-                            className="w-20"
-                          />
-                          <Button variant="ghost" size="sm" onClick={() => removeFromCart(cartItem.item.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <p className={`font-semibold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>
-                          ₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
-                        </p>
-                      </div>
                       ))}
                     </div>
 

@@ -66,6 +66,45 @@ async function initializeInventorySheet() {
   }
 }
 
+async function initializeTransactionsSheet() {
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  try {
+    await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: "Transactions!A1:L1"
+    })
+  } catch (error) {
+    // Sheet doesn't exist, create it
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [{
+          addSheet: {
+            properties: {
+              title: 'Transactions',
+              gridProperties: {
+                rowCount: 1000,
+                columnCount: 12
+              }
+            }
+          }
+        }]
+      }
+    })
+    // Add headers
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: "Transactions!A1:L1",
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [["ID", "Item ID", "Item Name", "Quantity", "Cost Price", "Selling Price", "Total Cost", "Total Revenue", "Profit", "Timestamp", "Type", "Department"]]
+      }
+    })
+  }
+}
+
 export async function getGoogleSheetsClient() {
   const auth = new google.auth.GoogleAuth({
     credentials: {
@@ -279,6 +318,8 @@ export async function deleteInventoryItem(id: string): Promise<void> {
 }
 
 export async function addTransaction(transaction: Omit<Transaction, "id" | "timestamp">): Promise<Transaction> {
+  await initializeTransactionsSheet()
+
   const sheets = await getGoogleSheetsClient()
   const spreadsheetId = process.env.GOOGLE_SHEET_ID
 
@@ -304,7 +345,7 @@ export async function addTransaction(transaction: Omit<Transaction, "id" | "time
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "Transactions!A:N",
+    range: "Transactions!A:L",
     valueInputOption: "USER_ENTERED",
     requestBody: { values },
   })
@@ -313,12 +354,14 @@ export async function addTransaction(transaction: Omit<Transaction, "id" | "time
 }
 
 export async function getTransactions(): Promise<Transaction[]> {
+  await initializeTransactionsSheet()
+
   const sheets = await getGoogleSheetsClient()
   const spreadsheetId = process.env.GOOGLE_SHEET_ID
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: "Transactions!A2:N",
+    range: "Transactions!A2:L",
   })
 
   const rows = response.data.values || []
