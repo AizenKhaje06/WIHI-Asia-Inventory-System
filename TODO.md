@@ -1,10 +1,14 @@
-# PWA Install Prompt Implementation
+# TODO: Fix Sales & Purchase Analytics Chart
 
-## Completed Tasks
-- [x] Added beforeinstallprompt event handling in app/layout.tsx
-- [x] Implemented deferred prompt storage and installPWA function
-- [x] Added appinstalled event listener for tracking installations
-
-## Next Steps
-- [ ] Test the app in a browser to verify the install prompt appears
-- [ ] Optionally add a UI button to trigger the install prompt if needed
+## Tasks
+- [ ] Update dashboard page to pass selected timePeriod as query parameter to /api/dashboard
+- [ ] Modify API route to accept 'period' query parameter
+- [ ] Implement dynamic salesOverTime calculation based on period:
+  - ID (Today): Last 24 hours, hourly data points
+  - 1W: Last 7 days, daily data points
+  - 1M: Last 30 days, daily data points
+  - 3M: Last 90 days, weekly data points
+  - 6M: Last 180 days, weekly data points
+  - 1Y: Last 365 days, monthly data points
+- [ ] Ensure chart displays data when available and handles empty periods gracefully
+- [ ] Test the implementation with different time periods

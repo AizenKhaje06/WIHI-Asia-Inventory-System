@@ -3,8 +3,11 @@ import { getInventoryItems, getTransactions } from "@/lib/google-sheets"
 import { parse } from "date-fns"
 import type { DashboardStats, Transaction, InventoryItem } from "@/lib/types"
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const period = searchParams.get('period') || 'ID'
+
     const items = await getInventoryItems()
     const transactions = await getTransactions()
 
@@ -16,21 +19,121 @@ export async function GET() {
     today.setHours(0, 0, 0, 0)
     const recentSales = transactions.filter((t: Transaction) => t.type === "sale" && parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date()) >= today).length
 
-    // Sales over time (last 24 hours for ID view, adjust for other periods if needed)
-    const salesOverTime = Array.from({ length: 24 }, (_, i) => {
-      const hour = new Date()
-      hour.setHours(hour.getHours() - i, 0, 0, 0)
-      const hourStr = hour.toISOString().split('T')[0] + ' ' + hour.getHours().toString().padStart(2, '0') + ':00'
-      const sales = transactions.filter((t: Transaction) => {
-        const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
-        return t.type === "sale" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
-      }).length
-      const purchases = transactions.filter((t: Transaction) => {
-        const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
-        return t.type === "restock" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
-      }).length
-      return { date: hourStr, purchases, sales }
-    }).reverse()
+    // Sales over time based on period
+    let salesOverTime: { date: string; purchases: number; sales: number }[] = []
+
+    if (period === 'ID') {
+      // Today: Last 24 hours, hourly data points
+      salesOverTime = Array.from({ length: 24 }, (_, i) => {
+        const hour = new Date()
+        hour.setHours(hour.getHours() - i, 0, 0, 0)
+        const hourStr = hour.toISOString().split('T')[0] + ' ' + hour.getHours().toString().padStart(2, '0') + ':00'
+        const sales = transactions.filter((t: Transaction) => {
+          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          return t.type === "sale" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
+        }).length
+        const purchases = transactions.filter((t: Transaction) => {
+          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          return t.type === "restock" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
+        }).length
+        return { date: hourStr, purchases, sales }
+      }).reverse()
+    } else if (period === '1W') {
+      // Last 7 days, daily data points
+      salesOverTime = Array.from({ length: 7 }, (_, i) => {
+        const day = new Date()
+        day.setDate(day.getDate() - i)
+        day.setHours(0, 0, 0, 0)
+        const dayStr = day.toISOString().split('T')[0] + ' 00:00'
+        const nextDay = new Date(day)
+        nextDay.setDate(nextDay.getDate() + 1)
+        const sales = transactions.filter((t: Transaction) => {
+          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          return t.type === "sale" && tDate >= day && tDate < nextDay
+        }).length
+        const purchases = transactions.filter((t: Transaction) => {
+          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          return t.type === "restock" && tDate >= day && tDate < nextDay
+        }).length
+        return { date: dayStr, purchases, sales }
+      }).reverse()
+    } else if (period === '1M') {
+      // Last 30 days, daily data points
+      salesOverTime = Array.from({ length: 30 }, (_, i) => {
+        const day = new Date()
+        day.setDate(day.getDate() - i)
+        day.setHours(0, 0, 0, 0)
+        const dayStr = day.toISOString().split('T')[0] + ' 00:00'
+        const nextDay = new Date(day)
+        nextDay.setDate(nextDay.getDate() + 1)
+        const sales = transactions.filter((t: Transaction) => {
+          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          return t.type === "sale" && tDate >= day && tDate < nextDay
+        }).length
+        const purchases = transactions.filter((t: Transaction) => {
+          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          return t.type === "restock" && tDate >= day && tDate < nextDay
+        }).length
+        return { date: dayStr, purchases, sales }
+      }).reverse()
+    } else if (period === '3M') {
+      // Last 90 days, weekly data points
+      salesOverTime = Array.from({ length: 12 }, (_, i) => {
+        const weekStart = new Date()
+        weekStart.setDate(weekStart.getDate() - (i * 7))
+        weekStart.setHours(0, 0, 0, 0)
+        const weekEnd = new Date(weekStart)
+        weekEnd.setDate(weekEnd.getDate() + 7)
+        const weekStr = weekStart.toISOString().split('T')[0] + ' 00:00'
+        const sales = transactions.filter((t: Transaction) => {
+          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          return t.type === "sale" && tDate >= weekStart && tDate < weekEnd
+        }).length
+        const purchases = transactions.filter((t: Transaction) => {
+          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          return t.type === "restock" && tDate >= weekStart && tDate < weekEnd
+        }).length
+        return { date: weekStr, purchases, sales }
+      }).reverse()
+    } else if (period === '6M') {
+      // Last 180 days, weekly data points
+      salesOverTime = Array.from({ length: 26 }, (_, i) => {
+        const weekStart = new Date()
+        weekStart.setDate(weekStart.getDate() - (i * 7))
+        weekStart.setHours(0, 0, 0, 0)
+        const weekEnd = new Date(weekStart)
+        weekEnd.setDate(weekEnd.getDate() + 7)
+        const weekStr = weekStart.toISOString().split('T')[0] + ' 00:00'
+        const sales = transactions.filter((t: Transaction) => {
+          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          return t.type === "sale" && tDate >= weekStart && tDate < weekEnd
+        }).length
+        const purchases = transactions.filter((t: Transaction) => {
+          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          return t.type === "restock" && tDate >= weekStart && tDate < weekEnd
+        }).length
+        return { date: weekStr, purchases, sales }
+      }).reverse()
+    } else if (period === '1Y') {
+      // Last 365 days, monthly data points
+      salesOverTime = Array.from({ length: 12 }, (_, i) => {
+        const monthStart = new Date()
+        monthStart.setMonth(monthStart.getMonth() - i, 1)
+        monthStart.setHours(0, 0, 0, 0)
+        const monthEnd = new Date(monthStart)
+        monthEnd.setMonth(monthEnd.getMonth() + 1)
+        const monthStr = monthStart.toISOString().split('T')[0] + ' 00:00'
+        const sales = transactions.filter((t: Transaction) => {
+          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          return t.type === "sale" && tDate >= monthStart && tDate < monthEnd
+        }).length
+        const purchases = transactions.filter((t: Transaction) => {
+          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          return t.type === "restock" && tDate >= monthStart && tDate < monthEnd
+        }).length
+        return { date: monthStr, purchases, sales }
+      }).reverse()
+    }
 
     // Top products (top 4 by sales count)
     const productSales = transactions
