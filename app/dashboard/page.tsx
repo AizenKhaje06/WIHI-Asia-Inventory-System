@@ -100,7 +100,7 @@ export default function DashboardPage() {
     } else if (timePeriod === "1W" || timePeriod === "1M") {
       displayDate = new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     } else if (timePeriod === "3M" || timePeriod === "6M") {
-      displayDate = new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', week: 'numeric' })
+      displayDate = new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     } else if (timePeriod === "1Y") {
       displayDate = new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
     }
