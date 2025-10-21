@@ -724,9 +724,6 @@ font-weight: 100 900;
   .h-\[300px\] {
     height: 300px;
   }
-  .h-\[400px\] {
-    height: 400px;
-  }
   .h-\[calc\(100\%-1px\)\] {
     height: calc(100% - 1px);
   }
@@ -1362,6 +1359,10 @@ font-weight: 100 900;
     border-left-style: var(--tw-border-style);
     border-left-width: 1px;
   }
+  .border-l-4 {
+    border-left-style: var(--tw-border-style);
+    border-left-width: 4px;
+  }
   .border-dashed {
     --tw-border-style: dashed;
     border-style: dashed;
@@ -1428,6 +1429,21 @@ font-weight: 100 900;
   }
   .border-t-transparent {
     border-top-color: transparent;
+  }
+  .border-l-chart-1 {
+    border-left-color: var(--chart-1);
+  }
+  .border-l-chart-2 {
+    border-left-color: var(--chart-2);
+  }
+  .border-l-chart-3 {
+    border-left-color: var(--chart-3);
+  }
+  .border-l-chart-4 {
+    border-left-color: var(--chart-4);
+  }
+  .border-l-chart-5 {
+    border-left-color: var(--chart-5);
   }
   .border-l-transparent {
     border-left-color: transparent;
@@ -1996,6 +2012,21 @@ font-weight: 100 900;
   }
   .text-card-foreground {
     color: var(--card-foreground);
+  }
+  .text-chart-1 {
+    color: var(--chart-1);
+  }
+  .text-chart-2 {
+    color: var(--chart-2);
+  }
+  .text-chart-3 {
+    color: var(--chart-3);
+  }
+  .text-chart-4 {
+    color: var(--chart-4);
+  }
+  .text-chart-5 {
+    color: var(--chart-5);
   }
   .text-current {
     color: currentcolor;
@@ -4963,6 +4994,11 @@ font-weight: 100 900;
   .lg\:grid-cols-4 {
     @media (width >= 64rem) {
       grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  .lg\:grid-cols-5 {
+    @media (width >= 64rem) {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
     }
   }
   .lg\:flex-row {
