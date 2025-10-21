@@ -87,7 +87,7 @@ async function initializeTransactionsSheet() {
               title: 'Transactions',
               gridProperties: {
                 rowCount: 1000,
-                columnCount: 12
+                columnCount: 11
               }
             }
           }
@@ -97,10 +97,10 @@ async function initializeTransactionsSheet() {
     // Add headers
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: "Transactions!A1:L1",
+      range: "Transactions!A1:K1",
       valueInputOption: "RAW",
       requestBody: {
-        values: [["ID", "Item ID", "Item Name", "Quantity", "Cost Price", "Selling Price", "Total Cost", "Total Revenue", "Profit", "Timestamp", "Type", "Department"]]
+        values: [["ID", "Item ID", "Item Name", "Quantity", "Cost Price", "Selling Price", "Total Cost", "Total Revenue", "Profit", "Timestamp", "Department"]]
       }
     })
   }
@@ -339,14 +339,13 @@ export async function addTransaction(transaction: Omit<Transaction, "id" | "time
       transaction.totalRevenue,
       transaction.profit,
       timestamp,
-      transaction.type,
       transaction.department || "",
     ],
   ]
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "Transactions!A:L",
+    range: "Transactions!A:K",
     valueInputOption: "USER_ENTERED",
     requestBody: { values },
   })
@@ -362,7 +361,7 @@ export async function getTransactions(): Promise<Transaction[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: "Transactions!A2:L",
+    range: "Transactions!A2:K",
   })
 
   const rows = response.data.values || []
@@ -377,8 +376,8 @@ export async function getTransactions(): Promise<Transaction[]> {
     totalRevenue: Number.parseFloat(row[7] || "0"),
     profit: Number.parseFloat(row[8] || "0"),
     timestamp: row[9] || "",
-    type: (row[10] || "sale") as "sale" | "restock",
-    department: row[11] || "",
+    type: "sale" as "sale" | "restock",
+    department: row[10] || "",
   }))
 }
 
