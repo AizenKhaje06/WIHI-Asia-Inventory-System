@@ -217,7 +217,7 @@ export default function SalesAnalyticsPage() {
             <div className="grid grid-cols-7 gap-2">
               {Array.from({ length: 31 }, (_, i) => {
                 const day = i + 1;
-                const dayData = salesData.dailyData.find(d => {
+                const dayData = salesData.dailyData?.find(d => {
                   const date = new Date(d.date);
                   return date.getDate() === day && date.getMonth() === currentMonth.getMonth();
                 });
