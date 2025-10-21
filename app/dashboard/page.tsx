@@ -38,7 +38,7 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [statsRes, itemsRes] = await Promise.all([fetch("/api/dashboard"), fetch("/api/items")])
+        const [statsRes, itemsRes] = await Promise.all([fetch(`/api/dashboard?period=${timePeriod}`), fetch("/api/items")])
 
         const statsData = await statsRes.json()
         const itemsData = await itemsRes.json()
@@ -53,7 +53,7 @@ export default function DashboardPage() {
     }
 
     fetchData()
-  }, [])
+  }, [timePeriod])
 
   if (loading) {
     return (
@@ -92,14 +92,20 @@ export default function DashboardPage() {
     )
   }
 
-  // Filter salesOverTime based on timePeriod (simplified - in real app, adjust data fetching)
-  const filteredSalesData = stats?.salesOverTime?.slice(-24) || [] // For ID (hourly), adjust for others
-
-  // Format date to show time only
-  const formattedSalesData = filteredSalesData.map(item => ({
-    ...item,
-    date: item.date.split(' ')[1] // Keep only time part
-  }))
+  // Format date based on timePeriod
+  const formattedSalesData = stats?.salesOverTime?.map(item => {
+    let displayDate = item.date
+    if (timePeriod === "ID") {
+      displayDate = item.date.split(' ')[1] // Keep only time part for today
+    } else if (timePeriod === "1W" || timePeriod === "1M") {
+      displayDate = new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    } else if (timePeriod === "3M" || timePeriod === "6M") {
+      displayDate = new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', week: 'numeric' })
+    } else if (timePeriod === "1Y") {
+      displayDate = new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    }
+    return { ...item, date: displayDate }
+  }) || []
 
   const topCategoriesData = stats?.topCategories?.map((cat) => ({
     name: cat.name,
