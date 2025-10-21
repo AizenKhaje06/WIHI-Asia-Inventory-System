@@ -330,6 +330,9 @@ font-weight: 100 900;
   .relative {
     position: relative;
   }
+  .static {
+    position: static;
+  }
   .inset-0 {
     inset: calc(var(--spacing) * 0);
   }
@@ -516,6 +519,9 @@ font-weight: 100 900;
   .mt-auto {
     margin-top: auto;
   }
+  .mr-1 {
+    margin-right: calc(var(--spacing) * 1);
+  }
   .mr-2 {
     margin-right: calc(var(--spacing) * 2);
   }
@@ -575,6 +581,9 @@ font-weight: 100 900;
   }
   .hidden {
     display: none;
+  }
+  .inline {
+    display: inline;
   }
   .inline-flex {
     display: inline-flex;
@@ -714,6 +723,9 @@ font-weight: 100 900;
   }
   .h-\[300px\] {
     height: 300px;
+  }
+  .h-\[400px\] {
+    height: 400px;
   }
   .h-\[calc\(100\%-1px\)\] {
     height: calc(100% - 1px);
@@ -1071,11 +1083,17 @@ font-weight: 100 900;
   .cursor-default {
     cursor: default;
   }
+  .cursor-pointer {
+    cursor: pointer;
+  }
   .cursor-text {
     cursor: text;
   }
   .touch-none {
     touch-action: none;
+  }
+  .resize {
+    resize: both;
   }
   .resize-none {
     resize: none;
@@ -1336,6 +1354,10 @@ font-weight: 100 900;
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 1px;
   }
+  .border-b-2 {
+    border-bottom-style: var(--tw-border-style);
+    border-bottom-width: 2px;
+  }
   .border-l {
     border-left-style: var(--tw-border-style);
     border-left-width: 1px;
@@ -1346,6 +1368,9 @@ font-weight: 100 900;
   }
   .border-\(--color-border\) {
     border-color: var(--color-border);
+  }
+  .border-blue-600 {
+    border-color: var(--color-blue-600);
   }
   .border-border {
     border-color: var(--border);
@@ -2013,6 +2038,9 @@ font-weight: 100 900;
   }
   .text-gray-600 {
     color: var(--color-gray-600);
+  }
+  .text-gray-900 {
+    color: var(--color-gray-900);
   }
   .text-green-100 {
     color: var(--color-green-100);
@@ -2872,6 +2900,13 @@ font-weight: 100 900;
     &:hover {
       @media (hover: hover) {
         background-color: var(--color-emerald-50);
+      }
+    }
+  }
+  .hover\:bg-gray-50 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-gray-50);
       }
     }
   }

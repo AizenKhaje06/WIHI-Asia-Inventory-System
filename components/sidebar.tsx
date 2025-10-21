@@ -20,7 +20,7 @@ const navigation = [
   { name: "Low Stocks", href: "/dashboard/inventory/low-stock", icon: AlertTriangle },
   { name: "Out of Stocks", href: "/dashboard/inventory/out-of-stock", icon: XCircle },
   // Cash Flow Section
-  { name: "Daily Sales", href: "/dashboard/analytics", icon: TrendingUp },
+  { name: "Sales Analytics", href: "/dashboard/sales", icon: TrendingUp },
   // Operation Section
   { name: "Logs", href: "/dashboard/log", icon: FileText },
 ]
