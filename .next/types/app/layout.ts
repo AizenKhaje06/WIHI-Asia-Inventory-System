@@ -1,4 +1,4 @@
-// File: C:\Users\Aizen06\Documents\GITHUB PROJECT\Inventory System\Stock-Inventory-System\app\layout.tsx
+// File: C:\GITHUB PROJECTS\Stock Inventory System\Stock-Inventory-System\app\layout.tsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
