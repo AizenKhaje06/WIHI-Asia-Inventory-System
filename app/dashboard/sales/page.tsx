@@ -93,9 +93,9 @@ export default function SalesAnalyticsPage() {
   }
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-PH', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'PHP',
     }).format(value);
   };
 
@@ -246,7 +246,20 @@ export default function SalesAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={salesData.monthlyData}>
+              <BarChart data={[
+                { month: 'Jan', revenue: salesData.monthlyData.find(d => d.month === 'Jan')?.revenue || 0, cost: salesData.monthlyData.find(d => d.month === 'Jan')?.cost || 0, profit: salesData.monthlyData.find(d => d.month === 'Jan')?.profit || 0 },
+                { month: 'Feb', revenue: salesData.monthlyData.find(d => d.month === 'Feb')?.revenue || 0, cost: salesData.monthlyData.find(d => d.month === 'Feb')?.cost || 0, profit: salesData.monthlyData.find(d => d.month === 'Feb')?.profit || 0 },
+                { month: 'Mar', revenue: salesData.monthlyData.find(d => d.month === 'Mar')?.revenue || 0, cost: salesData.monthlyData.find(d => d.month === 'Mar')?.cost || 0, profit: salesData.monthlyData.find(d => d.month === 'Mar')?.profit || 0 },
+                { month: 'Apr', revenue: salesData.monthlyData.find(d => d.month === 'Apr')?.revenue || 0, cost: salesData.monthlyData.find(d => d.month === 'Apr')?.cost || 0, profit: salesData.monthlyData.find(d => d.month === 'Apr')?.profit || 0 },
+                { month: 'May', revenue: salesData.monthlyData.find(d => d.month === 'May')?.revenue || 0, cost: salesData.monthlyData.find(d => d.month === 'May')?.cost || 0, profit: salesData.monthlyData.find(d => d.month === 'May')?.profit || 0 },
+                { month: 'Jun', revenue: salesData.monthlyData.find(d => d.month === 'Jun')?.revenue || 0, cost: salesData.monthlyData.find(d => d.month === 'Jun')?.cost || 0, profit: salesData.monthlyData.find(d => d.month === 'Jun')?.profit || 0 },
+                { month: 'Jul', revenue: salesData.monthlyData.find(d => d.month === 'Jul')?.revenue || 0, cost: salesData.monthlyData.find(d => d.month === 'Jul')?.cost || 0, profit: salesData.monthlyData.find(d => d.month === 'Jul')?.profit || 0 },
+                { month: 'Aug', revenue: salesData.monthlyData.find(d => d.month === 'Aug')?.revenue || 0, cost: salesData.monthlyData.find(d => d.month === 'Aug')?.cost || 0, profit: salesData.monthlyData.find(d => d.month === 'Aug')?.profit || 0 },
+                { month: 'Sep', revenue: salesData.monthlyData.find(d => d.month === 'Sep')?.revenue || 0, cost: salesData.monthlyData.find(d => d.month === 'Sep')?.cost || 0, profit: salesData.monthlyData.find(d => d.month === 'Sep')?.profit || 0 },
+                { month: 'Oct', revenue: salesData.monthlyData.find(d => d.month === 'Oct')?.revenue || 0, cost: salesData.monthlyData.find(d => d.month === 'Oct')?.cost || 0, profit: salesData.monthlyData.find(d => d.month === 'Oct')?.profit || 0 },
+                { month: 'Nov', revenue: salesData.monthlyData.find(d => d.month === 'Nov')?.revenue || 0, cost: salesData.monthlyData.find(d => d.month === 'Nov')?.cost || 0, profit: salesData.monthlyData.find(d => d.month === 'Nov')?.profit || 0 },
+                { month: 'Dec', revenue: salesData.monthlyData.find(d => d.month === 'Dec')?.revenue || 0, cost: salesData.monthlyData.find(d => d.month === 'Dec')?.cost || 0, profit: salesData.monthlyData.find(d => d.month === 'Dec')?.profit || 0 }
+              ]}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis tickFormatter={formatCurrency} />
