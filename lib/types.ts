@@ -49,6 +49,7 @@ export interface SalesReport {
   totalProfit: number
   profitMargin: number
   itemsSold: number
+  totalOrders: number
   transactions: Transaction[]
   dailySales?: DailySales[]
   monthlySales?: MonthlySales[]

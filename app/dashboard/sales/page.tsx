@@ -12,16 +12,17 @@ interface SalesData {
   totalCost: number;
   totalProfit: number;
   profitMargin: number;
-  dailyData: Array<{
+  totalOrders: number;
+  dailySales: Array<{
     date: string;
     revenue: number;
-    cost: number;
+    itemsSold: number;
     profit: number;
   }>;
-  monthlyData: Array<{
+  monthlySales: Array<{
     month: string;
     revenue: number;
-    cost: number;
+    itemsSold: number;
     profit: number;
   }>;
 }
@@ -135,7 +136,21 @@ export default function SalesAnalyticsPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{salesData.totalOrders}</div>
+            <p className="text-xs text-muted-foreground">
+              <TrendingUp className="inline h-3 w-3 mr-1" />
+              +12.5% from last month
+            </p>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -220,9 +235,9 @@ export default function SalesAnalyticsPage() {
             <div className="grid grid-cols-7 gap-2">
               {Array.from({ length: 31 }, (_, i) => {
                 const day = i + 1;
-                const dayData = salesData.dailyData?.find(d => {
+                const dayData = salesData.dailySales?.find(d => {
                   const date = new Date(d.date);
-                  return date.getDate() === day && date.getMonth() === currentMonth.getMonth();
+                  return date.getDate() === day && date.getMonth() === currentMonth.getMonth() && date.getFullYear() === currentMonth.getFullYear();
                 });
 
                 return (
@@ -250,18 +265,18 @@ export default function SalesAnalyticsPage() {
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={[
-                { month: 'Jan', revenue: salesData.monthlyData?.find(d => d.month === 'Jan')?.revenue || 0, cost: salesData.monthlyData?.find(d => d.month === 'Jan')?.cost || 0, profit: salesData.monthlyData?.find(d => d.month === 'Jan')?.profit || 0 },
-                { month: 'Feb', revenue: salesData.monthlyData?.find(d => d.month === 'Feb')?.revenue || 0, cost: salesData.monthlyData?.find(d => d.month === 'Feb')?.cost || 0, profit: salesData.monthlyData?.find(d => d.month === 'Feb')?.profit || 0 },
-                { month: 'Mar', revenue: salesData.monthlyData?.find(d => d.month === 'Mar')?.revenue || 0, cost: salesData.monthlyData?.find(d => d.month === 'Mar')?.cost || 0, profit: salesData.monthlyData?.find(d => d.month === 'Mar')?.profit || 0 },
-                { month: 'Apr', revenue: salesData.monthlyData?.find(d => d.month === 'Apr')?.revenue || 0, cost: salesData.monthlyData?.find(d => d.month === 'Apr')?.cost || 0, profit: salesData.monthlyData?.find(d => d.month === 'Apr')?.profit || 0 },
-                { month: 'May', revenue: salesData.monthlyData?.find(d => d.month === 'May')?.revenue || 0, cost: salesData.monthlyData?.find(d => d.month === 'May')?.cost || 0, profit: salesData.monthlyData?.find(d => d.month === 'May')?.profit || 0 },
-                { month: 'Jun', revenue: salesData.monthlyData?.find(d => d.month === 'Jun')?.revenue || 0, cost: salesData.monthlyData?.find(d => d.month === 'Jun')?.cost || 0, profit: salesData.monthlyData?.find(d => d.month === 'Jun')?.profit || 0 },
-                { month: 'Jul', revenue: salesData.monthlyData?.find(d => d.month === 'Jul')?.revenue || 0, cost: salesData.monthlyData?.find(d => d.month === 'Jul')?.cost || 0, profit: salesData.monthlyData?.find(d => d.month === 'Jul')?.profit || 0 },
-                { month: 'Aug', revenue: salesData.monthlyData?.find(d => d.month === 'Aug')?.revenue || 0, cost: salesData.monthlyData?.find(d => d.month === 'Aug')?.cost || 0, profit: salesData.monthlyData?.find(d => d.month === 'Aug')?.profit || 0 },
-                { month: 'Sep', revenue: salesData.monthlyData?.find(d => d.month === 'Sep')?.revenue || 0, cost: salesData.monthlyData?.find(d => d.month === 'Sep')?.cost || 0, profit: salesData.monthlyData?.find(d => d.month === 'Sep')?.profit || 0 },
-                { month: 'Oct', revenue: salesData.monthlyData?.find(d => d.month === 'Oct')?.revenue || 0, cost: salesData.monthlyData?.find(d => d.month === 'Oct')?.cost || 0, profit: salesData.monthlyData?.find(d => d.month === 'Oct')?.profit || 0 },
-                { month: 'Nov', revenue: salesData.monthlyData?.find(d => d.month === 'Nov')?.revenue || 0, cost: salesData.monthlyData?.find(d => d.month === 'Nov')?.cost || 0, profit: salesData.monthlyData?.find(d => d.month === 'Nov')?.profit || 0 },
-                { month: 'Dec', revenue: salesData.monthlyData?.find(d => d.month === 'Dec')?.revenue || 0, cost: salesData.monthlyData?.find(d => d.month === 'Dec')?.cost || 0, profit: salesData.monthlyData?.find(d => d.month === 'Dec')?.profit || 0 }
+                { month: 'Jan', revenue: salesData.monthlySales?.find(d => d.month === 'Jan')?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month === 'Jan')?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month === 'Jan')?.profit || 0 },
+                { month: 'Feb', revenue: salesData.monthlySales?.find(d => d.month === 'Feb')?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month === 'Feb')?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month === 'Feb')?.profit || 0 },
+                { month: 'Mar', revenue: salesData.monthlySales?.find(d => d.month === 'Mar')?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month === 'Mar')?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month === 'Mar')?.profit || 0 },
+                { month: 'Apr', revenue: salesData.monthlySales?.find(d => d.month === 'Apr')?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month === 'Apr')?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month === 'Apr')?.profit || 0 },
+                { month: 'May', revenue: salesData.monthlySales?.find(d => d.month === 'May')?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month === 'May')?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month === 'May')?.profit || 0 },
+                { month: 'Jun', revenue: salesData.monthlySales?.find(d => d.month === 'Jun')?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month === 'Jun')?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month === 'Jun')?.profit || 0 },
+                { month: 'Jul', revenue: salesData.monthlySales?.find(d => d.month === 'Jul')?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month === 'Jul')?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month === 'Jul')?.profit || 0 },
+                { month: 'Aug', revenue: salesData.monthlySales?.find(d => d.month === 'Aug')?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month === 'Aug')?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month === 'Aug')?.profit || 0 },
+                { month: 'Sep', revenue: salesData.monthlySales?.find(d => d.month === 'Sep')?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month === 'Sep')?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month === 'Sep')?.profit || 0 },
+                { month: 'Oct', revenue: salesData.monthlySales?.find(d => d.month === 'Oct')?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month === 'Oct')?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month === 'Oct')?.profit || 0 },
+                { month: 'Nov', revenue: salesData.monthlySales?.find(d => d.month === 'Nov')?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month === 'Nov')?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month === 'Nov')?.profit || 0 },
+                { month: 'Dec', revenue: salesData.monthlySales?.find(d => d.month === 'Dec')?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month === 'Dec')?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month === 'Dec')?.profit || 0 }
               ]}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
@@ -271,7 +286,7 @@ export default function SalesAnalyticsPage() {
                   labelFormatter={(label) => `Month: ${label}`}
                 />
                 <Bar dataKey="revenue" fill="#3b82f6" name="Revenue" />
-                <Bar dataKey="cost" fill="#ef4444" name="Cost" />
+                <Bar dataKey="itemsSold" fill="#f59e0b" name="Items Sold" />
                 <Bar dataKey="profit" fill="#10b981" name="Profit" />
               </BarChart>
             </ResponsiveContainer>

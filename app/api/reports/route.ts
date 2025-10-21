@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     const totalProfit = totalRevenue - totalCost
     const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
     const itemsSold = salesTransactions.reduce((sum, t) => sum + t.quantity, 0)
+    const totalOrders = salesTransactions.length
 
     // Always populate both daily and monthly sales data
     const dailyMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
@@ -67,6 +68,7 @@ export async function GET(request: NextRequest) {
       totalProfit,
       profitMargin,
       itemsSold,
+      totalOrders,
       transactions: salesTransactions,
       dailySales,
       monthlySales,
