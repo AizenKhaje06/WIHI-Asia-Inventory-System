@@ -33,7 +33,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [lowStockItems, setLowStockItems] = useState<InventoryItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [timePeriod, setTimePeriod] = useState<"ID" | "1W" | "1M" | "3M" | "6M" | "1Y">("ID")
+  const [timePeriod, setTimePeriod] = useState<"ID" | "1W" | "1M">("ID")
 
   useEffect(() => {
     async function fetchData() {
@@ -99,10 +99,6 @@ export default function DashboardPage() {
       displayDate = item.date.split(' ')[1] // Keep only time part for today
     } else if (timePeriod === "1W" || timePeriod === "1M") {
       displayDate = new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    } else if (timePeriod === "3M" || timePeriod === "6M") {
-      displayDate = new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    } else if (timePeriod === "1Y") {
-      displayDate = new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
     }
     return { ...item, date: displayDate }
   }) || []
@@ -156,9 +152,6 @@ export default function DashboardPage() {
                 <TabsTrigger value="ID" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Today</TabsTrigger>
                 <TabsTrigger value="1W" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">1W</TabsTrigger>
                 <TabsTrigger value="1M" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">1M</TabsTrigger>
-                <TabsTrigger value="3M" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">3M</TabsTrigger>
-                <TabsTrigger value="6M" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">6M</TabsTrigger>
-                <TabsTrigger value="1Y" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">1Y</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
