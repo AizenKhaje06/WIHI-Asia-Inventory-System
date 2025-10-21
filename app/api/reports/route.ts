@@ -7,15 +7,39 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const startDate = searchParams.get("startDate")
     const endDate = searchParams.get("endDate")
+    const period = searchParams.get("period")
 
     let transactions = await getTransactions()
 
-    if (startDate) {
-      transactions = transactions.filter((t) => new Date(t.timestamp) >= new Date(startDate))
-    }
+    // Handle period-based filtering
+    if (period) {
+      const now = new Date()
+      let periodStart: Date
 
-    if (endDate) {
-      transactions = transactions.filter((t) => new Date(t.timestamp) <= new Date(endDate))
+      switch (period) {
+        case "Today":
+          periodStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+          break
+        case "1W":
+          periodStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+          break
+        case "1M":
+          periodStart = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate() + 1)
+          break
+        default:
+          periodStart = new Date(0) // Default to beginning of time if invalid period
+      }
+
+      transactions = transactions.filter((t) => new Date(t.timestamp) >= periodStart)
+    } else {
+      // Handle explicit startDate/endDate filtering
+      if (startDate) {
+        transactions = transactions.filter((t) => new Date(t.timestamp) >= new Date(startDate))
+      }
+
+      if (endDate) {
+        transactions = transactions.filter((t) => new Date(t.timestamp) <= new Date(endDate))
+      }
     }
 
     const salesTransactions = transactions.filter((t) => t.type === "sale")
@@ -27,7 +51,61 @@ export async function GET(request: NextRequest) {
     const itemsSold = salesTransactions.reduce((sum, t) => sum + t.quantity, 0)
     const totalOrders = salesTransactions.length
 
-    // Always populate both daily and monthly sales data
+    // Generate salesOverTime data based on period
+    let salesOverTime: { date: string; revenue: number }[] = []
+
+    if (period) {
+      switch (period) {
+        case "Today":
+          // Group by hour for today
+          const hourlyMap = new Map<string, number>()
+          salesTransactions.forEach((t) => {
+            const hour = new Date(t.timestamp).getHours()
+            const hourKey = `${hour.toString().padStart(2, '0')}:00`
+            hourlyMap.set(hourKey, (hourlyMap.get(hourKey) || 0) + t.totalRevenue)
+          })
+          salesOverTime = Array.from(hourlyMap.entries())
+            .map(([hour, revenue]) => ({ date: hour, revenue }))
+            .sort((a, b) => a.date.localeCompare(b.date))
+          break
+
+        case "1W":
+          // Group by day for 1 week
+          const weeklyMap = new Map<string, number>()
+          salesTransactions.forEach((t) => {
+            const date = new Date(t.timestamp).toISOString().split("T")[0]
+            weeklyMap.set(date, (weeklyMap.get(date) || 0) + t.totalRevenue)
+          })
+          salesOverTime = Array.from(weeklyMap.entries())
+            .map(([date, revenue]) => ({ date, revenue }))
+            .sort((a, b) => a.date.localeCompare(b.date))
+          break
+
+        case "1M":
+          // Group by day for 1 month
+          const monthlyMap = new Map<string, number>()
+          salesTransactions.forEach((t) => {
+            const date = new Date(t.timestamp).toISOString().split("T")[0]
+            monthlyMap.set(date, (monthlyMap.get(date) || 0) + t.totalRevenue)
+          })
+          salesOverTime = Array.from(monthlyMap.entries())
+            .map(([date, revenue]) => ({ date, revenue }))
+            .sort((a, b) => a.date.localeCompare(b.date))
+          break
+      }
+    } else {
+      // Default to daily sales for backward compatibility
+      const dailyMap = new Map<string, number>()
+      salesTransactions.forEach((t) => {
+        const date = new Date(t.timestamp).toISOString().split("T")[0]
+        dailyMap.set(date, (dailyMap.get(date) || 0) + t.totalRevenue)
+      })
+      salesOverTime = Array.from(dailyMap.entries())
+        .map(([date, revenue]) => ({ date, revenue }))
+        .sort((a, b) => a.date.localeCompare(b.date))
+    }
+
+    // Always populate both daily and monthly sales data for other components
     const dailyMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
 
     salesTransactions.forEach((t) => {
@@ -45,20 +123,20 @@ export async function GET(request: NextRequest) {
       .map(([date, data]) => ({ date, ...data }))
       .sort((a, b) => a.date.localeCompare(b.date))
 
-    const monthlyMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
+    const monthlySalesMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
 
     salesTransactions.forEach((t) => {
       const month = new Date(t.timestamp).toISOString().slice(0, 7)
-      if (!monthlyMap.has(month)) {
-        monthlyMap.set(month, { revenue: 0, itemsSold: 0, profit: 0 })
+      if (!monthlySalesMap.has(month)) {
+        monthlySalesMap.set(month, { revenue: 0, itemsSold: 0, profit: 0 })
       }
-      const monthData = monthlyMap.get(month)!
+      const monthData = monthlySalesMap.get(month)!
       monthData.revenue += t.totalRevenue
       monthData.itemsSold += t.quantity
       monthData.profit += t.profit
     })
 
-    const monthlySales: MonthlySales[] = Array.from(monthlyMap.entries())
+    const monthlySales: MonthlySales[] = Array.from(monthlySalesMap.entries())
       .map(([month, data]) => ({ month, ...data }))
       .sort((a, b) => a.month.localeCompare(b.month))
 
@@ -72,6 +150,7 @@ export async function GET(request: NextRequest) {
       transactions: salesTransactions,
       dailySales,
       monthlySales,
+      salesOverTime,
     }
 
     return NextResponse.json(report)

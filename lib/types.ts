@@ -51,6 +51,7 @@ export interface SalesReport {
   transactions: Transaction[]
   dailySales?: DailySales[]
   monthlySales?: MonthlySales[]
+  salesOverTime?: { date: string; revenue: number }[]
 }
 
 export interface DashboardStats {
