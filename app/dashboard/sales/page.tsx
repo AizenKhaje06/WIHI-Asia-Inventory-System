@@ -103,6 +103,9 @@ export default function SalesAnalyticsPage() {
     return `${(value * 100).toFixed(1)}%`;
   };
 
+  // Calculate profit margin to ensure accuracy
+  const calculatedProfitMargin = salesData.totalRevenue > 0 ? salesData.totalProfit / salesData.totalRevenue : 0;
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
@@ -179,7 +182,7 @@ export default function SalesAnalyticsPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatPercentage(salesData.profitMargin)}</div>
+            <div className="text-2xl font-bold">{formatPercentage(calculatedProfitMargin)}</div>
             <p className="text-xs text-muted-foreground">
               +2.1% from last month
             </p>
