@@ -82,10 +82,10 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 Category
               </Label>
               <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })} required>
-                <SelectTrigger id="category" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                <SelectTrigger id="category" className="w-full max-w-xs border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="w-full max-w-xs">
                   <SelectItem value="Electronics & Gadgets">Electronics & Gadgets</SelectItem>
                   <SelectItem value="Fashion & Apparel">Fashion & Apparel</SelectItem>
                   <SelectItem value="Health, Beauty & Personal Care">Health, Beauty & Personal Care</SelectItem>

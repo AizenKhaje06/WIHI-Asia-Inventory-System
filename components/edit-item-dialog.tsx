@@ -85,12 +85,23 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
               <Label htmlFor="edit-category" className="text-foreground">
                 Category
               </Label>
-              <Input
-                id="edit-category"
-                required
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              />
+              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })} required>
+                <SelectTrigger id="edit-category" className="w-full max-w-xs">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent className="w-full max-w-xs">
+                  <SelectItem value="Electronics & Gadgets">Electronics & Gadgets</SelectItem>
+                  <SelectItem value="Fashion & Apparel">Fashion & Apparel</SelectItem>
+                  <SelectItem value="Health, Beauty & Personal Care">Health, Beauty & Personal Care</SelectItem>
+                  <SelectItem value="Home & Living">Home & Living</SelectItem>
+                  <SelectItem value="Sports & Outdoors">Sports & Outdoors</SelectItem>
+                  <SelectItem value="Baby, Kids & Toys">Baby, Kids & Toys</SelectItem>
+                  <SelectItem value="Groceries & Pets">Groceries & Pets</SelectItem>
+                  <SelectItem value="Automotive & Industrial">Automotive & Industrial</SelectItem>
+                  <SelectItem value="Stationery & Books">Stationery & Books</SelectItem>
+                  <SelectItem value="Other / Miscellaneous">Other / Miscellaneous</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-quantity" className="text-foreground">
