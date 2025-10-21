@@ -2,6 +2,38 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getTransactions } from "@/lib/google-sheets"
 import type { SalesReport, DailySales, MonthlySales } from "@/lib/types"
 
+// Helper function to parse Google Sheets timestamp format: "YYYY-MM-DD / H:MM AM/PM"
+function parseGoogleSheetsTimestamp(timestamp: string): Date {
+  // Format: "2025-10-21 / 1:20 PM"
+  const parts = timestamp.split(' / ')
+  if (parts.length !== 2) {
+    throw new Error(`Invalid timestamp format: ${timestamp}`)
+  }
+
+  const datePart = parts[0] // "2025-10-21"
+  const timePart = parts[1] // "1:20 PM"
+
+  // Parse time part
+  const timeMatch = timePart.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (!timeMatch) {
+    throw new Error(`Invalid time format: ${timePart}`)
+  }
+
+  let hours = parseInt(timeMatch[1])
+  const minutes = parseInt(timeMatch[2])
+  const ampm = timeMatch[3].toUpperCase()
+
+  if (ampm === 'PM' && hours !== 12) {
+    hours += 12
+  } else if (ampm === 'AM' && hours === 12) {
+    hours = 0
+  }
+
+  // Create date object
+  const [year, month, day] = datePart.split('-').map(Number)
+  return new Date(year, month - 1, day, hours, minutes)
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -30,15 +62,15 @@ export async function GET(request: NextRequest) {
           periodStart = new Date(0) // Default to beginning of time if invalid period
       }
 
-      transactions = transactions.filter((t) => new Date(t.timestamp) >= periodStart)
+      transactions = transactions.filter((t) => parseGoogleSheetsTimestamp(t.timestamp) >= periodStart)
     } else {
       // Handle explicit startDate/endDate filtering
       if (startDate) {
-        transactions = transactions.filter((t) => new Date(t.timestamp) >= new Date(startDate))
+        transactions = transactions.filter((t) => parseGoogleSheetsTimestamp(t.timestamp) >= new Date(startDate))
       }
 
       if (endDate) {
-        transactions = transactions.filter((t) => new Date(t.timestamp) <= new Date(endDate))
+        transactions = transactions.filter((t) => parseGoogleSheetsTimestamp(t.timestamp) <= new Date(endDate))
       }
     }
 
@@ -60,7 +92,8 @@ export async function GET(request: NextRequest) {
           // Group by hour for today
           const hourlyMap = new Map<string, number>()
           salesTransactions.forEach((t) => {
-            const hour = new Date(t.timestamp).getHours()
+            const parsedDate = parseGoogleSheetsTimestamp(t.timestamp)
+            const hour = parsedDate.getHours()
             const hourKey = `${hour.toString().padStart(2, '0')}:00`
             hourlyMap.set(hourKey, (hourlyMap.get(hourKey) || 0) + t.totalRevenue)
           })
@@ -73,7 +106,8 @@ export async function GET(request: NextRequest) {
           // Group by day for 1 week
           const weeklyMap = new Map<string, number>()
           salesTransactions.forEach((t) => {
-            const date = new Date(t.timestamp).toISOString().split("T")[0]
+            const parsedDate = parseGoogleSheetsTimestamp(t.timestamp)
+            const date = parsedDate.toISOString().split("T")[0]
             weeklyMap.set(date, (weeklyMap.get(date) || 0) + t.totalRevenue)
           })
           salesOverTime = Array.from(weeklyMap.entries())
@@ -85,7 +119,8 @@ export async function GET(request: NextRequest) {
           // Group by day for 1 month
           const monthlyMap = new Map<string, number>()
           salesTransactions.forEach((t) => {
-            const date = new Date(t.timestamp).toISOString().split("T")[0]
+            const parsedDate = parseGoogleSheetsTimestamp(t.timestamp)
+            const date = parsedDate.toISOString().split("T")[0]
             monthlyMap.set(date, (monthlyMap.get(date) || 0) + t.totalRevenue)
           })
           salesOverTime = Array.from(monthlyMap.entries())
@@ -97,7 +132,8 @@ export async function GET(request: NextRequest) {
       // Default to daily sales for backward compatibility
       const dailyMap = new Map<string, number>()
       salesTransactions.forEach((t) => {
-        const date = new Date(t.timestamp).toISOString().split("T")[0]
+        const parsedDate = parseGoogleSheetsTimestamp(t.timestamp)
+        const date = parsedDate.toISOString().split("T")[0]
         dailyMap.set(date, (dailyMap.get(date) || 0) + t.totalRevenue)
       })
       salesOverTime = Array.from(dailyMap.entries())
@@ -109,7 +145,8 @@ export async function GET(request: NextRequest) {
     const dailyMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
 
     salesTransactions.forEach((t) => {
-      const date = new Date(t.timestamp).toISOString().split("T")[0]
+      const parsedDate = parseGoogleSheetsTimestamp(t.timestamp)
+      const date = parsedDate.toISOString().split("T")[0]
       if (!dailyMap.has(date)) {
         dailyMap.set(date, { revenue: 0, itemsSold: 0, profit: 0 })
       }
@@ -126,7 +163,8 @@ export async function GET(request: NextRequest) {
     const monthlySalesMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
 
     salesTransactions.forEach((t) => {
-      const month = new Date(t.timestamp).toISOString().slice(0, 7)
+      const parsedDate = parseGoogleSheetsTimestamp(t.timestamp)
+      const month = parsedDate.toISOString().slice(0, 7)
       if (!monthlySalesMap.has(month)) {
         monthlySalesMap.set(month, { revenue: 0, itemsSold: 0, profit: 0 })
       }
