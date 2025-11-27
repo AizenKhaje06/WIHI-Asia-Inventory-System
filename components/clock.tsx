@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
+import { formatInTimeZone } from "date-fns-tz"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const timezones = [
@@ -23,14 +24,12 @@ export function Clock() {
     return () => clearInterval(interval)
   }, [])
 
-  const formattedTime = format(now, "yyyy-MM-dd / hh:mm:ss a", {
-    timeZone: selectedTimezone,
-  })
+  const formattedTime = formatInTimeZone(now, selectedTimezone, "yyyy-MM-dd / hh:mm:ss a")
 
   return (
-    <div className="absolute top-4 right-4 z-20 flex items-center gap-2 text-sm text-foreground/80">
+    <div className="flex items-center gap-2 text-sm text-foreground/80 lg:absolute lg:top-4 lg:right-4 lg:z-20">
       <Select value={selectedTimezone} onValueChange={setSelectedTimezone}>
-        <SelectTrigger className="w-32 h-8">
+        <SelectTrigger className="w-24 sm:w-32 h-8 text-xs sm:text-sm">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -41,7 +40,8 @@ export function Clock() {
           ))}
         </SelectContent>
       </Select>
-      <span>{formattedTime}</span>
+      <span className="hidden sm:inline">{formattedTime}</span>
+      <span className="sm:hidden">{formatInTimeZone(now, selectedTimezone, "hh:mm a")}</span>
     </div>
   )
 }
