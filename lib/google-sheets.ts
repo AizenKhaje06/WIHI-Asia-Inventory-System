@@ -6,9 +6,9 @@ import type { InventoryItem, Transaction, Log, Restock } from "./types"
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 const formatTimestamp = (date: Date) => {
-  // Use Philippines timezone (UTC+8) for accurate local time
+  // Use Taipei timezone (UTC+8) for accurate local time
   const options: Intl.DateTimeFormatOptions = {
-    timeZone: 'Asia/Manila',
+    timeZone: 'Asia/Taipei',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
