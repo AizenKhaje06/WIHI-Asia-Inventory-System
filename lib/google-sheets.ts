@@ -74,7 +74,7 @@ async function initializeTransactionsSheet() {
   try {
     await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "Transactions!A1:L1"
+      range: "Transactions!A1:J1"
     })
   } catch (error) {
     // Sheet doesn't exist, create it
@@ -87,7 +87,7 @@ async function initializeTransactionsSheet() {
               title: 'Transactions',
               gridProperties: {
                 rowCount: 1000,
-                columnCount: 11
+                columnCount: 10
               }
             }
           }
@@ -97,10 +97,10 @@ async function initializeTransactionsSheet() {
     // Add headers
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: "Transactions!A1:K1",
+      range: "Transactions!A1:J1",
       valueInputOption: "RAW",
       requestBody: {
-        values: [["ID", "Item ID", "Item Name", "Quantity", "Cost Price", "Selling Price", "Total Cost", "Total Revenue", "Profit", "Timestamp", "Department"]]
+        values: [["ID", "Item ID", "Item Name", "Quantity", "Cost Price", "Selling Price", "Total Cost", "Profit", "Timestamp", "Department"]]
       }
     })
   }
@@ -336,7 +336,6 @@ export async function addTransaction(transaction: Omit<Transaction, "id" | "time
       transaction.costPrice,
       transaction.sellingPrice,
       transaction.totalCost,
-      transaction.totalRevenue,
       transaction.profit,
       timestamp,
       transaction.department || "",
@@ -345,7 +344,7 @@ export async function addTransaction(transaction: Omit<Transaction, "id" | "time
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "Transactions!A:K",
+    range: "Transactions!A:J",
     valueInputOption: "USER_ENTERED",
     requestBody: { values },
   })
@@ -361,24 +360,29 @@ export async function getTransactions(): Promise<Transaction[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: "Transactions!A2:K",
+    range: "Transactions!A2:J",
   })
 
   const rows = response.data.values || []
-  return rows.map((row) => ({
-    id: row[0] || "",
-    itemId: row[1] || "",
-    itemName: row[2] || "",
-    quantity: Number.parseInt(row[3] || "0"),
-    costPrice: Number.parseFloat(row[4] || "0"),
-    sellingPrice: Number.parseFloat(row[5] || "0"),
-    totalCost: Number.parseFloat(row[6] || "0"),
-    totalRevenue: Number.parseFloat(row[7] || "0"),
-    profit: Number.parseFloat(row[8] || "0"),
-    timestamp: row[9] || "",
-    type: "sale" as "sale" | "restock",
-    department: row[10] || "",
-  }))
+  return rows.map((row) => {
+    const quantity = Number.parseInt(row[3] || "0")
+    const sellingPrice = Number.parseFloat(row[5] || "0")
+    const totalRevenue = quantity * sellingPrice
+    return {
+      id: row[0] || "",
+      itemId: row[1] || "",
+      itemName: row[2] || "",
+      quantity,
+      costPrice: Number.parseFloat(row[4] || "0"),
+      sellingPrice,
+      totalCost: Number.parseFloat(row[6] || "0"),
+      totalRevenue,
+      profit: Number.parseFloat(row[7] || "0"),
+      timestamp: row[8] || "",
+      type: "sale" as "sale" | "restock",
+      department: row[9] || "",
+    }
+  })
 }
 
 async function initializeLogsSheet() {
