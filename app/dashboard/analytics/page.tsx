@@ -18,12 +18,14 @@ import { formatCurrency } from "@/lib/utils"
 export default function AnalyticsPage() {
   const [report, setReport] = useState<SalesReport | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [view, setView] = useState<'daily' | 'monthly'>('daily')
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   useEffect(() => {
     async function fetchData() {
       try {
+        setError(null)
         const year = currentMonth.getFullYear()
         const month = currentMonth.getMonth()
         const startDate = new Date(year, month, 1)
@@ -39,6 +41,10 @@ export default function AnalyticsPage() {
 
         const reportRes = await fetch(url)
 
+        if (!reportRes.ok) {
+          throw new Error(`Failed to fetch data: ${reportRes.status} ${reportRes.statusText}`)
+        }
+
         const reportData = await reportRes.json()
 
         console.log("[Analytics Debug] Report Data:", reportData)
@@ -47,6 +53,8 @@ export default function AnalyticsPage() {
 
       } catch (error) {
         console.error("[Analytics] Error fetching data:", error)
+        setError(error instanceof Error ? error.message : 'Failed to fetch data')
+        setReport(null)
       } finally {
         setLoading(false)
       }
@@ -58,17 +66,30 @@ export default function AnalyticsPage() {
   const prevMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
     setLoading(true)
+    setError(null)
   }
 
   const nextMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
     setLoading(true)
+    setError(null)
   }
 
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-muted-foreground">Loading analytics...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 dark:text-red-400 mb-2">Error loading analytics</div>
+          <div className="text-sm text-muted-foreground">{error}</div>
+        </div>
       </div>
     )
   }

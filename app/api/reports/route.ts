@@ -40,8 +40,19 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get("startDate")
     const endDate = searchParams.get("endDate")
     const period = searchParams.get("period")
+    const view = searchParams.get("view")
 
     let transactions = await getTransactions()
+
+    // Helper function to safely parse timestamp
+    const safeParseTimestamp = (timestamp: string): Date | null => {
+      try {
+        return parseGoogleSheetsTimestamp(timestamp)
+      } catch (error) {
+        console.error(`Failed to parse timestamp: ${timestamp}`, error)
+        return null
+      }
+    }
 
     // Handle period-based filtering
     if (period) {
@@ -62,15 +73,24 @@ export async function GET(request: NextRequest) {
           periodStart = new Date(0) // Default to beginning of time if invalid period
       }
 
-      transactions = transactions.filter((t) => parseGoogleSheetsTimestamp(t.timestamp) >= periodStart)
+      transactions = transactions.filter((t) => {
+        const parsed = safeParseTimestamp(t.timestamp)
+        return parsed && parsed >= periodStart
+      })
     } else {
       // Handle explicit startDate/endDate filtering
       if (startDate) {
-        transactions = transactions.filter((t) => parseGoogleSheetsTimestamp(t.timestamp) >= new Date(startDate))
+        transactions = transactions.filter((t) => {
+          const parsed = safeParseTimestamp(t.timestamp)
+          return parsed && parsed >= new Date(startDate)
+        })
       }
 
       if (endDate) {
-        transactions = transactions.filter((t) => parseGoogleSheetsTimestamp(t.timestamp) <= new Date(endDate))
+        transactions = transactions.filter((t) => {
+          const parsed = safeParseTimestamp(t.timestamp)
+          return parsed && parsed <= new Date(endDate)
+        })
       }
     }
 
@@ -83,7 +103,7 @@ export async function GET(request: NextRequest) {
     const itemsSold = salesTransactions.reduce((sum, t) => sum + t.quantity, 0)
     const totalOrders = salesTransactions.length
 
-    // Generate salesOverTime data based on period
+    // Generate salesOverTime data based on period or view
     let salesOverTime: { date: string; revenue: number }[] = []
 
     if (period) {
@@ -92,10 +112,12 @@ export async function GET(request: NextRequest) {
           // Group by hour for today
           const hourlyMap = new Map<string, number>()
           salesTransactions.forEach((t) => {
-            const parsedDate = parseGoogleSheetsTimestamp(t.timestamp)
-            const hour = parsedDate.getHours()
-            const hourKey = `${hour.toString().padStart(2, '0')}:00`
-            hourlyMap.set(hourKey, (hourlyMap.get(hourKey) || 0) + t.totalRevenue)
+            const parsedDate = safeParseTimestamp(t.timestamp)
+            if (parsedDate) {
+              const hour = parsedDate.getHours()
+              const hourKey = `${hour.toString().padStart(2, '0')}:00`
+              hourlyMap.set(hourKey, (hourlyMap.get(hourKey) || 0) + t.totalRevenue)
+            }
           })
           salesOverTime = Array.from(hourlyMap.entries())
             .map(([hour, revenue]) => ({ date: hour, revenue }))
@@ -106,9 +128,11 @@ export async function GET(request: NextRequest) {
           // Group by day for 1 week
           const weeklyMap = new Map<string, number>()
           salesTransactions.forEach((t) => {
-            const parsedDate = parseGoogleSheetsTimestamp(t.timestamp)
-            const date = parsedDate.toISOString().split("T")[0]
-            weeklyMap.set(date, (weeklyMap.get(date) || 0) + t.totalRevenue)
+            const parsedDate = safeParseTimestamp(t.timestamp)
+            if (parsedDate) {
+              const date = parsedDate.toISOString().split("T")[0]
+              weeklyMap.set(date, (weeklyMap.get(date) || 0) + t.totalRevenue)
+            }
           })
           salesOverTime = Array.from(weeklyMap.entries())
             .map(([date, revenue]) => ({ date, revenue }))
@@ -119,9 +143,11 @@ export async function GET(request: NextRequest) {
           // Group by day for 1 month
           const monthlyMap = new Map<string, number>()
           salesTransactions.forEach((t) => {
-            const parsedDate = parseGoogleSheetsTimestamp(t.timestamp)
-            const date = parsedDate.toISOString().split("T")[0]
-            monthlyMap.set(date, (monthlyMap.get(date) || 0) + t.totalRevenue)
+            const parsedDate = safeParseTimestamp(t.timestamp)
+            if (parsedDate) {
+              const date = parsedDate.toISOString().split("T")[0]
+              monthlyMap.set(date, (monthlyMap.get(date) || 0) + t.totalRevenue)
+            }
           })
           salesOverTime = Array.from(monthlyMap.entries())
             .map(([date, revenue]) => ({ date, revenue }))
@@ -129,31 +155,53 @@ export async function GET(request: NextRequest) {
           break
       }
     } else {
-      // Default to daily sales for backward compatibility
-      const dailyMap = new Map<string, number>()
-      salesTransactions.forEach((t) => {
-        const parsedDate = parseGoogleSheetsTimestamp(t.timestamp)
-        const date = parsedDate.toISOString().split("T")[0]
-        dailyMap.set(date, (dailyMap.get(date) || 0) + t.totalRevenue)
-      })
-      salesOverTime = Array.from(dailyMap.entries())
-        .map(([date, revenue]) => ({ date, revenue }))
-        .sort((a, b) => a.date.localeCompare(b.date))
+      // Use view parameter to determine grouping, default to daily
+      const isMonthlyView = view === 'monthly'
+
+      if (isMonthlyView) {
+        // Group by month for monthly view
+        const monthlyViewMap = new Map<string, number>()
+        salesTransactions.forEach((t) => {
+          const parsedDate = safeParseTimestamp(t.timestamp)
+          if (parsedDate) {
+            const month = parsedDate.toISOString().slice(0, 7) // YYYY-MM
+            monthlyViewMap.set(month, (monthlyViewMap.get(month) || 0) + t.totalRevenue)
+          }
+        })
+        salesOverTime = Array.from(monthlyViewMap.entries())
+          .map(([month, revenue]) => ({ date: month, revenue }))
+          .sort((a, b) => a.date.localeCompare(b.date))
+      } else {
+        // Default to daily sales for backward compatibility
+        const dailyMap = new Map<string, number>()
+        salesTransactions.forEach((t) => {
+          const parsedDate = safeParseTimestamp(t.timestamp)
+          if (parsedDate) {
+            const date = parsedDate.toISOString().split("T")[0]
+            dailyMap.set(date, (dailyMap.get(date) || 0) + t.totalRevenue)
+          }
+        })
+        salesOverTime = Array.from(dailyMap.entries())
+          .map(([date, revenue]) => ({ date, revenue }))
+          .sort((a, b) => a.date.localeCompare(b.date))
+      }
     }
 
     // Always populate both daily and monthly sales data for other components
     const dailyMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
 
     salesTransactions.forEach((t) => {
-      const parsedDate = parseGoogleSheetsTimestamp(t.timestamp)
-      const date = parsedDate.toISOString().split("T")[0]
-      if (!dailyMap.has(date)) {
-        dailyMap.set(date, { revenue: 0, itemsSold: 0, profit: 0 })
+      const parsedDate = safeParseTimestamp(t.timestamp)
+      if (parsedDate) {
+        const date = parsedDate.toISOString().split("T")[0]
+        if (!dailyMap.has(date)) {
+          dailyMap.set(date, { revenue: 0, itemsSold: 0, profit: 0 })
+        }
+        const dayData = dailyMap.get(date)!
+        dayData.revenue += t.totalRevenue
+        dayData.itemsSold += t.quantity
+        dayData.profit += t.profit
       }
-      const dayData = dailyMap.get(date)!
-      dayData.revenue += t.totalRevenue
-      dayData.itemsSold += t.quantity
-      dayData.profit += t.profit
     })
 
     const dailySales: DailySales[] = Array.from(dailyMap.entries())
@@ -163,15 +211,17 @@ export async function GET(request: NextRequest) {
     const monthlySalesMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
 
     salesTransactions.forEach((t) => {
-      const parsedDate = parseGoogleSheetsTimestamp(t.timestamp)
-      const month = parsedDate.toISOString().slice(0, 7)
-      if (!monthlySalesMap.has(month)) {
-        monthlySalesMap.set(month, { revenue: 0, itemsSold: 0, profit: 0 })
+      const parsedDate = safeParseTimestamp(t.timestamp)
+      if (parsedDate) {
+        const month = parsedDate.toISOString().slice(0, 7)
+        if (!monthlySalesMap.has(month)) {
+          monthlySalesMap.set(month, { revenue: 0, itemsSold: 0, profit: 0 })
+        }
+        const monthData = monthlySalesMap.get(month)!
+        monthData.revenue += t.totalRevenue
+        monthData.itemsSold += t.quantity
+        monthData.profit += t.profit
       }
-      const monthData = monthlySalesMap.get(month)!
-      monthData.revenue += t.totalRevenue
-      monthData.itemsSold += t.quantity
-      monthData.profit += t.profit
     })
 
     const monthlySales: MonthlySales[] = Array.from(monthlySalesMap.entries())
