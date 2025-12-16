@@ -150,7 +150,7 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
 
         {/* Operation Section */}
         <div>
-          <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Operation</div>
+          {!collapsed && <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Operation</div>}
           {navigation.slice(7, 8).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -159,7 +159,8 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  "flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  collapsed ? "justify-center" : "gap-2",
                   isActive
                     ? "bg-orange-500 text-white"
                     : "text-white hover:bg-white/10 hover:text-white"
@@ -169,7 +170,7 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                   "h-4 w-4 flex-shrink-0",
                   isActive ? "text-white" : "text-orange-400"
                 )} />
-                <span>{item.name}</span>
+                {!collapsed && <span>{item.name}</span>}
               </Link>
             )
           })}
