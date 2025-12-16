@@ -43,7 +43,7 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
     <div className={cn(
       "flex h-full flex-col border-r",
       "border-border bg-gradient-dark text-white",
-      collapsed ? "w-12 sm:w-16" : "w-48 sm:w-56 md:w-60"
+      "w-full lg:w-60"
     )}>
       <div className={cn("flex h-16 items-center justify-between border-b px-4",
         "border-sidebar-border"
@@ -54,7 +54,7 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
             variant="ghost"
             size="icon"
             onClick={onToggleCollapse}
-            className="text-white hover:bg-white/10"
+            className="text-white hover:bg-white/10 lg:flex hidden"
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>

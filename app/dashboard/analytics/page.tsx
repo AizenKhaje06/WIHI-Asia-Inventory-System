@@ -110,10 +110,10 @@ export default function AnalyticsPage() {
   return (
     <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800">
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
           Transactions
         </h1>
-        <p className="text-slate-600 dark:text-slate-300 text-lg">Comprehensive sales performance analysis and insights</p>
+        <p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg">Comprehensive sales performance analysis and insights</p>
       </div>
 
       {/* Sales Performance Metrics */}
@@ -217,21 +217,21 @@ export default function AnalyticsPage() {
 
                 {/* Calendar Days */}
                 {generateCalendarDays(currentMonth, dailySales).map((cell, index) => (
-                  <div key={index} className="relative h-20 md:h-24">
+                  <div key={index} className="relative h-16 sm:h-20 md:h-24">
                     {cell.day !== null ? (
                       <div
                         className={cn(
-                          "h-full p-1 md:p-2 border border-border rounded-lg bg-background hover:bg-muted/50 transition-colors flex flex-col justify-center items-center shadow-sm",
+                          "h-full p-1 sm:p-2 border border-border rounded-lg bg-background hover:bg-muted/50 transition-colors flex flex-col justify-center items-center shadow-sm",
                           cell.revenue > 0 && "border-r-4 border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20"
                         )}
                       >
-                        <div className="text-sm md:text-base font-semibold text-foreground text-center mb-1">{cell.day}</div>
-                        <div className={`text-xs md:text-sm text-center font-medium ${cell.revenue > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
+                        <div className="text-xs sm:text-sm md:text-base font-semibold text-foreground text-center mb-1">{cell.day}</div>
+                        <div className={`text-xs text-center font-medium ${cell.revenue > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
                           {cell.revenue > 0 ? formatCurrency(cell.revenue) : '₱0.00'}
                         </div>
                       </div>
                     ) : (
-                      <div className="h-full p-1 md:p-2 opacity-30 rounded-lg bg-muted/20" />
+                      <div className="h-full p-1 sm:p-2 opacity-30 rounded-lg bg-muted/20" />
                     )}
                   </div>
                 ))}
