@@ -117,7 +117,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Sales Performance Metrics */}
-      <div className="grid grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
         <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-blue-100">Total Stocks Value</CardTitle>

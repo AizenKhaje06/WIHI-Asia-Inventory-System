@@ -19,6 +19,14 @@ export default function ClientLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
+  const handleToggleCollapse = () => {
+    setSidebarCollapsed(!sidebarCollapsed)
+    // Trigger window resize for charts to resize properly
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'))
+    }, 300) // Match transition duration
+  }
+
   return (
     <ThemeProvider
       attribute="class"
@@ -27,7 +35,7 @@ export default function ClientLayout({
       disableTransitionOnChange
     >
       <Suspense fallback={<div>Loading...</div>}>
-        <div className="relative flex min-h-screen bg-gradient-to-br from-white to-bg-white">
+        <div className="flex min-h-screen bg-gradient-to-br from-white to-bg-white">
           {/* Mobile sidebar overlay */}
           {sidebarOpen && (
             <div
@@ -39,9 +47,9 @@ export default function ClientLayout({
           {/* Sidebar */}
           <div
             className={`
-              fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-sidebar-border bg-gradient-dark text-white transition-all duration-300 ease-in-out
-              ${sidebarOpen ? 'w-60' : 'w-0'}
-              ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+              flex-shrink-0 flex h-screen flex-col border-r border-sidebar-border bg-gradient-dark text-white transition-all duration-300 ease-in-out
+              ${sidebarOpen ? (sidebarCollapsed ? 'w-20' : 'w-64') : 'w-0 lg:w-20 lg:translate-x-0'}
+              ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}
           >
             <div className="flex items-center justify-between p-4 lg:hidden">
@@ -55,11 +63,11 @@ export default function ClientLayout({
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            <Sidebar onNavClick={() => setSidebarOpen(false)} collapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)} />
+            <Sidebar onNavClick={() => setSidebarOpen(false)} collapsed={sidebarCollapsed} onToggleCollapse={handleToggleCollapse} />
           </div>
 
           {/* Main content */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             {/* Top bar for mobile */}
             <div className="lg:hidden flex items-center justify-between p-4 border-b bg-white/80 backdrop-blur-sm">
               <Button
@@ -73,7 +81,7 @@ export default function ClientLayout({
               <Clock />
             </div>
 
-            <main className={`flex-1 overflow-auto pt-4 px-4 sm:px-6 pb-6 transition-all duration-300 ease-in-out lg:${sidebarCollapsed ? 'ml-16' : 'ml-60'}`}>
+            <main className="flex-1 overflow-auto pt-4 px-4 sm:px-6 pb-6">
               {children}
             </main>
           </div>
