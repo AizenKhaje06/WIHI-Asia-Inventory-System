@@ -42,12 +42,13 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
   return (
     <div className={cn(
       "flex h-full flex-col border-r",
-      "border-border bg-gradient-dark text-white"
+      "border-border bg-gradient-dark text-white",
+      collapsed ? "w-12 sm:w-16" : "w-48 sm:w-56 md:w-60"
     )}>
       <div className={cn("flex h-16 items-center justify-between border-b px-4",
         "border-sidebar-border"
       )}>
-        {!collapsed && <h1 className="text-xl font-semibold">Inventory Pro</h1>}
+        {!collapsed && <h1 className="text-lg sm:text-xl font-semibold">Inventory Pro</h1>}
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -63,7 +64,7 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
       <nav className="flex-1 space-y-4 p-2">
         {/* Main Section */}
         <div>
-          {!collapsed && <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Main</div>}
+          {!collapsed && <div className="px-2 py-1 text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">Main</div>}
           {navigation.slice(0, 3).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -92,7 +93,7 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
 
         {/* Inventory Section */}
         <div>
-          {!collapsed && <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Inventory</div>}
+          {!collapsed && <div className="px-2 py-1 text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">Inventory</div>}
           {navigation.slice(3, 6).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -121,7 +122,7 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
 
         {/* Cash Flow Section */}
         <div>
-          {!collapsed && <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Cash Flow</div>}
+          {!collapsed && <div className="px-2 py-1 text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">Cash Flow</div>}
           {navigation.slice(6, 7).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -150,7 +151,7 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
 
         {/* Operation Section */}
         <div>
-          {!collapsed && <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Operation</div>}
+          {!collapsed && <div className="px-2 py-1 text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">Operation</div>}
           {navigation.slice(7, 8).map((item) => {
             const isActive = pathname === item.href
             return (

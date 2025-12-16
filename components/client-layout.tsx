@@ -73,7 +73,7 @@ export default function ClientLayout({
               <Clock />
             </div>
 
-            <main className={`flex-1 overflow-auto pt-4 px-4 sm:px-6 pb-6 transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-60'}`}>
+            <main className={`flex-1 overflow-auto pt-4 px-4 sm:px-6 pb-6 transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'ml-12 sm:ml-16' : 'ml-48 sm:ml-56 md:ml-60'}`}>
               {children}
             </main>
           </div>
