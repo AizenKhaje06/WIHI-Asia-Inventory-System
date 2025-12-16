@@ -43,7 +43,7 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
     <div className={cn(
       "flex h-full flex-col border-r",
       "border-border bg-gradient-dark text-white",
-      "w-full lg:w-60"
+      "w-60"
     )}>
       <div className={cn("flex h-16 items-center justify-between border-b px-4",
         "border-sidebar-border"

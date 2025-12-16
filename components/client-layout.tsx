@@ -40,8 +40,8 @@ export default function ClientLayout({
           <div
             className={`
               fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-sidebar-border bg-gradient-dark text-white transition-all duration-300 ease-in-out
-              ${sidebarOpen ? 'w-full lg:w-60' : 'w-0 lg:w-16'}
-              ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+              ${sidebarOpen ? 'w-60' : 'w-0'}
+              ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
             `}
           >
             <div className="flex items-center justify-between p-4 lg:hidden">

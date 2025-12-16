@@ -117,7 +117,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Sales Performance Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-4 gap-6 mb-6">
         <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-blue-100">Total Stocks Value</CardTitle>
@@ -169,20 +169,18 @@ export default function AnalyticsPage() {
 
       {/* Filter and Month Navigation */}
       <Card className="mb-6">
-        <CardContent className="p-4 md:p-6">
-          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-4">
-            <div className="flex space-x-2 w-full sm:w-auto">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex space-x-2">
               <Button
                 variant={view === 'daily' ? 'default' : 'outline'}
                 onClick={() => setView('daily')}
-                className="flex-1 sm:flex-none"
               >
                 Daily Sales
               </Button>
               <Button
                 variant={view === 'monthly' ? 'default' : 'outline'}
                 onClick={() => setView('monthly')}
-                className="flex-1 sm:flex-none"
               >
                 Monthly Sales
               </Button>
@@ -217,21 +215,21 @@ export default function AnalyticsPage() {
 
                 {/* Calendar Days */}
                 {generateCalendarDays(currentMonth, dailySales).map((cell, index) => (
-                  <div key={index} className="relative h-20 md:h-24">
+                  <div key={index} className="relative h-24">
                     {cell.day !== null ? (
                       <div
                         className={cn(
-                          "h-full p-1 md:p-2 border border-border rounded-lg bg-background hover:bg-muted/50 transition-colors flex flex-col justify-center items-center shadow-sm",
+                          "h-full p-2 border border-border rounded-lg bg-background hover:bg-muted/50 transition-colors flex flex-col justify-center items-center shadow-sm",
                           cell.revenue > 0 && "border-r-4 border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20"
                         )}
                       >
-                        <div className="text-sm md:text-base font-semibold text-foreground text-center mb-1">{cell.day}</div>
-                        <div className={`text-xs md:text-sm text-center font-medium ${cell.revenue > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
+                        <div className="text-base font-semibold text-foreground text-center mb-1">{cell.day}</div>
+                        <div className={`text-sm text-center font-medium ${cell.revenue > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
                           {cell.revenue > 0 ? formatCurrency(cell.revenue) : '₱0.00'}
                         </div>
                       </div>
                     ) : (
-                      <div className="h-full p-1 md:p-2 opacity-30 rounded-lg bg-muted/20" />
+                      <div className="h-full p-2 opacity-30 rounded-lg bg-muted/20" />
                     )}
                   </div>
                 ))}
