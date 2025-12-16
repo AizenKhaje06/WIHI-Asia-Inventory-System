@@ -40,7 +40,7 @@ export default function ClientLayout({
           <div
             className={`
               fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-sidebar-border bg-gradient-dark text-white transition-all duration-300 ease-in-out
-              ${sidebarOpen ? 'w-full lg:w-60' : 'w-0 lg:w-16'}
+              ${sidebarCollapsed ? 'w-16' : 'w-60'}
               ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}
           >
