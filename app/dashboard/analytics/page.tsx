@@ -108,7 +108,7 @@ export default function AnalyticsPage() {
   const maxRevenue = Math.max(...dailySales.map(d => d.revenue), 1) // Avoid division by zero
 
   return (
-    <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800">
+    <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
           Transactions
