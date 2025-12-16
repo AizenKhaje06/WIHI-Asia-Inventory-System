@@ -8,7 +8,7 @@ import { Clock } from "@/components/clock"
 import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { Menu, X } from "lucide-react"
+import { Menu, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function ClientLayout({
@@ -17,6 +17,7 @@ export default function ClientLayout({
   children: React.ReactNode
 }>) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   return (
     <ThemeProvider
@@ -38,8 +39,8 @@ export default function ClientLayout({
           {/* Sidebar */}
           <div
             className={`
-              fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-sidebar-border bg-gradient-dark text-white transition-transform duration-300 ease-in-out
-              w-64 lg:w-52
+              fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-sidebar-border bg-gradient-dark text-white transition-all duration-300 ease-in-out
+              ${sidebarCollapsed ? 'w-16' : 'w-60'}
               ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}
           >
@@ -54,7 +55,7 @@ export default function ClientLayout({
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            <Sidebar onNavClick={() => setSidebarOpen(false)} />
+            <Sidebar onNavClick={() => setSidebarOpen(false)} collapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)} />
           </div>
 
           {/* Main content */}
@@ -72,7 +73,7 @@ export default function ClientLayout({
               <Clock />
             </div>
 
-            <main className="flex-1 overflow-auto pt-4 px-4 sm:px-6 pb-6 lg:ml-52">
+            <main className={`flex-1 overflow-auto pt-4 px-4 sm:px-6 pb-6 transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-60'}`}>
               {children}
             </main>
           </div>

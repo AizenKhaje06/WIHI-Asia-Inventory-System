@@ -1,9 +1,10 @@
 "use client"
 
+import React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { LayoutDashboard, ShoppingCart, BarChart3, Package, Tags, PackagePlus, AlertTriangle, XCircle, TrendingUp, FileText, LogOut } from "lucide-react"
+import { LayoutDashboard, ShoppingCart, BarChart3, Package, Tags, PackagePlus, AlertTriangle, XCircle, TrendingUp, FileText, LogOut, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
@@ -27,9 +28,11 @@ const navigation = [
 
 interface SidebarProps {
   onNavClick?: () => void
+  collapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
-export function Sidebar({ onNavClick }: SidebarProps) {
+export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
 
   const handleNavClick = (e: React.MouseEvent) => {
@@ -44,13 +47,23 @@ export function Sidebar({ onNavClick }: SidebarProps) {
       <div className={cn("flex h-16 items-center justify-between border-b px-4",
         "border-sidebar-border"
       )}>
-        <h1 className="text-xl font-semibold">Inventory Pro</h1>
-        <ThemeToggle />
+        {!collapsed && <h1 className="text-xl font-semibold">Inventory Pro</h1>}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleCollapse}
+            className="text-white hover:bg-white/10"
+          >
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
+          <ThemeToggle />
+        </div>
       </div>
       <nav className="flex-1 space-y-4 p-2">
         {/* Main Section */}
         <div>
-          <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Main</div>
+          {!collapsed && <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Main</div>}
           {navigation.slice(0, 3).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -59,7 +72,8 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  "flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  collapsed ? "justify-center" : "gap-2",
                   isActive
                     ? "bg-orange-500 text-white"
                     : "text-white hover:bg-white/10 hover:text-white"
@@ -69,7 +83,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                   "h-4 w-4 flex-shrink-0",
                   isActive ? "text-white" : "text-orange-400"
                 )} />
-                <span>{item.name}</span>
+                {!collapsed && <span>{item.name}</span>}
               </Link>
             )
           })}
@@ -78,7 +92,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
 
         {/* Inventory Section */}
         <div>
-          <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Inventory</div>
+          {!collapsed && <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Inventory</div>}
           {navigation.slice(3, 6).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -87,7 +101,8 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  "flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  collapsed ? "justify-center" : "gap-2",
                   isActive
                     ? "bg-orange-500 text-white"
                     : "text-white hover:bg-white/10 hover:text-white"
@@ -97,7 +112,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                   "h-4 w-4 flex-shrink-0",
                   isActive ? "text-white" : "text-orange-400"
                 )} />
-                <span>{item.name}</span>
+                {!collapsed && <span>{item.name}</span>}
               </Link>
             )
           })}
@@ -106,7 +121,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
 
         {/* Cash Flow Section */}
         <div>
-          <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Cash Flow</div>
+          {!collapsed && <div className="px-2 py-1 text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Cash Flow</div>}
           {navigation.slice(6, 7).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -115,7 +130,8 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  "flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  collapsed ? "justify-center" : "gap-2",
                   isActive
                     ? "bg-orange-500 text-white"
                     : "text-white hover:bg-white/10 hover:text-white"
@@ -125,7 +141,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
                   "h-4 w-4 flex-shrink-0",
                   isActive ? "text-white" : "text-orange-400"
                 )} />
-                <span>{item.name}</span>
+                {!collapsed && <span>{item.name}</span>}
               </Link>
             )
           })}
@@ -163,7 +179,8 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         <Button
           variant="ghost"
           size="sm"
-          className={cn("flex items-center gap-2 w-full transition-all py-2 px-2 justify-start",
+          className={cn("flex items-center w-full transition-all py-2 px-2",
+            collapsed ? "justify-center" : "gap-2 justify-start",
             "text-white hover:bg-white/10 hover:text-white"
           )}
           onClick={() => {
@@ -172,7 +189,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
           }}
         >
           <LogOut className="h-4 w-4" />
-          <span>Logout</span>
+          {!collapsed && <span>Logout</span>}
         </Button>
       </div>
 
