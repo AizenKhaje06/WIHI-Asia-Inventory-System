@@ -49,7 +49,7 @@ export default function ClientLayout({
             className={`
               flex h-screen flex-col border-r border-sidebar-border bg-gradient-dark text-white transition-all duration-300 ease-in-out
               fixed lg:static lg:flex-shrink-0 z-50 lg:z-auto
-              ${sidebarOpen ? (sidebarCollapsed ? 'w-20' : 'w-full md:w-64') : 'w-0 lg:w-20 lg:translate-x-0'}
+              ${sidebarOpen ? (sidebarCollapsed ? 'w-20 min-w-20 max-w-20' : 'w-full md:min-w-64 md:max-w-64') : 'w-0 lg:w-20 lg:min-w-20 lg:max-w-20 lg:translate-x-0'}
               ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}
           >
