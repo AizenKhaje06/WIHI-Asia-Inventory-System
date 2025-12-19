@@ -47,7 +47,8 @@ export default function ClientLayout({
           {/* Sidebar */}
           <div
             className={`
-              flex-shrink-0 flex h-screen flex-col border-r border-sidebar-border bg-gradient-dark text-white transition-all duration-300 ease-in-out
+              flex h-screen flex-col border-r border-sidebar-border bg-gradient-dark text-white transition-all duration-300 ease-in-out
+              fixed lg:static lg:flex-shrink-0 z-50 lg:z-auto
               ${sidebarOpen ? (sidebarCollapsed ? 'w-20' : 'w-full md:w-64') : 'w-0 lg:w-20 lg:translate-x-0'}
               ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}
