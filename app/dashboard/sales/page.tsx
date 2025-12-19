@@ -108,18 +108,18 @@ export default function SalesAnalyticsPage() {
   const calculatedProfitMargin = salesData.totalRevenue > 0 ? salesData.totalProfit / salesData.totalRevenue : 0;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="responsive-padding space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Sales Analytics</h1>
-          <p className="text-gray-600 mt-1">Track your sales performance and trends</p>
+          <h1 className="responsive-text-3xl font-bold text-gray-900">Sales Analytics</h1>
+          <p className="text-gray-600 mt-1 responsive-text-base">Track your sales performance and trends</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           <Button
             variant={viewMode === 'daily' ? 'default' : 'outline'}
             onClick={() => setViewMode('daily')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 flex-1 sm:flex-initial"
           >
             <Calendar className="h-4 w-4" />
             Daily View
@@ -127,7 +127,7 @@ export default function SalesAnalyticsPage() {
           <Button
             variant={viewMode === 'monthly' ? 'default' : 'outline'}
             onClick={() => setViewMode('monthly')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 flex-1 sm:flex-initial"
           >
             <BarChart3 className="h-4 w-4" />
             Monthly View
