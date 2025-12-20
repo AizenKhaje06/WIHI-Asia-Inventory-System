@@ -32,19 +32,36 @@ A full-stack inventory management system built with Next.js, TypeScript, and Goo
 ### 2. Google Sheets Setup
 
 1. Create a new Google Sheets document
-2. Create two sheets named exactly:
-   - **Inventory** with columns: `ID | Name | SKU | Category | Quantity | Cost Price | Selling Price | Reorder Level | Supplier | Last Updated`
-   - **Transactions** with columns: `ID | Item ID | Item Name | Quantity | Cost Price | Selling Price | Total Cost | Total Revenue | Profit | Timestamp | Type`
-3. Share the sheet with your service account email (found in the JSON credentials)
+2. Create four sheets named exactly:
+   - **Inventory** with columns: `ID | Name | Category | Quantity | Total COGS | Cost Price | Selling Price | Reorder Level | Storage Room | Last Updated`
+   - **Transactions** with columns: `ID | Item ID | Item Name | Quantity | Cost Price | Selling Price | Total Cost | Profit | Timestamp | Department`
+   - **Logs** with columns: `ID | Operation | Item ID | Item Name | Details | Timestamp`
+   - **Restock** with columns: `ID | Item ID | Item Name | Quantity Added | Cost Price | Total Cost | Timestamp | Reason`
+3. Share the sheet with your Google account (the one you'll use for OAuth)
 
-### 3. Environment Variables
+### 3. OAuth 2.0 Setup
 
-Add these to your Vercel project or `.env.local`:
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create/select a project
+3. Enable **Google Sheets API**
+4. Go to **Credentials** > **Create Credentials** > **OAuth 2.0 Client IDs**
+5. Set application type to **Web application**
+6. Add authorized redirect URIs: `http://localhost:3000` (for development) and your production URL
+7. Download the client configuration JSON
+
+### 4. Get Refresh Token
+
+You'll need to obtain a refresh token. You can use a tool like [google-oauth2-refresh-token](https://github.com/googleapis/google-auth-library-nodejs#oauth2) or create a simple script to get it.
+
+### 5. Environment Variables
+
+Add these to your `.env.local`:
 
 \`\`\`env
 GOOGLE_SHEET_ID=your_sheet_id_here
-GOOGLE_CLIENT_EMAIL=your_service_account_email
-GOOGLE_PRIVATE_KEY="your_private_key_here"
+GOOGLE_CLIENT_ID=your_oauth_client_id
+GOOGLE_CLIENT_SECRET=your_oauth_client_secret
+GOOGLE_REFRESH_TOKEN=your_refresh_token
 \`\`\`
 
 **Note**: The `GOOGLE_SHEET_ID` is found in your Google Sheets URL: `https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit`
