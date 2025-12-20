@@ -51,7 +51,9 @@ export default function ClientLayout({
               fixed lg:static lg:flex-shrink-0 z-50 lg:z-auto
               ${sidebarOpen ? (sidebarCollapsed ? 'w-16 sm:w-20' : 'w-full sm:w-80 md:w-64 lg:w-72') : 'w-0 lg:w-16 lg:w-20'}
               ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+              lg:max-w-xs
             `}
+            style={{ maxWidth: sidebarCollapsed ? '80px' : '288px' }}
           >
             <div className="flex items-center justify-between p-4 lg:hidden">
               <h2 className="text-lg font-semibold">Menu</h2>

@@ -56,13 +56,13 @@ export default function DashboardPage() {
   }, [timePeriod])
 
   if (loading) {
-  return (
-    <div className="responsive-padding min-h-screen">
+    return (
+      <div className="responsive-padding min-h-screen">
         <div className="mb-8">
           <Skeleton className="h-8 w-64 mb-2" />
           <Skeleton className="h-4 w-96" />
         </div>
-        
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-6">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
@@ -75,7 +75,7 @@ export default function DashboardPage() {
             </Card>
           ))}
         </div>
-        
+
         <div className="grid gap-6 md:grid-cols-2">
           {[...Array(2)].map((_, i) => (
             <Card key={i} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
