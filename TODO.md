@@ -1,7 +1,8 @@
-# Layout Fix Tasks
+# Google Sheets Connection & Data Mapping Check
 
-## Current Task: Fix Global Layout Responsiveness
-- [x] Replace fixed sidebar widths with flexible min/max widths in client-layout.tsx
-- [x] Ensure proper overflow handling to prevent horizontal overflow on desktop
-- [x] Verify responsive behavior is maintained
-- [x] Test layout on different screen sizes - Development server started for testing
+## Tasks
+- [ ] Step 1: Verify environment variables are properly set
+- [ ] Step 2: Create a test script to check Google Sheets connection
+- [ ] Step 3: Validate sheet existence and header structure
+- [ ] Step 4: Test basic CRUD operations for data integrity
+- [ ] Step 5: Verify order sync functionality
