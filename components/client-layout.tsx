@@ -70,7 +70,7 @@ export default function ClientLayout({
           </div>
 
           {/* Main content */}
-          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${sidebarOpen ? 'lg:ml-0 ml-64' : ''}`}>
             {/* Top bar for mobile */}
             <div className="lg:hidden flex items-center justify-between p-4 border-b bg-white/80 backdrop-blur-sm">
               <Button
