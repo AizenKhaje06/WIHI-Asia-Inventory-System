@@ -56,8 +56,8 @@ export default function DashboardPage() {
   }, [timePeriod])
 
   if (loading) {
-    return (
-      <div className="p-8 min-h-screen">
+  return (
+    <div className="responsive-padding min-h-screen">
         <div className="mb-8">
           <Skeleton className="h-8 w-64 mb-2" />
           <Skeleton className="h-4 w-96" />
@@ -129,9 +129,9 @@ export default function DashboardPage() {
   })) || []
 
   return (
-    <div className="p-8 min-h-screen">
+    <div className="responsive-padding min-h-screen">
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
+        <h1 className="responsive-text-3xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
           Executive Dashboard
         </h1>
         <p className="text-slate-600 dark:text-slate-300 text-lg">Comprehensive overview of your inventory management system</p>

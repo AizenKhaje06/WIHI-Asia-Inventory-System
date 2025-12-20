@@ -108,12 +108,12 @@ export default function ReportsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[15%]">Date</th>
-                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[25%]">Item</th>
-                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[8%]">Qty</th>
-                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[15%]">Revenue</th>
-                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[15%]">Cost</th>
-                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[22%]">Profit</th>
+                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground min-w-[120px] w-[15%]">Date</th>
+                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground min-w-[150px] w-[25%]">Item</th>
+                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground min-w-[60px] w-[8%]">Qty</th>
+                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground min-w-[100px] w-[15%]">Revenue</th>
+                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground min-w-[100px] w-[15%]">Cost</th>
+                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground min-w-[100px] w-[22%]">Profit</th>
                     </tr>
                   </thead>
                   <tbody>
