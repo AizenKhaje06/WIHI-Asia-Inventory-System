@@ -22,7 +22,11 @@ loadEnv();
 
 async function testConnection() {
   try {
-    console.log('Testing Google Sheets connection...');
+    console.log('Testing Google Sheets connection with Service Account...');
+    console.log('Environment variables check:');
+    console.log('- GOOGLE_SHEET_ID:', process.env.GOOGLE_SHEET_ID ? '✅ Set' : '❌ Missing');
+    console.log('- GOOGLE_CLIENT_EMAIL:', process.env.GOOGLE_CLIENT_EMAIL ? '✅ Set' : '❌ Missing');
+    console.log('- GOOGLE_PRIVATE_KEY:', process.env.GOOGLE_PRIVATE_KEY ? '✅ Set' : '❌ Missing');
 
     const auth = new google.auth.GoogleAuth({
       credentials: {
@@ -47,6 +51,10 @@ async function testConnection() {
     console.error('❌ Connection failed:', error.message);
     if (error.code) {
       console.error('Error code:', error.code);
+    }
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
     }
   }
 }
