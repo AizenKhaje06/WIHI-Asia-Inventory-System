@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, ReactNode } from "react"
 import { AdminSidebar } from "@/components/admin-sidebar"
 import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
@@ -8,7 +8,7 @@ import { Menu } from "lucide-react"
 export default function AdminLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: ReactNode
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
