@@ -89,7 +89,7 @@ export default function AdminInstructionsPage() {
                 <div>
                   <h4 className="font-semibold">Click Settings Button</h4>
                   <p className="text-sm text-gray-600">
-                    In the main sidebar, click the &ldquo;Settings&rdquo; button located above the &ldquo;Logout&rdquo; button.
+                    {`In the main sidebar, click the "Settings" button located above the "Logout" button.`}
                   </p>
                 </div>
               </div>
@@ -205,7 +205,7 @@ export default function AdminInstructionsPage() {
               </div>
               
               <div className="space-y-2">
-                <h4 className="font-semibold text-red-600">✗ Don'ts</h4>
+                <h4 className="font-semibold text-red-600">✗ Don&apos;t</h4>
                 <ul className="space-y-1 text-sm text-gray-600">
                   <li>• Share admin credentials</li>
                   <li>• Use weak passwords</li>
