@@ -35,7 +35,7 @@ export default function ClientLayout({
       disableTransitionOnChange
     >
       <Suspense fallback={<div>Loading...</div>}>
-        <div className="flex h-screen bg-gradient-to-br from-white to-bg-white">
+        <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-white to-bg-white">
           {/* Mobile sidebar overlay */}
           {sidebarOpen && (
             <div
@@ -45,11 +45,12 @@ export default function ClientLayout({
           )}
 
           {/* Sidebar */}
-          <div
+          <aside
             className={`
-              flex-shrink-0 flex h-screen flex-col border-r border-sidebar-border bg-gradient-dark text-white transition-all duration-300 ease-in-out
-              ${sidebarOpen ? (sidebarCollapsed ? 'w-20' : 'w-full lg:w-64') : 'w-0 lg:w-20 lg:translate-x-0'}
-              ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+              flex-shrink-0 flex h-full flex-col border-r border-sidebar-border bg-gradient-dark text-white transition-all duration-300 ease-in-out
+              fixed lg:relative z-50 lg:z-auto
+              ${sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-0 lg:translate-x-0'}
+              ${sidebarCollapsed ? 'lg:w-20' : 'lg:w-64'}
             `}
           >
             <div className="flex items-center justify-between p-4 lg:hidden">
@@ -64,7 +65,7 @@ export default function ClientLayout({
               </Button>
             </div>
             <Sidebar onNavClick={() => setSidebarOpen(false)} collapsed={sidebarCollapsed} onToggleCollapse={handleToggleCollapse} />
-          </div>
+          </aside>
 
           {/* Main content */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">

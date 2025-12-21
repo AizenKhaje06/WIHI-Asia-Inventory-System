@@ -13,24 +13,24 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Admin Sidebar */}
-      <div className="hidden md:flex md:w-64 md:flex-col">
-        <AdminSidebar onBackClick={() => window.history.back()} />
-      </div>
-
+    <div className="flex h-screen w-full overflow-hidden bg-background">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
-          <div className="fixed left-0 top-0 h-full w-full lg:w-64">
+          <aside className="fixed left-0 top-0 h-full w-64 z-50">
             <AdminSidebar onBackClick={() => setSidebarOpen(false)} />
-          </div>
+          </aside>
         </div>
       )}
 
+      {/* Admin Sidebar - Desktop */}
+      <aside className="hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:flex-col">
+        <AdminSidebar onBackClick={() => window.history.back()} />
+      </aside>
+
       {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-between p-4 border-b">
           <Button

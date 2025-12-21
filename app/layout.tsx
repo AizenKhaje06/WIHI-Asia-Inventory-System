@@ -41,8 +41,8 @@ export default function RootLayout({
   children: ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`min-h-screen font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
+      <body className={`min-h-screen w-full overflow-x-hidden font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         {children}
         <script
           dangerouslySetInnerHTML={{
