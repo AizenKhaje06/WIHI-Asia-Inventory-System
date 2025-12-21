@@ -37,10 +37,7 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
   }
 
   return (
-    <div className={cn(
-      "flex h-full flex-col bg-[#1a1a2e] text-white",
-      "w-[240px] min-w-[220px] md:min-w-[240px]"
-    )} style={{ fontFamily: 'Inter, Roboto, system-ui, sans-serif' }}>
+    <div className="fixed left-0 top-0 h-screen w-[240px] bg-[#1a1a2e] text-white flex flex-col" style={{ fontFamily: 'Inter, Roboto, system-ui, sans-serif' }}>
       {/* Header */}
       <div className="flex h-16 items-center justify-between border-b border-white/10 px-4 shrink-0">
         {!collapsed && (
@@ -53,9 +50,9 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden">
         {/* Main Section */}
-        <div className="py-2">
+        <div className="py-1">
           {!collapsed && (
-            <div className="px-4 py-2 text-xs font-medium text-white/50 uppercase tracking-wider">
+            <div className="px-4 py-1 text-[11px] font-medium text-white/50 uppercase tracking-wider">
               Main
             </div>
           )}
@@ -68,9 +65,9 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 onClick={handleNavClick}
                 className={cn(
                   "flex items-center w-full text-white transition-all duration-200",
-                  "py-3 px-4 font-normal text-sm leading-[1.4]",
+                  "py-[10px] px-4 font-normal text-[14px]",
                   isActive
-                    ? "bg-[#8b7cf8] rounded-lg"
+                    ? "bg-[#8b7cf8] rounded-[6px]"
                     : "hover:bg-white/5"
                 )}
               >
@@ -88,9 +85,9 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
         </div>
 
         {/* Inventory Section */}
-        <div className="py-2">
+        <div className="py-1">
           {!collapsed && (
-            <div className="px-4 py-2 text-xs font-medium text-white/50 uppercase tracking-wider">
+            <div className="px-4 py-1 text-[11px] font-medium text-white/50 uppercase tracking-wider">
               Inventory
             </div>
           )}
@@ -103,9 +100,9 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 onClick={handleNavClick}
                 className={cn(
                   "flex items-center w-full text-white transition-all duration-200",
-                  "py-3 px-4 font-normal text-sm leading-[1.4]",
+                  "py-[10px] px-4 font-normal text-[14px]",
                   isActive
-                    ? "bg-[#8b7cf8] rounded-lg"
+                    ? "bg-[#8b7cf8] rounded-[6px]"
                     : "hover:bg-white/5"
                 )}
               >
@@ -123,9 +120,9 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
         </div>
 
         {/* Cash Flow Section */}
-        <div className="py-2">
+        <div className="py-1">
           {!collapsed && (
-            <div className="px-4 py-2 text-xs font-medium text-white/50 uppercase tracking-wider">
+            <div className="px-4 py-1 text-[11px] font-medium text-white/50 uppercase tracking-wider">
               Cash Flow
             </div>
           )}
@@ -138,9 +135,9 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 onClick={handleNavClick}
                 className={cn(
                   "flex items-center w-full text-white transition-all duration-200",
-                  "py-3 px-4 font-normal text-sm leading-[1.4]",
+                  "py-[10px] px-4 font-normal text-[14px]",
                   isActive
-                    ? "bg-[#8b7cf8] rounded-lg"
+                    ? "bg-[#8b7cf8] rounded-[6px]"
                     : "hover:bg-white/5"
                 )}
               >
@@ -158,9 +155,9 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
         </div>
 
         {/* Operation Section */}
-        <div className="py-2">
+        <div className="py-1">
           {!collapsed && (
-            <div className="px-4 py-2 text-xs font-medium text-white/50 uppercase tracking-wider">
+            <div className="px-4 py-1 text-[11px] font-medium text-white/50 uppercase tracking-wider">
               Operation
             </div>
           )}
@@ -173,9 +170,9 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 onClick={handleNavClick}
                 className={cn(
                   "flex items-center w-full text-white transition-all duration-200",
-                  "py-3 px-4 font-normal text-sm leading-[1.4]",
+                  "py-[10px] px-4 font-normal text-[14px]",
                   isActive
-                    ? "bg-[#8b7cf8] rounded-lg"
+                    ? "bg-[#8b7cf8] rounded-[6px]"
                     : "hover:bg-white/5"
                 )}
               >
@@ -199,7 +196,7 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
           variant="ghost"
           size="sm"
           className={cn(
-            "flex items-center w-full text-white transition-all py-3 px-4 rounded-lg font-normal text-sm leading-[1.4] hover:bg-white/5"
+            "flex items-center w-full text-white transition-all py-[10px] px-4 rounded-[6px] font-normal text-[14px] hover:bg-white/5"
           )}
           onClick={() => {
             localStorage.removeItem("isLoggedIn")
