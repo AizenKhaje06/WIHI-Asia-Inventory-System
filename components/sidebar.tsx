@@ -42,28 +42,28 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
   return (
     <div className={cn(
       "flex h-full flex-col",
-      "bg-gradient-dark text-white"
+      "bg-[#1a1a2e] text-white"
     )}>
       <div className={cn("flex h-16 items-center justify-between border-b px-4",
-        "border-sidebar-border"
+        "border-white/10"
       )}>
-        {!collapsed && <h1 className="text-lg sm:text-xl font-semibold">Inventory Pro</h1>}
+        {!collapsed && <h1 className="text-lg sm:text-xl font-semibold text-white">Inventory Pro</h1>}
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={onToggleCollapse}
-            className="text-white hover:bg-white/10 lg:flex hidden"
+            className="text-white/70 hover:bg-white/10 hover:text-white lg:flex hidden"
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
           <ThemeToggle />
         </div>
       </div>
-      <nav className="flex-1 space-y-4 p-2">
+      <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
         {/* Main Section */}
         <div>
-          {!collapsed && <div className="px-2 py-1 text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">Main</div>}
+          {!collapsed && <div className="px-3 py-2 text-xs font-medium text-white/50 uppercase tracking-wider mb-1">Main</div>}
           {navigation.slice(0, 3).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -72,31 +72,26 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "relative flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-all duration-300 w-full group",
-                  collapsed ? "justify-center" : "gap-2",
+                  "relative flex items-center rounded-md py-2 px-3 text-sm font-medium transition-all duration-200 w-full group",
+                  collapsed ? "justify-center" : "gap-3",
                   isActive
-                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/50"
-                    : "text-white hover:bg-white/10 hover:text-white"
+                    ? "bg-[#6d4cff] text-white"
+                    : "text-white/70 hover:bg-white/5 hover:text-white"
                 )}
               >
-                {isActive && !collapsed && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
-                    bg-white rounded-r-full animate-pulse" />
-                )}
                 <item.icon className={cn(
-                  "h-4 w-4 flex-shrink-0 transition-transform duration-300",
-                  isActive ? "text-white scale-110" : "text-orange-400 group-hover:scale-110"
+                  "h-4 w-4 flex-shrink-0 transition-transform duration-200",
+                  isActive ? "text-white" : "text-white/60 group-hover:text-white"
                 )} />
-                {!collapsed && <span>{item.name}</span>}
+                {!collapsed && <span className="flex-1">{item.name}</span>}
               </Link>
             )
           })}
-          <Separator className={cn("my-2", "bg-white/20")} />
         </div>
 
         {/* Inventory Section */}
-        <div>
-          {!collapsed && <div className="px-2 py-1 text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">Inventory</div>}
+        <div className="mt-4">
+          {!collapsed && <div className="px-3 py-2 text-xs font-medium text-white/50 uppercase tracking-wider mb-1">Inventory</div>}
           {navigation.slice(3, 6).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -105,31 +100,26 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "relative flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-all duration-300 w-full group",
-                  collapsed ? "justify-center" : "gap-2",
+                  "relative flex items-center rounded-md py-2 px-3 text-sm font-medium transition-all duration-200 w-full group",
+                  collapsed ? "justify-center" : "gap-3",
                   isActive
-                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/50"
-                    : "text-white hover:bg-white/10 hover:text-white"
+                    ? "bg-[#6d4cff] text-white"
+                    : "text-white/70 hover:bg-white/5 hover:text-white"
                 )}
               >
-                {isActive && !collapsed && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
-                    bg-white rounded-r-full animate-pulse" />
-                )}
                 <item.icon className={cn(
-                  "h-4 w-4 flex-shrink-0 transition-transform duration-300",
-                  isActive ? "text-white scale-110" : "text-orange-400 group-hover:scale-110"
+                  "h-4 w-4 flex-shrink-0 transition-transform duration-200",
+                  isActive ? "text-white" : "text-white/60 group-hover:text-white"
                 )} />
-                {!collapsed && <span>{item.name}</span>}
+                {!collapsed && <span className="flex-1">{item.name}</span>}
               </Link>
             )
           })}
-          <Separator className={cn("my-2", "bg-white/20")} />
         </div>
 
         {/* Cash Flow Section */}
-        <div>
-          {!collapsed && <div className="px-2 py-1 text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">Cash Flow</div>}
+        <div className="mt-4">
+          {!collapsed && <div className="px-3 py-2 text-xs font-medium text-white/50 uppercase tracking-wider mb-1">Cash Flow</div>}
           {navigation.slice(6, 7).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -138,31 +128,26 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "relative flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-all duration-300 w-full group",
-                  collapsed ? "justify-center" : "gap-2",
+                  "relative flex items-center rounded-md py-2 px-3 text-sm font-medium transition-all duration-200 w-full group",
+                  collapsed ? "justify-center" : "gap-3",
                   isActive
-                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/50"
-                    : "text-white hover:bg-white/10 hover:text-white"
+                    ? "bg-[#6d4cff] text-white"
+                    : "text-white/70 hover:bg-white/5 hover:text-white"
                 )}
               >
-                {isActive && !collapsed && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
-                    bg-white rounded-r-full animate-pulse" />
-                )}
                 <item.icon className={cn(
-                  "h-4 w-4 flex-shrink-0 transition-transform duration-300",
-                  isActive ? "text-white scale-110" : "text-orange-400 group-hover:scale-110"
+                  "h-4 w-4 flex-shrink-0 transition-transform duration-200",
+                  isActive ? "text-white" : "text-white/60 group-hover:text-white"
                 )} />
-                {!collapsed && <span>{item.name}</span>}
+                {!collapsed && <span className="flex-1">{item.name}</span>}
               </Link>
             )
           })}
-          <Separator className={cn("my-2", "bg-white/20")} />
         </div>
 
         {/* Operation Section */}
-        <div>
-          {!collapsed && <div className="px-2 py-1 text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">Operation</div>}
+        <div className="mt-4">
+          {!collapsed && <div className="px-3 py-2 text-xs font-medium text-white/50 uppercase tracking-wider mb-1">Operation</div>}
           {navigation.slice(7, 8).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -171,34 +156,30 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "relative flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-all duration-300 w-full group",
-                  collapsed ? "justify-center" : "gap-2",
+                  "relative flex items-center rounded-md py-2 px-3 text-sm font-medium transition-all duration-200 w-full group",
+                  collapsed ? "justify-center" : "gap-3",
                   isActive
-                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/50"
-                    : "text-white hover:bg-white/10 hover:text-white"
+                    ? "bg-[#6d4cff] text-white"
+                    : "text-white/70 hover:bg-white/5 hover:text-white"
                 )}
               >
-                {isActive && !collapsed && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
-                    bg-white rounded-r-full animate-pulse" />
-                )}
                 <item.icon className={cn(
-                  "h-4 w-4 flex-shrink-0 transition-transform duration-300",
-                  isActive ? "text-white scale-110" : "text-orange-400 group-hover:scale-110"
+                  "h-4 w-4 flex-shrink-0 transition-transform duration-200",
+                  isActive ? "text-white" : "text-white/60 group-hover:text-white"
                 )} />
-                {!collapsed && <span>{item.name}</span>}
+                {!collapsed && <span className="flex-1">{item.name}</span>}
               </Link>
             )
           })}
         </div>
       </nav>
-      <div className={cn("border-t p-2", "border-white/20")}>
+      <div className={cn("border-t p-3", "border-white/10")}>
         <Button
           variant="ghost"
           size="sm"
-          className={cn("flex items-center w-full transition-all py-2 px-2",
-            collapsed ? "justify-center" : "gap-2 justify-start",
-            "text-white hover:bg-white/10 hover:text-white"
+          className={cn("flex items-center w-full transition-all py-2 px-3 rounded-md",
+            collapsed ? "justify-center" : "gap-3 justify-start",
+            "text-white/70 hover:bg-white/5 hover:text-white"
           )}
           onClick={() => {
             localStorage.removeItem("isLoggedIn")
