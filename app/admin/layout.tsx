@@ -21,9 +21,9 @@ export default function AdminLayout({
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
-          <div className="fixed left-0 top-0 h-full w-64">
+          <div className="fixed left-0 top-0 h-full w-full lg:w-64">
             <AdminSidebar onBackClick={() => setSidebarOpen(false)} />
           </div>
         </div>
@@ -32,7 +32,7 @@ export default function AdminLayout({
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile header */}
-        <div className="md:hidden flex items-center justify-between p-4 border-b">
+        <div className="lg:hidden flex items-center justify-between p-4 border-b">
           <Button
             variant="ghost"
             size="sm"
@@ -44,7 +44,7 @@ export default function AdminLayout({
         </div>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
           {children}
         </main>
       </div>
