@@ -72,16 +72,20 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  "relative flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-all duration-300 w-full group",
                   collapsed ? "justify-center" : "gap-2",
                   isActive
-                    ? "bg-orange-500 text-white"
+                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/50"
                     : "text-white hover:bg-white/10 hover:text-white"
                 )}
               >
+                {isActive && !collapsed && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
+                    bg-white rounded-r-full animate-pulse" />
+                )}
                 <item.icon className={cn(
-                  "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : "text-orange-400"
+                  "h-4 w-4 flex-shrink-0 transition-transform duration-300",
+                  isActive ? "text-white scale-110" : "text-orange-400 group-hover:scale-110"
                 )} />
                 {!collapsed && <span>{item.name}</span>}
               </Link>
@@ -101,16 +105,20 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  "relative flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-all duration-300 w-full group",
                   collapsed ? "justify-center" : "gap-2",
                   isActive
-                    ? "bg-orange-500 text-white"
+                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/50"
                     : "text-white hover:bg-white/10 hover:text-white"
                 )}
               >
+                {isActive && !collapsed && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
+                    bg-white rounded-r-full animate-pulse" />
+                )}
                 <item.icon className={cn(
-                  "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : "text-orange-400"
+                  "h-4 w-4 flex-shrink-0 transition-transform duration-300",
+                  isActive ? "text-white scale-110" : "text-orange-400 group-hover:scale-110"
                 )} />
                 {!collapsed && <span>{item.name}</span>}
               </Link>
@@ -130,16 +138,20 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  "relative flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-all duration-300 w-full group",
                   collapsed ? "justify-center" : "gap-2",
                   isActive
-                    ? "bg-orange-500 text-white"
+                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/50"
                     : "text-white hover:bg-white/10 hover:text-white"
                 )}
               >
+                {isActive && !collapsed && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
+                    bg-white rounded-r-full animate-pulse" />
+                )}
                 <item.icon className={cn(
-                  "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : "text-orange-400"
+                  "h-4 w-4 flex-shrink-0 transition-transform duration-300",
+                  isActive ? "text-white scale-110" : "text-orange-400 group-hover:scale-110"
                 )} />
                 {!collapsed && <span>{item.name}</span>}
               </Link>
@@ -159,16 +171,20 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  "relative flex items-center rounded-lg py-2 px-3 text-sm font-medium transition-all duration-300 w-full group",
                   collapsed ? "justify-center" : "gap-2",
                   isActive
-                    ? "bg-orange-500 text-white"
+                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/50"
                     : "text-white hover:bg-white/10 hover:text-white"
                 )}
               >
+                {isActive && !collapsed && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
+                    bg-white rounded-r-full animate-pulse" />
+                )}
                 <item.icon className={cn(
-                  "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : "text-orange-400"
+                  "h-4 w-4 flex-shrink-0 transition-transform duration-300",
+                  isActive ? "text-white scale-110" : "text-orange-400 group-hover:scale-110"
                 )} />
                 {!collapsed && <span>{item.name}</span>}
               </Link>

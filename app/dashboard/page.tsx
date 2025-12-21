@@ -23,6 +23,9 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ShimmerSkeleton } from "@/components/ui/shimmer-skeleton"
+import { AnimatedNumber } from "@/components/ui/animated-number"
+import { ChartTooltip } from "@/components/ui/chart-tooltip"
 import type { DashboardStats, InventoryItem, Transaction } from "@/lib/types"
 import { formatNumber } from "@/lib/utils"
 import { cn } from "@/lib/utils"
@@ -83,7 +86,7 @@ export default function DashboardPage() {
                 <Skeleton className="h-6 w-32" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-64 w-full" />
+                <ShimmerSkeleton variant="chart" className="h-64 w-full" />
               </CardContent>
             </Card>
           ))}
@@ -173,12 +176,7 @@ export default function DashboardPage() {
               <XAxis dataKey="date" stroke="#64748B" fontSize={12} />
               <YAxis stroke="#64748B" fontSize={12} />
               <Tooltip 
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                }}
+                content={<ChartTooltip formatter={(value, name) => [`₱${formatNumber(value)}`, name]} />}
               />
               <Legend />
               <Area type="monotone" dataKey="sales" stroke="#3B82F6" strokeWidth={3} fill="url(#salesGradient)" name="Sales Revenue" />
@@ -196,7 +194,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              ₱{formatNumber(stats?.totalValue || 0)}
+              <AnimatedNumber value={stats?.totalValue || 0} prefix="₱" duration={2000} />
             </div>
           </CardContent>
         </Card>
@@ -208,7 +206,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              ₱{formatNumber(stats?.totalRevenue || 0)}
+              <AnimatedNumber value={stats?.totalRevenue || 0} prefix="₱" duration={2000} />
             </div>
           </CardContent>
         </Card>
@@ -220,7 +218,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              ₱{formatNumber(stats?.totalCost || 0)}
+              <AnimatedNumber value={stats?.totalCost || 0} prefix="₱" duration={2000} />
             </div>
           </CardContent>
         </Card>
@@ -232,7 +230,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              {stats?.profitMargin?.toFixed(1) || 0}%
+              <AnimatedNumber value={stats?.profitMargin || 0} suffix="%" decimals={1} duration={2000} />
             </div>
           </CardContent>
         </Card>
@@ -252,7 +250,11 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {stats?.topProducts?.map((product, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200">
+                <div 
+                  key={index} 
+                  className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm" />
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{product.name}</span>
@@ -281,8 +283,12 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {lowStockItems.slice(0, 4).map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors duration-200">
+              {lowStockItems.slice(0, 4).map((item, index) => (
+                <div 
+                  key={item.id} 
+                  className="flex items-center justify-between p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.name}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">{item.quantity}</span>
@@ -309,7 +315,11 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {stats?.recentTransactions?.map((tx, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200">
+                <div 
+                  key={index} 
+                  className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{tx.itemName}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">₱{formatNumber(tx.totalRevenue)}</span>
@@ -342,13 +352,7 @@ export default function DashboardPage() {
                 <XAxis dataKey="name" stroke="#64748B" fontSize={12} />
                 <YAxis stroke="#64748B" fontSize={12} />
                 <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
-                  formatter={(value) => [value, 'Count']}
+                  content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />}
                 />
                 <Bar dataKey="count" fill="url(#stockPercentageGradient)" radius={[4, 4, 0, 0]} />
                 <defs>
@@ -379,13 +383,7 @@ export default function DashboardPage() {
                 <XAxis dataKey="name" stroke="#64748B" fontSize={12} />
                 <YAxis stroke="#64748B" fontSize={12} />
                 <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
-                  formatter={(value) => [value, 'Count']}
+                  content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />}
                 />
                 <Bar dataKey="count" fill="url(#stocksCountGradient)" radius={[4, 4, 0, 0]} />
                 <defs>
