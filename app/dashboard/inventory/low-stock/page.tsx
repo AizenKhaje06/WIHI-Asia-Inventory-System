@@ -145,7 +145,7 @@ export default function LowStockPage() {
   ]
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 md:p-8 w-full max-w-full overflow-x-hidden">
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">Low Stock Items</h1>
         <p className="text-slate-600 dark:text-slate-300 text-lg">Items that need restocking</p>
@@ -229,34 +229,39 @@ export default function LowStockPage() {
           <CardTitle className="text-foreground">Low Stock Items ({filteredItems.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[35%]">Name</th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[20%]">Category</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[10%]">Quantity</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[12%]">Cost</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[12%]">Price</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[11%]">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredItems.map((item) => (
-                  <tr key={item.id} className="border-b border-border last:border-0">
-                    <td className="py-4 text-sm text-foreground w-[35%]">{item.name}</td>
-                    <td className="py-4 text-sm text-muted-foreground w-[20%]">{item.category}</td>
-                    <td className="py-4 text-right text-sm w-[10%]">
-                      <span className={cn("font-bold", item.quantity <= item.reorderLevel ? "text-orange-500" : "text-green-500")}>{item.quantity}</span>
-                    </td>
-                    <td className="py-4 text-right text-sm text-foreground w-[12%]">₱{item.costPrice.toFixed(2)}</td>
-                    <td className="py-4 text-right text-sm text-foreground w-[12%]">₱{item.sellingPrice.toFixed(2)}</td>
-                    <td className="py-4 text-right w-[11%]">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleRestock(item)}>
-                          <PackagePlus className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
+          <div className="overflow-x-auto -mx-6 px-6">
+            <div className="min-w-full inline-block align-middle">
+              <table className="w-full min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="pb-3 text-left text-sm font-medium text-muted-foreground whitespace-nowrap">Name</th>
+                    <th className="pb-3 text-left text-sm font-medium text-muted-foreground whitespace-nowrap">Category</th>
+                    <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Quantity</th>
+                    <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Cost</th>
+                    <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Price</th>
+                    <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredItems.map((item) => (
+                    <tr key={item.id} className="border-b border-border last:border-0">
+                      <td className="py-4 text-sm text-foreground whitespace-nowrap max-w-[200px] truncate" title={item.name}>
+                        {item.name}
+                      </td>
+                      <td className="py-4 text-sm text-muted-foreground whitespace-nowrap max-w-[150px] truncate" title={item.category}>
+                        {item.category}
+                      </td>
+                      <td className="py-4 text-right text-sm whitespace-nowrap">
+                        <span className={cn("font-bold", item.quantity <= item.reorderLevel ? "text-orange-500" : "text-green-500")}>{item.quantity}</span>
+                      </td>
+                      <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">₱{item.costPrice.toFixed(2)}</td>
+                      <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">₱{item.sellingPrice.toFixed(2)}</td>
+                      <td className="py-4 text-right whitespace-nowrap">
+                        <div className="flex justify-end gap-1 sm:gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => handleRestock(item)} className="h-8 w-8 p-0">
+                            <PackagePlus className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(item)} className="h-8 w-8 p-0">
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)}>

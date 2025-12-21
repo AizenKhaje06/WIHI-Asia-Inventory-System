@@ -143,7 +143,7 @@ export default function InventoryPage() {
 
   if (loading) {
     return (
-      <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+      <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen w-full max-w-full overflow-x-hidden">
         <div className="mb-8">
           <Skeleton className="h-8 w-80 mb-2" />
           <Skeleton className="h-4 w-96" />
@@ -197,7 +197,7 @@ export default function InventoryPage() {
   ]
 
   return (
-    <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800">
+    <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800 w-full max-w-full overflow-x-hidden">
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
           Inventory Management
@@ -207,7 +207,7 @@ export default function InventoryPage() {
 
       <Card className="mb-8 border-0 shadow-xl bg-white/90 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <CardContent className="pt-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-end">
+          <div className="flex flex-col sm:flex-row gap-4 items-end w-full">
             <div className="flex-1">
               <Label htmlFor="search" className="text-slate-700 dark:text-slate-300 font-medium">Search Products</Label>
               <div className="relative">
@@ -295,62 +295,74 @@ export default function InventoryPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 w-[25%]">Product Name</th>
-                  <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 w-[12%]">Category</th>
-                  <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[6%]">Stock</th>
-                  <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[10%]">Total COGS</th>
-                  <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[10%]">Cost</th>
-                  <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[10%]">Price</th>
-                  <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 w-[17%]">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredItems.map((item) => (
-                  <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
-                    <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200 w-[25%]">{item.name}</td>
-                    <td className="py-4 text-sm text-slate-600 dark:text-slate-400 w-[12%]">{item.category}</td>
-                    <td className="py-4 text-right text-sm w-[6%]">
-                      <span className="font-bold text-slate-800 dark:text-slate-200">{formatNumber(item.quantity)}</span>
-                    </td>
-                    <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">{formatCurrency(item.totalCOGS ?? 0)}</td>
-                    <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">{formatCurrency(item.costPrice)}</td>
-                    <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 w-[10%]">{formatCurrency(item.sellingPrice)}</td>
-                    <td className="py-4 text-right w-[17%]">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRestock(item)}
-                          className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200"
-                        >
-                          <PackagePlus className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(item)}
-                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(item.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
+          <div className="overflow-x-auto -mx-6 px-6">
+            <div className="min-w-full inline-block align-middle">
+              <table className="w-full min-w-[800px]">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Product Name</th>
+                    <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Category</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Stock</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Total COGS</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Cost</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Price</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredItems.map((item) => (
+                    <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
+                      <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap max-w-[200px] truncate" title={item.name}>
+                        {item.name}
+                      </td>
+                      <td className="py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap max-w-[150px] truncate" title={item.category}>
+                        {item.category}
+                      </td>
+                      <td className="py-4 text-right text-sm whitespace-nowrap">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">{formatNumber(item.quantity)}</span>
+                      </td>
+                      <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                        {formatCurrency(item.totalCOGS ?? 0)}
+                      </td>
+                      <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                        {formatCurrency(item.costPrice)}
+                      </td>
+                      <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                        {formatCurrency(item.sellingPrice)}
+                      </td>
+                      <td className="py-4 text-right whitespace-nowrap">
+                        <div className="flex justify-end gap-1 sm:gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRestock(item)}
+                            className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                          >
+                            <PackagePlus className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(item)}
+                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(item.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>

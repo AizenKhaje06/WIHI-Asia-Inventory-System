@@ -44,26 +44,34 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
       "flex h-full flex-col",
       "bg-[#1a1a2e] text-white"
     )}>
-      <div className={cn("flex h-16 items-center justify-between border-b px-4",
-        "border-white/10"
+      <div className={cn("flex h-16 items-center justify-between border-b px-3 sm:px-4",
+        "border-white/10 shrink-0"
       )}>
-        {!collapsed && <h1 className="text-lg sm:text-xl font-semibold text-white">Inventory Pro</h1>}
-        <div className="flex items-center gap-2">
+        {!collapsed && (
+          <h1 className="text-base sm:text-lg font-semibold text-white truncate flex-1 min-w-0">
+            Inventory Pro
+          </h1>
+        )}
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <Button
             variant="ghost"
             size="icon"
             onClick={onToggleCollapse}
-            className="text-white/70 hover:bg-white/10 hover:text-white lg:flex hidden"
+            className="text-white/70 hover:bg-white/10 hover:text-white lg:flex hidden h-8 w-8"
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
           <ThemeToggle />
         </div>
       </div>
-      <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
+      <nav className="flex-1 space-y-1 p-2 sm:p-3 overflow-y-auto overflow-x-hidden">
         {/* Main Section */}
         <div>
-          {!collapsed && <div className="px-3 py-2 text-xs font-medium text-white/50 uppercase tracking-wider mb-1">Main</div>}
+          {!collapsed && (
+            <div className="px-2 sm:px-3 py-2 text-xs font-medium text-white/50 uppercase tracking-wider mb-1 truncate">
+              Main
+            </div>
+          )}
           {navigation.slice(0, 3).map((item) => {
             const isActive = pathname === item.href
             return (
@@ -72,8 +80,8 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "relative flex items-center rounded-md py-2 px-3 text-sm font-medium transition-all duration-200 w-full group",
-                  collapsed ? "justify-center" : "gap-3",
+                  "relative flex items-center rounded-md py-2 px-2 sm:px-3 text-sm font-medium transition-all duration-200 w-full group min-w-0",
+                  collapsed ? "justify-center" : "gap-2 sm:gap-3",
                   isActive
                     ? "bg-[#6d4cff] text-white"
                     : "text-white/70 hover:bg-white/5 hover:text-white"
@@ -83,7 +91,11 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                   "h-4 w-4 flex-shrink-0 transition-transform duration-200",
                   isActive ? "text-white" : "text-white/60 group-hover:text-white"
                 )} />
-                {!collapsed && <span className="flex-1">{item.name}</span>}
+                {!collapsed && (
+                  <span className="flex-1 truncate min-w-0" title={item.name}>
+                    {item.name}
+                  </span>
+                )}
               </Link>
             )
           })}
@@ -100,8 +112,8 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "relative flex items-center rounded-md py-2 px-3 text-sm font-medium transition-all duration-200 w-full group",
-                  collapsed ? "justify-center" : "gap-3",
+                  "relative flex items-center rounded-md py-2 px-2 sm:px-3 text-sm font-medium transition-all duration-200 w-full group min-w-0",
+                  collapsed ? "justify-center" : "gap-2 sm:gap-3",
                   isActive
                     ? "bg-[#6d4cff] text-white"
                     : "text-white/70 hover:bg-white/5 hover:text-white"
@@ -111,7 +123,11 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                   "h-4 w-4 flex-shrink-0 transition-transform duration-200",
                   isActive ? "text-white" : "text-white/60 group-hover:text-white"
                 )} />
-                {!collapsed && <span className="flex-1">{item.name}</span>}
+                {!collapsed && (
+                  <span className="flex-1 truncate min-w-0" title={item.name}>
+                    {item.name}
+                  </span>
+                )}
               </Link>
             )
           })}
@@ -128,8 +144,8 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "relative flex items-center rounded-md py-2 px-3 text-sm font-medium transition-all duration-200 w-full group",
-                  collapsed ? "justify-center" : "gap-3",
+                  "relative flex items-center rounded-md py-2 px-2 sm:px-3 text-sm font-medium transition-all duration-200 w-full group min-w-0",
+                  collapsed ? "justify-center" : "gap-2 sm:gap-3",
                   isActive
                     ? "bg-[#6d4cff] text-white"
                     : "text-white/70 hover:bg-white/5 hover:text-white"
@@ -139,7 +155,11 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                   "h-4 w-4 flex-shrink-0 transition-transform duration-200",
                   isActive ? "text-white" : "text-white/60 group-hover:text-white"
                 )} />
-                {!collapsed && <span className="flex-1">{item.name}</span>}
+                {!collapsed && (
+                  <span className="flex-1 truncate min-w-0" title={item.name}>
+                    {item.name}
+                  </span>
+                )}
               </Link>
             )
           })}
@@ -156,8 +176,8 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                 href={item.href}
                 onClick={handleNavClick}
                 className={cn(
-                  "relative flex items-center rounded-md py-2 px-3 text-sm font-medium transition-all duration-200 w-full group",
-                  collapsed ? "justify-center" : "gap-3",
+                  "relative flex items-center rounded-md py-2 px-2 sm:px-3 text-sm font-medium transition-all duration-200 w-full group min-w-0",
+                  collapsed ? "justify-center" : "gap-2 sm:gap-3",
                   isActive
                     ? "bg-[#6d4cff] text-white"
                     : "text-white/70 hover:bg-white/5 hover:text-white"
@@ -167,18 +187,22 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
                   "h-4 w-4 flex-shrink-0 transition-transform duration-200",
                   isActive ? "text-white" : "text-white/60 group-hover:text-white"
                 )} />
-                {!collapsed && <span className="flex-1">{item.name}</span>}
+                {!collapsed && (
+                  <span className="flex-1 truncate min-w-0" title={item.name}>
+                    {item.name}
+                  </span>
+                )}
               </Link>
             )
           })}
         </div>
       </nav>
-      <div className={cn("border-t p-3", "border-white/10")}>
+      <div className={cn("border-t p-2 sm:p-3 shrink-0", "border-white/10")}>
         <Button
           variant="ghost"
           size="sm"
-          className={cn("flex items-center w-full transition-all py-2 px-3 rounded-md",
-            collapsed ? "justify-center" : "gap-3 justify-start",
+          className={cn("flex items-center w-full transition-all py-2 px-2 sm:px-3 rounded-md min-w-0",
+            collapsed ? "justify-center" : "gap-2 sm:gap-3 justify-start",
             "text-white/70 hover:bg-white/5 hover:text-white"
           )}
           onClick={() => {
@@ -186,8 +210,8 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProp
             window.location.href = "/"
           }}
         >
-          <LogOut className="h-4 w-4" />
-          {!collapsed && <span>Logout</span>}
+          <LogOut className="h-4 w-4 shrink-0" />
+          {!collapsed && <span className="truncate min-w-0">Logout</span>}
         </Button>
       </div>
 

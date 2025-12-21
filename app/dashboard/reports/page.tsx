@@ -104,35 +104,39 @@ export default function ReportsPage() {
               <CardTitle className="text-foreground">Recent Transactions ({filteredTransactions.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground min-w-[120px] w-[15%]">Date</th>
-                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground min-w-[150px] w-[25%]">Item</th>
-                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground min-w-[60px] w-[8%]">Qty</th>
-                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground min-w-[100px] w-[15%]">Revenue</th>
-                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground min-w-[100px] w-[15%]">Cost</th>
-                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground min-w-[100px] w-[22%]">Profit</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredTransactions.map((transaction) => (
-                      <tr key={transaction.id} className="border-b border-border last:border-0">
-                        <td className="py-4 text-sm text-muted-foreground w-[15%]">
-                          {new Date(transaction.timestamp).toLocaleDateString()} {new Date(transaction.timestamp).toLocaleTimeString()}
-                        </td>
-                        <td className="py-4 text-sm text-foreground w-[25%]">{transaction.itemName}</td>
-                        <td className="py-4 text-right text-sm text-foreground w-[8%]">{formatNumber(transaction.quantity)}</td>
-                        <td className="py-4 text-right text-sm text-foreground w-[15%]">
-                          ₱{formatNumber(transaction.totalRevenue)}
-                        </td>
-                        <td className="py-4 text-right text-sm text-foreground w-[15%]">₱{formatNumber(transaction.totalCost)}</td>
-                        <td className="py-4 text-right text-sm text-foreground w-[22%]">₱{formatNumber(transaction.profit)}</td>
+              <div className="overflow-x-auto -mx-6 px-6">
+                <div className="min-w-full inline-block align-middle">
+                  <table className="w-full min-w-[700px]">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="pb-3 text-left text-sm font-medium text-muted-foreground whitespace-nowrap">Date</th>
+                        <th className="pb-3 text-left text-sm font-medium text-muted-foreground whitespace-nowrap">Item</th>
+                        <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Qty</th>
+                        <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Revenue</th>
+                        <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Cost</th>
+                        <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Profit</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filteredTransactions.map((transaction) => (
+                        <tr key={transaction.id} className="border-b border-border last:border-0">
+                          <td className="py-4 text-sm text-muted-foreground whitespace-nowrap">
+                            {new Date(transaction.timestamp).toLocaleDateString()} {new Date(transaction.timestamp).toLocaleTimeString()}
+                          </td>
+                          <td className="py-4 text-sm text-foreground whitespace-nowrap max-w-[200px] truncate" title={transaction.itemName}>
+                            {transaction.itemName}
+                          </td>
+                          <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">{formatNumber(transaction.quantity)}</td>
+                          <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">
+                            ₱{formatNumber(transaction.totalRevenue)}
+                          </td>
+                          <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">₱{formatNumber(transaction.totalCost)}</td>
+                          <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">₱{formatNumber(transaction.profit)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </CardContent>
           </Card>

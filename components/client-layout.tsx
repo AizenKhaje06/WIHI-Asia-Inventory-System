@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
+import * as React from "react"
 import { Analytics } from "@vercel/analytics/next"
 import { Sidebar } from "@/components/sidebar"
 import { Clock } from "@/components/clock"
@@ -18,6 +19,22 @@ export default function ClientLayout({
 }>) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
+  // Auto-collapse sidebar on smaller screens
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        // Auto-collapse on tablet and below
+        setSidebarCollapsed(true)
+      }
+    }
+
+    // Check on mount
+    handleResize()
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const handleToggleCollapse = () => {
     setSidebarCollapsed(!sidebarCollapsed)
@@ -50,7 +67,8 @@ export default function ClientLayout({
               flex-shrink-0 flex h-full flex-col border-r border-white/10 bg-[#1a1a2e] text-white transition-all duration-300 ease-in-out
               fixed lg:relative z-50 lg:z-auto
               ${sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-0 lg:translate-x-0'}
-              ${sidebarCollapsed ? 'lg:w-20' : 'lg:w-64'}
+              ${sidebarCollapsed ? 'lg:w-16 xl:w-20' : 'lg:w-64'}
+              max-w-full
             `}
           >
             <div className="flex items-center justify-between p-4 lg:hidden">
@@ -82,8 +100,10 @@ export default function ClientLayout({
               <Clock />
             </div>
 
-            <main className="flex-1 overflow-y-auto overflow-x-hidden pt-4 px-4 sm:px-6 pb-6">
-              {children}
+            <main className="flex-1 overflow-y-auto overflow-x-hidden pt-4 px-3 sm:px-4 md:px-6 pb-6 min-w-0 w-full">
+              <div className="w-full max-w-full min-w-0">
+                {children}
+              </div>
             </main>
           </div>
         </div>
