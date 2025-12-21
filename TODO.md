@@ -37,3 +37,4 @@
 ## Bug Fixes
 - [x] Fix resize handler in client-layout.tsx to expand sidebar when window width >= 1024px
 - [x] Fix Vercel build error in app/dashboard/inventory/out-of-stock/page.tsx (missing opening parenthesis in return statement)
+- [x] Fix Vercel build error in app/dashboard/inventory/low-stock/page.tsx (missing closing tags for table structure)

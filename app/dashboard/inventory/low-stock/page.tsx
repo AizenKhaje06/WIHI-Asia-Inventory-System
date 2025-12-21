@@ -264,15 +264,16 @@ export default function LowStockPage() {
                           <Button variant="ghost" size="sm" onClick={() => handleEdit(item)} className="h-8 w-8 p-0">
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>
