@@ -26,6 +26,9 @@ export default function ClientLayout({
       if (window.innerWidth < 1024) {
         // Auto-collapse on tablet and below
         setSidebarCollapsed(true)
+      } else {
+        // Expand sidebar on desktop
+        setSidebarCollapsed(false)
       }
     }
 

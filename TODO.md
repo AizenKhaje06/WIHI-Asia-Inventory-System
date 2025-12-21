@@ -33,3 +33,6 @@
 - [x] Ensure sidebar collapses properly on mobile
 - [x] Check charts and tables adapt correctly
 - [x] Confirm typography scales properly
+
+## Bug Fixes
+- [x] Fix resize handler in client-layout.tsx to expand sidebar when window width >= 1024px
