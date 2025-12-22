@@ -1,11 +1,10 @@
 "use client"
 
-import React, { useState } from "react"
+import React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { LayoutDashboard, ShoppingCart, BarChart3, Package, AlertTriangle, XCircle, TrendingUp, FileText, LogOut, Warehouse, ChevronLeft, ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { LayoutDashboard, ShoppingCart, BarChart3, Package, AlertTriangle, XCircle, TrendingUp, FileText, LogOut, Warehouse } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navigation = [
@@ -25,255 +24,166 @@ const navigation = [
 
 interface SidebarProps {
   onNavClick?: () => void
-  onCollapseChange?: (collapsed: boolean) => void
 }
 
-export function Sidebar({ onNavClick, onCollapseChange }: SidebarProps) {
+export function Sidebar({ onNavClick }: SidebarProps) {
   const pathname = usePathname()
-  const [isCollapsed, setIsCollapsed] = useState(false)
 
   const handleNavClick = (_e: React.MouseEvent) => {
     onNavClick?.()
   }
 
-  const toggleCollapse = () => {
-    const newCollapsed = !isCollapsed
-    setIsCollapsed(newCollapsed)
-    onCollapseChange?.(newCollapsed)
-  }
-
   return (
-    <div className={cn(
-      "fixed left-0 top-0 h-screen bg-gradient-to-b from-orange-600 to-black text-white flex flex-col transition-all duration-300 ease-in-out z-50",
-      isCollapsed ? "w-[72px]" : "w-[280px]"
-    )}>
-      {/* Header */}
-      <div className="h-[72px] flex items-center justify-between px-4 border-b border-white/20">
-        {!isCollapsed && (
-          <div className="flex items-center space-x-3">
-            <Warehouse className="h-8 w-8 text-white" strokeWidth={1.5} />
-            <span className="text-lg font-bold text-white">Inventory Pro</span>
-          </div>
-        )}
-        {isCollapsed && (
-          <div className="flex-1 flex justify-center">
-            <Warehouse className="h-8 w-8 text-white" strokeWidth={1.5} />
-          </div>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleCollapse}
-          className="h-8 w-8 text-white hover:bg-white/10 transition-colors duration-200"
-        >
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </Button>
+    <div className="fixed left-0 top-0 h-screen w-[72px] bg-gradient-to-b from-orange-600 to-black text-white flex flex-col z-50">
+      {/* Logo Container */}
+      <div className="h-[72px] flex items-center justify-center">
+        <Warehouse className="h-8 w-8 text-white" strokeWidth={1.5} />
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-6 space-y-8">
+      <nav className="flex-1 flex flex-col">
         {/* Main Section */}
-        <div>
-          {!isCollapsed && (
-            <h3 className="text-xs font-semibold text-orange-200 uppercase tracking-wider mb-3 px-2">
-              Main
-            </h3>
-          )}
-          <div className="space-y-1">
-            {navigation.slice(0, 3).map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={handleNavClick}
-                  className={cn(
-                    "flex items-center h-[56px] rounded-xl transition-all duration-200 ease-in-out group relative",
-                    isCollapsed ? "justify-center px-3" : "px-4",
-                    isActive
-                      ? "bg-orange-500/20 text-white shadow-lg"
-                      : "text-white/80 hover:bg-white/10 hover:text-white"
-                  )}
-                  title={isCollapsed ? item.name : undefined}
-                >
-                  {isActive && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-400 rounded-r-full" />
-                  )}
-                  <div className="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                    <item.icon className="h-5 w-5" strokeWidth={1.5} />
-                  </div>
-                  {!isCollapsed && (
-                    <span className="ml-4 text-sm font-medium truncate">
-                      {item.name}
-                    </span>
-                  )}
-                  {isActive && !isCollapsed && (
-                    <div className="ml-auto w-2 h-2 bg-orange-400 rounded-full" />
-                  )}
-                </Link>
-              )
-            })}
-          </div>
+        <div className="mb-6">
+          {navigation.slice(0, 3).map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={handleNavClick}
+                className={cn(
+                  "flex flex-col items-center justify-center h-[58px] mx-2 mb-1 rounded-xl transition-all duration-200 ease-in-out relative",
+                  isActive
+                    ? "bg-orange-400/20"
+                    : "hover:bg-white/10"
+                )}
+                title={item.name}
+              >
+                {isActive && (
+                  <div className="absolute inset-0 rounded-xl bg-orange-400/20" />
+                )}
+                <div className="flex items-center justify-center w-5 h-5 mb-1 relative z-10">
+                  <item.icon className="h-5 w-5" strokeWidth={1.5} />
+                </div>
+                <span className="text-[11px] font-medium text-center leading-tight relative z-10">
+                  {item.name.split(' ')[0]}
+                </span>
+              </Link>
+            )
+          })}
         </div>
 
         {/* Inventory Section */}
-        <div>
-          {!isCollapsed && (
-            <h3 className="text-xs font-semibold text-orange-200 uppercase tracking-wider mb-3 px-2">
-              Inventory
-            </h3>
-          )}
-          <div className="space-y-1">
-            {navigation.slice(3, 6).map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={handleNavClick}
-                  className={cn(
-                    "flex items-center h-[56px] rounded-xl transition-all duration-200 ease-in-out group relative",
-                    isCollapsed ? "justify-center px-3" : "px-4",
-                    isActive
-                      ? "bg-orange-500/20 text-white shadow-lg"
-                      : "text-white/80 hover:bg-white/10 hover:text-white"
-                  )}
-                  title={isCollapsed ? item.name : undefined}
-                >
-                  {isActive && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-400 rounded-r-full" />
-                  )}
-                  <div className="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                    <item.icon className="h-5 w-5" strokeWidth={1.5} />
-                  </div>
-                  {!isCollapsed && (
-                    <span className="ml-4 text-sm font-medium truncate">
-                      {item.name}
-                    </span>
-                  )}
-                  {isActive && !isCollapsed && (
-                    <div className="ml-auto w-2 h-2 bg-orange-400 rounded-full" />
-                  )}
-                </Link>
-              )
-            })}
-          </div>
+        <div className="mb-6">
+          {navigation.slice(3, 6).map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={handleNavClick}
+                className={cn(
+                  "flex flex-col items-center justify-center h-[58px] mx-2 mb-1 rounded-xl transition-all duration-200 ease-in-out relative",
+                  isActive
+                    ? "bg-orange-400/20"
+                    : "hover:bg-white/10"
+                )}
+                title={item.name}
+              >
+                {isActive && (
+                  <div className="absolute inset-0 rounded-xl bg-orange-400/20" />
+                )}
+                <div className="flex items-center justify-center w-5 h-5 mb-1 relative z-10">
+                  <item.icon className="h-5 w-5" strokeWidth={1.5} />
+                </div>
+                <span className="text-[11px] font-medium text-center leading-tight relative z-10">
+                  {item.name.split(' ')[0]}
+                </span>
+              </Link>
+            )
+          })}
         </div>
 
         {/* Insights Section */}
-        <div>
-          {!isCollapsed && (
-            <h3 className="text-xs font-semibold text-orange-200 uppercase tracking-wider mb-3 px-2">
-              Insights
-            </h3>
-          )}
-          <div className="space-y-1">
-            {navigation.slice(6, 7).map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={handleNavClick}
-                  className={cn(
-                    "flex items-center h-[56px] rounded-xl transition-all duration-200 ease-in-out group relative",
-                    isCollapsed ? "justify-center px-3" : "px-4",
-                    isActive
-                      ? "bg-orange-500/20 text-white shadow-lg"
-                      : "text-white/80 hover:bg-white/10 hover:text-white"
-                  )}
-                  title={isCollapsed ? item.name : undefined}
-                >
-                  {isActive && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-400 rounded-r-full" />
-                  )}
-                  <div className="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                    <item.icon className="h-5 w-5" strokeWidth={1.5} />
-                  </div>
-                  {!isCollapsed && (
-                    <span className="ml-4 text-sm font-medium truncate">
-                      {item.name}
-                    </span>
-                  )}
-                  {isActive && !isCollapsed && (
-                    <div className="ml-auto w-2 h-2 bg-orange-400 rounded-full" />
-                  )}
-                </Link>
-              )
-            })}
-          </div>
+        <div className="mb-6">
+          {navigation.slice(6, 7).map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={handleNavClick}
+                className={cn(
+                  "flex flex-col items-center justify-center h-[58px] mx-2 mb-1 rounded-xl transition-all duration-200 ease-in-out relative",
+                  isActive
+                    ? "bg-orange-400/20"
+                    : "hover:bg-white/10"
+                )}
+                title={item.name}
+              >
+                {isActive && (
+                  <div className="absolute inset-0 rounded-xl bg-orange-400/20" />
+                )}
+                <div className="flex items-center justify-center w-5 h-5 mb-1 relative z-10">
+                  <item.icon className="h-5 w-5" strokeWidth={1.5} />
+                </div>
+                <span className="text-[11px] font-medium text-center leading-tight relative z-10">
+                  {item.name.split(' ')[0]}
+                </span>
+              </Link>
+            )
+          })}
         </div>
 
         {/* Operations Section */}
-        <div>
-          {!isCollapsed && (
-            <h3 className="text-xs font-semibold text-orange-200 uppercase tracking-wider mb-3 px-2">
-              Operations
-            </h3>
-          )}
-          <div className="space-y-1">
-            {navigation.slice(7, 8).map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={handleNavClick}
-                  className={cn(
-                    "flex items-center h-[56px] rounded-xl transition-all duration-200 ease-in-out group relative",
-                    isCollapsed ? "justify-center px-3" : "px-4",
-                    isActive
-                      ? "bg-orange-500/20 text-white shadow-lg"
-                      : "text-white/80 hover:bg-white/10 hover:text-white"
-                  )}
-                  title={isCollapsed ? item.name : undefined}
-                >
-                  {isActive && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-400 rounded-r-full" />
-                  )}
-                  <div className="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                    <item.icon className="h-5 w-5" strokeWidth={1.5} />
-                  </div>
-                  {!isCollapsed && (
-                    <span className="ml-4 text-sm font-medium truncate">
-                      {item.name}
-                    </span>
-                  )}
-                  {isActive && !isCollapsed && (
-                    <div className="ml-auto w-2 h-2 bg-orange-400 rounded-full" />
-                  )}
-                </Link>
-              )
-            })}
-          </div>
+        <div className="mb-6">
+          {navigation.slice(7, 8).map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={handleNavClick}
+                className={cn(
+                  "flex flex-col items-center justify-center h-[58px] mx-2 mb-1 rounded-xl transition-all duration-200 ease-in-out relative",
+                  isActive
+                    ? "bg-orange-400/20"
+                    : "hover:bg-white/10"
+                )}
+                title={item.name}
+              >
+                {isActive && (
+                  <div className="absolute inset-0 rounded-xl bg-orange-400/20" />
+                )}
+                <div className="flex items-center justify-center w-5 h-5 mb-1 relative z-10">
+                  <item.icon className="h-5 w-5" strokeWidth={1.5} />
+                </div>
+                <span className="text-[11px] font-medium text-center leading-tight relative z-10">
+                  {item.name.split(' ')[0]}
+                </span>
+              </Link>
+            )
+          })}
         </div>
       </nav>
 
       {/* Logout */}
-      <div className="p-3 border-t border-white/10">
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "flex items-center h-[56px] rounded-xl transition-all duration-200 ease-in-out w-full",
-            isCollapsed ? "justify-center px-3" : "px-4",
-            "text-white/60 hover:text-white hover:bg-white/5"
-          )}
+      <div className="mt-auto mb-4">
+        <button
+          className="flex flex-col items-center justify-center h-[58px] mx-2 rounded-xl transition-all duration-200 ease-in-out hover:bg-white/10"
           onClick={() => {
             localStorage.removeItem("isLoggedIn")
             window.location.href = "/"
           }}
-          title={isCollapsed ? "Logout" : undefined}
+          title="Logout"
         >
-          <div className="flex items-center justify-center w-6 h-6 flex-shrink-0">
+          <div className="flex items-center justify-center w-5 h-5 mb-1">
             <LogOut className="h-5 w-5" strokeWidth={1.5} />
           </div>
-          {!isCollapsed && (
-            <span className="ml-4 text-sm font-medium">
-              Logout
-            </span>
-          )}
-        </Button>
+          <span className="text-[11px] font-medium text-center leading-tight">
+            Logout
+          </span>
+        </button>
       </div>
     </div>
   )
