@@ -29,10 +29,10 @@ interface SidebarProps {
   onToggleCollapse?: () => void
 }
 
-export function Sidebar({ onNavClick, collapsed, onToggleCollapse }: SidebarProps) {
+export function Sidebar({ onNavClick, collapsed, onToggleCollapse: _onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
 
-  const handleNavClick = (e: React.MouseEvent) => {
+  const handleNavClick = (_e: React.MouseEvent) => {
     onNavClick?.()
   }
 
