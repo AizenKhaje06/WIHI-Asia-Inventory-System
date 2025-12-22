@@ -37,7 +37,7 @@ export function Sidebar({ onNavClick, collapsed, onToggleCollapse: _onToggleColl
   }
 
   return (
-    <div className="fixed left-0 top-0 h-screen w-[240px] bg-[#1a1a2e] text-white flex flex-col" style={{ fontFamily: 'Inter, Roboto, system-ui, sans-serif' }}>
+    <div className="fixed left-0 top-0 h-screen w-[180px] bg-[#1a1a2e] text-white flex flex-col" style={{ fontFamily: 'Inter, Roboto, system-ui, sans-serif' }}>
       {/* Header */}
       <div className="flex h-16 items-center justify-between border-b border-white/10 px-4 shrink-0">
         {!collapsed && (
