@@ -28,12 +28,12 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 h-[72px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 z-40",
+        "fixed top-0 right-0 h-[72px] bg-slate-900/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-800 dark:border-slate-800 z-40",
         reducedMotion ? "" : "transition-all duration-300",
         "lg:left-72 left-0"
       )}
       style={{
-        boxShadow: "var(--shadow-sm)",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
       }}
       role="banner"
     >
@@ -42,11 +42,11 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
         <div className="flex items-center gap-4 flex-1 max-w-2xl">
           <button
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200"
+            className="lg:hidden p-2 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 transition-colors duration-200"
             aria-label="Open navigation menu"
             aria-expanded="false"
           >
-            <Menu className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+            <Menu className="h-5 w-5 text-slate-400 dark:text-slate-400" />
           </button>
           
           <div
@@ -60,7 +60,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
               Search products, customers, transactions
             </label>
             <Search 
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" 
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" 
               aria-hidden="true"
             />
             <input
@@ -68,9 +68,9 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
               type="search"
               placeholder="Search products, customers, transactions..."
               className={cn(
-                "w-full pl-10 pr-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400",
+                "w-full pl-10 pr-4 py-2.5 rounded-lg bg-slate-800 dark:bg-slate-800 border border-slate-700 dark:border-slate-700 text-sm text-slate-100 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-500",
                 reducedMotion ? "" : "transition-all duration-200",
-                "focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900"
+                "focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-slate-800 dark:focus:bg-slate-800"
               )}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
@@ -84,14 +84,14 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="p-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 group"
+            className="p-2.5 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 transition-colors duration-200 group"
             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
             {theme === "dark" ? (
-              <Sun className="h-5 w-5 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors duration-200" aria-hidden="true" />
+              <Sun className="h-5 w-5 text-slate-400 dark:text-slate-400 group-hover:text-slate-200 dark:group-hover:text-slate-200 transition-colors duration-200" aria-hidden="true" />
             ) : (
-              <Moon className="h-5 w-5 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors duration-200" aria-hidden="true" />
+              <Moon className="h-5 w-5 text-slate-400 dark:text-slate-400 group-hover:text-slate-200 dark:group-hover:text-slate-200 transition-colors duration-200" aria-hidden="true" />
             )}
           </button>
 
@@ -99,11 +99,11 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="relative p-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 group"
+                className="relative p-2.5 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 transition-colors duration-200 group"
                 aria-label="Notifications (2 unread)"
               >
-                <Bell className="h-5 w-5 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors duration-200" aria-hidden="true" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-slate-900" aria-hidden="true" />
+                <Bell className="h-5 w-5 text-slate-400 dark:text-slate-400 group-hover:text-slate-200 dark:group-hover:text-slate-200 transition-colors duration-200" aria-hidden="true" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-slate-900 dark:ring-slate-900" aria-hidden="true" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
@@ -126,26 +126,26 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
 
           {/* Settings */}
           <button
-            className="hidden md:block p-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 group"
+            className="hidden md:block p-2.5 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 transition-colors duration-200 group"
             title="Settings"
             aria-label="Open settings"
           >
-            <Settings className="h-5 w-5 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors duration-200" aria-hidden="true" />
+            <Settings className="h-5 w-5 text-slate-400 dark:text-slate-400 group-hover:text-slate-200 dark:group-hover:text-slate-200 transition-colors duration-200" aria-hidden="true" />
           </button>
 
           {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="flex items-center gap-3 pl-3 pr-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 group"
+                className="flex items-center gap-3 pl-3 pr-4 py-2 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 transition-colors duration-200 group"
                 aria-label="User menu"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-md" aria-hidden="true">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-purple-700 flex items-center justify-center shadow-md" aria-hidden="true">
                   <User className="h-4 w-4 text-white" strokeWidth={2.5} />
                 </div>
                 <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Admin User</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Administrator</p>
+                  <p className="text-sm font-medium text-slate-100 dark:text-slate-100">Admin User</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-400">Administrator</p>
                 </div>
               </button>
             </DropdownMenuTrigger>

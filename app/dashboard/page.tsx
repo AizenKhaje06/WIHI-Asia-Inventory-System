@@ -104,19 +104,19 @@ export default function DashboardPage() {
     <div className="min-h-screen">
       {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
+        <h1 className="text-4xl font-bold text-white mb-2">
           Executive Dashboard
         </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
+        <p className="text-slate-400 text-base">
           Comprehensive overview of your inventory management system
         </p>
       </div>
 
       {/* Sales & Purchase Chart */}
-      <Card className="mb-8 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      <Card className="mb-8 border-0 shadow-lg glass-card animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+            <CardTitle className="flex items-center gap-3 text-xl font-semibold text-white">
               <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
                 <BarChart3 className="h-5 w-5" />
               </div>
@@ -159,10 +159,12 @@ export default function DashboardPage() {
       </Card>
 
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200 bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200 stat-card-restaurant border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-50">Total Stocks Value</CardTitle>
-            <DollarSign className="h-5 w-5 text-white opacity-80" />
+            <CardTitle className="text-sm font-medium text-blue-100">Total Stocks Value</CardTitle>
+            <div className="p-2 rounded-lg bg-blue-500/20">
+              <DollarSign className="h-5 w-5 text-blue-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-white">
@@ -171,10 +173,12 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="stat-card-restaurant border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-50">Total Revenue</CardTitle>
-            <TrendingDown className="h-5 w-5 text-white opacity-80" />
+            <CardTitle className="text-sm font-medium text-purple-100">Total Revenue</CardTitle>
+            <div className="p-2 rounded-lg bg-purple-500/20">
+              <TrendingDown className="h-5 w-5 text-purple-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-white">
@@ -183,10 +187,12 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="stat-card-restaurant border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-orange-50">Total Cost</CardTitle>
-            <TrendingUp className="h-5 w-5 text-white opacity-80" />
+            <CardTitle className="text-sm font-medium text-orange-100">Total Cost</CardTitle>
+            <div className="p-2 rounded-lg bg-orange-500/20">
+              <TrendingUp className="h-5 w-5 text-orange-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-white">
@@ -195,10 +201,12 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500 to-green-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="stat-card-restaurant border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-50">Profit Margin</CardTitle>
-            <Percent className="h-5 w-5 text-white opacity-80" />
+            <CardTitle className="text-sm font-medium text-green-100">Profit Margin</CardTitle>
+            <div className="p-2 rounded-lg bg-green-500/20">
+              <Percent className="h-5 w-5 text-green-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-white">
@@ -210,9 +218,9 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
         {/* Top Products */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-600">
+        <Card className="border-0 shadow-lg glass-card hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-600">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-white">
               <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
                 <TrendingUp className="h-4 w-4" />
               </div>
@@ -224,29 +232,29 @@ export default function DashboardPage() {
               {stats?.topProducts?.map((product, index) => (
                 <div 
                   key={index} 
-                  className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4"
+                  className="flex items-center justify-between p-3 rounded-lg order-card hover:bg-slate-800/50 transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm" />
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{product.name}</span>
+                    <span className="text-sm font-medium text-slate-200">{product.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{product.sales.toLocaleString()}</span>
-                    <div className="px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium">
+                    <span className="text-sm font-semibold text-slate-100">{product.sales.toLocaleString()}</span>
+                    <div className="px-2 py-1 rounded-full badge-ready text-xs font-medium">
                       +{Math.floor(Math.random() * 20 + 5)}%
                     </div>
                   </div>
                 </div>
-              )) || <p className="text-slate-500 dark:text-slate-400 text-center py-8">No data available</p>}
+              )) || <p className="text-slate-400 text-center py-8">No data available</p>}
             </div>
           </CardContent>
         </Card>
 
         {/* Low Stock Products */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-700">
+        <Card className="border-0 shadow-lg glass-card hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-700">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-white">
               <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md">
                 <AlertTriangle className="h-4 w-4" />
               </div>
@@ -258,26 +266,26 @@ export default function DashboardPage() {
               {lowStockItems.slice(0, 4).map((item, index) => (
                 <div 
                   key={item.id} 
-                  className="flex items-center justify-between p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4"
+                  className="flex items-center justify-between p-3 rounded-lg order-card hover:bg-amber-900/20 transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.name}</span>
+                  <span className="text-sm font-medium text-slate-200">{item.name}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">{item.quantity}</span>
-                    <div className="px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 text-xs font-medium">
+                    <span className="text-sm font-semibold text-amber-400">{item.quantity}</span>
+                    <div className="px-2 py-1 rounded-full badge-progress text-xs font-medium">
                       {item.quantity === 0 ? "Out of Stock" : "Low"}
                     </div>
                   </div>
                 </div>
-              )) || <p className="text-slate-500 dark:text-slate-400 text-center py-8">All items well stocked</p>}
+              )) || <p className="text-slate-400 text-center py-8">All items well stocked</p>}
             </div>
           </CardContent>
         </Card>
 
         {/* Recent Sales */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-800">
+        <Card className="border-0 shadow-lg glass-card hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-800">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-white">
               <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
                 <ShoppingCart className="h-4 w-4" />
               </div>
@@ -289,18 +297,18 @@ export default function DashboardPage() {
               {stats?.recentTransactions?.map((tx, index) => (
                 <div 
                   key={index} 
-                  className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4"
+                  className="flex items-center justify-between p-3 rounded-lg order-card hover:bg-slate-800/50 transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{tx.itemName}</span>
+                  <span className="text-sm font-medium text-slate-200">{tx.itemName}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">₱{formatNumber(tx.totalRevenue)}</span>
-                    <div className="px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-medium">
+                    <span className="text-sm font-semibold text-emerald-400">₱{formatNumber(tx.totalRevenue)}</span>
+                    <div className="px-2 py-1 rounded-full badge-ready text-xs font-medium">
                       Sale
                     </div>
                   </div>
                 </div>
-              )) || <p className="text-slate-500 dark:text-slate-400 text-center py-8">No recent transactions</p>}
+              )) || <p className="text-slate-400 text-center py-8">No recent transactions</p>}
             </div>
           </CardContent>
         </Card>
@@ -308,9 +316,9 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         {/* Stock Percentage Bar Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-900">
+        <Card className="border-0 shadow-lg glass-card hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-900">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-white">
               <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md">
                 <BarChart2 className="h-4 w-4" />
               </div>
@@ -339,9 +347,9 @@ export default function DashboardPage() {
         </Card>
 
         {/* Stocks Count Bar Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-1000">
+        <Card className="border-0 shadow-lg glass-card hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-1000">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-white">
               <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
                 <Activity className="h-4 w-4" />
               </div>
