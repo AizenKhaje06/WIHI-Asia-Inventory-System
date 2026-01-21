@@ -4,7 +4,7 @@ import React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { LayoutDashboard, ShoppingCart, BarChart3, Package, AlertTriangle, XCircle, TrendingUp, FileText, LogOut, Warehouse } from "lucide-react"
+import { LayoutDashboard, ShoppingCart, BarChart3, Package, AlertTriangle, XCircle, TrendingUp, FileText, LogOut, Warehouse, Users, Brain } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navigation = [
@@ -18,6 +18,9 @@ const navigation = [
   { name: "Out of Stocks", href: "/dashboard/inventory/out-of-stock", icon: XCircle },
   // Insights Section
   { name: "Sales Analytics", href: "/dashboard/sales", icon: TrendingUp },
+  { name: "Business Insights", href: "/dashboard/insights", icon: Brain },
+  // CRM Section
+  { name: "Customers", href: "/dashboard/customers", icon: Users },
   // Operations Section
   { name: "Logs", href: "/dashboard/log", icon: FileText },
 ]
@@ -106,7 +109,38 @@ export function Sidebar({ onNavClick }: SidebarProps) {
 
         {/* Insights Section */}
         <div className="mb-6">
-          {navigation.slice(6, 7).map((item) => {
+          {navigation.slice(6, 8).map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={handleNavClick}
+                className={cn(
+                  "flex flex-col items-center justify-center h-[58px] mx-2 mb-1 rounded-xl transition-all duration-200 ease-in-out relative",
+                  isActive
+                    ? "bg-orange-400/20"
+                    : "hover:bg-white/10"
+                )}
+                title={item.name}
+              >
+                {isActive && (
+                  <div className="absolute inset-0 rounded-xl bg-orange-400/20" />
+                )}
+                <div className="flex items-center justify-center w-5 h-5 mb-1 relative z-10">
+                  <item.icon className="h-5 w-5" strokeWidth={1.5} />
+                </div>
+                <span className="text-[11px] font-medium text-center leading-tight relative z-10">
+                  {item.name.split(' ')[0]}
+                </span>
+              </Link>
+            )
+          })}
+        </div>
+
+        {/* CRM Section */}
+        <div className="mb-6">
+          {navigation.slice(8, 9).map((item) => {
             const isActive = pathname === item.href
             return (
               <Link
@@ -137,7 +171,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
 
         {/* Operations Section */}
         <div className="mb-6">
-          {navigation.slice(7, 8).map((item) => {
+          {navigation.slice(9, 10).map((item) => {
             const isActive = pathname === item.href
             return (
               <Link

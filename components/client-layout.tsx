@@ -3,6 +3,7 @@
 import type { ReactNode } from "react"
 import { Analytics } from "@vercel/analytics/next"
 import { Sidebar } from "@/components/sidebar"
+import { OfflineIndicator } from "@/components/offline-indicator"
 import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 
@@ -32,6 +33,7 @@ export default function ClientLayout({
             </main>
           </div>
         </div>
+        <OfflineIndicator />
         <Analytics />
       </Suspense>
     </ThemeProvider>

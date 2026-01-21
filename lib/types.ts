@@ -10,6 +10,11 @@ export interface InventoryItem {
   lastUpdated: string
   totalCOGS: number
   sku?: string
+  discount?: number // Percentage discount
+  discountType?: 'percentage' | 'fixed'
+  discountEndDate?: string
+  minPrice?: number // Minimum selling price (for profit protection)
+  images?: string[]
 }
 
 export interface Transaction {
@@ -25,6 +30,42 @@ export interface Transaction {
   timestamp: string
   type: "sale" | "restock"
   department?: string
+  customerId?: string
+  customerName?: string
+  discount?: number
+  discountAmount?: number
+}
+
+export interface Customer {
+  id: string
+  name: string
+  email?: string
+  phone?: string
+  address?: string
+  loyaltyPoints: number
+  totalPurchases: number
+  totalSpent: number
+  lastPurchase?: string
+  createdAt: string
+  tier?: 'bronze' | 'silver' | 'gold' | 'platinum'
+  notes?: string
+}
+
+export interface Promotion {
+  id: string
+  name: string
+  description: string
+  type: 'percentage' | 'fixed' | 'bogo' | 'bundle'
+  value: number
+  startDate: string
+  endDate: string
+  applicableItems?: string[] // Item IDs
+  applicableCategories?: string[]
+  minPurchase?: number
+  maxDiscount?: number
+  active: boolean
+  usageCount: number
+  createdAt: string
 }
 
 export interface DailySales {
@@ -72,6 +113,9 @@ export interface DashboardStats {
   stockPercentageByCategory: { name: string; percentage: number }[]
   stocksCountByCategory: { name: string; count: number }[]
   stocksCountByStorageRoom: { name: string; count: number }[]
+  totalCustomers?: number
+  topCustomers?: { name: string; spent: number }[]
+  averageOrderValue?: number
 }
 
 export interface Log {
@@ -92,4 +136,31 @@ export interface Restock {
   totalCost: number
   timestamp: string
   reason: string
+}
+
+export interface PredictiveAnalytics {
+  itemId: string
+  itemName: string
+  predictedDemand: number
+  recommendedReorderQty: number
+  predictedStockoutDate?: string
+  confidence: number
+  trend: 'increasing' | 'decreasing' | 'stable'
+}
+
+export interface ABCAnalysis {
+  itemId: string
+  itemName: string
+  category: 'A' | 'B' | 'C'
+  revenueContribution: number
+  cumulativePercentage: number
+  recommendation: string
+}
+
+export interface InventoryTurnover {
+  itemId: string
+  itemName: string
+  turnoverRatio: number
+  daysToSell: number
+  status: 'fast-moving' | 'normal' | 'slow-moving' | 'dead-stock'
 }
