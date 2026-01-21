@@ -32,6 +32,8 @@ import { cn } from "@/lib/utils"
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"]
 
+import { PremiumDashboardLoading } from "@/components/premium-loading"
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [lowStockItems, setLowStockItems] = useState<InventoryItem[]>([])
@@ -59,40 +61,7 @@ export default function DashboardPage() {
   }, [timePeriod])
 
   if (loading) {
-    return (
-      <div className="responsive-padding min-h-screen">
-        <div className="mb-8">
-          <Skeleton className="h-8 w-64 mb-2" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-              <CardHeader className="pb-2">
-                <Skeleton className="h-4 w-24" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-32" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {[...Array(2)].map((_, i) => (
-            <Card key={i} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <Skeleton className="h-6 w-32" />
-              </CardHeader>
-              <CardContent>
-                <ShimmerSkeleton variant="chart" className="h-64 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    )
+    return <PremiumDashboardLoading />
   }
 
   // Format date based on timePeriod
@@ -132,29 +101,32 @@ export default function DashboardPage() {
   })) || []
 
   return (
-    <div className="responsive-padding min-h-screen">
+    <div className="min-h-screen">
+      {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="responsive-text-3xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
           Executive Dashboard
         </h1>
-        <p className="text-slate-600 dark:text-slate-300 text-lg">Comprehensive overview of your inventory management system</p>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          Comprehensive overview of your inventory management system
+        </p>
       </div>
 
       {/* Sales & Purchase Chart */}
-      <Card className={cn("mb-8 border-0 shadow-xl bg-white/90 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100", "dark:card-neon")}>
+      <Card className="mb-8 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-800 dark:text-slate-200">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
+            <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
                 <BarChart3 className="h-5 w-5" />
               </div>
               Sales & Purchase Analytics
             </CardTitle>
             <Tabs value={timePeriod} onValueChange={(value) => setTimePeriod(value as any)}>
               <TabsList className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                <TabsTrigger value="ID" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Today</TabsTrigger>
-                <TabsTrigger value="1W" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">1W</TabsTrigger>
-                <TabsTrigger value="1M" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">1M</TabsTrigger>
+                <TabsTrigger value="ID" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">Today</TabsTrigger>
+                <TabsTrigger value="1W" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">1W</TabsTrigger>
+                <TabsTrigger value="1M" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">1M</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -187,49 +159,49 @@ export default function DashboardPage() {
       </Card>
 
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200 bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white">
+        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200 bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-100">Total Stocks Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-blue-50">Total Stocks Value</CardTitle>
+            <DollarSign className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-3xl font-bold text-white">
               <AnimatedNumber value={stats?.totalValue || 0} prefix="₱" duration={2000} />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 text-white">
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-100">Total Revenue</CardTitle>
-            <TrendingDown className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-purple-50">Total Revenue</CardTitle>
+            <TrendingDown className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-3xl font-bold text-white">
               <AnimatedNumber value={stats?.totalRevenue || 0} prefix="₱" duration={2000} />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 text-white">
+        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-orange-100">Total Cost</CardTitle>
-            <TrendingUp className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-orange-50">Total Cost</CardTitle>
+            <TrendingUp className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-3xl font-bold text-white">
               <AnimatedNumber value={stats?.totalCost || 0} prefix="₱" duration={2000} />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500 to-green-600 border-0 text-white">
+        <Card className="bg-gradient-to-br from-green-500 to-green-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-100">Profit Margin</CardTitle>
-            <Percent className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-green-50">Profit Margin</CardTitle>
+            <Percent className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-3xl font-bold text-white">
               <AnimatedNumber value={stats?.profitMargin || 0} suffix="%" decimals={1} duration={2000} />
             </div>
           </CardContent>
@@ -238,10 +210,10 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
         {/* Top Products */}
-        <Card className={cn("border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-600", "dark:card-neon")}>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-600">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
                 <TrendingUp className="h-4 w-4" />
               </div>
               Top Performing Products
@@ -272,10 +244,10 @@ export default function DashboardPage() {
         </Card>
 
         {/* Low Stock Products */}
-        <Card className={cn("border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-700", "dark:card-neon")}>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-700">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md">
                 <AlertTriangle className="h-4 w-4" />
               </div>
               Stock Warning
@@ -303,10 +275,10 @@ export default function DashboardPage() {
         </Card>
 
         {/* Recent Sales */}
-        <Card className={cn("border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-800", "dark:card-neon")}>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-800">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
                 <ShoppingCart className="h-4 w-4" />
               </div>
               Recent Transactions
@@ -336,10 +308,10 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         {/* Stock Percentage Bar Chart */}
-        <Card className={cn("border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-900", "dark:card-neon")}>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-900">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md">
                 <BarChart2 className="h-4 w-4" />
               </div>
               Stock Count by Storage Room
@@ -367,10 +339,10 @@ export default function DashboardPage() {
         </Card>
 
         {/* Stocks Count Bar Chart */}
-        <Card className={cn("border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-1000", "dark:card-neon")}>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-1000">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
                 <Activity className="h-4 w-4" />
               </div>
               Stocks Count by Category

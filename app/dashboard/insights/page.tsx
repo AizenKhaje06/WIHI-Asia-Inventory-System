@@ -89,16 +89,19 @@ export default function InsightsPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen">
+      {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
           Business Insights
         </h1>
-        <p className="text-slate-600 dark:text-slate-300 text-lg">AI-powered analytics for strategic decision making</p>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          AI-powered analytics for strategic decision making
+        </p>
       </div>
 
       <Tabs defaultValue="abc" className="space-y-6">
-        <TabsList className="bg-white dark:bg-slate-800 border">
+        <TabsList className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
           <TabsTrigger value="abc">ABC Analysis</TabsTrigger>
           <TabsTrigger value="turnover">Inventory Turnover</TabsTrigger>
           <TabsTrigger value="forecast">Sales Forecast</TabsTrigger>
@@ -109,9 +112,9 @@ export default function InsightsPage() {
         {/* ABC Analysis */}
         <TabsContent value="abc" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
-            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
                   <Target className="h-5 w-5" />
                   ABC Distribution
                 </CardTitle>

@@ -14,6 +14,8 @@ import { AddItemDialog } from "@/components/add-item-dialog"
 import { EditItemDialog } from "@/components/edit-item-dialog"
 import { formatNumber, formatCurrency } from "@/lib/utils"
 
+import { PremiumTableLoading } from "@/components/premium-loading"
+
 export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
   const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
@@ -142,45 +144,7 @@ export default function InventoryPage() {
   }
 
   if (loading) {
-    return (
-      <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen w-full max-w-full overflow-x-hidden">
-        <div className="mb-8">
-          <Skeleton className="h-8 w-80 mb-2" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-        
-        <Card className="mb-6 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-          <CardContent className="pt-6">
-            <div className="flex gap-4 items-end">
-              <div className="flex-1">
-                <Skeleton className="h-4 w-16 mb-2" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-              <div className="flex-1">
-                <Skeleton className="h-4 w-20 mb-2" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-              <div className="flex-shrink-0">
-                <Skeleton className="h-10 w-32" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <PremiumTableLoading />
   }
 
   const categories = [
@@ -197,15 +161,18 @@ export default function InventoryPage() {
   ]
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800 w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
           Inventory Management
         </h1>
-        <p className="text-slate-600 dark:text-slate-300 text-lg">Comprehensive product inventory control and management</p>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          Comprehensive product inventory control and management
+        </p>
       </div>
 
-      <Card className="mb-8 border-0 shadow-xl bg-white/90 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      <Card className="mb-8 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4 items-end w-full">
             <div className="flex-1">
@@ -285,10 +252,10 @@ export default function InventoryPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
+      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-800 dark:text-slate-200">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
+          <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
               <Package className="h-5 w-5" />
             </div>
             Product Inventory ({filteredItems.length} items)

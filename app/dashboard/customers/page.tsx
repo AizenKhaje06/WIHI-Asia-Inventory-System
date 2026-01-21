@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge"
 import type { Customer } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
 
+import { PremiumTableLoading } from "@/components/premium-loading"
+
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([])
@@ -91,63 +93,66 @@ export default function CustomersPage() {
   }
 
   if (loading) {
-    return <div className="p-8">Loading...</div>
+    return <PremiumTableLoading />
   }
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen">
+      {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
           Customer Management
         </h1>
-        <p className="text-slate-600 dark:text-slate-300 text-lg">Build lasting relationships with your customers</p>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          Build lasting relationships with your customers
+        </p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white">
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-100">Total Customers</CardTitle>
-            <Users className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-blue-50">Total Customers</CardTitle>
+            <Users className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-3xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 text-white">
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-100">VIP Customers</CardTitle>
-            <Award className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-purple-50">VIP Customers</CardTitle>
+            <Award className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.platinum + stats.gold}</div>
+            <div className="text-3xl font-bold">{stats.platinum + stats.gold}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500 to-green-600 border-0 text-white">
+        <Card className="bg-gradient-to-br from-green-500 to-green-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-100">Total Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-green-50">Total Revenue</CardTitle>
+            <TrendingUp className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
+            <div className="text-3xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 text-white">
+        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-orange-100">Avg. Spent</CardTitle>
-            <TrendingUp className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-orange-50">Avg. Spent</CardTitle>
+            <TrendingUp className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.avgSpent)}</div>
+            <div className="text-3xl font-bold">{formatCurrency(stats.avgSpent)}</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Search and Add */}
-      <Card className="mb-8 border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+      <Card className="mb-8 border-0 shadow-lg bg-white dark:bg-slate-900">
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1">
@@ -172,9 +177,9 @@ export default function CustomersPage() {
       </Card>
 
       {/* Customers Table */}
-      <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
         <CardHeader>
-          <CardTitle className="flex items-center gap-3">
+          <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-white">
             <Users className="h-5 w-5" />
             Customers ({filteredCustomers.length})
           </CardTitle>
