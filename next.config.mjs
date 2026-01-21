@@ -101,9 +101,10 @@ const nextConfig = {
   compress: true,
   // Production optimizations
   productionBrowserSourceMaps: false,
+  poweredByHeader: false,
+  reactStrictMode: true,
   // Experimental features for performance
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['lucide-react', 'recharts', '@radix-ui/react-icons'],
   },
   // Webpack optimizations
