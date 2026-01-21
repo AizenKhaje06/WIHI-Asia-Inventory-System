@@ -587,6 +587,26 @@ h6 { font-size: 1rem; }        /* 16px */
 }
 
 /* ============================================
+   PREMIUM MODAL/DIALOG STYLES
+   ============================================ */
+
+/* Modal backdrop with blur */
+[data-radix-dialog-overlay] {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Modal content enhancement */
+[data-radix-dialog-content] {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Dark mode modal adjustments */
+.dark [data-radix-dialog-content] {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
    LOADING STATES
    ============================================ */
 
