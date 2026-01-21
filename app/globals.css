@@ -769,9 +769,64 @@ h6 { font-size: 1rem; }        /* 16px */
 }
 
 /* ============================================
-   ACCESSIBILITY
+   ACCESSIBILITY ENHANCEMENTS
    ============================================ */
 
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip to main content link */
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--primary-600);
+  color: white;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  z-index: 100;
+}
+
+.skip-to-main:focus {
+  top: 0;
+}
+
+/* Enhanced focus visible for keyboard navigation */
+*:focus-visible {
+  outline: 3px solid var(--primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: #000000;
+    --shadow-sm: 0 2px 4px 0 rgb(0 0 0 / 0.3);
+    --shadow: 0 2px 6px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 8px 0 rgb(0 0 0 / 0.3);
+  }
+  
+  .dark {
+    --border: #ffffff;
+  }
+  
+  button, a, input, select, textarea {
+    border-width: 2px !important;
+  }
+}
+
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -779,13 +834,200 @@ h6 { font-size: 1rem; }        /* 16px */
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-fade-in,
+  .animate-slide-in,
+  .animate-scale-in,
+  .animate-shimmer,
+  .animate-pulse {
+    animation: none !important;
   }
 }
 
-/* Focus visible for keyboard navigation */
-*:focus-visible {
-  outline: 2px solid var(--primary-500);
-  outline-offset: 2px;
+/* Touch target size (minimum 44x44px for accessibility) */
+button,
+a,
+input[type="checkbox"],
+input[type="radio"],
+select {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Exception for icon-only buttons with proper padding */
+button.icon-only,
+a.icon-only {
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0.5rem;
+}
+
+/* Ensure text remains visible during webfont load */
+@font-face {
+  font-display: swap;
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* GPU acceleration for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Optimize backdrop filter for low-end devices */
+@supports not (backdrop-filter: blur(10px)) {
+  .glass,
+  [class*="backdrop-blur"] {
+    background: var(--background) !important;
+    backdrop-filter: none !important;
+  }
+}
+
+/* Lazy load images */
+img[loading="lazy"] {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+img[loading="lazy"].loaded {
+  opacity: 1;
+}
+
+/* Optimize table rendering */
+table {
+  table-layout: fixed;
+}
+
+/* Contain layout shifts */
+.contain-layout {
+  contain: layout;
+}
+
+.contain-paint {
+  contain: paint;
+}
+
+.contain-strict {
+  contain: strict;
+}
+
+/* ============================================
+   MOBILE OPTIMIZATIONS
+   ============================================ */
+
+/* Prevent text size adjustment on orientation change */
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Improve tap highlight */
+* {
+  -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Smooth scrolling for mobile */
+@media (hover: none) and (pointer: coarse) {
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Mobile-specific touch optimizations */
+@media (max-width: 768px) {
+  /* Larger touch targets */
+  button,
+  a {
+    min-height: 48px;
+    min-width: 48px;
+  }
+  
+  /* Optimize font sizes */
+  html {
+    font-size: 14px;
+  }
+  
+  /* Reduce animations on mobile */
+  .animate-fade-in,
+  .animate-slide-in {
+    animation-duration: 200ms !important;
+  }
+  
+  /* Optimize table for mobile */
+  .table-premium {
+    font-size: 0.875rem;
+  }
+  
+  .table-premium th,
+  .table-premium td {
+    padding: 0.75rem 0.5rem;
+  }
+}
+
+/* Horizontal scroll indicator for tables */
+.table-container {
+  position: relative;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(to left, var(--background), transparent);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.table-container.has-scroll::after {
+  opacity: 1;
+}
+
+/* ============================================
+   CROSS-BROWSER COMPATIBILITY
+   ============================================ */
+
+/* Firefox-specific fixes */
+@-moz-document url-prefix() {
+  /* Fix scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--neutral-400) var(--background-secondary);
+  }
+}
+
+/* Safari-specific fixes */
+@supports (-webkit-appearance: none) {
+  /* Fix input appearance */
+  input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+  
+  /* Fix sticky positioning */
+  .sticky {
+    position: -webkit-sticky;
+    position: sticky;
+  }
+}
+
+/* Edge-specific fixes */
+@supports (-ms-ime-align: auto) {
+  /* Fix flexbox issues */
+  .flex {
+    display: -ms-flexbox;
+    display: flex;
+  }
 }
 
 /* ============================================
@@ -793,12 +1035,51 @@ h6 { font-size: 1rem; }        /* 16px */
    ============================================ */
 
 @media print {
-  body {
-    background: white;
-    color: black;
+  /* Hide non-essential elements */
+  nav,
+  aside,
+  .no-print,
+  button,
+  .sidebar,
+  .navbar {
+    display: none !important;
   }
   
-  .no-print {
-    display: none !important;
+  /* Optimize for print */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+  }
+  
+  /* Expand content */
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  
+  /* Page breaks */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  
+  table, figure {
+    page-break-inside: avoid;
+  }
+  
+  /* Show URLs for links */
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+  
+  /* Optimize tables */
+  table {
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    border: 1px solid #000;
+    padding: 0.5rem;
   }
 }
