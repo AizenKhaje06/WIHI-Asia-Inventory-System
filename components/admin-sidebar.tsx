@@ -70,7 +70,7 @@ export function AdminSidebar({ onBackClick }: AdminSidebarProps) {
               >
                 <item.icon className={cn(
                   "h-4 w-4 flex-shrink-0",
-                  isActive ? "text-white" : (theme === 'light' ? "text-primary" : "text-[#00fff6]")
+                  isActive ? "text-white" : "text-primary dark:text-cyan-400"
                 )} />
                 <span>{item.name}</span>
               </Link>

@@ -182,7 +182,7 @@ export default function POSPage() {
                         <p className="font-medium text-foreground text-sm line-clamp-2">{item.name}</p>
                         <p className="text-xs text-muted-foreground">Stock: {item.quantity}</p>
                       </div>
-                      <p className={`text-lg font-semibold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>₱{item.sellingPrice.toFixed(2)}</p>
+                      <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">₱{item.sellingPrice.toFixed(2)}</p>
                     </button>
                   ))}
                 </div>
@@ -215,7 +215,7 @@ export default function POSPage() {
                         >
                           <div className="flex-1">
                             <p className="font-medium text-foreground">{cartItem.item.name}</p>
-                            <p className={`text-sm ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>
+                            <p className="text-sm text-emerald-600 dark:text-emerald-400">
                               ₱{cartItem.item.sellingPrice.toFixed(2)} each
                             </p>
                           </div>
@@ -232,7 +232,7 @@ export default function POSPage() {
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
-                          <p className={`font-semibold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>
+                          <p className="font-semibold text-emerald-600 dark:text-emerald-400">
                             ₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
                           </p>
                         </div>
@@ -242,7 +242,7 @@ export default function POSPage() {
                     <div className="border-t border-border pt-4">
                       <div className="mb-4 flex items-center justify-between">
                         <p className="text-lg font-semibold text-foreground">Total</p>
-                        <p className={`text-2xl font-bold ${theme === 'light' ? 'bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent' : 'text-[#00FF00]'}`}>₱{total.toFixed(2)}</p>
+                        <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">₱{total.toFixed(2)}</p>
                       </div>
 
                       <div className="space-y-4 mb-4">

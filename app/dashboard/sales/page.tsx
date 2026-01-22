@@ -274,9 +274,9 @@ export default function SalesAnalyticsPage() {
                   formatter={(value: number) => [formatCurrency(value), '']}
                   labelFormatter={(label) => `Month: ${label}`}
                 />
-                <Bar dataKey="revenue" fill="#3b82f6" name="Revenue" />
-                <Bar dataKey="itemsSold" fill="#f59e0b" name="Items Sold" />
-                <Bar dataKey="profit" fill="#10b981" name="Profit" />
+                <Bar dataKey="revenue" fill="hsl(var(--chart-1))" name="Revenue" />
+                <Bar dataKey="itemsSold" fill="hsl(var(--chart-2))" name="Items Sold" />
+                <Bar dataKey="profit" fill="hsl(var(--chart-3))" name="Profit" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

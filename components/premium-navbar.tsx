@@ -162,8 +162,8 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
                 </div>
                 <div className="px-2 py-3 rounded-md cursor-pointer transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-800">
                   <p className="text-sm font-medium">New Order</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Order #1234 has been placed</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">15 minutes ago</p>
+                  <p className="text-xs text-muted-foreground mt-1">Order #1234 has been placed</p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">15 minutes ago</p>
                 </div>
               </div>
             </DropdownMenuContent>

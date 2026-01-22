@@ -69,11 +69,8 @@ export default function LoginPage() {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               {error && (
-                <Alert className="border" style={{ 
-                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                  borderColor: 'rgba(239, 68, 68, 0.3)'
-                }}>
-                  <AlertDescription style={{ color: 'var(--error)' }}>
+                <Alert className="border bg-destructive/10 border-destructive/30">
+                  <AlertDescription className="text-destructive">
                     {error}
                   </AlertDescription>
                 </Alert>

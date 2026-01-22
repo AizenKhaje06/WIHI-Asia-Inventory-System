@@ -64,7 +64,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 /**
  * Generate accessible focus ring styles
  */
-export function getFocusRingStyles(color: string = '#3b82f6'): string {
+export function getFocusRingStyles(color: string = 'hsl(var(--primary))'): string {
   return `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-${color}`
 }
 

@@ -38,7 +38,7 @@ export function ChartTooltip({
         {payload.map((entry, index) => {
           const value = entry.value ?? 0
           const name = entry.name || entry.dataKey || 'Value'
-          const color = entry.color || '#3B82F6'
+          const color = entry.color || 'hsl(var(--primary))'
           
           const [formattedValue, formattedName] = formatter
             ? formatter(typeof value === 'number' ? value : parseFloat(String(value)) || 0, name)

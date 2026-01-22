@@ -36,7 +36,7 @@ export function EnhancedCard({
     "before:from-blue-500/0 before:to-purple-500/0",
     "before:transition-opacity before:duration-300",
     "hover:before:from-blue-500/10 hover:before:to-purple-500/10",
-    "dark:hover:shadow-[0_0_20px_rgba(0,255,0,0.6)]",
+    "dark:hover:shadow-lg dark:hover:shadow-primary/20",
     className
   )
 
