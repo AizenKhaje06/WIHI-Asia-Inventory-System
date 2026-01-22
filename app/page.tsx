@@ -57,7 +57,7 @@ export default function LoginPage() {
           >
             <Lock className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>STOCKIFY</h1>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>StockSync</h1>
           <p className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>Professional Inventory Management</p>
         </div>
 
@@ -151,7 +151,7 @@ export default function LoginPage() {
 
         <div className="mt-6 text-center">
           <p className="text-xs" style={{ color: 'var(--foreground-tertiary)' }}>
-            © 2026 Stockify. All rights reserved.
+            © 2026 StockSync. All rights reserved.
           </p>
         </div>
       </div>

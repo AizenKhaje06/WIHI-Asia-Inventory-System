@@ -5,18 +5,18 @@ import "./globals.css"
 import type { ReactNode } from "react"
 
 export const metadata: Metadata = {
-  title: "Stockify - Professional Inventory Management System",
+  title: "StockSync - Professional Inventory Management System",
   description: "Enterprise-grade inventory management with real-time analytics, Google Sheets integration, and offline-first architecture",
   generator: "Next.js",
   manifest: "/manifest.json",
   keywords: ["inventory", "management", "stock", "analytics", "POS", "enterprise"],
-  authors: [{ name: "Stockify Team" }],
-  creator: "Stockify",
-  publisher: "Stockify",
+  authors: [{ name: "StockSync Team" }],
+  creator: "StockSync",
+  publisher: "StockSync",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Stockify",
+    title: "StockSync",
   },
   formatDetection: {
     telephone: false,
@@ -24,20 +24,20 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    title: "Stockify - Professional Inventory Management",
+    title: "StockSync - Professional Inventory Management",
     description: "Enterprise-grade inventory management system",
-    siteName: "Stockify",
+    siteName: "StockSync",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Stockify - Professional Inventory Management",
+    title: "StockSync - Professional Inventory Management",
     description: "Enterprise-grade inventory management system",
   },
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
-    "apple-mobile-web-app-title": "Stockify",
+    "apple-mobile-web-app-title": "StockSync",
     "msapplication-TileColor": "#3b82f6",
     "msapplication-config": "/browserconfig.xml",
   },

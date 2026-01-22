@@ -145,7 +145,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
             {!collapsed && (
               <div className={cn(reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
                 <h1 className="text-lg font-bold tracking-tight" style={{ color: 'var(--sidebar-text)' }}>
-                  STOCKIFY
+                  StockSync
                 </h1>
                 <p className="text-xs" style={{ color: 'var(--sidebar-text-secondary)' }}>Inventory System</p>
               </div>
