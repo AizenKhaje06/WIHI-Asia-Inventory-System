@@ -147,15 +147,15 @@ export default function OutOfStockPage() {
   return (
     <div className="p-4 sm:p-6 md:p-8 w-full max-w-full overflow-x-hidden">
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">Out of Stock Items</h1>
-        <p className="text-slate-600 dark:text-slate-300 text-lg">Items that are completely out of stock</p>
+        <h1 className="text-4xl font-bold text-white mb-2">Out of Stock Items</h1>
+        <p className="text-slate-400 text-lg">Items that are completely out of stock</p>
       </div>
 
-      <Card className="mb-8 border-0 shadow-xl bg-white/90 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      <Card className="mb-8 border-0 shadow-lg animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <CardContent className="pt-6">
           <div className="flex flex-col lg:flex-row gap-4 items-end">
             <div className="flex-1">
-              <Label htmlFor="search" className="text-slate-700 dark:text-slate-300 font-medium">Search Products</Label>
+              <Label htmlFor="search" className="text-slate-300 font-medium">Search Products</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
@@ -163,15 +163,15 @@ export default function OutOfStockPage() {
                   placeholder="Search by name or category..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10 border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
+                  className="pl-10"
                 />
               </div>
             </div>
             <div className="flex gap-4">
               <div className="w-48">
-                <Label htmlFor="category-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Category</Label>
+                <Label htmlFor="category-filter" className="text-slate-300 font-medium">Filter by Category</Label>
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger id="category-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                  <SelectTrigger id="category-filter">
                     <div className="flex items-center gap-2">
                       <Filter className="h-4 w-4 text-slate-400" />
                       <SelectValue placeholder="All Categories" />
@@ -184,9 +184,9 @@ export default function OutOfStockPage() {
                 </Select>
               </div>
               <div className="w-48">
-                <Label htmlFor="price-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Price</Label>
+                <Label htmlFor="price-filter" className="text-slate-300 font-medium">Filter by Price</Label>
                 <Select value={priceFilter} onValueChange={setPriceFilter}>
-                  <SelectTrigger id="price-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                  <SelectTrigger id="price-filter">
                     <div className="flex items-center gap-2">
                       <Filter className="h-4 w-4 text-slate-400" />
                       <SelectValue placeholder="All Prices" />
@@ -201,9 +201,9 @@ export default function OutOfStockPage() {
                 </Select>
               </div>
               <div className="w-48">
-                <Label htmlFor="storage-room-filter" className="text-slate-700 dark:text-slate-300 font-medium">Filter by Storage Room</Label>
+                <Label htmlFor="storage-room-filter" className="text-slate-300 font-medium">Filter by Storage Room</Label>
                 <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
-                  <SelectTrigger id="storage-room-filter" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                  <SelectTrigger id="storage-room-filter">
                     <div className="flex items-center gap-2">
                       <Filter className="h-4 w-4 text-slate-400" />
                       <SelectValue placeholder="All Storage Rooms" />
@@ -224,38 +224,38 @@ export default function OutOfStockPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+      <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="text-foreground">Out of Stock Items ({filteredItems.length})</CardTitle>
+          <CardTitle className="text-white">Out of Stock Items ({filteredItems.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto -mx-6 px-6">
             <div className="min-w-full inline-block align-middle">
               <table className="w-full min-w-[600px]">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="pb-3 text-left text-sm font-medium text-muted-foreground whitespace-nowrap">Name</th>
-                    <th className="pb-3 text-left text-sm font-medium text-muted-foreground whitespace-nowrap">Category</th>
-                    <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Quantity</th>
-                    <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Cost</th>
-                    <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Price</th>
-                    <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Actions</th>
+                  <tr className="border-b border-slate-700">
+                    <th className="pb-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap">Name</th>
+                    <th className="pb-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap">Category</th>
+                    <th className="pb-3 text-right text-sm font-medium text-slate-400 whitespace-nowrap">Quantity</th>
+                    <th className="pb-3 text-right text-sm font-medium text-slate-400 whitespace-nowrap">Cost</th>
+                    <th className="pb-3 text-right text-sm font-medium text-slate-400 whitespace-nowrap">Price</th>
+                    <th className="pb-3 text-right text-sm font-medium text-slate-400 whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredItems.map((item) => (
-                    <tr key={item.id} className="border-b border-border last:border-0">
-                      <td className="py-4 text-sm text-foreground whitespace-nowrap max-w-[200px] truncate" title={item.name}>
+                    <tr key={item.id} className="border-b border-slate-700 last:border-0 hover:bg-slate-800/50 transition-colors">
+                      <td className="py-4 text-sm text-white whitespace-nowrap max-w-[200px] truncate" title={item.name}>
                         {item.name}
                       </td>
-                      <td className="py-4 text-sm text-muted-foreground whitespace-nowrap max-w-[150px] truncate" title={item.category}>
+                      <td className="py-4 text-sm text-slate-400 whitespace-nowrap max-w-[150px] truncate" title={item.category}>
                         {item.category}
                       </td>
                       <td className="py-4 text-right text-sm whitespace-nowrap">
                         <span className={cn("font-bold", item.quantity <= item.reorderLevel ? "text-orange-500" : "text-green-500")}>{item.quantity}</span>
                       </td>
-                      <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">₱{item.costPrice.toFixed(2)}</td>
-                      <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">₱{item.sellingPrice.toFixed(2)}</td>
+                      <td className="py-4 text-right text-sm text-white whitespace-nowrap">₱{item.costPrice.toFixed(2)}</td>
+                      <td className="py-4 text-right text-sm text-white whitespace-nowrap">₱{item.sellingPrice.toFixed(2)}</td>
                       <td className="py-4 text-right whitespace-nowrap">
                         <div className="flex justify-end gap-1 sm:gap-2">
                           <Button variant="ghost" size="sm" onClick={() => handleRestock(item)} className="h-8 w-8 p-0">
