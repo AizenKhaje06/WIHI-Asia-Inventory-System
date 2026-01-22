@@ -26,7 +26,7 @@ export default function ClientLayout({
         disableTransitionOnChange
       >
         <Suspense fallback={<div>Loading...</div>}>
-          <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+          <div className="flex h-screen w-full overflow-hidden bg-background">
             {/* Premium Sidebar */}
             <PremiumSidebar 
               mobileOpen={mobileMenuOpen}
@@ -34,7 +34,7 @@ export default function ClientLayout({
             />
 
             {/* Main content area */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden lg:ml-72 ml-0 transition-all duration-300">
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden lg:ml-[260px] ml-0 transition-all duration-300">
               {/* Premium Navbar */}
               <PremiumNavbar 
                 sidebarCollapsed={sidebarCollapsed}
@@ -44,7 +44,8 @@ export default function ClientLayout({
               {/* Main content */}
               <main 
                 id="main-content" 
-                className="flex-1 overflow-y-auto overflow-x-hidden mt-[72px] p-4 lg:p-6 min-w-0 w-full bg-slate-900 dark:bg-slate-900"
+                className="flex-1 overflow-y-auto overflow-x-hidden mt-16 p-4 lg:p-6 min-w-0 w-full"
+                style={{ backgroundColor: 'var(--background)' }}
                 role="main"
               >
                 <div className="w-full max-w-full min-w-0">

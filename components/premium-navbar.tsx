@@ -28,12 +28,14 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 h-[72px] bg-slate-900/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-800 dark:border-slate-800 z-40",
+        "fixed top-0 right-0 h-16 backdrop-blur-xl border-b z-40",
         reducedMotion ? "" : "transition-all duration-300",
-        "lg:left-72 left-0"
+        "lg:left-[260px] left-0"
       )}
       style={{
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+        backgroundColor: 'var(--card-bg)',
+        borderColor: 'var(--border)',
+        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
       }}
       role="banner"
     >
@@ -42,11 +44,17 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
         <div className="flex items-center gap-4 flex-1 max-w-2xl">
           <button
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 transition-colors duration-200"
+            className="lg:hidden p-2 rounded-lg transition-colors duration-200"
+            style={{ 
+              backgroundColor: 'transparent',
+              color: 'var(--foreground-secondary)'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--background-secondary)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             aria-label="Open navigation menu"
             aria-expanded="false"
           >
-            <Menu className="h-5 w-5 text-slate-400 dark:text-slate-400" />
+            <Menu className="h-5 w-5" />
           </button>
           
           <div
@@ -60,7 +68,8 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
               Search products, customers, transactions
             </label>
             <Search 
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" 
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" 
+              style={{ color: 'var(--foreground-tertiary)' }}
               aria-hidden="true"
             />
             <input
@@ -68,10 +77,15 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
               type="search"
               placeholder="Search products, customers, transactions..."
               className={cn(
-                "w-full pl-10 pr-4 py-2.5 rounded-lg bg-slate-800 dark:bg-slate-800 border border-slate-700 dark:border-slate-700 text-sm text-slate-100 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-500",
+                "w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm",
                 reducedMotion ? "" : "transition-all duration-200",
-                "focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-slate-800 dark:focus:bg-slate-800"
+                "focus:outline-none focus:ring-2 focus:ring-primary/20"
               )}
+              style={{
+                backgroundColor: 'var(--background-secondary)',
+                borderColor: 'var(--border)',
+                color: 'var(--foreground)',
+              }}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
               aria-label="Global search"
@@ -84,14 +98,26 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="p-2.5 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 transition-colors duration-200 group"
+            className="p-2.5 rounded-lg transition-colors duration-200 group"
+            style={{ 
+              backgroundColor: 'transparent',
+              color: 'var(--foreground-secondary)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--background-secondary)'
+              e.currentTarget.style.color = 'var(--foreground)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+              e.currentTarget.style.color = 'var(--foreground-secondary)'
+            }}
             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
             {theme === "dark" ? (
-              <Sun className="h-5 w-5 text-slate-400 dark:text-slate-400 group-hover:text-slate-200 dark:group-hover:text-slate-200 transition-colors duration-200" aria-hidden="true" />
+              <Sun className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
             ) : (
-              <Moon className="h-5 w-5 text-slate-400 dark:text-slate-400 group-hover:text-slate-200 dark:group-hover:text-slate-200 transition-colors duration-200" aria-hidden="true" />
+              <Moon className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
             )}
           </button>
 
@@ -99,26 +125,45 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="relative p-2.5 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 transition-colors duration-200 group"
+                className="relative p-2.5 rounded-lg transition-colors duration-200 group"
+                style={{ 
+                  backgroundColor: 'transparent',
+                  color: 'var(--foreground-secondary)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--background-secondary)'
+                  e.currentTarget.style.color = 'var(--foreground)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                  e.currentTarget.style.color = 'var(--foreground-secondary)'
+                }}
                 aria-label="Notifications (2 unread)"
               >
-                <Bell className="h-5 w-5 text-slate-400 dark:text-slate-400 group-hover:text-slate-200 dark:group-hover:text-slate-200 transition-colors duration-200" aria-hidden="true" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-slate-900 dark:ring-slate-900" aria-hidden="true" />
+                <Bell className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
+                <span 
+                  className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2" 
+                  style={{ 
+                    backgroundColor: 'var(--error)',
+                    ringColor: 'var(--card-bg)'
+                  }}
+                  aria-hidden="true" 
+                />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <div className="py-2">
-                <div className="px-2 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md cursor-pointer transition-colors duration-200">
-                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Low Stock Alert</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">5 items are running low on stock</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">2 minutes ago</p>
+                <div className="px-2 py-3 rounded-md cursor-pointer transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <p className="text-sm font-medium">Low Stock Alert</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">5 items are running low on stock</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">2 minutes ago</p>
                 </div>
-                <div className="px-2 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md cursor-pointer transition-colors duration-200">
-                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">New Order</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Order #1234 has been placed</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">15 minutes ago</p>
+                <div className="px-2 py-3 rounded-md cursor-pointer transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <p className="text-sm font-medium">New Order</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Order #1234 has been placed</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">15 minutes ago</p>
                 </div>
               </div>
             </DropdownMenuContent>
@@ -126,26 +171,43 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
 
           {/* Settings */}
           <button
-            className="hidden md:block p-2.5 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 transition-colors duration-200 group"
+            className="hidden md:block p-2.5 rounded-lg transition-colors duration-200 group"
+            style={{ 
+              backgroundColor: 'transparent',
+              color: 'var(--foreground-secondary)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--background-secondary)'
+              e.currentTarget.style.color = 'var(--foreground)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+              e.currentTarget.style.color = 'var(--foreground-secondary)'
+            }}
             title="Settings"
             aria-label="Open settings"
           >
-            <Settings className="h-5 w-5 text-slate-400 dark:text-slate-400 group-hover:text-slate-200 dark:group-hover:text-slate-200 transition-colors duration-200" aria-hidden="true" />
+            <Settings className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
           </button>
 
           {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="flex items-center gap-3 pl-3 pr-4 py-2 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 transition-colors duration-200 group"
+                className="flex items-center gap-3 pl-3 pr-4 py-2 rounded-lg transition-colors duration-200 group"
+                style={{ 
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--background-secondary)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 aria-label="User menu"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-purple-700 flex items-center justify-center shadow-md" aria-hidden="true">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-md" aria-hidden="true">
                   <User className="h-4 w-4 text-white" strokeWidth={2.5} />
                 </div>
                 <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium text-slate-100 dark:text-slate-100">Admin User</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-400">Administrator</p>
+                  <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Admin User</p>
+                  <p className="text-xs" style={{ color: 'var(--foreground-secondary)' }}>Administrator</p>
                 </div>
               </button>
             </DropdownMenuTrigger>

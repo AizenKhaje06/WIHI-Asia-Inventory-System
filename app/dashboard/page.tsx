@@ -180,9 +180,9 @@ export default function DashboardPage() {
                   <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-              <XAxis dataKey="date" stroke="#64748B" fontSize={12} />
-              <YAxis stroke="#64748B" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+              <XAxis dataKey="date" className="fill-gray-600 dark:fill-gray-400" fontSize={12} />
+              <YAxis className="fill-gray-600 dark:fill-gray-400" fontSize={12} />
               <Tooltip content={<ChartTooltip formatter={(value, name) => [`₱${formatNumber(value)}`, name]} />} />
               <Legend />
               <Area type="monotone" dataKey="sales" stroke="#3B82F6" strokeWidth={2} fill="url(#salesGradient)" name="Sales Revenue" />
@@ -267,9 +267,9 @@ export default function DashboardPage() {
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={stocksCountByStorageRoomData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                <XAxis dataKey="name" stroke="#64748B" fontSize={11} />
-                <YAxis stroke="#64748B" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+                <XAxis dataKey="name" className="fill-gray-600 dark:fill-gray-400" fontSize={11} />
+                <YAxis className="fill-gray-600 dark:fill-gray-400" fontSize={11} />
                 <Tooltip content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />} />
                 <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -287,9 +287,9 @@ export default function DashboardPage() {
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={stocksCountData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                <XAxis dataKey="name" stroke="#64748B" fontSize={11} />
-                <YAxis stroke="#64748B" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+                <XAxis dataKey="name" className="fill-gray-600 dark:fill-gray-400" fontSize={11} />
+                <YAxis className="fill-gray-600 dark:fill-gray-400" fontSize={11} />
                 <Tooltip content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />} />
                 <Bar dataKey="count" fill="#10B981" radius={[4, 4, 0, 0]} />
               </BarChart>

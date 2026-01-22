@@ -119,51 +119,68 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 h-screen bg-slate-900 dark:bg-slate-900 border-r border-slate-800 dark:border-slate-800 z-50 ease-in-out",
+          "fixed left-0 top-0 h-screen z-50 ease-in-out border-r",
           reducedMotion ? "" : "transition-all duration-300",
-          collapsed ? "w-20" : "w-72",
+          collapsed ? "w-20" : "w-[260px]",
           isMobile && !mobileOpen && "-translate-x-full",
           isMobile && mobileOpen && "translate-x-0"
         )}
         style={{
-          boxShadow: "0 0 40px rgba(0, 0, 0, 0.5)",
+          backgroundColor: 'var(--sidebar-bg)',
+          borderColor: 'var(--border)',
+          boxShadow: "0 0 40px rgba(0, 0, 0, 0.1)",
         }}
         role="navigation"
         aria-label="Main navigation"
       >
         {/* Logo & Brand */}
-        <div className="h-[72px] flex items-center justify-between px-6 border-b border-slate-800 dark:border-slate-800 bg-slate-900/50">
+        <div 
+          className="h-16 flex items-center justify-between px-6 border-b"
+          style={{ borderColor: 'var(--border)' }}
+        >
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-600 to-purple-700 shadow-lg" aria-hidden="true">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg" aria-hidden="true">
               <Warehouse className="h-6 w-6 text-white" strokeWidth={2} />
             </div>
             {!collapsed && (
               <div className={cn(reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
-                <h1 className="text-lg font-bold text-white tracking-tight">
+                <h1 className="text-lg font-bold tracking-tight" style={{ color: 'var(--sidebar-text)' }}>
                   STOCKIFY
                 </h1>
-                <p className="text-xs text-slate-400">Inventory System</p>
+                <p className="text-xs" style={{ color: 'var(--sidebar-text-secondary)' }}>Inventory System</p>
               </div>
             )}
           </div>
           {isMobile ? (
             <button
               onClick={onMobileClose}
-              className="p-1.5 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 transition-colors duration-200"
+              className="p-1.5 rounded-lg transition-colors duration-200"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: 'var(--sidebar-text-secondary)'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               aria-label="Close navigation menu"
             >
-              <X className="h-5 w-5 text-slate-400 dark:text-slate-400" />
+              <X className="h-5 w-5" />
             </button>
           ) : (
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="p-1.5 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 transition-colors duration-200"
+              className="p-1.5 rounded-lg transition-colors duration-200"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: 'var(--sidebar-text-secondary)'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {collapsed ? (
-                <ChevronRight className="h-4 w-4 text-slate-400 dark:text-slate-400" />
+                <ChevronRight className="h-4 w-4" />
               ) : (
-                <ChevronLeft className="h-4 w-4 text-slate-400 dark:text-slate-400" />
+                <ChevronLeft className="h-4 w-4" />
               )}
             </button>
           )}
@@ -175,7 +192,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
             <div key={section.section} className={cn("mb-6", sectionIdx === 0 && "mt-0")}>
               {!collapsed && (
                 <div className="px-3 mb-2">
-                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--sidebar-text-secondary)' }}>
                     {section.section}
                   </p>
                 </div>
@@ -190,34 +207,42 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
                       onClick={handleNavClick}
                       className={cn(
                         "flex items-center gap-3 px-3 py-2.5 rounded-lg group relative",
-                        reducedMotion ? "" : "transition-all duration-200",
-                        isActive
-                          ? "bg-blue-600/20 dark:bg-blue-600/20 text-blue-400 dark:text-blue-400 font-medium"
-                          : "text-slate-300 dark:text-slate-300 hover:bg-slate-800 dark:hover:bg-slate-800"
+                        reducedMotion ? "" : "transition-all duration-200"
                       )}
+                      style={{
+                        backgroundColor: isActive ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
+                        color: isActive ? 'var(--primary)' : 'var(--sidebar-text-secondary)'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
+                          e.currentTarget.style.color = 'var(--sidebar-text)'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.backgroundColor = 'transparent'
+                          e.currentTarget.style.color = 'var(--sidebar-text-secondary)'
+                        }
+                      }}
                       title={collapsed ? item.name : undefined}
                       aria-current={isActive ? "page" : undefined}
                       role="listitem"
                     >
                       {isActive && (
                         <div 
-                          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" 
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full" 
+                          style={{ backgroundColor: 'var(--primary)' }}
                           aria-hidden="true"
                         />
                       )}
                       <item.icon
-                        className={cn(
-                          "h-5 w-5 flex-shrink-0",
-                          reducedMotion ? "" : "transition-colors duration-200",
-                          isActive
-                            ? "text-blue-400 dark:text-blue-400"
-                            : "text-slate-400 dark:text-slate-400 group-hover:text-slate-300 dark:group-hover:text-slate-300"
-                        )}
+                        className={cn("h-5 w-5 flex-shrink-0", reducedMotion ? "" : "transition-colors duration-200")}
                         strokeWidth={isActive ? 2.5 : 2}
                         aria-hidden="true"
                       />
                       {!collapsed && (
-                        <span className={cn("text-sm", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
+                        <span className={cn("text-sm font-medium", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
                           {item.name}
                         </span>
                       )}
@@ -230,16 +255,28 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
         </nav>
 
         {/* Logout */}
-        <div className="p-3 border-t border-slate-800 dark:border-slate-800">
+        <div className="p-3 border-t" style={{ borderColor: 'var(--border)' }}>
           <button
             onClick={() => {
               localStorage.removeItem("isLoggedIn")
               window.location.href = "/"
             }}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-slate-300 dark:text-slate-300 hover:bg-red-900/20 dark:hover:bg-red-900/20 hover:text-red-400 dark:hover:text-red-400 group",
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg w-full group",
               reducedMotion ? "" : "transition-all duration-200"
             )}
+            style={{ 
+              backgroundColor: 'transparent',
+              color: 'var(--sidebar-text-secondary)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'
+              e.currentTarget.style.color = 'var(--error)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+              e.currentTarget.style.color = 'var(--sidebar-text-secondary)'
+            }}
             title={collapsed ? "Logout" : undefined}
             aria-label="Logout from application"
           >
