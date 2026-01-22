@@ -22,16 +22,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ShimmerSkeleton } from "@/components/ui/shimmer-skeleton"
 import { AnimatedNumber } from "@/components/ui/animated-number"
 import { ChartTooltip } from "@/components/ui/chart-tooltip"
 import type { DashboardStats, InventoryItem, Transaction } from "@/lib/types"
 import { formatNumber } from "@/lib/utils"
 import { cn } from "@/lib/utils"
-
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"]
-
 import { PremiumDashboardLoading } from "@/components/premium-loading"
 
 export default function DashboardPage() {
@@ -43,7 +38,10 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [statsRes, itemsRes] = await Promise.all([fetch(`/api/dashboard?period=${timePeriod}`), fetch("/api/items")])
+        const [statsRes, itemsRes] = await Promise.all([
+          fetch(`/api/dashboard?period=${timePeriod}`),
+          fetch("/api/items")
+        ])
 
         const statsData = await statsRes.json()
         const itemsData = await itemsRes.json()
@@ -51,7 +49,7 @@ export default function DashboardPage() {
         setStats(statsData)
         setLowStockItems(itemsData.filter((item: InventoryItem) => item.quantity <= item.reorderLevel))
       } catch (error) {
-        console.error("[v0] Error fetching dashboard data:", error)
+        console.error("Error fetching dashboard data:", error)
       } finally {
         setLoading(false)
       }
@@ -68,27 +66,12 @@ export default function DashboardPage() {
   const formattedSalesData = stats?.salesOverTime?.map(item => {
     let displayDate = item.date
     if (timePeriod === "ID") {
-      displayDate = item.date.split(' ')[1] // Keep only time part for today
+      displayDate = item.date.split(' ')[1]
     } else if (timePeriod === "1W" || timePeriod === "1M") {
       displayDate = new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     }
     return { ...item, date: displayDate }
   }) || []
-
-  const topCategoriesData = stats?.topCategories?.map((cat) => ({
-    name: cat.name,
-    sales: cat.sales,
-  })) || []
-
-  const categoryStatsData = [
-    { name: 'Total Categories', value: stats?.totalCategories || 0 },
-    { name: 'Total Products', value: stats?.totalProducts || 0 },
-  ]
-
-  const stockPercentageData = stats?.stockPercentageByCategory?.map((cat) => ({
-    name: cat.name,
-    percentage: cat.percentage,
-  })) || []
 
   const stocksCountData = stats?.stocksCountByCategory?.map((cat) => ({
     name: cat.name,
@@ -101,37 +84,90 @@ export default function DashboardPage() {
   })) || []
 
   return (
-    <div className="min-h-screen">
+    <div className="p-6 space-y-6">
       {/* Page Header */}
-      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold text-white mb-2">
-          Executive Dashboard
-        </h1>
-        <p className="text-slate-400 text-base">
-          Comprehensive overview of your inventory management system
-        </p>
+      <div className="mb-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Welcome back! Here's what's happening with your inventory.</p>
       </div>
 
-      {/* Sales & Purchase Chart */}
-      <Card className="mb-8 border-0 shadow-lg glass-card animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
-        <CardHeader className="pb-4">
+      {/* Metric Cards */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="metric-card">
+          <div className="metric-card-header">
+            <div className="metric-card-icon">
+              <DollarSign className="h-5 w-5 text-blue-600" />
+            </div>
+          </div>
+          <div className="metric-card-content">
+            <div className="metric-card-value">
+              ₱<AnimatedNumber value={stats?.totalValue || 0} duration={1500} />
+            </div>
+            <div className="metric-card-label">Total Stock Value</div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-card-header">
+            <div className="metric-card-icon success">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+            </div>
+          </div>
+          <div className="metric-card-content">
+            <div className="metric-card-value">
+              ₱<AnimatedNumber value={stats?.totalRevenue || 0} duration={1500} />
+            </div>
+            <div className="metric-card-label">Total Revenue</div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-card-header">
+            <div className="metric-card-icon error">
+              <TrendingDown className="h-5 w-5 text-red-600" />
+            </div>
+          </div>
+          <div className="metric-card-content">
+            <div className="metric-card-value">
+              ₱<AnimatedNumber value={stats?.totalCost || 0} duration={1500} />
+            </div>
+            <div className="metric-card-label">Total Cost</div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-card-header">
+            <div className="metric-card-icon warning">
+              <Percent className="h-5 w-5 text-amber-600" />
+            </div>
+          </div>
+          <div className="metric-card-content">
+            <div className="metric-card-value">
+              <AnimatedNumber value={stats?.profitMargin || 0} decimals={1} duration={1500} />%
+            </div>
+            <div className="metric-card-label">Profit Margin</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sales Chart */}
+      <Card>
+        <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-3 text-xl font-semibold text-white">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
-                <BarChart3 className="h-5 w-5" />
-              </div>
-              Sales & Purchase Analytics
-            </CardTitle>
+            <div>
+              <CardTitle className="text-lg font-semibold">Sales & Purchase Analytics</CardTitle>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Track your revenue and costs over time</p>
+            </div>
             <Tabs value={timePeriod} onValueChange={(value) => setTimePeriod(value as any)}>
-              <TabsList className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                <TabsTrigger value="ID" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">Today</TabsTrigger>
-                <TabsTrigger value="1W" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">1W</TabsTrigger>
-                <TabsTrigger value="1M" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">1M</TabsTrigger>
+              <TabsList>
+                <TabsTrigger value="ID">Today</TabsTrigger>
+                <TabsTrigger value="1W">Week</TabsTrigger>
+                <TabsTrigger value="1M">Month</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent>
           <ResponsiveContainer width="100%" height={350}>
             <AreaChart data={formattedSalesData}>
               <defs>
@@ -147,237 +183,120 @@ export default function DashboardPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
               <XAxis dataKey="date" stroke="#64748B" fontSize={12} />
               <YAxis stroke="#64748B" fontSize={12} />
-              <Tooltip 
-                content={<ChartTooltip formatter={(value, name) => [`₱${formatNumber(value)}`, name]} />}
-              />
+              <Tooltip content={<ChartTooltip formatter={(value, name) => [`₱${formatNumber(value)}`, name]} />} />
               <Legend />
-              <Area type="monotone" dataKey="sales" stroke="#3B82F6" strokeWidth={3} fill="url(#salesGradient)" name="Sales Revenue" />
-              <Area type="monotone" dataKey="purchases" stroke="#10B981" strokeWidth={3} fill="url(#purchaseGradient)" name="Purchase Cost" />
+              <Area type="monotone" dataKey="sales" stroke="#3B82F6" strokeWidth={2} fill="url(#salesGradient)" name="Sales Revenue" />
+              <Area type="monotone" dataKey="purchases" stroke="#10B981" strokeWidth={2} fill="url(#purchaseGradient)" name="Purchase Cost" />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200 stat-card-restaurant border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-100">Total Stocks Value</CardTitle>
-            <div className="p-2 rounded-lg bg-blue-500/20">
-              <DollarSign className="h-5 w-5 text-blue-400" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">
-              <AnimatedNumber value={stats?.totalValue || 0} prefix="₱" duration={2000} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="stat-card-restaurant border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-100">Total Revenue</CardTitle>
-            <div className="p-2 rounded-lg bg-purple-500/20">
-              <TrendingDown className="h-5 w-5 text-purple-400" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">
-              <AnimatedNumber value={stats?.totalRevenue || 0} prefix="₱" duration={2000} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="stat-card-restaurant border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-orange-100">Total Cost</CardTitle>
-            <div className="p-2 rounded-lg bg-orange-500/20">
-              <TrendingUp className="h-5 w-5 text-orange-400" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">
-              <AnimatedNumber value={stats?.totalCost || 0} prefix="₱" duration={2000} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="stat-card-restaurant border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-100">Profit Margin</CardTitle>
-            <div className="p-2 rounded-lg bg-green-500/20">
-              <Percent className="h-5 w-5 text-green-400" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">
-              <AnimatedNumber value={stats?.profitMargin || 0} suffix="%" decimals={1} duration={2000} />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+      {/* Bottom Section */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Top Products */}
-        <Card className="border-0 shadow-lg glass-card hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-600">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-white">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
-                <TrendingUp className="h-4 w-4" />
-              </div>
-              Top Performing Products
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              Top Products
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {stats?.topProducts?.map((product, index) => (
-                <div 
-                  key={index} 
-                  className="flex items-center justify-between p-3 rounded-lg order-card hover:bg-slate-800/50 transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm" />
-                    <span className="text-sm font-medium text-slate-200">{product.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-slate-100">{product.sales.toLocaleString()}</span>
-                    <div className="px-2 py-1 rounded-full badge-ready text-xs font-medium">
-                      +{Math.floor(Math.random() * 20 + 5)}%
-                    </div>
-                  </div>
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <span className="text-sm font-medium">{product.name}</span>
+                  <span className="text-sm font-semibold text-blue-600">{product.sales}</span>
                 </div>
-              )) || <p className="text-slate-400 text-center py-8">No data available</p>}
+              )) || <p className="text-sm text-gray-500 text-center py-4">No data available</p>}
             </div>
           </CardContent>
         </Card>
 
-        {/* Low Stock Products */}
-        <Card className="border-0 shadow-lg glass-card hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-700">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-white">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md">
-                <AlertTriangle className="h-4 w-4" />
-              </div>
-              Stock Warning
+        {/* Low Stock */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              Low Stock Alerts
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {lowStockItems.slice(0, 4).map((item, index) => (
-                <div 
-                  key={item.id} 
-                  className="flex items-center justify-between p-3 rounded-lg order-card hover:bg-amber-900/20 transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <span className="text-sm font-medium text-slate-200">{item.name}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-amber-400">{item.quantity}</span>
-                    <div className="px-2 py-1 rounded-full badge-progress text-xs font-medium">
-                      {item.quantity === 0 ? "Out of Stock" : "Low"}
-                    </div>
-                  </div>
+            <div className="space-y-3">
+              {lowStockItems.slice(0, 4).map((item) => (
+                <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors">
+                  <span className="text-sm font-medium">{item.name}</span>
+                  <span className="text-sm font-semibold text-amber-600">{item.quantity}</span>
                 </div>
-              )) || <p className="text-slate-400 text-center py-8">All items well stocked</p>}
+              )) || <p className="text-sm text-gray-500 text-center py-4">All items well stocked</p>}
             </div>
           </CardContent>
         </Card>
 
         {/* Recent Sales */}
-        <Card className="border-0 shadow-lg glass-card hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-800">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-white">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
-                <ShoppingCart className="h-4 w-4" />
-              </div>
-              Recent Transactions
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-blue-600" />
+              Recent Sales
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {stats?.recentTransactions?.map((tx, index) => (
-                <div 
-                  key={index} 
-                  className="flex items-center justify-between p-3 rounded-lg order-card hover:bg-slate-800/50 transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <span className="text-sm font-medium text-slate-200">{tx.itemName}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-emerald-400">₱{formatNumber(tx.totalRevenue)}</span>
-                    <div className="px-2 py-1 rounded-full badge-ready text-xs font-medium">
-                      Sale
-                    </div>
-                  </div>
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <span className="text-sm font-medium">{tx.itemName}</span>
+                  <span className="text-sm font-semibold text-green-600">₱{formatNumber(tx.totalRevenue)}</span>
                 </div>
-              )) || <p className="text-slate-400 text-center py-8">No recent transactions</p>}
+              )) || <p className="text-sm text-gray-500 text-center py-4">No recent transactions</p>}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 mb-8">
-        {/* Stock Percentage Bar Chart */}
-        <Card className="border-0 shadow-lg glass-card hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-left-4 duration-700 delay-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-white">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md">
-                <BarChart2 className="h-4 w-4" />
-              </div>
-              Stock Count by Storage Room
+      {/* Charts Row */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <BarChart2 className="h-5 w-5 text-blue-600" />
+              Stock by Storage Room
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={stocksCountByStorageRoomData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                <XAxis dataKey="name" stroke="#64748B" fontSize={12} />
-                <YAxis stroke="#64748B" fontSize={12} />
-                <Tooltip
-                  content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />}
-                />
-                <Bar dataKey="count" fill="url(#stockPercentageGradient)" radius={[4, 4, 0, 0]} />
-                <defs>
-                  <linearGradient id="stockPercentageGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366F1" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#6366F1" stopOpacity={0.3}/>
-                  </linearGradient>
-                </defs>
+                <XAxis dataKey="name" stroke="#64748B" fontSize={11} />
+                <YAxis stroke="#64748B" fontSize={11} />
+                <Tooltip content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />} />
+                <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Stocks Count Bar Chart */}
-        <Card className="border-0 shadow-lg glass-card hover:shadow-xl transition-all duration-300 animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-1000">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-white">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
-                <Activity className="h-4 w-4" />
-              </div>
-              Stocks Count by Category
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Activity className="h-5 w-5 text-green-600" />
+              Stock by Category
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={stocksCountData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                <XAxis dataKey="name" stroke="#64748B" fontSize={12} />
-                <YAxis stroke="#64748B" fontSize={12} />
-                <Tooltip
-                  content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />}
-                />
-                <Bar dataKey="count" fill="url(#stocksCountGradient)" radius={[4, 4, 0, 0]} />
-                <defs>
-                  <linearGradient id="stocksCountGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#10B981" stopOpacity={0.3}/>
-                  </linearGradient>
-                </defs>
+                <XAxis dataKey="name" stroke="#64748B" fontSize={11} />
+                <YAxis stroke="#64748B" fontSize={11} />
+                <Tooltip content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />} />
+                <Bar dataKey="count" fill="#10B981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
-
     </div>
   )
 }
