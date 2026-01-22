@@ -34,7 +34,7 @@ export default function ClientLayout({
             />
 
             {/* Main content area */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden lg:ml-[260px] ml-0 transition-all duration-300">
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden lg:ml-[240px] ml-0 transition-all duration-300">
               {/* Premium Navbar */}
               <PremiumNavbar 
                 sidebarCollapsed={sidebarCollapsed}

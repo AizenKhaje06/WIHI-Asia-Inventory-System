@@ -121,14 +121,14 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
         className={cn(
           "fixed left-0 top-0 h-screen z-50 ease-in-out border-r",
           reducedMotion ? "" : "transition-all duration-300",
-          collapsed ? "w-20" : "w-[260px]",
+          collapsed ? "w-20" : "w-[240px]",
           isMobile && !mobileOpen && "-translate-x-full",
           isMobile && mobileOpen && "translate-x-0"
         )}
         style={{
           backgroundColor: 'var(--sidebar-bg)',
-          borderColor: 'var(--border)',
-          boxShadow: "0 0 40px rgba(0, 0, 0, 0.1)",
+          borderColor: 'var(--sidebar-border)',
+          boxShadow: "0 0 40px rgba(0, 0, 0, 0.3)",
         }}
         role="navigation"
         aria-label="Main navigation"
@@ -136,11 +136,11 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
         {/* Logo & Brand */}
         <div 
           className="h-16 flex items-center justify-between px-6 border-b"
-          style={{ borderColor: 'var(--border)' }}
+          style={{ borderColor: 'var(--sidebar-border)' }}
         >
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg" aria-hidden="true">
-              <Warehouse className="h-6 w-6 text-white" strokeWidth={2} />
+            <div className="p-2 rounded-xl bg-gradient-to-br from-[#BFFF00] to-[#9FFF00] shadow-lg" aria-hidden="true">
+              <Warehouse className="h-6 w-6 text-[#0a0e1a]" strokeWidth={2.5} />
             </div>
             {!collapsed && (
               <div className={cn(reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
@@ -206,16 +206,16 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
                       href={item.href}
                       onClick={handleNavClick}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg group relative",
+                        "flex items-center gap-3 px-3 py-2.5 rounded-full group relative",
                         reducedMotion ? "" : "transition-all duration-200"
                       )}
                       style={{
-                        backgroundColor: isActive ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                        color: isActive ? 'var(--primary)' : 'var(--sidebar-text-secondary)'
+                        backgroundColor: isActive ? 'var(--sidebar-active)' : 'transparent',
+                        color: isActive ? '#BFFF00' : 'var(--sidebar-text-secondary)'
                       }}
                       onMouseEnter={(e) => {
                         if (!isActive) {
-                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
+                          e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'
                           e.currentTarget.style.color = 'var(--sidebar-text)'
                         }
                       }}
@@ -229,20 +229,13 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
                       aria-current={isActive ? "page" : undefined}
                       role="listitem"
                     >
-                      {isActive && (
-                        <div 
-                          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full" 
-                          style={{ backgroundColor: 'var(--primary)' }}
-                          aria-hidden="true"
-                        />
-                      )}
                       <item.icon
                         className={cn("h-5 w-5 flex-shrink-0", reducedMotion ? "" : "transition-colors duration-200")}
                         strokeWidth={isActive ? 2.5 : 2}
                         aria-hidden="true"
                       />
                       {!collapsed && (
-                        <span className={cn("text-sm font-medium", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
+                        <span className={cn("text-sm font-semibold", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
                           {item.name}
                         </span>
                       )}
@@ -255,14 +248,14 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
         </nav>
 
         {/* Logout */}
-        <div className="p-3 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="p-3 border-t" style={{ borderColor: 'var(--sidebar-border)' }}>
           <button
             onClick={() => {
               localStorage.removeItem("isLoggedIn")
               window.location.href = "/"
             }}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg w-full group",
+              "flex items-center gap-3 px-3 py-2.5 rounded-full w-full group",
               reducedMotion ? "" : "transition-all duration-200"
             )}
             style={{ 
@@ -270,8 +263,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
               color: 'var(--sidebar-text-secondary)'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'
-              e.currentTarget.style.color = 'var(--error)'
+              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)'
+              e.currentTarget.style.color = '#ef4444'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent'
@@ -282,14 +275,14 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
           >
             <LogOut
               className={cn(
-                "h-5 w-5 flex-shrink-0 text-slate-400 dark:text-slate-400 group-hover:text-red-400 dark:group-hover:text-red-400",
+                "h-5 w-5 flex-shrink-0",
                 reducedMotion ? "" : "transition-colors duration-200"
               )}
               strokeWidth={2}
               aria-hidden="true"
             />
             {!collapsed && (
-              <span className={cn("text-sm font-medium", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
+              <span className={cn("text-sm font-semibold", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
                 Logout
               </span>
             )}
