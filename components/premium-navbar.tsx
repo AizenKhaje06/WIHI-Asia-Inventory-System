@@ -33,9 +33,8 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
         "lg:left-[240px] left-0"
       )}
       style={{
-        backgroundColor: 'var(--card-bg)',
-        borderColor: 'var(--border)',
-        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+        backgroundColor: 'var(--navbar-bg)',
+        borderColor: 'var(--navbar-border)',
       }}
       role="banner"
     >
@@ -44,7 +43,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
         <div className="flex items-center gap-3 flex-1 min-w-0 max-w-2xl">
           <button
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2 rounded-lg transition-colors duration-200 flex-shrink-0"
+            className="lg:hidden p-2 rounded-md transition-colors duration-200 flex-shrink-0"
             style={{ 
               backgroundColor: 'transparent',
               color: 'var(--foreground-secondary)'
@@ -75,11 +74,11 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
             <input
               id="global-search"
               type="search"
-              placeholder="Search products, customers, transactions..."
+              placeholder="Search..."
               className={cn(
-                "w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm min-w-0",
+                "w-full pl-10 pr-4 py-2 rounded-md border text-sm min-w-0",
                 reducedMotion ? "" : "transition-all duration-200",
-                "focus:outline-none focus:ring-2 focus:ring-primary/20"
+                "focus:outline-none focus:ring-1 focus:ring-primary"
               )}
               style={{
                 backgroundColor: 'var(--background-secondary)',
@@ -98,7 +97,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="p-2 rounded-lg transition-colors duration-200 group flex-shrink-0"
+            className="p-2 rounded-md transition-colors duration-200 group flex-shrink-0"
             style={{ 
               backgroundColor: 'transparent',
               color: 'var(--foreground-secondary)'
@@ -125,7 +124,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="relative p-2 rounded-lg transition-colors duration-200 group flex-shrink-0"
+                className="relative p-2 rounded-md transition-colors duration-200 group flex-shrink-0"
                 style={{ 
                   backgroundColor: 'transparent',
                   color: 'var(--foreground-secondary)'
@@ -142,10 +141,9 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
               >
                 <Bell className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
                 <span 
-                  className="absolute top-1 right-1 w-2 h-2 rounded-full ring-2" 
+                  className="absolute top-1 right-1 w-2 h-2 rounded-full" 
                   style={{ 
-                    backgroundColor: 'var(--error)',
-                    ringColor: 'var(--card-bg)'
+                    backgroundColor: 'var(--error)'
                   }}
                   aria-hidden="true" 
                 />
@@ -171,7 +169,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
 
           {/* Settings */}
           <button
-            className="hidden md:block p-2 rounded-lg transition-colors duration-200 group flex-shrink-0"
+            className="hidden md:block p-2 rounded-md transition-colors duration-200 group flex-shrink-0"
             style={{ 
               backgroundColor: 'transparent',
               color: 'var(--foreground-secondary)'
@@ -194,7 +192,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg transition-colors duration-200 group flex-shrink-0"
+                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-md transition-colors duration-200 group flex-shrink-0"
                 style={{ 
                   backgroundColor: 'transparent'
                 }}
@@ -202,8 +200,8 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 aria-label="User menu"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-md flex-shrink-0" aria-hidden="true">
-                  <User className="h-4 w-4 text-white" strokeWidth={2.5} />
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--primary)', color: 'white' }} aria-hidden="true">
+                  <User className="h-4 w-4" strokeWidth={2} />
                 </div>
                 <div className="hidden xl:block text-left min-w-0">
                   <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>Admin User</p>

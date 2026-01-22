@@ -128,7 +128,6 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
         style={{
           backgroundColor: 'var(--sidebar-bg)',
           borderColor: 'var(--sidebar-border)',
-          boxShadow: "0 0 40px rgba(0, 0, 0, 0.3)",
         }}
         role="navigation"
         aria-label="Main navigation"
@@ -139,12 +138,12 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
           style={{ borderColor: 'var(--sidebar-border)' }}
         >
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-[#BFFF00] to-[#9FFF00] shadow-lg" aria-hidden="true">
-              <Warehouse className="h-6 w-6 text-[#0a0e1a]" strokeWidth={2.5} />
+            <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--primary)', color: 'white' }} aria-hidden="true">
+              <Warehouse className="h-5 w-5" strokeWidth={2} />
             </div>
             {!collapsed && (
               <div className={cn(reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
-                <h1 className="text-lg font-bold tracking-tight" style={{ color: 'var(--sidebar-text)' }}>
+                <h1 className="text-base font-semibold tracking-tight" style={{ color: 'var(--sidebar-text)' }}>
                   StockSync
                 </h1>
                 <p className="text-xs" style={{ color: 'var(--sidebar-text-secondary)' }}>Inventory System</p>
@@ -192,7 +191,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
             <div key={section.section} className={cn("mb-6", sectionIdx === 0 && "mt-0")}>
               {!collapsed && (
                 <div className="px-3 mb-2">
-                  <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--sidebar-text-secondary)' }}>
+                  <p className="text-xs font-medium" style={{ color: 'var(--sidebar-text-secondary)' }}>
                     {section.section}
                   </p>
                 </div>
@@ -206,12 +205,14 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
                       href={item.href}
                       onClick={handleNavClick}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-full group relative",
+                        "flex items-center gap-3 px-3 py-2 rounded-md group relative",
                         reducedMotion ? "" : "transition-all duration-200"
                       )}
                       style={{
                         backgroundColor: isActive ? 'var(--sidebar-active)' : 'transparent',
-                        color: isActive ? '#BFFF00' : 'var(--sidebar-text-secondary)'
+                        color: isActive ? 'var(--primary)' : 'var(--sidebar-text-secondary)',
+                        borderLeft: isActive ? '2px solid var(--primary)' : '2px solid transparent',
+                        marginLeft: '-2px'
                       }}
                       onMouseEnter={(e) => {
                         if (!isActive) {
@@ -231,11 +232,11 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
                     >
                       <item.icon
                         className={cn("h-5 w-5 flex-shrink-0", reducedMotion ? "" : "transition-colors duration-200")}
-                        strokeWidth={isActive ? 2.5 : 2}
+                        strokeWidth={isActive ? 2 : 1.5}
                         aria-hidden="true"
                       />
                       {!collapsed && (
-                        <span className={cn("text-sm font-semibold", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
+                        <span className={cn("text-sm font-medium", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
                           {item.name}
                         </span>
                       )}
@@ -255,7 +256,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
               window.location.href = "/"
             }}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-full w-full group",
+              "flex items-center gap-3 px-3 py-2 rounded-md w-full group",
               reducedMotion ? "" : "transition-all duration-200"
             )}
             style={{ 
@@ -263,7 +264,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
               color: 'var(--sidebar-text-secondary)'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)'
+              e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'
               e.currentTarget.style.color = '#ef4444'
             }}
             onMouseLeave={(e) => {
@@ -278,11 +279,11 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
                 "h-5 w-5 flex-shrink-0",
                 reducedMotion ? "" : "transition-colors duration-200"
               )}
-              strokeWidth={2}
+              strokeWidth={1.5}
               aria-hidden="true"
             />
             {!collapsed && (
-              <span className={cn("text-sm font-semibold", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
+              <span className={cn("text-sm font-medium", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
                 Logout
               </span>
             )}
