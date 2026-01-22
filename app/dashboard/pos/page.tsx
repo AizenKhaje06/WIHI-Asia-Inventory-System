@@ -175,11 +175,11 @@ export default function POSPage() {
                     <button
                       key={item.id}
                       onClick={() => addToCart(item)}
-                      className="h-32 rounded-lg border border-border bg-secondary p-4 text-center transition-colors hover:bg-secondary/80 flex flex-col justify-between"
+                      className="h-32 rounded-lg border border-border bg-card p-4 text-center transition-colors hover:bg-accent flex flex-col justify-between"
                       disabled={item.quantity === 0}
                     >
                       <div>
-                        <p className="font-medium text-foreground text-sm line-clamp-2">{item.name}</p>
+                        <p className="font-medium text-card-foreground text-sm line-clamp-2">{item.name}</p>
                         <p className="text-xs text-muted-foreground">Stock: {item.quantity}</p>
                       </div>
                       <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">₱{item.sellingPrice.toFixed(2)}</p>
