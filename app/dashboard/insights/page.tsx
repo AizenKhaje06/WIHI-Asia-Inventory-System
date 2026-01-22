@@ -100,7 +100,7 @@ export default function InsightsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="abc" className="space-y-6">
+      <Tabs defaultValue="abc" className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
         <TabsList className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
           <TabsTrigger value="abc">ABC Analysis</TabsTrigger>
           <TabsTrigger value="turnover">Inventory Turnover</TabsTrigger>
@@ -112,10 +112,12 @@ export default function InsightsPage() {
         {/* ABC Analysis */}
         <TabsContent value="abc" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
-            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                  <Target className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+                    <Target className="h-5 w-5" />
+                  </div>
                   ABC Distribution
                 </CardTitle>
               </CardHeader>
@@ -142,9 +144,9 @@ export default function InsightsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
               <CardHeader>
-                <CardTitle>ABC Analysis Summary</CardTitle>
+                <CardTitle className="text-slate-900 dark:text-white">ABC Analysis Summary</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -180,40 +182,42 @@ export default function InsightsPage() {
             </Card>
           </div>
 
-          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
             <CardHeader>
-              <CardTitle>Detailed ABC Analysis</CardTitle>
+              <CardTitle className="text-slate-900 dark:text-white">Detailed ABC Analysis</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="pb-3 text-left text-sm font-semibold">Product</th>
-                      <th className="pb-3 text-center text-sm font-semibold">Category</th>
-                      <th className="pb-3 text-right text-sm font-semibold">Revenue %</th>
-                      <th className="pb-3 text-left text-sm font-semibold">Recommendation</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {abcAnalysis.slice(0, 20).map((item) => (
-                      <tr key={item.itemId} className="border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                        <td className="py-3">{item.itemName}</td>
-                        <td className="py-3 text-center">
-                          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getCategoryColor(item.category)}`}>
-                            {item.category}
-                          </span>
-                        </td>
-                        <td className="py-3 text-right font-medium">
-                          {item.revenueContribution.toFixed(2)}%
-                        </td>
-                        <td className="py-3 text-sm text-slate-600 dark:text-slate-400">
-                          {item.recommendation}
-                        </td>
+              <div className="overflow-x-auto -mx-6 px-6">
+                <div className="min-w-full inline-block align-middle">
+                  <table className="w-full min-w-[700px]">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-slate-700">
+                        <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400">Product</th>
+                        <th className="pb-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-400">Category</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Revenue %</th>
+                        <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400">Recommendation</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {abcAnalysis.slice(0, 20).map((item) => (
+                        <tr key={item.itemId} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
+                          <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
+                          <td className="py-4 text-center">
+                            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getCategoryColor(item.category)}`}>
+                              {item.category}
+                            </span>
+                          </td>
+                          <td className="py-4 text-right font-medium text-slate-800 dark:text-slate-200">
+                            {item.revenueContribution.toFixed(2)}%
+                          </td>
+                          <td className="py-4 text-sm text-slate-600 dark:text-slate-400">
+                            {item.recommendation}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -222,9 +226,9 @@ export default function InsightsPage() {
         {/* Inventory Turnover */}
         <TabsContent value="turnover" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
-            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
               <CardHeader>
-                <CardTitle>Turnover Status Distribution</CardTitle>
+                <CardTitle className="text-slate-900 dark:text-white">Turnover Status Distribution</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -239,9 +243,9 @@ export default function InsightsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
               <CardHeader>
-                <CardTitle>Key Metrics</CardTitle>
+                <CardTitle className="text-slate-900 dark:text-white">Key Metrics</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -274,36 +278,38 @@ export default function InsightsPage() {
             </Card>
           </div>
 
-          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
             <CardHeader>
-              <CardTitle>Inventory Turnover Details</CardTitle>
+              <CardTitle className="text-slate-900 dark:text-white">Inventory Turnover Details</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="pb-3 text-left text-sm font-semibold">Product</th>
-                      <th className="pb-3 text-right text-sm font-semibold">Turnover Ratio</th>
-                      <th className="pb-3 text-right text-sm font-semibold">Days to Sell</th>
-                      <th className="pb-3 text-center text-sm font-semibold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {turnover.slice(0, 20).map((item) => (
-                      <tr key={item.itemId} className="border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                        <td className="py-3">{item.itemName}</td>
-                        <td className="py-3 text-right font-medium">{item.turnoverRatio}</td>
-                        <td className="py-3 text-right">{item.daysToSell}</td>
-                        <td className="py-3 text-center">
-                          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getStatusColor(item.status)}`}>
-                            {item.status.replace('-', ' ').toUpperCase()}
-                          </span>
-                        </td>
+              <div className="overflow-x-auto -mx-6 px-6">
+                <div className="min-w-full inline-block align-middle">
+                  <table className="w-full min-w-[700px]">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-slate-700">
+                        <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400">Product</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Turnover Ratio</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Days to Sell</th>
+                        <th className="pb-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-400">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {turnover.slice(0, 20).map((item) => (
+                        <tr key={item.itemId} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
+                          <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
+                          <td className="py-4 text-right font-medium text-slate-800 dark:text-slate-200">{item.turnoverRatio}</td>
+                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">{item.daysToSell}</td>
+                          <td className="py-4 text-center">
+                            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getStatusColor(item.status)}`}>
+                              {item.status.replace('-', ' ').toUpperCase()}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -311,37 +317,41 @@ export default function InsightsPage() {
 
         {/* Sales Forecast */}
         <TabsContent value="forecast" className="space-y-6">
-          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md">
+                  <BarChart3 className="h-5 w-5" />
+                </div>
                 Predictive Sales Forecast
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="pb-3 text-left text-sm font-semibold">Product</th>
-                      <th className="pb-3 text-right text-sm font-semibold">Predicted Demand</th>
-                      <th className="pb-3 text-right text-sm font-semibold">Recommended Reorder</th>
-                      <th className="pb-3 text-center text-sm font-semibold">Trend</th>
-                      <th className="pb-3 text-right text-sm font-semibold">Confidence</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {forecasts.slice(0, 20).map((item) => (
-                      <tr key={item.itemId} className="border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                        <td className="py-3">{item.itemName}</td>
-                        <td className="py-3 text-right font-medium">{item.predictedDemand}</td>
-                        <td className="py-3 text-right font-semibold text-blue-600">{item.recommendedReorderQty}</td>
-                        <td className="py-3 text-center">{getTrendIcon(item.trend)}</td>
-                        <td className="py-3 text-right">{item.confidence}%</td>
+              <div className="overflow-x-auto -mx-6 px-6">
+                <div className="min-w-full inline-block align-middle">
+                  <table className="w-full min-w-[700px]">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-slate-700">
+                        <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400">Product</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Predicted Demand</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Recommended Reorder</th>
+                        <th className="pb-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-400">Trend</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Confidence</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {forecasts.slice(0, 20).map((item) => (
+                        <tr key={item.itemId} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
+                          <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
+                          <td className="py-4 text-right font-medium text-slate-800 dark:text-slate-200">{item.predictedDemand}</td>
+                          <td className="py-4 text-right font-semibold text-blue-600">{item.recommendedReorderQty}</td>
+                          <td className="py-4 text-center">{getTrendIcon(item.trend)}</td>
+                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">{item.confidence}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -349,9 +359,9 @@ export default function InsightsPage() {
 
         {/* Profit Margins */}
         <TabsContent value="profit" className="space-y-6">
-          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
             <CardHeader>
-              <CardTitle>Profit Margin by Category</CardTitle>
+              <CardTitle className="text-slate-900 dark:text-white">Profit Margin by Category</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -367,32 +377,34 @@ export default function InsightsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
             <CardHeader>
-              <CardTitle>Category Performance</CardTitle>
+              <CardTitle className="text-slate-900 dark:text-white">Category Performance</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="pb-3 text-left text-sm font-semibold">Category</th>
-                      <th className="pb-3 text-right text-sm font-semibold">Revenue</th>
-                      <th className="pb-3 text-right text-sm font-semibold">Profit</th>
-                      <th className="pb-3 text-right text-sm font-semibold">Margin %</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {profitMargin.map((item, index) => (
-                      <tr key={index} className="border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                        <td className="py-3">{item.category}</td>
-                        <td className="py-3 text-right font-medium">{formatCurrency(item.revenue)}</td>
-                        <td className="py-3 text-right font-semibold text-green-600">{formatCurrency(item.profit)}</td>
-                        <td className="py-3 text-right font-bold">{item.margin.toFixed(2)}%</td>
+              <div className="overflow-x-auto -mx-6 px-6">
+                <div className="min-w-full inline-block align-middle">
+                  <table className="w-full min-w-[700px]">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-slate-700">
+                        <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400">Category</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Revenue</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Profit</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Margin %</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {profitMargin.map((item, index) => (
+                        <tr key={index} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
+                          <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.category}</td>
+                          <td className="py-4 text-right font-medium text-slate-800 dark:text-slate-200">{formatCurrency(item.revenue)}</td>
+                          <td className="py-4 text-right font-semibold text-green-600">{formatCurrency(item.profit)}</td>
+                          <td className="py-4 text-right font-bold text-slate-800 dark:text-slate-200">{item.margin.toFixed(2)}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -400,10 +412,12 @@ export default function InsightsPage() {
 
         {/* Dead Stock */}
         <TabsContent value="deadstock" className="space-y-6">
-          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+              <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-red-500 to-red-600 text-white shadow-md">
+                  <AlertTriangle className="h-5 w-5" />
+                </div>
                 Dead Stock Alert ({deadStock.length} items)
               </CardTitle>
             </CardHeader>
@@ -414,33 +428,35 @@ export default function InsightsPage() {
                   <p className="text-sm">All items are moving well.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="pb-3 text-left text-sm font-semibold">Product</th>
-                        <th className="pb-3 text-left text-sm font-semibold">Category</th>
-                        <th className="pb-3 text-right text-sm font-semibold">Quantity</th>
-                        <th className="pb-3 text-right text-sm font-semibold">Value</th>
-                        <th className="pb-3 text-left text-sm font-semibold">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {deadStock.map((item) => (
-                        <tr key={item.id} className="border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                          <td className="py-3">{item.name}</td>
-                          <td className="py-3">{item.category}</td>
-                          <td className="py-3 text-right">{item.quantity}</td>
-                          <td className="py-3 text-right font-medium">{formatCurrency(item.quantity * item.costPrice)}</td>
-                          <td className="py-3">
-                            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                              Consider Discount/Removal
-                            </span>
-                          </td>
+                <div className="overflow-x-auto -mx-6 px-6">
+                  <div className="min-w-full inline-block align-middle">
+                    <table className="w-full min-w-[700px]">
+                      <thead>
+                        <tr className="border-b border-slate-200 dark:border-slate-700">
+                          <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400">Product</th>
+                          <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400">Category</th>
+                          <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Quantity</th>
+                          <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Value</th>
+                          <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400">Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {deadStock.map((item) => (
+                          <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
+                            <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
+                            <td className="py-4 text-sm text-slate-600 dark:text-slate-400">{item.category}</td>
+                            <td className="py-4 text-right text-slate-800 dark:text-slate-200">{item.quantity}</td>
+                            <td className="py-4 text-right font-medium text-slate-800 dark:text-slate-200">{formatCurrency(item.quantity * item.costPrice)}</td>
+                            <td className="py-4">
+                              <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                Consider Discount/Removal
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </CardContent>

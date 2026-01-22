@@ -108,59 +108,62 @@ export default function AnalyticsPage() {
   const maxRevenue = Math.max(...dailySales.map(d => d.revenue), 1) // Avoid division by zero
 
   return (
-    <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
           Transactions
         </h1>
-        <p className="text-slate-600 dark:text-slate-300 text-lg">Comprehensive sales performance analysis and insights</p>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          Comprehensive sales performance analysis and insights
+        </p>
       </div>
 
       {/* Sales Performance Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-100">Total Stocks Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-blue-50">Total Stocks Value</CardTitle>
+            <DollarSign className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-3xl font-bold">
               {formatCurrency(report?.totalRevenue || 0)}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 text-white">
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-100">Total Revenue</CardTitle>
-            <TrendingDown className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-purple-50">Total Revenue</CardTitle>
+            <TrendingDown className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-3xl font-bold">
               {formatCurrency(report?.totalCost || 0)}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 text-white">
+        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-orange-100">Total Cost</CardTitle>
-            <TrendingUp className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-orange-50">Total Cost</CardTitle>
+            <TrendingUp className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-3xl font-bold">
               {formatCurrency(report?.totalProfit || 0)}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500 to-green-600 border-0 text-white">
+        <Card className="bg-gradient-to-br from-green-500 to-green-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-100">Profit Margin</CardTitle>
-            <Percent className="h-4 w-4 text-white" />
+            <CardTitle className="text-sm font-medium text-green-50">Profit Margin</CardTitle>
+            <Percent className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-3xl font-bold">
               {(report?.profitMargin || 0).toFixed(1)}%
             </div>
           </CardContent>
@@ -168,7 +171,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Filter and Month Navigation */}
-      <Card className="mb-6">
+      <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex space-x-2">
@@ -200,9 +203,14 @@ export default function AnalyticsPage() {
 
       {view === 'daily' ? (
         dailySales.length > 0 ? (
-          <Card>
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
             <CardHeader>
-              <CardTitle className="text-foreground">Product Calendar</CardTitle>
+              <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+                  <BarChart3 className="h-5 w-5" />
+                </div>
+                Product Calendar
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="grid grid-cols-7 gap-0.5 p-2">
@@ -237,17 +245,22 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card>
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
             <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">No sales data available for {monthYear}.</p>
+              <p className="text-slate-600 dark:text-slate-400">No sales data available for {monthYear}.</p>
             </CardContent>
           </Card>
         )
       ) : (
         monthlySales.length > 0 ? (
-          <Card>
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
             <CardHeader>
-              <CardTitle className="text-foreground">Monthly Sales Revenue</CardTitle>
+              <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-green-600 text-white shadow-md">
+                  <BarChart3 className="h-5 w-5" />
+                </div>
+                Monthly Sales Revenue
+              </CardTitle>
             </CardHeader>
             <CardContent className="h-[300px] p-0">
               <ChartContainer config={chartConfig}>
@@ -270,9 +283,9 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card>
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
             <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">No monthly sales data available.</p>
+              <p className="text-slate-600 dark:text-slate-400">No monthly sales data available.</p>
             </CardContent>
           </Card>
         )

@@ -108,18 +108,24 @@ export default function SalesAnalyticsPage() {
   const calculatedProfitMargin = salesData.totalRevenue > 0 ? salesData.totalProfit / salesData.totalRevenue : 0;
 
   return (
-    <div className="responsive-padding space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="responsive-text-3xl font-bold text-gray-900">Sales Analytics</h1>
-          <p className="text-gray-600 mt-1 responsive-text-base">Track your sales performance and trends</p>
-        </div>
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      {/* Page Header */}
+      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
+          Sales Analytics
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          Track your sales performance and trends
+        </p>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div></div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Button
             variant={viewMode === 'daily' ? 'default' : 'outline'}
             onClick={() => setViewMode('daily')}
-            className="flex items-center gap-2 flex-1 sm:flex-initial"
+            className="flex items-center gap-2 flex-1 sm:flex-initial bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
           >
             <Calendar className="h-4 w-4" />
             Daily View
@@ -127,7 +133,7 @@ export default function SalesAnalyticsPage() {
           <Button
             variant={viewMode === 'monthly' ? 'default' : 'outline'}
             onClick={() => setViewMode('monthly')}
-            className="flex items-center gap-2 flex-1 sm:flex-initial"
+            className="flex items-center gap-2 flex-1 sm:flex-initial bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
           >
             <BarChart3 className="h-4 w-4" />
             Monthly View
@@ -136,83 +142,64 @@ export default function SalesAnalyticsPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <Card className="border-l-4 border-l-chart-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-            <Package className="h-4 w-4 text-chart-1" />
+            <CardTitle className="text-sm font-medium text-blue-50">Total Orders</CardTitle>
+            <Package className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-chart-1">{salesData.totalOrders}</div>
-            <p className="text-xs text-muted-foreground">
-              <TrendingUp className="inline h-3 w-3 mr-1 text-chart-1" />
-              +12.5% from last month
-            </p>
+            <div className="text-3xl font-bold">{salesData.totalOrders}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-chart-2">
+        <Card className="bg-gradient-to-br from-green-500 to-green-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-chart-2" />
+            <CardTitle className="text-sm font-medium text-green-50">Total Revenue</CardTitle>
+            <DollarSign className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-chart-2">{formatCurrency(salesData.totalRevenue)}</div>
-            <p className="text-xs text-muted-foreground">
-              <TrendingUp className="inline h-3 w-3 mr-1 text-chart-2" />
-              +12.5% from last month
-            </p>
+            <div className="text-3xl font-bold">{formatCurrency(salesData.totalRevenue)}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-chart-3">
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Cost</CardTitle>
-            <Package className="h-4 w-4 text-chart-3" />
+            <CardTitle className="text-sm font-medium text-purple-50">Total Cost</CardTitle>
+            <Package className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-chart-3">{formatCurrency(salesData.totalCost)}</div>
-            <p className="text-xs text-muted-foreground">
-              +8.2% from last month
-            </p>
+            <div className="text-3xl font-bold">{formatCurrency(salesData.totalCost)}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-chart-4">
+        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Profit</CardTitle>
-            <TrendingUp className="h-4 w-4 text-chart-4" />
+            <CardTitle className="text-sm font-medium text-orange-50">Total Profit</CardTitle>
+            <TrendingUp className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-chart-4">{formatCurrency(salesData.totalProfit)}</div>
-            <p className="text-xs text-muted-foreground">
-              <TrendingUp className="inline h-3 w-3 mr-1 text-chart-4" />
-              +15.3% from last month
-            </p>
+            <div className="text-3xl font-bold">{formatCurrency(salesData.totalProfit)}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-chart-5">
+        <Card className="bg-gradient-to-br from-pink-500 to-pink-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Profit Margin</CardTitle>
-            <Users className="h-4 w-4 text-chart-5" />
+            <CardTitle className="text-sm font-medium text-pink-50">Profit Margin</CardTitle>
+            <Users className="h-5 w-5 text-white opacity-80" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-chart-5">{formatPercentage(calculatedProfitMargin)}</div>
-            <p className="text-xs text-muted-foreground">
-              <TrendingUp className="inline h-3 w-3 mr-1 text-chart-5" />
-              +2.1% from last month
-            </p>
+            <div className="text-3xl font-bold">{formatPercentage(calculatedProfitMargin)}</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content */}
       {viewMode === 'daily' ? (
-        <Card>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Daily Sales Calendar</CardTitle>
+              <CardTitle className="text-slate-900 dark:text-white">Daily Sales Calendar</CardTitle>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
                   Previous
@@ -260,9 +247,9 @@ export default function SalesAnalyticsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
           <CardHeader>
-            <CardTitle>Monthly Sales Trends</CardTitle>
+            <CardTitle className="text-slate-900 dark:text-white">Monthly Sales Trends</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>

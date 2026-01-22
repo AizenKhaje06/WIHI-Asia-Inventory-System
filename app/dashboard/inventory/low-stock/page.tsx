@@ -145,13 +145,18 @@ export default function LowStockPage() {
   ]
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">Low Stock Items</h1>
-        <p className="text-slate-600 dark:text-slate-300 text-lg">Items that need restocking</p>
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
+          Low Stock Items
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          Items that need restocking
+        </p>
       </div>
 
-      <Card className="mb-8 border-0 shadow-xl bg-white/90 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      <Card className="mb-8 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <CardContent className="pt-6">
           <div className="flex flex-col lg:flex-row gap-4 items-end">
             <div className="flex-1">
@@ -224,47 +229,52 @@ export default function LowStockPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
         <CardHeader>
-          <CardTitle className="text-foreground">Low Stock Items ({filteredItems.length})</CardTitle>
+          <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-md">
+              <PackagePlus className="h-5 w-5" />
+            </div>
+            Low Stock Items ({filteredItems.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto -mx-6 px-6">
             <div className="min-w-full inline-block align-middle">
               <table className="w-full min-w-[600px]">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="pb-3 text-left text-sm font-medium text-muted-foreground whitespace-nowrap">Name</th>
-                    <th className="pb-3 text-left text-sm font-medium text-muted-foreground whitespace-nowrap">Category</th>
-                    <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Quantity</th>
-                    <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Cost</th>
-                    <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Price</th>
-                    <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Actions</th>
+                  <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Name</th>
+                    <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Category</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Quantity</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Cost</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Price</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredItems.map((item) => (
-                    <tr key={item.id} className="border-b border-border last:border-0">
-                      <td className="py-4 text-sm text-foreground whitespace-nowrap max-w-[200px] truncate" title={item.name}>
+                    <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
+                      <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap max-w-[200px] truncate" title={item.name}>
                         {item.name}
                       </td>
-                      <td className="py-4 text-sm text-muted-foreground whitespace-nowrap max-w-[150px] truncate" title={item.category}>
+                      <td className="py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap max-w-[150px] truncate" title={item.category}>
                         {item.category}
                       </td>
                       <td className="py-4 text-right text-sm whitespace-nowrap">
                         <span className={cn("font-bold", item.quantity <= item.reorderLevel ? "text-orange-500" : "text-green-500")}>{item.quantity}</span>
                       </td>
-                      <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">₱{item.costPrice.toFixed(2)}</td>
-                      <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">₱{item.sellingPrice.toFixed(2)}</td>
+                      <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">₱{item.costPrice.toFixed(2)}</td>
+                      <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">₱{item.sellingPrice.toFixed(2)}</td>
                       <td className="py-4 text-right whitespace-nowrap">
                         <div className="flex justify-end gap-1 sm:gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleRestock(item)} className="h-8 w-8 p-0">
+                          <Button variant="ghost" size="sm" onClick={() => handleRestock(item)} className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200 h-8 w-8 p-0">
                             <PackagePlus className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(item)} className="h-8 w-8 p-0">
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(item)} className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200 h-8 w-8 p-0">
                           <Pencil className="h-4 w-4" />
                         </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)}>
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 h-8 w-8 p-0">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>

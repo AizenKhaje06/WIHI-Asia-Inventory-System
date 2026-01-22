@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Filter } from "lucide-react"
+import { Search, Filter, BarChart3, Package } from "lucide-react"
 import type { SalesReport } from "@/lib/types"
 
 import { formatNumber } from "@/lib/utils"
@@ -58,13 +58,18 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="responsive-padding bg-white dark:bg-black">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="responsive-text-3xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">SALES REPORT</h1>
-        <p className="text-slate-600 dark:text-slate-300 responsive-text-lg">Recent transactions</p>
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
+          Sales Report
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          Recent transactions and detailed sales reports
+        </p>
       </div>
 
-      <Card className="mb-8 border-0 shadow-xl bg-white/90 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      <Card className="mb-8 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <CardContent className="pt-6">
           <div className="flex flex-col lg:flex-row gap-4 items-end">
             <div className="flex-1">
@@ -99,39 +104,44 @@ export default function ReportsPage() {
 
       {report && (
         <>
-          <Card>
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
             <CardHeader>
-              <CardTitle className="text-foreground">Recent Transactions ({filteredTransactions.length})</CardTitle>
+              <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+                  <BarChart3 className="h-5 w-5" />
+                </div>
+                Recent Transactions ({filteredTransactions.length})
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto -mx-6 px-6">
                 <div className="min-w-full inline-block align-middle">
                   <table className="w-full min-w-[700px]">
                     <thead>
-                      <tr className="border-b border-border">
-                        <th className="pb-3 text-left text-sm font-medium text-muted-foreground whitespace-nowrap">Date</th>
-                        <th className="pb-3 text-left text-sm font-medium text-muted-foreground whitespace-nowrap">Item</th>
-                        <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Qty</th>
-                        <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Revenue</th>
-                        <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Cost</th>
-                        <th className="pb-3 text-right text-sm font-medium text-muted-foreground whitespace-nowrap">Profit</th>
+                      <tr className="border-b border-slate-200 dark:border-slate-700">
+                        <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Date</th>
+                        <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Item</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Qty</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Revenue</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Cost</th>
+                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Profit</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredTransactions.map((transaction) => (
-                        <tr key={transaction.id} className="border-b border-border last:border-0">
-                          <td className="py-4 text-sm text-muted-foreground whitespace-nowrap">
+                        <tr key={transaction.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
+                          <td className="py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
                             {new Date(transaction.timestamp).toLocaleDateString()} {new Date(transaction.timestamp).toLocaleTimeString()}
                           </td>
-                          <td className="py-4 text-sm text-foreground whitespace-nowrap max-w-[200px] truncate" title={transaction.itemName}>
+                          <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap max-w-[200px] truncate" title={transaction.itemName}>
                             {transaction.itemName}
                           </td>
-                          <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">{formatNumber(transaction.quantity)}</td>
-                          <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">
+                          <td className="py-4 text-right text-sm font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">{formatNumber(transaction.quantity)}</td>
+                          <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
                             ₱{formatNumber(transaction.totalRevenue)}
                           </td>
-                          <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">₱{formatNumber(transaction.totalCost)}</td>
-                          <td className="py-4 text-right text-sm text-foreground whitespace-nowrap">₱{formatNumber(transaction.profit)}</td>
+                          <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">₱{formatNumber(transaction.totalCost)}</td>
+                          <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">₱{formatNumber(transaction.profit)}</td>
                         </tr>
                       ))}
                     </tbody>

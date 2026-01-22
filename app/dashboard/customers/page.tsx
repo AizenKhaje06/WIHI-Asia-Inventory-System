@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Search, Plus, Users, Award, TrendingUp, Mail, Phone } from "lucide-react"
+import { Search, Plus, Users, Award, TrendingUp, Mail, Phone, Package } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import type { Customer } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
@@ -109,7 +109,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-blue-50">Total Customers</CardTitle>
@@ -152,11 +152,11 @@ export default function CustomersPage() {
       </div>
 
       {/* Search and Add */}
-      <Card className="mb-8 border-0 shadow-lg bg-white dark:bg-slate-900">
+      <Card className="mb-8 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1">
-              <Label htmlFor="search">Search Customers</Label>
+              <Label htmlFor="search" className="text-slate-700 dark:text-slate-300 font-medium">Search Customers</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
@@ -164,11 +164,11 @@ export default function CustomersPage() {
                   placeholder="Search by name, email, or phone..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
                 />
               </div>
             </div>
-            <Button onClick={() => setAddDialogOpen(true)} className="gap-2">
+            <Button onClick={() => setAddDialogOpen(true)} className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300">
               <Plus className="h-4 w-4" />
               Add Customer
             </Button>
@@ -177,60 +177,64 @@ export default function CustomersPage() {
       </Card>
 
       {/* Customers Table */}
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
         <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-white">
-            <Users className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+              <Users className="h-5 w-5" />
+            </div>
             Customers ({filteredCustomers.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="pb-3 text-left text-sm font-semibold">Name</th>
-                  <th className="pb-3 text-left text-sm font-semibold">Contact</th>
-                  <th className="pb-3 text-right text-sm font-semibold">Tier</th>
-                  <th className="pb-3 text-right text-sm font-semibold">Points</th>
-                  <th className="pb-3 text-right text-sm font-semibold">Purchases</th>
-                  <th className="pb-3 text-right text-sm font-semibold">Total Spent</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCustomers.map((customer) => (
-                  <tr key={customer.id} className="border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td className="py-4">
-                      <div className="font-medium">{customer.name}</div>
-                    </td>
-                    <td className="py-4">
-                      <div className="flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
-                        {customer.email && (
-                          <div className="flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            {customer.email}
-                          </div>
-                        )}
-                        {customer.phone && (
-                          <div className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            {customer.phone}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 text-right">
-                      <Badge className={getTierColor(customer.tier || 'bronze')}>
-                        {customer.tier?.toUpperCase()}
-                      </Badge>
-                    </td>
-                    <td className="py-4 text-right font-medium">{customer.loyaltyPoints}</td>
-                    <td className="py-4 text-right">{customer.totalPurchases}</td>
-                    <td className="py-4 text-right font-semibold">{formatCurrency(customer.totalSpent)}</td>
+          <div className="overflow-x-auto -mx-6 px-6">
+            <div className="min-w-full inline-block align-middle">
+              <table className="w-full min-w-[800px]">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400">Name</th>
+                    <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400">Contact</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Tier</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Points</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Purchases</th>
+                    <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400">Total Spent</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredCustomers.map((customer) => (
+                    <tr key={customer.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
+                      <td className="py-4">
+                        <div className="font-medium text-slate-800 dark:text-slate-200">{customer.name}</div>
+                      </td>
+                      <td className="py-4">
+                        <div className="flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
+                          {customer.email && (
+                            <div className="flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              {customer.email}
+                            </div>
+                          )}
+                          {customer.phone && (
+                            <div className="flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {customer.phone}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 text-right">
+                        <Badge className={getTierColor(customer.tier || 'bronze')}>
+                          {customer.tier?.toUpperCase()}
+                        </Badge>
+                      </td>
+                      <td className="py-4 text-right font-medium text-slate-800 dark:text-slate-200">{customer.loyaltyPoints}</td>
+                      <td className="py-4 text-right text-slate-600 dark:text-slate-400">{customer.totalPurchases}</td>
+                      <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(customer.totalSpent)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>

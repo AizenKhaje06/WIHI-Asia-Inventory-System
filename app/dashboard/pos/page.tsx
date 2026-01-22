@@ -126,17 +126,20 @@ export default function POSPage() {
   }
 
   return (
-    <div className="responsive-padding bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="responsive-text-3xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-slate-800 bg-clip-text text-transparent mb-2">
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
           Point of Sale
         </h1>
-        <p className="text-slate-600 dark:text-slate-300 responsive-text-lg">Professional sales transaction processing system</p>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          Professional sales transaction processing system
+        </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div>
-          <Card className={`mb-6 bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-100 shadow-lg' : 'from-black via-black/50 to-gray-900'} border-border`}>
+          <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
             <CardContent className="pt-6">
               <div className="flex flex-col lg:flex-row gap-4 items-end">
                 <div className="flex-1">
@@ -156,9 +159,14 @@ export default function POSPage() {
             </CardContent>
           </Card>
 
-          <Card className={`bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-100 shadow-lg' : 'from-black via-black/50 to-gray-900'} border-border`}>
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
             <CardHeader>
-              <CardTitle className="text-foreground">Products</CardTitle>
+              <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+                  <Package className="h-5 w-5" />
+                </div>
+                Products
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="max-h-[600px] overflow-y-auto">
@@ -184,10 +192,12 @@ export default function POSPage() {
         </div>
 
         <div>
-          <Card className={`bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-100 shadow-lg' : 'from-black via-black/50 to-gray-900'} border-border`}>
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <ShoppingCart className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-green-600 text-white shadow-md">
+                  <ShoppingCart className="h-5 w-5" />
+                </div>
                 Cart ({cart.length})
               </CardTitle>
             </CardHeader>
@@ -253,7 +263,7 @@ export default function POSPage() {
                         </div>
                       </div>
 
-                      <Button onClick={() => setOrderSummaryOpen(true)} disabled={loading || !department} className="w-full" size="lg">
+                      <Button onClick={() => setOrderSummaryOpen(true)} disabled={loading || !department} className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300" size="lg">
                         Proceed
                       </Button>
                     </div>
