@@ -135,22 +135,27 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
       >
         {/* Logo & Brand */}
         <div 
-          className="h-16 flex items-center justify-between px-6 border-b"
+          className="h-16 flex items-center justify-center px-3 border-b"
           style={{ borderColor: 'var(--sidebar-border)' }}
         >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-[#BFFF00] to-[#9FFF00] shadow-lg" aria-hidden="true">
-              <Warehouse className="h-6 w-6 text-[#0a0e1a]" strokeWidth={2.5} />
-            </div>
-            {!collapsed && (
-              <div className={cn(reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
-                <h1 className="text-lg font-bold tracking-tight" style={{ color: 'var(--sidebar-text)' }}>
+          {!collapsed ? (
+            <div className="flex flex-col items-center gap-1 w-full">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-gradient-to-br from-[#BFFF00] to-[#9FFF00] shadow-lg flex-shrink-0" aria-hidden="true">
+                  <Warehouse className="h-4 w-4 text-[#0a0e1a]" strokeWidth={2.5} />
+                </div>
+                <h1 className="text-sm font-bold tracking-tight leading-none whitespace-nowrap" style={{ color: 'var(--sidebar-text)' }}>
                   StockSync
                 </h1>
-                <p className="text-xs" style={{ color: 'var(--sidebar-text-secondary)' }}>Inventory System</p>
               </div>
-            )}
-          </div>
+              <p className="text-[10px] leading-none whitespace-nowrap" style={{ color: 'var(--sidebar-text-secondary)' }}>Inventory System</p>
+            </div>
+          ) : (
+            <div className="p-1.5 rounded-lg bg-gradient-to-br from-[#BFFF00] to-[#9FFF00] shadow-lg" aria-hidden="true">
+              <Warehouse className="h-4 w-4 text-[#0a0e1a]" strokeWidth={2.5} />
+            </div>
+          )}
+          <div className="absolute right-3">
           {isMobile ? (
             <button
               onClick={onMobileClose}
@@ -165,7 +170,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
             >
               <X className="h-5 w-5" />
             </button>
-          ) : (
+          ) : !collapsed && (
             <button
               onClick={() => setCollapsed(!collapsed)}
               className="p-1.5 rounded-lg transition-colors duration-200"
@@ -184,6 +189,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
               )}
             </button>
           )}
+          </div>
         </div>
 
         {/* Navigation */}

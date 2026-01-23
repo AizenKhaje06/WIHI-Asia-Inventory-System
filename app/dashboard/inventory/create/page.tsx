@@ -71,7 +71,7 @@ export default function CreateProductPage() {
           <ArrowLeft className="h-4 w-4" />
           Back to Products
         </Link>
-        <h1 className="text-3xl font-bold text-foreground">Create New Product</h1>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">Create New Product</h1>
         <p className="text-muted-foreground">Add a new product to your inventory</p>
       </div>
 
