@@ -40,8 +40,8 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
       role="banner"
     >
       <div className="h-full px-4 lg:px-6 flex items-center justify-between gap-3 min-w-0">
-        {/* Left: Mobile Menu + Search */}
-        <div className="flex items-center gap-3 flex-1 min-w-0 max-w-2xl">
+        {/* Left: Mobile Menu */}
+        <div className="flex items-center gap-3 flex-shrink-0">
           <button
             onClick={onMobileMenuToggle}
             className="lg:hidden p-2 rounded-lg transition-colors duration-200 flex-shrink-0"
@@ -56,41 +56,6 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           >
             <Menu className="h-5 w-5" />
           </button>
-          
-          <div
-            className={cn(
-              "relative flex-1 min-w-0",
-              reducedMotion ? "" : "transition-all duration-300",
-              searchFocused && !reducedMotion && "scale-[1.02]"
-            )}
-          >
-            <label htmlFor="global-search" className="sr-only">
-              Search products, customers, transactions
-            </label>
-            <Search 
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 flex-shrink-0" 
-              style={{ color: 'var(--foreground-tertiary)' }}
-              aria-hidden="true"
-            />
-            <input
-              id="global-search"
-              type="search"
-              placeholder="Search products, customers, transactions..."
-              className={cn(
-                "w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm min-w-0",
-                reducedMotion ? "" : "transition-all duration-200",
-                "focus:outline-none focus:ring-2 focus:ring-primary/20"
-              )}
-              style={{
-                backgroundColor: 'var(--background-secondary)',
-                borderColor: 'var(--border)',
-                color: 'var(--foreground)',
-              }}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-              aria-label="Global search"
-            />
-          </div>
         </div>
 
         {/* Right: Actions */}
