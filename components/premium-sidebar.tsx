@@ -135,19 +135,19 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
       >
         {/* Logo & Brand */}
         <div 
-          className="h-16 flex items-center justify-between px-6 border-b"
+          className="h-16 flex items-center justify-between px-4 border-b"
           style={{ borderColor: 'var(--sidebar-border)' }}
         >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-[#BFFF00] to-[#9FFF00] shadow-lg" aria-hidden="true">
-              <Warehouse className="h-6 w-6 text-[#0a0e1a]" strokeWidth={2.5} />
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-[#BFFF00] to-[#9FFF00] shadow-lg flex-shrink-0" aria-hidden="true">
+              <Warehouse className="h-5 w-5 text-[#0a0e1a]" strokeWidth={2.5} />
             </div>
             {!collapsed && (
-              <div className={cn("flex flex-col gap-0", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
-                <h1 className="text-base font-bold tracking-tight leading-none" style={{ color: 'var(--sidebar-text)' }}>
+              <div className={cn("flex flex-col gap-0 min-w-0 flex-1", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
+                <h1 className="text-sm font-bold tracking-tight leading-none truncate" style={{ color: 'var(--sidebar-text)' }}>
                   StockSync
                 </h1>
-                <p className="text-[10px] leading-none mt-1" style={{ color: 'var(--sidebar-text-secondary)' }}>Inventory System</p>
+                <p className="text-[9px] leading-none mt-0.5 truncate" style={{ color: 'var(--sidebar-text-secondary)' }}>Inventory System</p>
               </div>
             )}
           </div>
