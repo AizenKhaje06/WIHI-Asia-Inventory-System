@@ -129,7 +129,7 @@ export default function POSPage() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden">
       {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+        <h1 className="text-4xl font-bold gradient-text mb-2">
           Point of Sale
         </h1>
         <p className="text-slate-600 dark:text-slate-400 text-base">
@@ -165,27 +165,101 @@ export default function POSPage() {
                 <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
                   <Package className="h-5 w-5" />
                 </div>
-                Products
+                Products ({filteredItems.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="max-h-[600px] overflow-y-auto">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {filteredItems.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => addToCart(item)}
-                      className="h-32 rounded-lg border border-border bg-card p-4 text-center transition-colors hover:bg-accent flex flex-col justify-between"
-                      disabled={item.quantity === 0}
-                    >
-                      <div>
-                        <p className="font-medium text-card-foreground text-sm line-clamp-2">{item.name}</p>
-                        <p className="text-xs text-muted-foreground">Stock: {item.quantity}</p>
-                      </div>
-                      <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">₱{item.sellingPrice.toFixed(2)}</p>
-                    </button>
-                  ))}
+              <div className="max-h-[600px] overflow-y-auto pr-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3">
+                  {filteredItems.map((item) => {
+                    const stockPercentage = (item.quantity / (item.reorderLevel * 3)) * 100
+                    const isLowStock = item.quantity <= item.reorderLevel
+                    const isOutOfStock = item.quantity === 0
+                    
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => addToCart(item)}
+                        disabled={isOutOfStock}
+                        className={`
+                          relative rounded-xl border-2 p-4 text-left transition-all duration-200
+                          ${isOutOfStock 
+                            ? 'border-red-200 bg-red-50 dark:bg-red-900/10 opacity-60 cursor-not-allowed' 
+                            : isLowStock
+                            ? 'border-amber-200 bg-amber-50 dark:bg-amber-900/10 hover:border-amber-400 hover:shadow-lg'
+                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-400 hover:shadow-lg hover:scale-105'
+                          }
+                        `}
+                      >
+                        {/* Stock Badge */}
+                        <div className="absolute top-2 right-2">
+                          {isOutOfStock ? (
+                            <span className="px-2 py-1 text-xs font-bold rounded-full bg-red-500 text-white">
+                              OUT
+                            </span>
+                          ) : isLowStock ? (
+                            <span className="px-2 py-1 text-xs font-bold rounded-full bg-amber-500 text-white">
+                              LOW
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                              {item.quantity}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="mt-6 mb-3">
+                          <h3 className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-2 mb-1 min-h-[2.5rem]">
+                            {item.name}
+                          </h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            {item.category}
+                          </p>
+                        </div>
+
+                        {/* Stock Bar */}
+                        <div className="mb-3">
+                          <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full transition-all duration-300 ${
+                                isOutOfStock ? 'bg-red-500' :
+                                isLowStock ? 'bg-amber-500' : 
+                                'bg-green-500'
+                              }`}
+                              style={{ width: `${Math.min(stockPercentage, 100)}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Stock: {item.quantity} {item.quantity <= item.reorderLevel && item.quantity > 0 && '⚠️'}
+                          </p>
+                        </div>
+
+                        {/* Price */}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                              ₱{item.sellingPrice.toFixed(2)}
+                            </p>
+                          </div>
+                          {!isOutOfStock && (
+                            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                              <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    )
+                  })}
                 </div>
+                
+                {filteredItems.length === 0 && (
+                  <div className="text-center py-12">
+                    <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-500 dark:text-slate-400">No products found</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500">Try adjusting your search</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

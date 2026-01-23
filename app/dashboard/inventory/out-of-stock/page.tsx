@@ -7,9 +7,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Search, Pencil, Trash2, PackagePlus, Filter } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Search, Pencil, Trash2, PackagePlus, XCircle, Package, DollarSign, Download, CheckCircle2, X, ArrowUpDown, AlertTriangle } from "lucide-react"
 import type { InventoryItem } from "@/lib/types"
-import { cn } from "@/lib/utils"
+import { cn, formatCurrency, formatNumber } from "@/lib/utils"
 import { EditItemDialog } from "@/components/edit-item-dialog"
 
 export default function OutOfStockPage() {
@@ -19,12 +21,14 @@ export default function OutOfStockPage() {
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [priceFilter, setPriceFilter] = useState("all")
   const [stockRoomFilter, setStockRoomFilter] = useState("all")
+  const [sortBy, setSortBy] = useState("name-asc")
   const [loading, setLoading] = useState(true)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
   const [restockDialogOpen, setRestockDialogOpen] = useState(false)
   const [selectedRestockItem, setSelectedRestockItem] = useState<InventoryItem | null>(null)
   const [restockAmount, setRestockAmount] = useState(0)
+  const [restockReason, setRestockReason] = useState("")
 
   useEffect(() => {
     fetchItems()
@@ -60,8 +64,17 @@ export default function OutOfStockPage() {
       filtered = filtered.filter((item) => item.storageRoom === stockRoomFilter)
     }
 
+    // Apply sorting
+    if (sortBy === "name-asc") {
+      filtered.sort((a, b) => a.name.localeCompare(b.name))
+    } else if (sortBy === "price-desc") {
+      filtered.sort((a, b) => b.sellingPrice - a.sellingPrice)
+    } else if (sortBy === "price-asc") {
+      filtered.sort((a, b) => a.sellingPrice - b.sellingPrice)
+    }
+
     setFilteredItems(filtered)
-  }, [search, categoryFilter, priceFilter, stockRoomFilter, items])
+  }, [search, categoryFilter, priceFilter, stockRoomFilter, sortBy, items])
 
   async function fetchItems() {
     try {
@@ -69,7 +82,7 @@ export default function OutOfStockPage() {
       const data = await res.json()
       setItems(data)
     } catch (error) {
-      console.error("[v0] Error fetching items:", error)
+      console.error("Error fetching items:", error)
     } finally {
       setLoading(false)
     }
@@ -82,7 +95,7 @@ export default function OutOfStockPage() {
       await fetch(`/api/items/${id}`, { method: "DELETE" })
       fetchItems()
     } catch (error) {
-      console.error("[v0] Error deleting item:", error)
+      console.error("Error deleting item:", error)
     }
   }
 
@@ -93,18 +106,20 @@ export default function OutOfStockPage() {
 
   function handleRestock(item: InventoryItem) {
     setSelectedRestockItem(item)
-    setRestockAmount(0)
+    const suggestedAmount = Math.max(item.reorderLevel * 2, 10)
+    setRestockAmount(suggestedAmount)
+    setRestockReason("")
     setRestockDialogOpen(true)
   }
 
   async function handleRestockSubmit() {
-    if (!selectedRestockItem || restockAmount <= 0) return
+    if (!selectedRestockItem || restockAmount <= 0 || !restockReason) return
 
     try {
       const res = await fetch(`/api/items/${selectedRestockItem.id}/restock`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: restockAmount }),
+        body: JSON.stringify({ amount: restockAmount, reason: restockReason }),
       })
 
       if (!res.ok) {
@@ -115,12 +130,45 @@ export default function OutOfStockPage() {
 
       setRestockDialogOpen(false)
       setSelectedRestockItem(null)
+      setRestockReason("")
       fetchItems()
       alert("Item restocked successfully!")
     } catch (error) {
-      console.error("[v0] Error restocking item:", error)
+      console.error("Error restocking item:", error)
       alert("Failed to restock item")
     }
+  }
+
+  function exportToCSV() {
+    const headers = ["Product Name", "Category", "Cost Price", "Selling Price", "Reorder Level", "Storage Room"]
+    const rows = filteredItems.map(item => [
+      item.name,
+      item.category,
+      item.costPrice,
+      item.sellingPrice,
+      item.reorderLevel,
+      item.storageRoom
+    ])
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n")
+
+    const blob = new Blob([csvContent], { type: "text/csv" })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `out-of-stock-report-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+  }
+
+  function clearAllFilters() {
+    setSearch("")
+    setCategoryFilter("all")
+    setPriceFilter("all")
+    setStockRoomFilter("all")
+    setSortBy("name-asc")
   }
 
   if (loading) {
@@ -144,18 +192,80 @@ export default function OutOfStockPage() {
     "Other / Miscellaneous",
   ]
 
+  const outOfStockItems = items.filter((item) => item.quantity === 0)
+  const totalLostRevenue = outOfStockItems.reduce((sum, item) => sum + (item.sellingPrice * item.reorderLevel), 0)
+  const highValueItems = outOfStockItems.filter(item => item.sellingPrice >= 500).length
+
+  const activeFiltersCount = [
+    categoryFilter !== "all",
+    priceFilter !== "all",
+    stockRoomFilter !== "all",
+    search !== ""
+  ].filter(Boolean).length
+
   return (
-    <div className="p-4 sm:p-6 md:p-8 w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">Out of Stock Items</h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">Items that are completely out of stock</p>
+        <h1 className="text-4xl font-bold gradient-text mb-2">
+          Out of Stock Items
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          Items that are completely out of stock and need immediate restocking
+        </p>
       </div>
 
-      <Card className="mb-8 border-0 shadow-lg animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-3 mb-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+                <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+              {outOfStockItems.length}
+            </div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">Total Out of Stock</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+              {highValueItems}
+            </div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">High Value Items</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+              {formatCurrency(totalLostRevenue)}
+            </div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">Potential Lost Revenue</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
         <CardContent className="pt-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-end">
+          <div className="flex flex-col lg:flex-row gap-4 mb-4">
             <div className="flex-1">
-              <Label htmlFor="search" className="text-slate-300 font-medium">Search Products</Label>
+              <Label htmlFor="search" className="text-slate-700 dark:text-slate-300 font-medium mb-2 block">Search Products</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
@@ -163,118 +273,255 @@ export default function OutOfStockPage() {
                   placeholder="Search by name or category..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
                 />
               </div>
             </div>
-            <div className="flex gap-4">
-              <div className="w-48">
-                <Label htmlFor="category-filter" className="text-slate-300 font-medium">Filter by Category</Label>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger id="category-filter">
-                    <div className="flex items-center gap-2">
-                      <Filter className="h-4 w-4 text-slate-400" />
-                      <SelectValue placeholder="All Categories" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="w-48">
-                <Label htmlFor="price-filter" className="text-slate-300 font-medium">Filter by Price</Label>
-                <Select value={priceFilter} onValueChange={setPriceFilter}>
-                  <SelectTrigger id="price-filter">
-                    <div className="flex items-center gap-2">
-                      <Filter className="h-4 w-4 text-slate-400" />
-                      <SelectValue placeholder="All Prices" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Prices</SelectItem>
-                    <SelectItem value="low">Low ({"< PHP 100"})</SelectItem>
-                    <SelectItem value="medium">Medium (PHP 100 - 499)</SelectItem>
-                    <SelectItem value="high">High (≥ PHP 500)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="w-48">
-                <Label htmlFor="storage-room-filter" className="text-slate-300 font-medium">Filter by Storage Room</Label>
-                <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
-                  <SelectTrigger id="storage-room-filter">
-                    <div className="flex items-center gap-2">
-                      <Filter className="h-4 w-4 text-slate-400" />
-                      <SelectValue placeholder="All Storage Rooms" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Storage Rooms</SelectItem>
-                    <SelectItem value="A">A</SelectItem>
-                    <SelectItem value="B">B</SelectItem>
-                    <SelectItem value="C">C</SelectItem>
-                    <SelectItem value="D">D</SelectItem>
-                    <SelectItem value="E">E</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex gap-2 items-end">
+              <Button
+                onClick={exportToCSV}
+                variant="outline"
+                className="gap-2 border-slate-200 dark:border-slate-700"
+                disabled={filteredItems.length === 0}
+              >
+                <Download className="h-4 w-4" />
+                Export CSV
+              </Button>
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div>
+              <Label htmlFor="category-filter" className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Category</Label>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger id="category-filter" className="h-9 border-slate-200 dark:border-slate-700">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="price-filter" className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Price Range</Label>
+              <Select value={priceFilter} onValueChange={setPriceFilter}>
+                <SelectTrigger id="price-filter" className="h-9 border-slate-200 dark:border-slate-700">
+                  <SelectValue placeholder="All Prices" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Prices</SelectItem>
+                  <SelectItem value="low">Low (&lt; ₱100)</SelectItem>
+                  <SelectItem value="medium">Medium (₱100 - ₱499)</SelectItem>
+                  <SelectItem value="high">High (≥ ₱500)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="storage-room-filter" className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Storage Room</Label>
+              <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
+                <SelectTrigger id="storage-room-filter" className="h-9 border-slate-200 dark:border-slate-700">
+                  <SelectValue placeholder="All Rooms" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Rooms</SelectItem>
+                  <SelectItem value="A">Room A</SelectItem>
+                  <SelectItem value="B">Room B</SelectItem>
+                  <SelectItem value="C">Room C</SelectItem>
+                  <SelectItem value="D">Room D</SelectItem>
+                  <SelectItem value="E">Room E</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="sort-by" className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Sort By</Label>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger id="sort-by" className="h-9 border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpDown className="h-3 w-3" />
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                  <SelectItem value="price-desc">Price (High to Low)</SelectItem>
+                  <SelectItem value="price-asc">Price (Low to High)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {activeFiltersCount > 0 && (
+            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <span className="text-sm text-slate-600 dark:text-slate-400">
+                {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearAllFilters}
+                className="h-7 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+              >
+                <X className="h-3 w-3" />
+                Clear All
+              </Button>
+            </div>
+          )}
+
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Showing <span className="font-semibold text-slate-900 dark:text-white">{filteredItems.length}</span> of <span className="font-semibold text-slate-900 dark:text-white">{outOfStockItems.length}</span> out of stock items
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-white">Out of Stock Items ({filteredItems.length})</CardTitle>
+      {/* Table */}
+      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-red-500 to-red-600 text-white shadow-md">
+              <XCircle className="h-5 w-5" />
+            </div>
+            Out of Stock Items ({filteredItems.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto -mx-6 px-6">
-            <div className="min-w-full inline-block align-middle">
-              <table className="w-full min-w-[600px]">
-                <thead>
-                  <tr className="border-b border-slate-700">
-                    <th className="pb-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap">Name</th>
-                    <th className="pb-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap">Category</th>
-                    <th className="pb-3 text-right text-sm font-medium text-slate-400 whitespace-nowrap">Quantity</th>
-                    <th className="pb-3 text-right text-sm font-medium text-slate-400 whitespace-nowrap">Cost</th>
-                    <th className="pb-3 text-right text-sm font-medium text-slate-400 whitespace-nowrap">Price</th>
-                    <th className="pb-3 text-right text-sm font-medium text-slate-400 whitespace-nowrap">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredItems.map((item) => (
-                    <tr key={item.id} className="border-b border-slate-700 last:border-0 hover:bg-slate-800/50 transition-colors">
-                      <td className="py-4 text-sm text-white whitespace-nowrap max-w-[200px] truncate" title={item.name}>
-                        {item.name}
-                      </td>
-                      <td className="py-4 text-sm text-slate-400 whitespace-nowrap max-w-[150px] truncate" title={item.category}>
-                        {item.category}
-                      </td>
-                      <td className="py-4 text-right text-sm whitespace-nowrap">
-                        <span className={cn("font-bold", item.quantity <= item.reorderLevel ? "text-orange-500" : "text-green-500")}>{item.quantity}</span>
-                      </td>
-                      <td className="py-4 text-right text-sm text-white whitespace-nowrap">₱{item.costPrice.toFixed(2)}</td>
-                      <td className="py-4 text-right text-sm text-white whitespace-nowrap">₱{item.sellingPrice.toFixed(2)}</td>
-                      <td className="py-4 text-right whitespace-nowrap">
-                        <div className="flex justify-end gap-1 sm:gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleRestock(item)} className="h-8 w-8 p-0">
-                            <PackagePlus className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(item)} className="h-8 w-8 p-0">
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {filteredItems.length === 0 ? (
+            <div className="text-center py-16">
+              <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No Out of Stock Items!</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                {search || categoryFilter !== "all" || priceFilter !== "all" || stockRoomFilter !== "all"
+                  ? "No items match your current filters"
+                  : "Excellent! All your inventory items are in stock."}
+              </p>
             </div>
-          </div>
+          ) : (
+            <div className="overflow-x-auto -mx-6 px-6">
+              <div className="min-w-full inline-block align-middle">
+                <table className="w-full min-w-[1000px]">
+                  <thead>
+                    <tr className="border-b-2 border-slate-200 dark:border-slate-700">
+                      <th className="pb-3 pr-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[250px]">Product</th>
+                      <th className="pb-3 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[150px]">Category</th>
+                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Reorder At</th>
+                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Cost</th>
+                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Price</th>
+                      <th className="pb-3 pl-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[120px]">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredItems.map((item) => (
+                      <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200">
+                        <td className="py-4 pr-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/30">
+                              <Package className="h-5 w-5 text-red-600 dark:text-red-400" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate" title={item.name}>
+                                {item.name}
+                              </p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 text-xs">
+                                  OUT OF STOCK
+                                </Badge>
+                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                  Room: {item.storageRoom || 'N/A'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-4 px-3">
+                          <span className="text-sm text-slate-600 dark:text-slate-400 block truncate" title={item.category}>
+                            {item.category}
+                          </span>
+                        </td>
+
+                        <td className="py-4 px-3 text-right">
+                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                            {formatNumber(item.reorderLevel)}
+                          </span>
+                        </td>
+
+                        <td className="py-4 px-3 text-right">
+                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                            {formatCurrency(item.costPrice)}
+                          </span>
+                        </td>
+
+                        <td className="py-4 px-3 text-right">
+                          <span className="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                            {formatCurrency(item.sellingPrice)}
+                          </span>
+                        </td>
+
+                        <td className="py-4 pl-3">
+                          <TooltipProvider>
+                            <div className="flex justify-center gap-1">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleRestock(item)}
+                                    className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                  >
+                                    <PackagePlus className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Restock</p>
+                                </TooltipContent>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEdit(item)}
+                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Edit</p>
+                                </TooltipContent>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDelete(item.id)}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Delete</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                          </TooltipProvider>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -289,16 +536,16 @@ export default function OutOfStockPage() {
 
       {selectedRestockItem && (
         <Dialog open={restockDialogOpen} onOpenChange={setRestockDialogOpen}>
-          <DialogContent>
+          <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle>Restock {selectedRestockItem.name}</DialogTitle>
-              <DialogDescription>
-                Enter the amount to add to the current stock of {selectedRestockItem.quantity}.
+              <DialogTitle className="text-slate-900 dark:text-white">Restock {selectedRestockItem.name}</DialogTitle>
+              <DialogDescription className="text-slate-600 dark:text-slate-400">
+                This item is currently out of stock. Reorder level: {selectedRestockItem.reorderLevel}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="restock-amount">Amount to Restock</Label>
+                <Label htmlFor="restock-amount" className="text-slate-700 dark:text-slate-300 font-medium">Amount to Restock</Label>
                 <Input
                   id="restock-amount"
                   type="number"
@@ -306,11 +553,44 @@ export default function OutOfStockPage() {
                   value={restockAmount}
                   onChange={(e) => setRestockAmount(Number.parseInt(e.target.value) || 0)}
                   placeholder="Enter amount"
+                  className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
                 />
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Suggested: {Math.max(selectedRestockItem.reorderLevel * 2, 10)} units
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="restock-reason" className="text-slate-700 dark:text-slate-300 font-medium">Reason for Restock</Label>
+                <Select value={restockReason} onValueChange={setRestockReason}>
+                  <SelectTrigger id="restock-reason" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                    <SelectValue placeholder="Select a reason" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                    <SelectItem value="new-stock">New Stock Arrival</SelectItem>
+                    <SelectItem value="low-stock-alert">Low Stock Alert</SelectItem>
+                    <SelectItem value="damaged-return">Damaged Item Return</SelectItem>
+                    <SelectItem value="supplier-return">Supplier Return</SelectItem>
+                    <SelectItem value="inventory-adjustment">Inventory Adjustment</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" onClick={handleRestockSubmit} disabled={restockAmount <= 0}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setRestockDialogOpen(false)}
+                className="border-slate-200 dark:border-slate-700"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                onClick={handleRestockSubmit} 
+                disabled={restockAmount <= 0 || !restockReason}
+                className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white"
+              >
                 Restock Item
               </Button>
             </DialogFooter>

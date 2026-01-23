@@ -23,7 +23,13 @@ interface PremiumNavbarProps {
 export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggle }: PremiumNavbarProps) {
   const { theme, setTheme } = useTheme()
   const [searchFocused, setSearchFocused] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const reducedMotion = useReducedMotion()
+
+  // Prevent hydration mismatch
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <header
@@ -76,10 +82,12 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
               e.currentTarget.style.backgroundColor = 'transparent'
               e.currentTarget.style.color = 'var(--foreground-secondary)'
             }}
-            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={mounted ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
+            aria-label={mounted ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
           >
-            {theme === "dark" ? (
+            {!mounted ? (
+              <Sun className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
+            ) : theme === "dark" ? (
               <Sun className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
             ) : (
               <Moon className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />

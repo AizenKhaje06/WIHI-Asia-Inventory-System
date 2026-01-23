@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { updateCustomer, getCustomers, calculateCustomerTier } from "@/lib/customer-management"
+import { updateCustomer, getCustomers, calculateCustomerTier, deleteCustomer } from "@/lib/customer-management"
 
 export async function PUT(
   request: NextRequest,
@@ -9,13 +9,16 @@ export async function PUT(
     const body = await request.json()
     const { id } = params
 
-    // If totalSpent is being updated, recalculate tier
-    if (body.totalSpent !== undefined) {
+    console.log('PUT request received for customer:', id, body)
+
+    // If totalSpent is being updated and tier is not provided, recalculate tier
+    if (body.totalSpent !== undefined && body.tier === undefined) {
       body.tier = await calculateCustomerTier(body.totalSpent)
     }
 
     await updateCustomer(id, body)
     
+    console.log('Customer updated successfully')
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Error updating customer:", error)
@@ -40,5 +43,20 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching customer:", error)
     return NextResponse.json({ error: "Failed to fetch customer" }, { status: 500 })
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params
+    await deleteCustomer(id)
+    
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Error deleting customer:", error)
+    return NextResponse.json({ error: "Failed to delete customer" }, { status: 500 })
   }
 }

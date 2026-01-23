@@ -63,33 +63,34 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border">
+      <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-foreground">Edit Item</DialogTitle>
+          <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold">Edit Product</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="edit-name" className="text-foreground">
-                Name
+              <Label htmlFor="edit-name" className="text-slate-700 dark:text-slate-300 font-medium">
+                Product Name
               </Label>
               <Input
                 id="edit-name"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-category" className="text-foreground">
+              <Label htmlFor="edit-category" className="text-slate-700 dark:text-slate-300 font-medium">
                 Category
               </Label>
               <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })} required>
-                <SelectTrigger id="edit-category" className="w-full max-w-xs">
+                <SelectTrigger id="edit-category" className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
-                <SelectContent className="w-full max-w-xs">
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                   <SelectItem value="Electronics & Gadgets">Electronics & Gadgets</SelectItem>
                   <SelectItem value="Fashion & Apparel">Fashion & Apparel</SelectItem>
                   <SelectItem value="Health, Beauty & Personal Care">Health, Beauty & Personal Care</SelectItem>
@@ -103,9 +104,10 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 </SelectContent>
               </Select>
             </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="edit-quantity" className="text-foreground">
-                Quantity (Read-only for safety)
+              <Label htmlFor="edit-quantity" className="text-slate-700 dark:text-slate-300 font-medium">
+                Quantity (Read-only)
               </Label>
               <Input
                 id="edit-quantity"
@@ -113,11 +115,32 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 required
                 value={formData.quantity}
                 readOnly
+                className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white cursor-not-allowed"
               />
+              <p className="text-xs text-slate-500 dark:text-slate-400">Use Restock to change quantity</p>
             </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="edit-costPrice" className="text-foreground">
-                Cost Price
+              <Label htmlFor="edit-storageRoom" className="text-slate-700 dark:text-slate-300 font-medium">
+                Storage Room
+              </Label>
+              <Select value={formData.storageRoom} onValueChange={(value) => setFormData({ ...formData, storageRoom: value })} required>
+                <SelectTrigger id="edit-storageRoom" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                  <SelectValue placeholder="Select a storage room" />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <SelectItem value="A">Room A</SelectItem>
+                  <SelectItem value="B">Room B</SelectItem>
+                  <SelectItem value="C">Room C</SelectItem>
+                  <SelectItem value="D">Room D</SelectItem>
+                  <SelectItem value="E">Room E</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-costPrice" className="text-slate-700 dark:text-slate-300 font-medium">
+                Cost Price (₱)
               </Label>
               <Input
                 id="edit-costPrice"
@@ -126,11 +149,13 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 required
                 value={formData.costPrice}
                 onChange={(e) => setFormData({ ...formData, costPrice: Number.parseFloat(e.target.value) })}
+                className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="edit-sellingPrice" className="text-foreground">
-                Selling Price
+              <Label htmlFor="edit-sellingPrice" className="text-slate-700 dark:text-slate-300 font-medium">
+                Selling Price (₱)
               </Label>
               <Input
                 id="edit-sellingPrice"
@@ -139,10 +164,12 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 required
                 value={formData.sellingPrice}
                 onChange={(e) => setFormData({ ...formData, sellingPrice: Number.parseFloat(e.target.value) })}
+                className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="edit-reorderLevel" className="text-foreground">
+              <Label htmlFor="edit-reorderLevel" className="text-slate-700 dark:text-slate-300 font-medium">
                 Reorder Level
               </Label>
               <Input
@@ -151,31 +178,25 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 required
                 value={formData.reorderLevel}
                 onChange={(e) => setFormData({ ...formData, reorderLevel: Number.parseInt(e.target.value) })}
+                className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-storageRoom" className="text-foreground">
-                Storage Room
-              </Label>
-              <Select value={formData.storageRoom} onValueChange={(value) => setFormData({ ...formData, storageRoom: value })} required>
-                <SelectTrigger id="edit-storageRoom">
-                  <SelectValue placeholder="Select a storage room" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="A">A</SelectItem>
-                  <SelectItem value="B">B</SelectItem>
-                  <SelectItem value="C">C</SelectItem>
-                  <SelectItem value="D">D</SelectItem>
-                  <SelectItem value="E">E</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          
+          <div className="flex justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
+            >
               {loading ? "Saving..." : "Save Changes"}
             </Button>
           </div>

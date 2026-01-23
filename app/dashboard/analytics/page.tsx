@@ -4,22 +4,25 @@ import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { DollarSign, TrendingUp, TrendingDown, Percent } from "lucide-react"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { DollarSign, TrendingUp, TrendingDown, Percent, BarChart3, ChevronLeft, ChevronRight, Download, Calendar, ShoppingCart, Package, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Line, LineChart, Area, AreaChart } from "recharts"
 import {
   ChartContainer,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import type { SalesReport } from "@/lib/types"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, formatNumber } from "@/lib/utils"
 
 export default function AnalyticsPage() {
   const [report, setReport] = useState<SalesReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useState<'daily' | 'monthly'>('daily')
+  const [chartType, setChartType] = useState<'bar' | 'line' | 'area'>('bar')
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   useEffect(() => {
@@ -46,13 +49,10 @@ export default function AnalyticsPage() {
         }
 
         const reportData = await reportRes.json()
-
-        console.log("[Analytics Debug] Report Data:", reportData)
-
         setReport(reportData)
 
       } catch (error) {
-        console.error("[Analytics] Error fetching data:", error)
+        console.error("Error fetching data:", error)
         setError(error instanceof Error ? error.message : 'Failed to fetch data')
         setReport(null)
       } finally {
@@ -73,6 +73,27 @@ export default function AnalyticsPage() {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
     setLoading(true)
     setError(null)
+  }
+
+  function exportToCSV() {
+    const data = view === 'daily' ? dailySales : monthlySales
+    const headers = view === 'daily' ? ['Date', 'Revenue'] : ['Month', 'Revenue']
+    const rows = data.map(item => [
+      view === 'daily' ? item.date : item.month,
+      item.revenue
+    ])
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n")
+
+    const blob = new Blob([csvContent], { type: "text/csv" })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `sales-analytics-${view}-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
   }
 
   if (loading) {
@@ -98,6 +119,19 @@ export default function AnalyticsPage() {
   const dailySales = report?.dailySales ?? []
   const monthlySales = report?.monthlySales ?? []
 
+  // Calculate additional metrics
+  const avgDailyRevenue = dailySales.length > 0 
+    ? dailySales.reduce((sum, d) => sum + d.revenue, 0) / dailySales.length 
+    : 0
+  
+  const highestSaleDay = dailySales.length > 0
+    ? dailySales.reduce((max, d) => d.revenue > max.revenue ? d : max, dailySales[0])
+    : null
+
+  const totalTransactions = dailySales.reduce((sum, d) => sum + (d.revenue > 0 ? 1 : 0), 0)
+
+  const profitMarginTrend = report?.profitMargin && report.profitMargin > 0 ? 'up' : 'down'
+
   const chartConfig = {
     revenue: {
       label: "Revenue",
@@ -105,118 +139,235 @@ export default function AnalyticsPage() {
     },
   }
 
-  const maxRevenue = Math.max(...dailySales.map(d => d.revenue), 1) // Avoid division by zero
-
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden">
       {/* Page Header */}
-      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <h1 className="text-4xl font-bold gradient-text mb-2">
-          Transactions
+          Sales Analytics
         </h1>
         <p className="text-slate-600 dark:text-slate-400 text-base">
-          Comprehensive sales performance analysis and insights
+          Comprehensive sales performance analysis and business insights
         </p>
       </div>
 
       {/* Sales Performance Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-50">Total Stocks Value</CardTitle>
-            <DollarSign className="h-5 w-5 text-white opacity-80" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                Total
+              </Badge>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {formatCurrency(report?.totalRevenue || 0)}
             </div>
+            <div className="text-xs text-slate-600 dark:text-slate-400">Total Revenue</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-50">Total Revenue</CardTitle>
-            <TrendingDown className="h-5 w-5 text-white opacity-80" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <TrendingDown className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              </div>
+              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-0">
+                Cost
+              </Badge>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {formatCurrency(report?.totalCost || 0)}
             </div>
+            <div className="text-xs text-slate-600 dark:text-slate-400">Total Cost</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-orange-50">Total Cost</CardTitle>
-            <TrendingUp className="h-5 w-5 text-white opacity-80" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
+                {profitMarginTrend === 'up' ? (
+                  <ArrowUpRight className="h-3 w-3 mr-1" />
+                ) : (
+                  <ArrowDownRight className="h-3 w-3 mr-1" />
+                )}
+                Profit
+              </Badge>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {formatCurrency(report?.totalProfit || 0)}
             </div>
+            <div className="text-xs text-slate-600 dark:text-slate-400">Net Profit</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500 to-green-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-50">Profit Margin</CardTitle>
-            <Percent className="h-5 w-5 text-white opacity-80" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                <Percent className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0">
+                Margin
+              </Badge>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {(report?.profitMargin || 0).toFixed(1)}%
             </div>
+            <div className="text-xs text-slate-600 dark:text-slate-400">Profit Margin</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filter and Month Navigation */}
-      <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex space-x-2">
-              <Button
-                variant={view === 'daily' ? 'default' : 'outline'}
-                onClick={() => setView('daily')}
-              >
-                Daily Sales
-              </Button>
-              <Button
-                variant={view === 'monthly' ? 'default' : 'outline'}
-                onClick={() => setView('monthly')}
-              >
-                Monthly Sales
-              </Button>
+      {/* Additional Insights */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">Avg Daily Revenue</div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" onClick={prevMonth}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm font-medium text-foreground">{monthYear}</span>
-              <Button variant="outline" size="sm" onClick={nextMonth}>
-                <ChevronRight className="h-4 w-4" />
+            <div className="text-xl font-bold text-slate-900 dark:text-white">
+              {formatCurrency(avgDailyRevenue)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                <ShoppingCart className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">Total Transactions</div>
+            </div>
+            <div className="text-xl font-bold text-slate-900 dark:text-white">
+              {formatNumber(totalTransactions)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">Highest Sale Day</div>
+            </div>
+            <div className="text-xl font-bold text-slate-900 dark:text-white">
+              {highestSaleDay ? formatCurrency(highestSaleDay.revenue) : '₱0.00'}
+            </div>
+            {highestSaleDay && (
+              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                {new Date(highestSaleDay.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filter and Controls */}
+      <Card className="mb-4 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
+        <CardContent className="p-4">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <div>
+                <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">View Type</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={view === 'daily' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setView('daily')}
+                    className="h-9"
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Daily
+                  </Button>
+                  <Button
+                    variant={view === 'monthly' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setView('monthly')}
+                    className="h-9"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Monthly
+                  </Button>
+                </div>
+              </div>
+
+              {view === 'monthly' && (
+                <div>
+                  <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Chart Type</Label>
+                  <Select value={chartType} onValueChange={(value: 'bar' | 'line' | 'area') => setChartType(value)}>
+                    <SelectTrigger className="h-9 w-32 border-slate-200 dark:border-slate-700">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bar">Bar Chart</SelectItem>
+                      <SelectItem value="line">Line Chart</SelectItem>
+                      <SelectItem value="area">Area Chart</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={prevMonth} className="h-9">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm font-semibold text-slate-900 dark:text-white min-w-[140px] text-center">
+                  {monthYear}
+                </span>
+                <Button variant="outline" size="sm" onClick={nextMonth} className="h-9">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+              <Button
+                onClick={exportToCSV}
+                variant="outline"
+                size="sm"
+                className="gap-2 h-9"
+                disabled={dailySales.length === 0 && monthlySales.length === 0}
+              >
+                <Download className="h-4 w-4" />
+                Export
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* Charts */}
       {view === 'daily' ? (
         dailySales.length > 0 ? (
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
-            <CardHeader>
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-250">
+            <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
                 <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
-                  <BarChart3 className="h-5 w-5" />
+                  <Calendar className="h-5 w-5" />
                 </div>
-                Product Calendar
+                Daily Sales Calendar - {monthYear}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="grid grid-cols-7 gap-0.5 p-2">
+              <div className="grid grid-cols-7 gap-0.5 p-4">
                 {/* Weekday Headers */}
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day} className="py-1 text-sm font-medium text-muted-foreground border-b border-border">
+                  <div key={day} className="py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider border-b-2 border-slate-200 dark:border-slate-700">
                     {day}
                   </div>
                 ))}
@@ -227,17 +378,28 @@ export default function AnalyticsPage() {
                     {cell.day !== null ? (
                       <div
                         className={cn(
-                          "h-full p-2 border border-border rounded-lg bg-background hover:bg-muted/50 transition-colors flex flex-col justify-center items-center shadow-sm",
-                          cell.revenue > 0 && "border-r-4 border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20"
+                          "h-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 flex flex-col justify-between shadow-sm",
+                          cell.revenue > 0 && "border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/20 dark:to-emerald-900/20"
                         )}
                       >
-                        <div className="text-base font-semibold text-foreground text-center mb-1">{cell.day}</div>
-                        <div className={`text-sm text-center font-medium ${cell.revenue > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
-                          {cell.revenue > 0 ? formatCurrency(cell.revenue) : '₱0.00'}
+                        <div className="text-sm font-bold text-slate-900 dark:text-white">{cell.day}</div>
+                        <div className="text-center">
+                          {cell.revenue > 0 ? (
+                            <>
+                              <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                {formatCurrency(cell.revenue)}
+                              </div>
+                              <Badge className="mt-1 h-4 text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
+                                Sale
+                              </Badge>
+                            </>
+                          ) : (
+                            <div className="text-xs text-slate-400 dark:text-slate-600">No sales</div>
+                          )}
                         </div>
                       </div>
                     ) : (
-                      <div className="h-full p-2 opacity-30 rounded-lg bg-muted/20" />
+                      <div className="h-full p-2 opacity-30 rounded-lg bg-slate-100 dark:bg-slate-800/20" />
                     )}
                   </div>
                 ))}
@@ -246,46 +408,132 @@ export default function AnalyticsPage() {
           </Card>
         ) : (
           <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-            <CardContent className="p-8 text-center">
-              <p className="text-slate-600 dark:text-slate-400">No sales data available for {monthYear}.</p>
+            <CardContent className="p-12 text-center">
+              <Package className="h-16 w-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No Sales Data</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">No sales data available for {monthYear}.</p>
             </CardContent>
           </Card>
         )
       ) : (
         monthlySales.length > 0 ? (
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
-            <CardHeader>
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-250">
+            <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-green-600 text-white shadow-md">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
                   <BarChart3 className="h-5 w-5" />
                 </div>
-                Monthly Sales Revenue
+                Monthly Sales Revenue Trend
               </CardTitle>
             </CardHeader>
-            <CardContent className="h-[300px] p-0">
+            <CardContent className="h-[400px] p-6">
               <ChartContainer config={chartConfig}>
-                <BarChart data={monthlySales} margin={{ left: 12, right: 12 }}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    tickMargin={8}
-                    minTickGap={32}
-                    tickFormatter={(month) => new Date(month + '-01').toLocaleDateString('en-US', { month: 'short' })}
-                  />
-                  <YAxis />
-                  <ChartTooltipContent
-                    formatter={(value) => [formatCurrency(value as number), 'Revenue']}
-                  />
-                  <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
-                </BarChart>
+                {chartType === 'bar' ? (
+                  <BarChart data={monthlySales} margin={{ left: 12, right: 12, top: 12, bottom: 12 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                    <XAxis
+                      dataKey="month"
+                      tickLine={false}
+                      tickMargin={10}
+                      minTickGap={32}
+                      tickFormatter={(month) => new Date(month + '-01').toLocaleDateString('en-US', { month: 'short' })}
+                      className="text-xs"
+                    />
+                    <YAxis 
+                      tickLine={false}
+                      tickMargin={10}
+                      tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                      className="text-xs"
+                    />
+                    <ChartTooltipContent
+                      formatter={(value) => [formatCurrency(value as number), 'Revenue']}
+                    />
+                    <Bar 
+                      dataKey="revenue" 
+                      fill="url(#colorRevenue)" 
+                      radius={[8, 8, 0, 0]}
+                      maxBarSize={60}
+                    />
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
+                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      </linearGradient>
+                    </defs>
+                  </BarChart>
+                ) : chartType === 'line' ? (
+                  <LineChart data={monthlySales} margin={{ left: 12, right: 12, top: 12, bottom: 12 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                    <XAxis
+                      dataKey="month"
+                      tickLine={false}
+                      tickMargin={10}
+                      minTickGap={32}
+                      tickFormatter={(month) => new Date(month + '-01').toLocaleDateString('en-US', { month: 'short' })}
+                      className="text-xs"
+                    />
+                    <YAxis 
+                      tickLine={false}
+                      tickMargin={10}
+                      tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                      className="text-xs"
+                    />
+                    <ChartTooltipContent
+                      formatter={(value) => [formatCurrency(value as number), 'Revenue']}
+                    />
+                    <Line 
+                      type="monotone"
+                      dataKey="revenue" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={3}
+                      dot={{ fill: "hsl(var(--primary))", r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                ) : (
+                  <AreaChart data={monthlySales} margin={{ left: 12, right: 12, top: 12, bottom: 12 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                    <XAxis
+                      dataKey="month"
+                      tickLine={false}
+                      tickMargin={10}
+                      minTickGap={32}
+                      tickFormatter={(month) => new Date(month + '-01').toLocaleDateString('en-US', { month: 'short' })}
+                      className="text-xs"
+                    />
+                    <YAxis 
+                      tickLine={false}
+                      tickMargin={10}
+                      tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                      className="text-xs"
+                    />
+                    <ChartTooltipContent
+                      formatter={(value) => [formatCurrency(value as number), 'Revenue']}
+                    />
+                    <defs>
+                      <linearGradient id="colorArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <Area 
+                      type="monotone"
+                      dataKey="revenue" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      fill="url(#colorArea)"
+                    />
+                  </AreaChart>
+                )}
               </ChartContainer>
             </CardContent>
           </Card>
         ) : (
           <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-            <CardContent className="p-8 text-center">
-              <p className="text-slate-600 dark:text-slate-400">No monthly sales data available.</p>
+            <CardContent className="p-12 text-center">
+              <BarChart3 className="h-16 w-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No Monthly Data</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">No monthly sales data available.</p>
             </CardContent>
           </Card>
         )

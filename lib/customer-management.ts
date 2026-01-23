@@ -24,6 +24,21 @@ const formatTimestamp = (date: Date) => {
   return `${year}-${month}-${day} / ${hour12}:${minute} ${ampm}`
 }
 
+async function getCustomersSheetId(): Promise<number> {
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  const response = await sheets.spreadsheets.get({
+    spreadsheetId,
+  })
+
+  const customersSheet = response.data.sheets?.find(
+    sheet => sheet.properties?.title === 'Customers'
+  )
+
+  return customersSheet?.properties?.sheetId ?? 0
+}
+
 async function getGoogleSheetsClient() {
   const auth = new google.auth.GoogleAuth({
     credentials: {
@@ -145,66 +160,36 @@ export async function updateCustomer(id: string, updates: Partial<Customer>): Pr
     throw new Error("Customer not found")
   }
 
+  const customer = customers[index]
   const rowNumber = index + 2
 
-  const fieldToColumn: Record<keyof Customer, number> = {
-    id: 0,
-    name: 1,
-    email: 2,
-    phone: 3,
-    address: 4,
-    loyaltyPoints: 5,
-    totalPurchases: 6,
-    totalSpent: 7,
-    lastPurchase: 8,
-    tier: 9,
-    createdAt: 10,
-    notes: 11,
-  }
+  // Merge updates with existing customer data
+  const updatedCustomer = { ...customer, ...updates }
 
-  const requests = []
+  // Prepare the row data
+  const rowData = [
+    updatedCustomer.id,
+    updatedCustomer.name,
+    updatedCustomer.email || "",
+    updatedCustomer.phone || "",
+    updatedCustomer.address || "",
+    updatedCustomer.loyaltyPoints,
+    updatedCustomer.totalPurchases,
+    updatedCustomer.totalSpent,
+    updatedCustomer.lastPurchase || "",
+    updatedCustomer.tier || "bronze",
+    updatedCustomer.createdAt || "",
+  ]
 
-  for (const [key, value] of Object.entries(updates)) {
-    const fieldKey = key as keyof Customer
-    const col = fieldToColumn[fieldKey]
-    if (col !== undefined && value !== undefined) {
-      let userEnteredValue: any
-      if (typeof value === 'number') {
-        userEnteredValue = { numberValue: value }
-      } else if (typeof value === 'string') {
-        userEnteredValue = { stringValue: value }
-      } else {
-        continue
-      }
-
-      requests.push({
-        updateCells: {
-          range: {
-            sheetId: 0,
-            startRowIndex: rowNumber - 1,
-            endRowIndex: rowNumber,
-            startColumnIndex: col,
-            endColumnIndex: col + 1,
-          },
-          fields: "userEnteredValue",
-          rows: [{
-            values: [{
-              userEnteredValue
-            }]
-          }]
-        }
-      })
+  // Update the entire row
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `Customers!A${rowNumber}:K${rowNumber}`,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [rowData]
     }
-  }
-
-  if (requests.length > 0) {
-    await sheets.spreadsheets.batchUpdate({
-      spreadsheetId,
-      requestBody: {
-        requests
-      }
-    })
-  }
+  })
 }
 
 export async function calculateCustomerTier(totalSpent: number): Promise<'bronze' | 'silver' | 'gold' | 'platinum'> {
@@ -225,5 +210,36 @@ export async function addLoyaltyPoints(customerId: string, amount: number): Prom
   const points = Math.floor(amount / 100) // 1 point per 100 spent
   await updateCustomer(customerId, {
     loyaltyPoints: customer.loyaltyPoints + points
+  })
+}
+
+export async function deleteCustomer(id: string): Promise<void> {
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  const customers = await getCustomers()
+  const index = customers.findIndex((customer) => customer.id === id)
+
+  if (index === -1) {
+    throw new Error("Customer not found")
+  }
+
+  const rowNumber = index + 2
+  const sheetId = await getCustomersSheetId()
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      requests: [{
+        deleteDimension: {
+          range: {
+            sheetId,
+            dimension: "ROWS",
+            startIndex: rowNumber - 1,
+            endIndex: rowNumber
+          }
+        }
+      }]
+    }
   })
 }

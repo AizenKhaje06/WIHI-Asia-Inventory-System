@@ -65,19 +65,24 @@ export default function CreateProductPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-6">
-        <Link href="/inventory" className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 inline-flex">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      {/* Page Header */}
+      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+        <Link href="/dashboard/inventory" className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 mb-4 inline-flex transition-colors">
           <ArrowLeft className="h-4 w-4" />
-          Back to Products
+          Back to Inventory
         </Link>
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">Create New Product</h1>
-        <p className="text-muted-foreground">Add a new product to your inventory</p>
+        <h1 className="text-4xl font-bold gradient-text mb-2">
+          Create New Product
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          Add a new product to your inventory
+        </p>
       </div>
 
-      <Card className="bg-gradient-to-br from-black via-black/50 to-gray-900 border-border max-w-2xl">
+      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 max-w-2xl animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <CardHeader>
-          <CardTitle>Product Details</CardTitle>
+          <CardTitle className="text-slate-900 dark:text-white">Product Details</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
