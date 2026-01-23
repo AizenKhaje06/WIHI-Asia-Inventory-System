@@ -14,7 +14,7 @@ export default async function LogPage() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden">
       {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
+        <h1 className="text-4xl font-bold gradient-text mb-2">
           Operation History
         </h1>
         <p className="text-slate-600 dark:text-slate-400 text-base">

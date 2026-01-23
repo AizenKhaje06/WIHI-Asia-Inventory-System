@@ -86,13 +86,13 @@ export default function DashboardPage() {
   return (
     <div className="p-6 space-y-6">
       {/* Page Header */}
-      <div className="mb-2">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Welcome back! Here's what's happening with your inventory.</p>
+      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+        <h1 className="text-4xl font-bold gradient-text mb-2">Dashboard</h1>
+        <p className="text-slate-600 dark:text-slate-400 text-base">Welcome back! Here's what's happening with your inventory.</p>
       </div>
 
       {/* Metric Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <div className="metric-card">
           <div className="metric-card-header">
             <div className="metric-card-icon">
@@ -151,7 +151,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Sales Chart */}
-      <Card>
+      <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -193,7 +193,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* Bottom Section */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-300">
         {/* Top Products */}
         <Card>
           <CardHeader>
@@ -256,7 +256,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-400">
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-semibold flex items-center gap-2">

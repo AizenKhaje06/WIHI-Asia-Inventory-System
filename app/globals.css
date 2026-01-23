@@ -8,13 +8,18 @@
    ============================================ */
 
 :root {
-  /* === ENTERPRISE DARK MODE COLOR PALETTE === */
-  /* Neon Green Accent - Use Sparingly */
+  /* === COLOR PALETTE === */
+  /* Gradient Colors - Blue → Purple → Pink (for page titles) */
+  --gradient-blue: #3B82F6;
+  --gradient-purple: #9333EA;
+  --gradient-pink: #EC4899;
+  
+  /* Neon Green Accent - Use for buttons and active states */
   --accent-neon: #BFFF00;
   --accent-neon-hover: #9FFF00;
   --accent-neon-glow: rgba(191, 255, 0, 0.2);
   
-  /* Primary - Deep Professional Blue (fallback) */
+  /* Primary - Deep Professional Blue */
   --primary-50: #eff6ff;
   --primary-100: #dbeafe;
   --primary-200: #bfdbfe;
@@ -38,7 +43,7 @@
   --neutral-800: #262626;
   --neutral-900: #171717;
   
-  /* Accent - Success, Warning, Error */
+  /* Semantic Colors */
   --success: #10b981;
   --success-light: #d1fae5;
   --warning: #f59e0b;
@@ -48,7 +53,7 @@
   --info: #3b82f6;
   --info-light: #dbeafe;
   
-  /* === ENTERPRISE DARK BACKGROUNDS === */
+  /* === LIGHT MODE DEFAULTS === */
   --background: #f8f9fa;
   --background-secondary: #ffffff;
   --background-tertiary: #f1f3f5;
@@ -57,7 +62,7 @@
   --foreground-secondary: #6c757d;
   --foreground-tertiary: #adb5bd;
   
-  /* === BORDERS & SHADOWS === */
+  /* === BORDERS & SHADOWS (Light Mode) === */
   --border: #e9ecef;
   --border-hover: #dee2e6;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -66,27 +71,7 @@
   --shadow-lg: 0 8px 16px 0 rgb(0 0 0 / 0.12);
   --shadow-xl: 0 12px 24px 0 rgb(0 0 0 / 0.15);
   
-  /* === ENTERPRISE SIDEBAR (Always Dark) === */
-  --sidebar-width: 240px;
-  --sidebar-collapsed: 80px;
-  --sidebar-bg: #1a1d1f;
-  --sidebar-border: #2d3135;
-  --sidebar-hover: rgba(255, 255, 255, 0.05);
-  --sidebar-active: rgba(191, 255, 0, 0.15);
-  --sidebar-active-border: #BFFF00;
-  --sidebar-text: #f9fafb;
-  --sidebar-text-secondary: #9ca3af;
-  
-  /* === BORDERS & SHADOWS === */
-  --border: #1f2937;
-  --border-hover: #374151;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
-  --shadow: 0 2px 4px 0 rgb(0 0 0 / 0.5);
-  --shadow-md: 0 4px 8px 0 rgb(0 0 0 / 0.5);
-  --shadow-lg: 0 8px 16px 0 rgb(0 0 0 / 0.6);
-  --shadow-xl: 0 12px 24px 0 rgb(0 0 0 / 0.7);
-  
-  /* === ENTERPRISE SIDEBAR === */
+  /* === SIDEBAR (Always Dark) === */
   --sidebar-width: 240px;
   --sidebar-collapsed: 80px;
   --sidebar-bg: #0d1117;
@@ -130,7 +115,7 @@
   --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-/* === DARK MODE THEME (OPTIONAL) === */
+/* === DARK MODE THEME === */
 .dark {
   --background: #0a0e1a;
   --background-secondary: #111827;
@@ -169,35 +154,12 @@ html {
 }
 
 body {
-  background: #f8f9fa;
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
   line-height: 1.6;
   letter-spacing: -0.011em;
   transition: background-color var(--transition-base), color var(--transition-base);
-}
-
-/* Dark mode theme */
-.dark {
-  --background: #0a0e1a;
-  --background-secondary: #111827;
-  --background-tertiary: #1a1f2e;
-  --background-card: #1e2433;
-  --foreground: #f9fafb;
-  --foreground-secondary: #9ca3af;
-  --foreground-tertiary: #6b7280;
-  
-  --border: #1f2937;
-  --border-hover: #374151;
-  
-  --navbar-bg: #0d1117;
-  --navbar-border: #1f2937;
-  
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
-  --shadow: 0 2px 4px 0 rgb(0 0 0 / 0.5);
-  --shadow-md: 0 4px 8px 0 rgb(0 0 0 / 0.5);
-  --shadow-lg: 0 8px 16px 0 rgb(0 0 0 / 0.6);
-  --shadow-xl: 0 12px 24px 0 rgb(0 0 0 / 0.7);
 }
 
 .dark body {
@@ -797,7 +759,7 @@ h6 { font-size: 1rem; }        /* 16px */
    ============================================ */
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
+  background: linear-gradient(135deg, var(--gradient-blue) 0%, var(--gradient-purple) 50%, var(--gradient-pink) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

@@ -55,9 +55,9 @@ export default function LoginPage() {
             className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg"
             style={{ background: 'linear-gradient(135deg, var(--primary) 0%, #2563EB 100%)' }}
           >
-            <Lock className="w-8 h-8 text-white" />
+            <Lock className="w-5 h-5   text-white" />
           </div>
-          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>StockSync</h1>
+          <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>StockSync</h1>
           <p className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>Professional Inventory Management</p>
         </div>
 
