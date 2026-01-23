@@ -147,8 +147,8 @@ export default function OutOfStockPage() {
   return (
     <div className="p-4 sm:p-6 md:p-8 w-full max-w-full overflow-x-hidden">
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold text-white mb-2">Out of Stock Items</h1>
-        <p className="text-slate-400 text-lg">Items that are completely out of stock</p>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">Out of Stock Items</h1>
+        <p className="text-slate-600 dark:text-slate-400 text-base">Items that are completely out of stock</p>
       </div>
 
       <Card className="mb-8 border-0 shadow-lg animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">

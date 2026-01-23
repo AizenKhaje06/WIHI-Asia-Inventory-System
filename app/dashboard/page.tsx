@@ -86,9 +86,11 @@ export default function DashboardPage() {
   return (
     <div className="p-6 space-y-6">
       {/* Page Header */}
-      <div className="mb-2">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Welcome back! Here's what's happening with your inventory.</p>
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+          Dashboard
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400 text-base">Welcome back! Here's what's happening with your inventory.</p>
       </div>
 
       {/* Metric Cards */}
