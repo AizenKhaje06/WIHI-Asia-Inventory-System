@@ -143,11 +143,11 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
               <Warehouse className="h-6 w-6 text-[#0a0e1a]" strokeWidth={2.5} />
             </div>
             {!collapsed && (
-              <div className={cn(reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
-                <h1 className="text-lg font-bold tracking-tight" style={{ color: 'var(--sidebar-text)' }}>
+              <div className={cn("flex flex-col", reducedMotion ? "" : "animate-in fade-in-0 slide-in-from-left-2 duration-300")}>
+                <h1 className="text-lg font-bold tracking-tight leading-tight" style={{ color: 'var(--sidebar-text)' }}>
                   StockSync
                 </h1>
-                <p className="text-xs" style={{ color: 'var(--sidebar-text-secondary)' }}>Inventory System</p>
+                <p className="text-xs leading-tight mt-0.5" style={{ color: 'var(--sidebar-text-secondary)' }}>Inventory System</p>
               </div>
             )}
           </div>
