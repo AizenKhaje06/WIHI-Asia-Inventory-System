@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { Search, Bell, Settings, User, Moon, Sun, Menu } from "lucide-react"
+import { Bell, Settings, User, Moon, Sun, Menu } from "lucide-react"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/hooks/use-accessibility"
@@ -22,7 +22,6 @@ interface PremiumNavbarProps {
 
 export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggle }: PremiumNavbarProps) {
   const { theme, setTheme } = useTheme()
-  const [searchFocused, setSearchFocused] = useState(false)
   const [mounted, setMounted] = useState(false)
   const reducedMotion = useReducedMotion()
 
@@ -34,15 +33,15 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 h-16 backdrop-blur-xl border-b z-40",
+        "fixed top-0 right-0 h-16 backdrop-blur-xl border-b z-40 shadow-lg",
         reducedMotion ? "" : "transition-all duration-300",
-        "lg:left-[240px] left-0"
+        "lg:left-[240px] left-0",
+        // Light mode
+        "bg-white/95 border-slate-200",
+        // Dark mode - black with cyan glow
+        "dark:bg-black/95 dark:border-white/10",
+        "dark:after:absolute dark:after:bottom-0 dark:after:left-0 dark:after:right-0 dark:after:h-[1px] dark:after:bg-gradient-to-r dark:after:from-transparent dark:after:via-cyan-500/50 dark:after:to-transparent"
       )}
-      style={{
-        backgroundColor: 'var(--card-bg)',
-        borderColor: 'var(--border)',
-        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-      }}
       role="banner"
     >
       <div className="h-full px-4 lg:px-6 flex items-center justify-between gap-3 min-w-0">
@@ -50,13 +49,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
         <div className="flex items-center gap-3 flex-shrink-0">
           <button
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2 rounded-lg transition-colors duration-200 flex-shrink-0"
-            style={{ 
-              backgroundColor: 'transparent',
-              color: 'var(--foreground-secondary)'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--background-secondary)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            className="lg:hidden p-2 rounded-lg transition-colors duration-200 flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
             aria-label="Open navigation menu"
             aria-expanded="false"
           >
@@ -69,19 +62,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="p-2 rounded-lg transition-colors duration-200 group flex-shrink-0"
-            style={{ 
-              backgroundColor: 'transparent',
-              color: 'var(--foreground-secondary)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--background-secondary)'
-              e.currentTarget.style.color = 'var(--foreground)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = 'var(--foreground-secondary)'
-            }}
+            className="p-2 rounded-lg transition-colors duration-200 group flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
             title={mounted ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
             aria-label={mounted ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
           >
@@ -98,28 +79,12 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="relative p-2 rounded-lg transition-colors duration-200 group flex-shrink-0"
-                style={{ 
-                  backgroundColor: 'transparent',
-                  color: 'var(--foreground-secondary)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--background-secondary)'
-                  e.currentTarget.style.color = 'var(--foreground)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                  e.currentTarget.style.color = 'var(--foreground-secondary)'
-                }}
+                className="relative p-2 rounded-lg transition-colors duration-200 group flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
                 aria-label="Notifications (2 unread)"
               >
                 <Bell className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
                 <span 
-                  className="absolute top-1 right-1 w-2 h-2 rounded-full ring-2" 
-                  style={{ 
-                    backgroundColor: 'var(--error)',
-                    ringColor: 'var(--card-bg)'
-                  }}
+                  className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-card" 
                   aria-hidden="true" 
                 />
               </button>
@@ -144,19 +109,8 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
 
           {/* Settings */}
           <button
-            className="hidden md:block p-2 rounded-lg transition-colors duration-200 group flex-shrink-0"
-            style={{ 
-              backgroundColor: 'transparent',
-              color: 'var(--foreground-secondary)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--background-secondary)'
-              e.currentTarget.style.color = 'var(--foreground)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = 'var(--foreground-secondary)'
-            }}
+            onClick={() => window.location.href = '/dashboard/settings'}
+            className="hidden md:block p-2 rounded-lg transition-colors duration-200 group flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
             title="Settings"
             aria-label="Open settings"
           >
@@ -167,33 +121,34 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg transition-colors duration-200 group flex-shrink-0"
-                style={{ 
-                  backgroundColor: 'transparent'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--background-secondary)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg transition-colors duration-200 group flex-shrink-0 hover:bg-accent"
                 aria-label="User menu"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-md flex-shrink-0" aria-hidden="true">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center shadow-lg flex-shrink-0 from-blue-600 to-blue-700 dark:from-cyan-500 dark:to-cyan-600 dark:shadow-cyan-500/30" aria-hidden="true">
                   <User className="h-4 w-4 text-white" strokeWidth={2.5} />
                 </div>
                 <div className="hidden xl:block text-left min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>Admin User</p>
-                  <p className="text-xs truncate" style={{ color: 'var(--foreground-secondary)' }}>Administrator</p>
+                  <p className="text-sm font-medium truncate text-foreground">Admin User</p>
+                  <p className="text-xs truncate text-muted-foreground">Administrator</p>
                 </div>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-              <DropdownMenuItem>Preferences</DropdownMenuItem>
-              <DropdownMenuItem>Help & Support</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => window.location.href = '/dashboard/settings'}>
+                Profile Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => window.location.href = '/dashboard/settings'}>
+                Preferences
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => window.open('https://support.example.com', '_blank')}>
+                Help & Support
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-red-600 dark:text-red-400"
-                onClick={() => {
+                onSelect={() => {
                   localStorage.removeItem("isLoggedIn")
                   window.location.href = "/"
                 }}

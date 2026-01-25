@@ -71,9 +71,9 @@ export default function ReportsPage() {
 
       <Card className="mb-8 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <CardContent className="pt-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-end">
-            <div className="flex-1">
-              <Label htmlFor="search" className="text-slate-700 dark:text-slate-300 font-medium">Search Transactions</Label>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="search" className="text-slate-700 dark:text-slate-300 font-medium mb-2 block">Search Transactions</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
@@ -85,17 +85,17 @@ export default function ReportsPage() {
                 />
               </div>
             </div>
-            <div className="flex gap-4">
-              <div className="w-48">
-                <Label htmlFor="startDate" className="text-slate-700 dark:text-slate-300 font-medium">Start Date</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="startDate" className="text-slate-700 dark:text-slate-300 font-medium mb-2 block">Start Date</Label>
                 <Input id="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20" />
               </div>
-              <div className="w-48">
-                <Label htmlFor="endDate" className="text-slate-700 dark:text-slate-300 font-medium">End Date</Label>
+              <div>
+                <Label htmlFor="endDate" className="text-slate-700 dark:text-slate-300 font-medium mb-2 block">End Date</Label>
                 <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20" />
               </div>
             </div>
-            <Button onClick={fetchReport} disabled={loading} className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300">
+            <Button onClick={fetchReport} disabled={loading} className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 w-full">
               {loading ? "Loading..." : "Generate Report"}
             </Button>
           </div>

@@ -1,12 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getInventoryItems, getTransactions } from "@/lib/google-sheets"
+import { getInventoryItems, getTransactions, getRestocks } from "@/lib/google-sheets"
 import {
   calculateSalesForecast,
   performABCAnalysis,
   calculateInventoryTurnover,
   identifyDeadStock,
   calculateProfitMarginByCategory,
-  calculateReorderPoint
+  calculateReorderPoint,
+  calculateReturnAnalytics,
+  calculateNetSales,
+  performABCAnalysisWithReturns
 } from "@/lib/analytics"
 
 export async function GET(request: NextRequest) {
@@ -17,6 +20,7 @@ export async function GET(request: NextRequest) {
 
     const items = await getInventoryItems()
     const transactions = await getTransactions()
+    const restocks = await getRestocks()
 
     let result: any = {}
 
@@ -33,7 +37,8 @@ export async function GET(request: NextRequest) {
         break
 
       case 'abc':
-        result = performABCAnalysis(items, transactions)
+        // Use ABC analysis with returns for more accurate results
+        result = performABCAnalysisWithReturns(items, transactions, restocks)
         break
 
       case 'turnover':
@@ -54,13 +59,23 @@ export async function GET(request: NextRequest) {
         }
         break
 
+      case 'returns':
+        result = calculateReturnAnalytics(restocks, transactions, items)
+        break
+
+      case 'netsales':
+        result = calculateNetSales(transactions, restocks)
+        break
+
       case 'all':
       default:
         result = {
-          abc: performABCAnalysis(items, transactions),
+          abc: performABCAnalysisWithReturns(items, transactions, restocks),
           turnover: calculateInventoryTurnover(items, transactions),
           deadStock: identifyDeadStock(items, transactions),
-          profitMargin: calculateProfitMarginByCategory(transactions, items)
+          profitMargin: calculateProfitMarginByCategory(transactions, items),
+          returns: calculateReturnAnalytics(restocks, transactions, items),
+          netSales: calculateNetSales(transactions, restocks)
         }
         break
     }

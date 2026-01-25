@@ -62,22 +62,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
       <head>
-        {/* Preconnect to external domains */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        
-        {/* Gabarito Font */}
-        <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-        
-        {/* DNS prefetch for performance */}
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className={`min-h-screen w-full overflow-x-hidden font-sans antialiased ${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className={`min-h-screen w-full overflow-x-hidden antialiased ${GeistSans.variable} ${GeistMono.variable} font-sans`}>
         {/* Skip to main content for accessibility */}
         <a href="#main-content" className="skip-to-main sr-only focus:not-sr-only">
           Skip to main content

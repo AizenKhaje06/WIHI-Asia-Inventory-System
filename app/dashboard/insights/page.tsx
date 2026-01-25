@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { TrendingUp, TrendingDown, Minus, AlertTriangle, Target, BarChart3, Package, DollarSign, Percent, Download, RefreshCw, TrendingUpIcon, Search, X } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, Target, BarChart3, Package, DollarSign, Percent, Download, RefreshCw, TrendingUpIcon, Search, X, RotateCcw } from "lucide-react"
 import type { ABCAnalysis, InventoryTurnover, PredictiveAnalytics } from "@/lib/types"
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
@@ -19,6 +19,7 @@ export default function InsightsPage() {
   const [deadStock, setDeadStock] = useState<any[]>([])
   const [profitMargin, setProfitMargin] = useState<any[]>([])
   const [forecasts, setForecasts] = useState<PredictiveAnalytics[]>([])
+  const [returnAnalytics, setReturnAnalytics] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("abc")
   
@@ -40,7 +41,10 @@ export default function InsightsPage() {
   
   const [deadStockSearch, setDeadStockSearch] = useState("")
   const [deadStockCategoryFilter, setDeadStockCategoryFilter] = useState("all")
-  const [deadStockSortBy, setDeadStockSortBy] = useState("value-desc")
+  const [deadStockSortBy, setDeadStockSortBy] = useState("days-desc")
+  
+  const [returnSearch, setReturnSearch] = useState("")
+  const [returnSortBy, setReturnSortBy] = useState("quantity-desc")
 
   useEffect(() => {
     fetchAnalytics()
@@ -49,19 +53,32 @@ export default function InsightsPage() {
   async function fetchAnalytics() {
     setLoading(true)
     try {
-      const [analyticsRes, forecastRes] = await Promise.all([
+      const [analyticsRes, forecastRes, itemsRes] = await Promise.all([
         fetch("/api/analytics?type=all"),
-        fetch("/api/analytics?type=forecast")
+        fetch("/api/analytics?type=forecast"),
+        fetch("/api/items")
       ])
 
       const analyticsData = await analyticsRes.json()
       const forecastData = await forecastRes.json()
+      const itemsData = await itemsRes.json()
 
       setAbcAnalysis(analyticsData.abc || [])
       setTurnover(analyticsData.turnover || [])
-      setDeadStock(analyticsData.deadStock || [])
       setProfitMargin(analyticsData.profitMargin || [])
       setForecasts(Array.isArray(forecastData) ? forecastData : [])
+      setReturnAnalytics(analyticsData.returns || null)
+      
+      // Use turnover data for dead stock (items with 180+ days to sell)
+      const deadStockItems = (analyticsData.turnover || [])
+        .filter(t => t.status === 'dead-stock')
+        .map(t => {
+          const item = itemsData.find(i => i.id === t.itemId)
+          return item ? { ...item, daysToSell: t.daysToSell, turnoverRatio: t.turnoverRatio } : null
+        })
+        .filter(Boolean)
+      
+      setDeadStock(deadStockItems)
     } catch (error) {
       console.error("Error fetching analytics:", error)
     } finally {
@@ -83,6 +100,8 @@ export default function InsightsPage() {
         return [item.category, item.revenue, item.profit, item.margin]
       } else if (activeTab === 'deadstock') {
         return [item.name, item.category, item.quantity, item.quantity * item.costPrice]
+      } else if (activeTab === 'returns') {
+        return [item.itemName, item.quantity, item.value, item.returnRate]
       }
       return []
     })
@@ -212,6 +231,7 @@ export default function InsightsPage() {
       if (deadStockSortBy === "value-desc") return (b.quantity * b.costPrice) - (a.quantity * a.costPrice)
       if (deadStockSortBy === "value-asc") return (a.quantity * a.costPrice) - (b.quantity * b.costPrice)
       if (deadStockSortBy === "quantity-desc") return b.quantity - a.quantity
+      if (deadStockSortBy === "days-desc") return (b.daysToSell || 0) - (a.daysToSell || 0)
       if (deadStockSortBy === "name-asc") return a.name.localeCompare(b.name)
       return 0
     })
@@ -340,6 +360,13 @@ export default function InsightsPage() {
             >
               Dead Stock
             </TabsTrigger>
+            <TabsTrigger 
+              value="returns"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900"
+            >
+              <RotateCcw className="h-4 w-4 mr-1.5" />
+              Returns
+            </TabsTrigger>
           </TabsList>
 
           <div className="flex gap-2">
@@ -364,6 +391,18 @@ export default function InsightsPage() {
                   exportToCSV(filteredProfitMargin, 'profit-margins', ['Category', 'Revenue', 'Profit', 'Margin %'])
                 } else if (activeTab === 'deadstock') {
                   exportToCSV(filteredDeadStock, 'dead-stock', ['Product', 'Category', 'Quantity', 'Value'])
+                } else if (activeTab === 'returns') {
+                  const filteredReturns = returnAnalytics?.returnsByItem
+                    ?.filter((item: any) => item.itemName.toLowerCase().includes(returnSearch.toLowerCase()))
+                    .sort((a: any, b: any) => {
+                      if (returnSortBy === "quantity-desc") return b.quantity - a.quantity
+                      if (returnSortBy === "quantity-asc") return a.quantity - b.quantity
+                      if (returnSortBy === "value-desc") return b.value - a.value
+                      if (returnSortBy === "rate-desc") return b.returnRate - a.returnRate
+                      if (returnSortBy === "name-asc") return a.itemName.localeCompare(b.itemName)
+                      return 0
+                    }) || []
+                  exportToCSV(filteredReturns, 'returns-analysis', ['Product', 'Quantity Returned', 'Return Value', 'Return Rate %'])
                 }
               }}
               variant="outline"
@@ -374,7 +413,8 @@ export default function InsightsPage() {
                 (activeTab === 'turnover' && filteredTurnover.length === 0) ||
                 (activeTab === 'forecast' && filteredForecasts.length === 0) ||
                 (activeTab === 'profit' && filteredProfitMargin.length === 0) ||
-                (activeTab === 'deadstock' && filteredDeadStock.length === 0)
+                (activeTab === 'deadstock' && filteredDeadStock.length === 0) ||
+                (activeTab === 'returns' && (!returnAnalytics?.returnsByItem || returnAnalytics.returnsByItem.length === 0))
               }
             >
               <Download className="h-4 w-4" />
@@ -996,6 +1036,7 @@ export default function InsightsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="days-desc">Days to Sell (High to Low)</SelectItem>
                       <SelectItem value="value-desc">Value (High to Low)</SelectItem>
                       <SelectItem value="value-asc">Value (Low to High)</SelectItem>
                       <SelectItem value="quantity-desc">Quantity (High to Low)</SelectItem>
@@ -1047,12 +1088,13 @@ export default function InsightsPage() {
               ) : (
                 <div className="overflow-x-auto -mx-6 px-6">
                   <div className="min-w-full inline-block align-middle">
-                    <table className="w-full min-w-[800px]">
+                    <table className="w-full min-w-[900px]">
                       <thead>
                         <tr className="border-b-2 border-slate-200 dark:border-slate-700">
                           <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
                           <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
                           <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Quantity</th>
+                          <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
                           <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
                           <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Action</th>
                         </tr>
@@ -1063,10 +1105,13 @@ export default function InsightsPage() {
                             <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
                             <td className="py-4 text-sm text-slate-600 dark:text-slate-400">{item.category}</td>
                             <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{item.quantity}</td>
+                            <td className="py-4 text-right font-bold text-red-600">
+                              {item.daysToSell ? `${item.daysToSell} days` : 'N/A'}
+                            </td>
                             <td className="py-4 text-right font-bold text-red-600">{formatCurrency(item.quantity * item.costPrice)}</td>
                             <td className="py-4">
                               <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 border">
-                                Consider Discount/Removal
+                                Slow Moving (180+ days)
                               </Badge>
                             </td>
                           </tr>
@@ -1076,6 +1121,191 @@ export default function InsightsPage() {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Returns Analytics */}
+        <TabsContent value="returns" className="space-y-4 mt-4">
+          {/* Key Metrics */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="border-0 shadow-md bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-red-700 dark:text-red-400 flex items-center gap-2">
+                  <RotateCcw className="h-4 w-4" />
+                  Total Returns
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-900 dark:text-red-100">
+                  {returnAnalytics?.totalReturns || 0}
+                </div>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                  Items returned
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-md bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-orange-700 dark:text-orange-400 flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Return Value
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                  {formatCurrency(returnAnalytics?.totalReturnValue || 0)}
+                </div>
+                <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                  Total cost of returns
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                  <Percent className="h-4 w-4" />
+                  Return Rate
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                  {returnAnalytics?.returnRate?.toFixed(2) || 0}%
+                </div>
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  Of total sales
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-md bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-700/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-400 flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Affected Items
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  {returnAnalytics?.returnsByItem?.length || 0}
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                  Products with returns
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Returns by Reason Chart */}
+          {returnAnalytics?.returnsByReason && returnAnalytics.returnsByReason.length > 0 && (
+            <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+              <CardHeader>
+                <CardTitle className="text-slate-900 dark:text-white">Returns by Reason</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={returnAnalytics.returnsByReason}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" />
+                    <XAxis dataKey="reason" className="text-xs" />
+                    <YAxis className="text-xs" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'rgb(15 23 42)', 
+                        border: '1px solid rgb(51 65 85)',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Legend />
+                    <Bar dataKey="count" fill="#EF4444" name="Quantity" />
+                    <Bar dataKey="value" fill="#F97316" name="Value (₱)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Returns by Item Table */}
+          <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-slate-900 dark:text-white">Returns by Item</CardTitle>
+                <div className="flex gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      placeholder="Search items..."
+                      value={returnSearch}
+                      onChange={(e) => setReturnSearch(e.target.value)}
+                      className="pl-10 w-64"
+                    />
+                  </div>
+                  <Select value={returnSortBy} onValueChange={setReturnSortBy}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="quantity-desc">Quantity (High to Low)</SelectItem>
+                      <SelectItem value="quantity-asc">Quantity (Low to High)</SelectItem>
+                      <SelectItem value="value-desc">Value (High to Low)</SelectItem>
+                      <SelectItem value="rate-desc">Return Rate (High to Low)</SelectItem>
+                      <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Item Name</th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Quantity Returned</th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Return Value</th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Return Rate</th>
+                      <th className="text-center py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {returnAnalytics?.returnsByItem
+                      ?.filter((item: any) => item.itemName.toLowerCase().includes(returnSearch.toLowerCase()))
+                      .sort((a: any, b: any) => {
+                        if (returnSortBy === "quantity-desc") return b.quantity - a.quantity
+                        if (returnSortBy === "quantity-asc") return a.quantity - b.quantity
+                        if (returnSortBy === "value-desc") return b.value - a.value
+                        if (returnSortBy === "rate-desc") return b.returnRate - a.returnRate
+                        if (returnSortBy === "name-asc") return a.itemName.localeCompare(b.itemName)
+                        return 0
+                      })
+                      .map((item: any) => (
+                        <tr key={item.itemId} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                          <td className="py-3 px-4 text-sm text-slate-900 dark:text-white font-medium">{item.itemName}</td>
+                          <td className="py-3 px-4 text-sm text-right text-slate-700 dark:text-slate-300">{item.quantity}</td>
+                          <td className="py-3 px-4 text-sm text-right text-slate-700 dark:text-slate-300">{formatCurrency(item.value)}</td>
+                          <td className="py-3 px-4 text-sm text-right">
+                            <span className={`font-semibold ${item.returnRate > 10 ? 'text-red-600 dark:text-red-400' : item.returnRate > 5 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>
+                              {item.returnRate.toFixed(2)}%
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <Badge className={`${item.returnRate > 10 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800' : item.returnRate > 5 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800'}`}>
+                              {item.returnRate > 10 ? 'High Return Rate' : item.returnRate > 5 ? 'Moderate' : 'Low'}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                {(!returnAnalytics?.returnsByItem || returnAnalytics.returnsByItem.length === 0) && (
+                  <div className="text-center py-12">
+                    <RotateCcw className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-500 dark:text-slate-400">No returns data available</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Returns will appear here when items are returned</p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

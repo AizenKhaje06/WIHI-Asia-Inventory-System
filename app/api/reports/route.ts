@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const salesTransactions = transactions.filter((t) => t.type === "sale")
+    const salesTransactions = transactions.filter((t) => t.type === "sale" && t.transactionType === "sale")
 
     const totalRevenue = salesTransactions.reduce((sum, t) => sum + t.totalRevenue, 0)
     const totalCost = salesTransactions.reduce((sum, t) => sum + t.totalCost, 0)

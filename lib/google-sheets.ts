@@ -74,7 +74,7 @@ async function initializeTransactionsSheet() {
   try {
     await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "Transactions!A1:J1"
+      range: "Transactions!A1:M1"
     })
   } catch (error) {
     // Sheet doesn't exist, create it
@@ -87,7 +87,7 @@ async function initializeTransactionsSheet() {
               title: 'Transactions',
               gridProperties: {
                 rowCount: 1000,
-                columnCount: 10
+                columnCount: 13
               }
             }
           }
@@ -97,10 +97,10 @@ async function initializeTransactionsSheet() {
     // Add headers
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: "Transactions!A1:J1",
+      range: "Transactions!A1:M1",
       valueInputOption: "RAW",
       requestBody: {
-        values: [["ID", "Item ID", "Item Name", "Quantity", "Cost Price", "Selling Price", "Total Cost", "Profit", "Timestamp", "Department"]]
+        values: [["ID", "Item ID", "Item Name", "Quantity", "Cost Price", "Selling Price", "Total Cost", "Profit", "Timestamp", "Department", "Staff Name", "Notes", "Transaction Type"]]
       }
     })
   }
@@ -339,12 +339,15 @@ export async function addTransaction(transaction: Omit<Transaction, "id" | "time
       transaction.profit,
       timestamp,
       transaction.department || "",
+      transaction.staffName || "",
+      transaction.notes || "",
+      transaction.transactionType || "sale",
     ],
   ]
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "Transactions!A:J",
+    range: "Transactions!A:M",
     valueInputOption: "USER_ENTERED",
     requestBody: { values },
   })
@@ -360,14 +363,16 @@ export async function getTransactions(): Promise<Transaction[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: "Transactions!A2:J",
+    range: "Transactions!A2:M",
   })
 
   const rows = response.data.values || []
   return rows.map((row) => {
     const quantity = Number.parseInt(row[3] || "0")
     const sellingPrice = Number.parseFloat(row[5] || "0")
-    const totalRevenue = quantity * sellingPrice
+    const transactionType = (row[12] || "sale") as "sale" | "demo" | "internal" | "transfer"
+    // For non-sales transactions, totalRevenue should be 0
+    const totalRevenue = transactionType === 'sale' ? quantity * sellingPrice : 0
     return {
       id: row[0] || "",
       itemId: row[1] || "",
@@ -380,7 +385,10 @@ export async function getTransactions(): Promise<Transaction[]> {
       profit: Number.parseFloat(row[7] || "0"),
       timestamp: row[8] || "",
       type: "sale" as "sale" | "restock",
+      transactionType,
       department: row[9] || "",
+      staffName: row[10] || "",
+      notes: row[11] || "",
     }
   })
 }

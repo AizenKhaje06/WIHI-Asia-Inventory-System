@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -17,13 +16,14 @@ interface CartItem {
 }
 
 export default function POSPage() {
-  const { theme } = useTheme()
   const [items, setItems] = useState<InventoryItem[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(false)
   const [department, setDepartment] = useState('')
-  const [orderSummaryOpen, setOrderSummaryOpen] = useState(false)
+  const [staffName, setStaffName] = useState('')
+  const [notes, setNotes] = useState('')
+  const [dispatchId, setDispatchId] = useState('')
   const [successModalOpen, setSuccessModalOpen] = useState(false)
 
   const total = useMemo(() => cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0), [cart])
@@ -92,7 +92,7 @@ export default function POSPage() {
   }
 
   async function handleCheckout() {
-    if (cart.length === 0) return
+    if (cart.length === 0 || !department || !staffName) return
 
     setLoading(true)
     try {
@@ -107,16 +107,23 @@ export default function POSPage() {
         body: JSON.stringify({
           items: saleItems,
           department,
+          staffName,
+          notes,
         }),
       })
 
+      // Generate dispatch ID
+      const newDispatchId = `WD-${Date.now()}`
+      setDispatchId(newDispatchId)
+      
       setCart([])
       fetchItems()
-      setOrderSummaryOpen(false)
       setSuccessModalOpen(true)
 
       // Reset form fields
       setDepartment('')
+      setStaffName('')
+      setNotes('')
     } catch (error) {
       console.error("[v0] Error processing sale:", error)
       alert("Failed to process sale")
@@ -128,276 +135,245 @@ export default function POSPage() {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden">
       {/* Page Header */}
-      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold gradient-text mb-2">
-          Point of Sale
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
+          Warehouse Dispatch
         </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
-          Professional sales transaction processing system
+        <p className="text-slate-600 dark:text-slate-400 text-sm">
+          Stock release and distribution management
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div>
-          <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
-            <CardContent className="pt-6">
-              <div className="flex flex-col lg:flex-row gap-4 items-end">
-                <div className="flex-1">
-                  <Label htmlFor="search" className="text-slate-700 dark:text-slate-300 font-medium">Search Products</Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <Input
-                      id="search"
-                      placeholder="Search by name or category..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="pl-10 border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
-                    />
-                  </div>
-                </div>
+      {/* Top Section: Dispatch Form + Cart Summary */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mb-6">
+        {/* Dispatch Form - Left */}
+        <Card className="border-slate-200 dark:border-slate-800">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+              Dispatch Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div>
+              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Staff Name *</Label>
+              <Input
+                placeholder="Enter your name"
+                value={staffName}
+                onChange={(e) => setStaffName(e.target.value)}
+                className="mt-1.5"
+              />
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Destination *</Label>
+              <Select value={department} onValueChange={(value) => setDepartment(value)}>
+                <SelectTrigger className="mt-1.5">
+                  <SelectValue placeholder="Select destination" />
+                </SelectTrigger>
+                <SelectContent>
+                  <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">Sales Channels</div>
+                  <SelectItem value="Facebook">📘 Facebook Store</SelectItem>
+                  <SelectItem value="Tiktok">🎵 Tiktok Shop</SelectItem>
+                  <SelectItem value="Lazada">🛒 Lazada</SelectItem>
+                  <SelectItem value="Shopee">🛍️ Shopee</SelectItem>
+                  <SelectItem value="Physical Store">🏪 Physical Store</SelectItem>
+                  <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2">Internal Use</div>
+                  <SelectItem value="Demo/Display">🎯 Demo/Display</SelectItem>
+                  <SelectItem value="Internal Use">🔧 Internal Use</SelectItem>
+                  <SelectItem value="Warehouse">📦 Warehouse Transfer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Notes (Optional)</Label>
+              <Input
+                placeholder="Purpose or notes..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="mt-1.5"
+              />
+            </div>
+
+            <Button 
+              onClick={handleCheckout} 
+              disabled={loading || !department || !staffName || cart.length === 0} 
+              className="w-full bg-blue-600 hover:bg-blue-700 mt-2" 
+              size="lg"
+            >
+              {loading ? "Processing..." : `Dispatch ${cart.length > 0 ? `(${cart.length} items)` : ''}`}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Cart Summary - Right */}
+        <Card className="border-slate-200 dark:border-slate-800">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center justify-between">
+              <span>Cart Summary</span>
+              <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">₱{total.toFixed(2)}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {cart.length === 0 ? (
+              <div className="text-center py-8">
+                <ShoppingCart className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                <p className="text-slate-500 dark:text-slate-400 text-sm">No items in cart</p>
+                <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">Select products below to add</p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
-                  <Package className="h-5 w-5" />
-                </div>
-                Products ({filteredItems.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="max-h-[600px] overflow-y-auto pr-2">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3">
-                  {filteredItems.map((item) => {
-                    const stockPercentage = (item.quantity / (item.reorderLevel * 3)) * 100
-                    const isLowStock = item.quantity <= item.reorderLevel
-                    const isOutOfStock = item.quantity === 0
-                    
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => addToCart(item)}
-                        disabled={isOutOfStock}
-                        className={`
-                          relative rounded-xl border-2 p-4 text-left transition-all duration-200
-                          ${isOutOfStock 
-                            ? 'border-red-200 bg-red-50 dark:bg-red-900/10 opacity-60 cursor-not-allowed' 
-                            : isLowStock
-                            ? 'border-amber-200 bg-amber-50 dark:bg-amber-900/10 hover:border-amber-400 hover:shadow-lg'
-                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-400 hover:shadow-lg hover:scale-105'
-                          }
-                        `}
-                      >
-                        {/* Stock Badge */}
-                        <div className="absolute top-2 right-2">
-                          {isOutOfStock ? (
-                            <span className="px-2 py-1 text-xs font-bold rounded-full bg-red-500 text-white">
-                              OUT
-                            </span>
-                          ) : isLowStock ? (
-                            <span className="px-2 py-1 text-xs font-bold rounded-full bg-amber-500 text-white">
-                              LOW
-                            </span>
-                          ) : (
-                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
-                              {item.quantity}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Product Info */}
-                        <div className="mt-6 mb-3">
-                          <h3 className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-2 mb-1 min-h-[2.5rem]">
-                            {item.name}
-                          </h3>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                            {item.category}
-                          </p>
-                        </div>
-
-                        {/* Stock Bar */}
-                        <div className="mb-3">
-                          <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full transition-all duration-300 ${
-                                isOutOfStock ? 'bg-red-500' :
-                                isLowStock ? 'bg-amber-500' : 
-                                'bg-green-500'
-                              }`}
-                              style={{ width: `${Math.min(stockPercentage, 100)}%` }}
-                            />
-                          </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            Stock: {item.quantity} {item.quantity <= item.reorderLevel && item.quantity > 0 && '⚠️'}
-                          </p>
-                        </div>
-
-                        {/* Price */}
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                              ₱{item.sellingPrice.toFixed(2)}
-                            </p>
-                          </div>
-                          {!isOutOfStock && (
-                            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                              <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                            </div>
-                          )}
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-                
-                {filteredItems.length === 0 && (
-                  <div className="text-center py-12">
-                    <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                    <p className="text-slate-500 dark:text-slate-400">No products found</p>
-                    <p className="text-sm text-slate-400 dark:text-slate-500">Try adjusting your search</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div>
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-green-600 text-white shadow-md">
-                  <ShoppingCart className="h-5 w-5" />
-                </div>
-                Cart ({cart.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {cart.length === 0 ? (
-                  <p className="py-8 text-center text-muted-foreground">Cart is empty</p>
-                ) : (
-                  <>
-                    <div className="max-h-[400px] space-y-4 overflow-y-auto">
-                      {cart.map((cartItem) => (
-                        <div
-                          key={cartItem.item.id}
-                          className="flex items-center gap-4 rounded-lg border border-border p-4"
-                        >
-                          <div className="flex-1">
-                            <p className="font-medium text-foreground">{cartItem.item.name}</p>
-                            <p className="text-sm text-emerald-600 dark:text-emerald-400">
-                              ₱{cartItem.item.sellingPrice.toFixed(2)} each
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              min="1"
-                              max={cartItem.item.quantity}
-                              value={cartItem.quantity}
-                              onChange={(e) => updateQuantity(cartItem.item.id, Number.parseInt(e.target.value))}
-                              className="w-20"
-                            />
-                            <Button variant="ghost" size="sm" onClick={() => removeFromCart(cartItem.item.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <p className="font-semibold text-emerald-600 dark:text-emerald-400">
-                            ₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
-                          </p>
-                        </div>
-                      ))}
+            ) : (
+              <div className="space-y-2 max-h-[280px] overflow-y-auto">
+                {cart.map((cartItem) => (
+                  <div
+                    key={cartItem.item.id}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{cartItem.item.name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        ₱{cartItem.item.sellingPrice.toFixed(2)} × {cartItem.quantity}
+                      </p>
                     </div>
-
-                    <div className="border-t border-border pt-4">
-                      <div className="mb-4 flex items-center justify-between">
-                        <p className="text-lg font-semibold text-foreground">Total</p>
-                        <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">₱{total.toFixed(2)}</p>
-                      </div>
-
-                      <div className="space-y-4 mb-4">
-                        <div>
-                          <Label className="text-sm font-medium text-foreground">Department</Label>
-                          <Select value={department} onValueChange={(value) => setDepartment(value)}>
-                            <SelectTrigger className="mt-2">
-                              <SelectValue placeholder="Select department" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Facebook">Facebook</SelectItem>
-                              <SelectItem value="Tiktok">Tiktok</SelectItem>
-                              <SelectItem value="Lazada">Lazada</SelectItem>
-                              <SelectItem value="Shopee">Shopee</SelectItem>
-                              <SelectItem value="Warehouse">Warehouse</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <Button onClick={() => setOrderSummaryOpen(true)} disabled={loading || !department} className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300" size="lg">
-                        Proceed
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min="1"
+                        max={cartItem.item.quantity}
+                        value={cartItem.quantity}
+                        onChange={(e) => updateQuantity(cartItem.item.id, Number.parseInt(e.target.value))}
+                        className="w-16 h-8 text-sm"
+                      />
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => removeFromCart(cartItem.item.id)} 
+                        className="h-8 w-8 p-0 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
-                  </>
-                )}
+                    <p className="font-semibold text-sm text-emerald-600 dark:text-emerald-400 min-w-[70px] text-right">
+                      ₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
+                    </p>
+                  </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      <Dialog open={orderSummaryOpen} onOpenChange={setOrderSummaryOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Order Summary</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              {cart.map((cartItem) => (
-                <div key={cartItem.item.id} className="flex justify-between">
-                  <span>{cartItem.item.name} x{cartItem.quantity}</span>
-                  <span>₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}</span>
-                </div>
-              ))}
-            </div>
-            <div className="border-t pt-2">
-              <div className="flex justify-between font-semibold">
-                <span>Total</span>
-                <span>₱{total.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Department</span>
-                <span>{department}</span>
-              </div>
+      {/* Products Section */}
+      <Card className="border-slate-200 dark:border-slate-800">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between gap-4">
+            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+              Products ({filteredItems.length})
+            </CardTitle>
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOrderSummaryOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCheckout} disabled={loading}>
-              {loading ? "Processing..." : "Complete Sale"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            {filteredItems.map((item) => {
+              const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
+              const isOutOfStock = item.quantity === 0
+              
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => addToCart(item)}
+                  disabled={isOutOfStock}
+                  className={`
+                    relative rounded-lg border-2 p-3 text-left transition-all duration-200
+                    ${isOutOfStock 
+                      ? 'border-red-200 bg-red-50 dark:bg-red-900/10 opacity-60 cursor-not-allowed' 
+                      : isLowStock
+                      ? 'border-amber-200 bg-amber-50 dark:bg-amber-900/10 hover:border-amber-400 hover:shadow-md'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-400 hover:shadow-md hover:scale-105'
+                    }
+                  `}
+                >
+                  {/* Stock Badge */}
+                  <div className="absolute top-2 right-2">
+                    {isOutOfStock ? (
+                      <span className="px-2 py-0.5 text-xs font-bold rounded-md bg-red-500 text-white">
+                        OUT
+                      </span>
+                    ) : isLowStock ? (
+                      <span className="px-2 py-0.5 text-xs font-bold rounded-md bg-amber-500 text-white">
+                        LOW
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 text-xs font-semibold rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                        {item.quantity}
+                      </span>
+                    )}
+                  </div>
 
+                  {/* Product Name */}
+                  <div className="mt-6 mb-3">
+                    <h3 className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-2 min-h-[2.5rem]">
+                      {item.name}
+                    </h3>
+                  </div>
+
+                  {/* Price */}
+                  <div>
+                    <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                      ₱{item.sellingPrice.toFixed(2)}
+                    </p>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+          
+          {filteredItems.length === 0 && (
+            <div className="text-center py-12">
+              <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <p className="text-slate-500 dark:text-slate-400">No products found</p>
+              <p className="text-sm text-slate-400 dark:text-slate-500">Try adjusting your search</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Success Modal */}
       <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CheckCircle className="h-6 w-6 text-green-500" />
-              Sale Completed Successfully!
+              Items Dispatched Successfully!
             </DialogTitle>
           </DialogHeader>
-          <div className="text-center">
-            <p>The transaction has been processed and inventory updated.</p>
+          <div className="space-y-4">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+              <p className="text-center text-green-800 dark:text-green-200 font-medium mb-2">
+                Stock Released to {department}
+              </p>
+              <p className="text-center text-sm text-green-700 dark:text-green-300">
+                Dispatch ID: <span className="font-mono font-bold">{dispatchId}</span>
+              </p>
+            </div>
+            
+            <div className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
+              <p>✓ Inventory has been updated</p>
+              <p>✓ Transaction logged successfully</p>
+              <p>✓ Staff: {staffName}</p>
+            </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => setSuccessModalOpen(false)}>
+            <Button onClick={() => setSuccessModalOpen(false)} className="w-full">
               Close
             </Button>
           </DialogFooter>

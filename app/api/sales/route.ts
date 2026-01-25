@@ -4,11 +4,17 @@ import { addTransaction, updateInventoryItem, getInventoryItems, addLog } from "
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { items, department } = body
+    const { items, department, staffName, notes } = body
 
     if (!department) {
       return NextResponse.json({ error: "Department is required" }, { status: 400 })
     }
+
+    // Determine transaction type based on destination
+    const nonSalesDestinations = ['Demo/Display', 'Internal Use', 'Warehouse']
+    const transactionType = nonSalesDestinations.includes(department) 
+      ? (department === 'Demo/Display' ? 'demo' : department === 'Internal Use' ? 'internal' : 'transfer')
+      : 'sale'
 
     const allItems = await getInventoryItems()
     const transactions = []
@@ -25,7 +31,8 @@ export async function POST(request: NextRequest) {
       }
 
       const totalCost = inventoryItem.costPrice * saleItem.quantity
-      const totalRevenue = inventoryItem.sellingPrice * saleItem.quantity
+      // For non-sales movements, revenue = 0 (no actual sale)
+      const totalRevenue = transactionType === 'sale' ? inventoryItem.sellingPrice * saleItem.quantity : 0
       const profit = totalRevenue - totalCost
 
       const transaction = await addTransaction({
@@ -38,18 +45,22 @@ export async function POST(request: NextRequest) {
         totalRevenue,
         profit,
         type: "sale",
+        transactionType,
         department,
+        staffName,
+        notes,
       })
 
       await updateInventoryItem(inventoryItem.id, {
         quantity: inventoryItem.quantity - saleItem.quantity,
       })
 
+      const operationType = transactionType === 'sale' ? 'dispatch' : transactionType
       await addLog({
-        operation: "sale",
+        operation: operationType,
         itemId: inventoryItem.id,
         itemName: inventoryItem.name,
-        details: `Sold "${inventoryItem.name}" - Qty: ${saleItem.quantity}, Total: ₱${totalRevenue.toFixed(2)}, Department: ${department}`
+        details: `${transactionType === 'sale' ? 'Dispatched' : transactionType === 'demo' ? 'Demo/Display' : transactionType === 'internal' ? 'Internal Use' : 'Transferred'} "${inventoryItem.name}" - Qty: ${saleItem.quantity}, ${transactionType === 'sale' ? `Total: ₱${totalRevenue.toFixed(2)}, ` : ''}Department: ${department}, Staff: ${staffName || 'N/A'}`
       })
 
       transactions.push(transaction)

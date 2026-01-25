@@ -152,7 +152,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Sales Performance Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
@@ -229,7 +229,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Additional Insights */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-2">
@@ -281,8 +281,8 @@ export default function AnalyticsPage() {
       {/* Filter and Controls */}
       <Card className="mb-4 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
         <CardContent className="p-4">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">View Type</Label>
                 <div className="flex gap-2">
@@ -290,7 +290,7 @@ export default function AnalyticsPage() {
                     variant={view === 'daily' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setView('daily')}
-                    className="h-9"
+                    className="h-9 flex-1"
                   >
                     <Calendar className="h-4 w-4 mr-2" />
                     Daily
@@ -299,7 +299,7 @@ export default function AnalyticsPage() {
                     variant={view === 'monthly' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setView('monthly')}
-                    className="h-9"
+                    className="h-9 flex-1"
                   >
                     <BarChart3 className="h-4 w-4 mr-2" />
                     Monthly
@@ -311,7 +311,7 @@ export default function AnalyticsPage() {
                 <div>
                   <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Chart Type</Label>
                   <Select value={chartType} onValueChange={(value: 'bar' | 'line' | 'area') => setChartType(value)}>
-                    <SelectTrigger className="h-9 w-32 border-slate-200 dark:border-slate-700">
+                    <SelectTrigger className="h-9 border-slate-200 dark:border-slate-700">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -324,15 +324,15 @@ export default function AnalyticsPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={prevMonth} className="h-9">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="flex items-center gap-2 flex-1">
+                <Button variant="outline" size="sm" onClick={prevMonth} className="h-9 flex-shrink-0">
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-sm font-semibold text-slate-900 dark:text-white min-w-[140px] text-center">
+                <span className="text-sm font-semibold text-slate-900 dark:text-white text-center flex-1">
                   {monthYear}
                 </span>
-                <Button variant="outline" size="sm" onClick={nextMonth} className="h-9">
+                <Button variant="outline" size="sm" onClick={nextMonth} className="h-9 flex-shrink-0">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -340,7 +340,7 @@ export default function AnalyticsPage() {
                 onClick={exportToCSV}
                 variant="outline"
                 size="sm"
-                className="gap-2 h-9"
+                className="gap-2 h-9 w-full sm:w-auto"
                 disabled={dailySales.length === 0 && monthlySales.length === 0}
               >
                 <Download className="h-4 w-4" />
@@ -364,7 +364,9 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="grid grid-cols-7 gap-0.5 p-4">
+              <div className="overflow-x-auto">
+                <div className="min-w-[640px] p-4">
+                  <div className="grid grid-cols-7 gap-0.5">
                 {/* Weekday Headers */}
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                   <div key={day} className="py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider border-b-2 border-slate-200 dark:border-slate-700">
@@ -403,6 +405,8 @@ export default function AnalyticsPage() {
                     )}
                   </div>
                 ))}
+              </div>
+                </div>
               </div>
             </CardContent>
           </Card>

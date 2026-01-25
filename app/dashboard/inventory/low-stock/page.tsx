@@ -290,40 +290,35 @@ export default function LowStockPage() {
 
       {/* Filters */}
       <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
-        <CardContent className="pt-6">
-          <div className="flex flex-col lg:flex-row gap-4 mb-4">
-            <div className="flex-1">
-              <Label htmlFor="search" className="text-slate-700 dark:text-slate-300 font-medium mb-2 block">Search Products</Label>
-              <div className="relative">
+        <CardContent className="p-4">
+          <div className="space-y-3">
+            {/* Row 1: Search + Export Button */}
+            <div className="flex gap-2">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
-                  id="search"
-                  placeholder="Search by name or category..."
+                  placeholder="Search products..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10 border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
+                  className="pl-10 h-10"
                 />
               </div>
-            </div>
-            <div className="flex gap-2 items-end">
               <Button
                 onClick={exportToCSV}
                 variant="outline"
-                className="gap-2 border-slate-200 dark:border-slate-700"
+                className="gap-2 h-10 px-4"
                 disabled={filteredItems.length === 0}
               >
                 <Download className="h-4 w-4" />
-                Export CSV
+                <span className="hidden sm:inline">Export</span>
               </Button>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <div>
-              <Label htmlFor="urgency-filter" className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Urgency Level</Label>
+            {/* Row 2: Filters Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
               <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
-                <SelectTrigger id="urgency-filter" className="h-9 border-slate-200 dark:border-slate-700">
-                  <SelectValue placeholder="All Levels" />
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Urgency" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Levels</SelectItem>
@@ -331,41 +326,32 @@ export default function LowStockPage() {
                   <SelectItem value="low">🟡 Low</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
 
-            <div>
-              <Label htmlFor="category-filter" className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Category</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger id="category-filter" className="h-9 border-slate-200 dark:border-slate-700">
-                  <SelectValue placeholder="All Categories" />
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                 </SelectContent>
               </Select>
-            </div>
 
-            <div>
-              <Label htmlFor="price-filter" className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Price Range</Label>
               <Select value={priceFilter} onValueChange={setPriceFilter}>
-                <SelectTrigger id="price-filter" className="h-9 border-slate-200 dark:border-slate-700">
-                  <SelectValue placeholder="All Prices" />
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Price" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Prices</SelectItem>
                   <SelectItem value="low">Low (&lt; ₱100)</SelectItem>
-                  <SelectItem value="medium">Medium (₱100 - ₱499)</SelectItem>
+                  <SelectItem value="medium">Medium (₱100-₱499)</SelectItem>
                   <SelectItem value="high">High (≥ ₱500)</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
 
-            <div>
-              <Label htmlFor="storage-room-filter" className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Storage Room</Label>
               <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
-                <SelectTrigger id="storage-room-filter" className="h-9 border-slate-200 dark:border-slate-700">
-                  <SelectValue placeholder="All Rooms" />
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Room" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Rooms</SelectItem>
@@ -376,47 +362,46 @@ export default function LowStockPage() {
                   <SelectItem value="E">Room E</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
 
-            <div>
-              <Label htmlFor="sort-by" className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Sort By</Label>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger id="sort-by" className="h-9 border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center gap-2">
-                    <ArrowUpDown className="h-3 w-3" />
-                    <SelectValue />
-                  </div>
+                <SelectTrigger className="h-9 text-xs">
+                  <ArrowUpDown className="h-3 w-3 mr-1" />
+                  <SelectValue placeholder="Sort" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="urgency-desc">Most Urgent First</SelectItem>
+                  <SelectItem value="urgency-desc">Most Urgent</SelectItem>
                   <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                  <SelectItem value="quantity-asc">Lowest Stock First</SelectItem>
+                  <SelectItem value="quantity-asc">Lowest Stock</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          {activeFiltersCount > 0 && (
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <span className="text-sm text-slate-600 dark:text-slate-400">
-                {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
+            {/* Row 3: Active Filters + Results */}
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                {activeFiltersCount > 0 ? (
+                  <>
+                    <span className="text-slate-600 dark:text-slate-400">
+                      {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearAllFilters}
+                      className="h-6 px-2 text-xs text-blue-600 hover:text-blue-700"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Clear
+                    </Button>
+                  </>
+                ) : (
+                  <span className="text-slate-500 dark:text-slate-500">No filters applied</span>
+                )}
+              </div>
+              <span className="text-slate-600 dark:text-slate-400">
+                <span className="font-semibold text-slate-900 dark:text-white">{filteredItems.length}</span> of {lowStockItems.length}
               </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearAllFilters}
-                className="h-7 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-              >
-                <X className="h-3 w-3" />
-                Clear All
-              </Button>
             </div>
-          )}
-
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Showing <span className="font-semibold text-slate-900 dark:text-white">{filteredItems.length}</span> of <span className="font-semibold text-slate-900 dark:text-white">{lowStockItems.length}</span> low stock items
-            </p>
           </div>
         </CardContent>
       </Card>

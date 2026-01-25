@@ -431,7 +431,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
@@ -538,7 +538,7 @@ export default function CustomersPage() {
       {/* Filters */}
       <Card className="mb-4 border-0 shadow-md bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
         <CardContent className="p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div className="space-y-4">
             <div>
               <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Search</Label>
               <div className="relative">
@@ -551,64 +551,66 @@ export default function CustomersPage() {
                 />
               </div>
             </div>
-            <div>
-              <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Tier</Label>
-              <Select value={tierFilter} onValueChange={setTierFilter}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Tiers</SelectItem>
-                  <SelectItem value="platinum">Platinum</SelectItem>
-                  <SelectItem value="gold">Gold</SelectItem>
-                  <SelectItem value="silver">Silver</SelectItem>
-                  <SelectItem value="bronze">Bronze</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Tier</Label>
+                <Select value={tierFilter} onValueChange={setTierFilter}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Tiers</SelectItem>
+                    <SelectItem value="platinum">Platinum</SelectItem>
+                    <SelectItem value="gold">Gold</SelectItem>
+                    <SelectItem value="silver">Silver</SelectItem>
+                    <SelectItem value="bronze">Bronze</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Sort By</Label>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                    <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                    <SelectItem value="spent-desc">Total Spent (High to Low)</SelectItem>
+                    <SelectItem value="spent-asc">Total Spent (Low to High)</SelectItem>
+                    <SelectItem value="purchases-desc">Purchases (High to Low)</SelectItem>
+                    <SelectItem value="points-desc">Points (High to Low)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Sort By</Label>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                  <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                  <SelectItem value="spent-desc">Total Spent (High to Low)</SelectItem>
-                  <SelectItem value="spent-asc">Total Spent (Low to High)</SelectItem>
-                  <SelectItem value="purchases-desc">Purchases (High to Low)</SelectItem>
-                  <SelectItem value="points-desc">Points (High to Low)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-end gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <Button
                 onClick={() => setTierSettingsOpen(true)}
                 variant="outline"
                 size="sm"
-                className="h-9 gap-2"
+                className="h-9 gap-2 w-full"
               >
                 <Settings className="h-4 w-4" />
-                Tier Settings
+                <span>Tier Settings</span>
               </Button>
               <Button
                 onClick={exportToCSV}
                 variant="outline"
                 size="sm"
-                className="h-9 gap-2"
+                className="h-9 gap-2 w-full"
                 disabled={filteredCustomers.length === 0}
               >
                 <Download className="h-4 w-4" />
-                Export
+                <span>Export</span>
               </Button>
               <Button
                 onClick={() => setAddDialogOpen(true)}
                 size="sm"
-                className="h-9 gap-2"
+                className="h-9 gap-2 w-full"
               >
                 <Plus className="h-4 w-4" />
-                Add
+                <span>Add</span>
               </Button>
             </div>
           </div>

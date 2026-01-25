@@ -1,4 +1,4 @@
-import type { InventoryItem, Transaction, PredictiveAnalytics, ABCAnalysis, InventoryTurnover } from "./types"
+import type { InventoryItem, Transaction, PredictiveAnalytics, ABCAnalysis, InventoryTurnover, Restock } from "./types"
 import { parse } from "date-fns"
 
 /**
@@ -10,7 +10,7 @@ export function calculateSalesForecast(
   daysToForecast: number = 30
 ): PredictiveAnalytics | null {
   const itemTransactions = transactions
-    .filter(t => t.itemId === itemId && t.type === 'sale')
+    .filter(t => t.itemId === itemId && t.type === 'sale' && t.transactionType === 'sale')
     .sort((a, b) => {
       const dateA = parse(a.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
       const dateB = parse(b.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
@@ -82,11 +82,11 @@ export function performABCAnalysis(
   items: InventoryItem[],
   transactions: Transaction[]
 ): ABCAnalysis[] {
-  // Calculate revenue per item
+  // Calculate revenue per item (only actual sales)
   const itemRevenue = new Map<string, { name: string; revenue: number }>()
   
   transactions
-    .filter(t => t.type === 'sale')
+    .filter(t => t.type === 'sale' && t.transactionType === 'sale')
     .forEach(t => {
       const current = itemRevenue.get(t.itemId) || { name: t.itemName, revenue: 0 }
       itemRevenue.set(t.itemId, {
@@ -153,6 +153,7 @@ export function calculateInventoryTurnover(
     const itemSales = transactions.filter(t => 
       t.itemId === item.id && 
       t.type === 'sale' &&
+      t.transactionType === 'sale' &&
       parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date()) >= periodStart
     )
 
@@ -189,7 +190,7 @@ export function calculateReorderPoint(
   serviceLevel: number = 0.95 // 95% service level
 ): number {
   const itemSales = transactions
-    .filter(t => t.itemId === itemId && t.type === 'sale')
+    .filter(t => t.itemId === itemId && t.type === 'sale' && t.transactionType === 'sale')
     .slice(-30) // Last 30 transactions
 
   if (itemSales.length === 0) return 0
@@ -225,7 +226,7 @@ export function identifyDeadStock(
 
   return items.filter(item => {
     const lastSale = transactions
-      .filter(t => t.itemId === item.id && t.type === 'sale')
+      .filter(t => t.itemId === item.id && t.type === 'sale' && t.transactionType === 'sale')
       .sort((a, b) => {
         const dateA = parse(a.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
         const dateB = parse(b.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
@@ -249,7 +250,7 @@ export function calculateProfitMarginByCategory(
   const categoryMap = new Map<string, { revenue: number; profit: number }>()
 
   transactions
-    .filter(t => t.type === 'sale')
+    .filter(t => t.type === 'sale' && t.transactionType === 'sale')
     .forEach(t => {
       const item = items.find(i => i.id === t.itemId)
       if (!item) return
@@ -269,4 +270,213 @@ export function calculateProfitMarginByCategory(
       profit: data.profit
     }))
     .sort((a, b) => b.margin - a.margin)
+}
+
+/**
+ * Calculate return analytics from restock data
+ * Returns include: damaged-return and supplier-return
+ */
+export function calculateReturnAnalytics(
+  restocks: Restock[],
+  transactions: Transaction[],
+  items: InventoryItem[]
+): {
+  totalReturns: number
+  totalReturnValue: number
+  returnRate: number
+  returnsByReason: { reason: string; count: number; value: number }[]
+  returnsByItem: { itemId: string; itemName: string; quantity: number; value: number; returnRate: number }[]
+} {
+  // Filter returns only (damaged-return and supplier-return)
+  const returns = restocks.filter(r => 
+    r.reason === 'damaged-return' || r.reason === 'supplier-return'
+  )
+
+  const totalReturns = returns.reduce((sum, r) => sum + r.quantity, 0)
+  const totalReturnValue = returns.reduce((sum, r) => sum + r.totalCost, 0)
+
+  // Calculate total sales for return rate
+  const totalSales = transactions
+    .filter(t => t.type === 'sale' && t.transactionType === 'sale')
+    .reduce((sum, t) => sum + t.quantity, 0)
+
+  const returnRate = totalSales > 0 ? (totalReturns / totalSales) * 100 : 0
+
+  // Group by reason
+  const reasonMap = new Map<string, { count: number; value: number }>()
+  returns.forEach(r => {
+    const current = reasonMap.get(r.reason) || { count: 0, value: 0 }
+    reasonMap.set(r.reason, {
+      count: current.count + r.quantity,
+      value: current.value + r.totalCost
+    })
+  })
+
+  const returnsByReason = Array.from(reasonMap.entries()).map(([reason, data]) => ({
+    reason: reason === 'damaged-return' ? 'Damaged Item Return' : 'Supplier Return',
+    count: data.count,
+    value: data.value
+  }))
+
+  // Group by item
+  const itemMap = new Map<string, { name: string; quantity: number; value: number }>()
+  returns.forEach(r => {
+    const current = itemMap.get(r.itemId) || { name: r.itemName, quantity: 0, value: 0 }
+    itemMap.set(r.itemId, {
+      name: r.itemName,
+      quantity: current.quantity + r.quantity,
+      value: current.value + r.totalCost
+    })
+  })
+
+  const returnsByItem = Array.from(itemMap.entries()).map(([itemId, data]) => {
+    // Calculate item-specific return rate
+    const itemSales = transactions
+      .filter(t => t.itemId === itemId && t.type === 'sale' && t.transactionType === 'sale')
+      .reduce((sum, t) => sum + t.quantity, 0)
+    
+    const itemReturnRate = itemSales > 0 ? (data.quantity / itemSales) * 100 : 0
+
+    return {
+      itemId,
+      itemName: data.name,
+      quantity: data.quantity,
+      value: data.value,
+      returnRate: Math.round(itemReturnRate * 100) / 100
+    }
+  }).sort((a, b) => b.quantity - a.quantity)
+
+  return {
+    totalReturns,
+    totalReturnValue,
+    returnRate: Math.round(returnRate * 100) / 100,
+    returnsByReason,
+    returnsByItem
+  }
+}
+
+/**
+ * Calculate net sales (sales minus returns) for accurate analytics
+ */
+export function calculateNetSales(
+  transactions: Transaction[],
+  restocks: Restock[]
+): { itemId: string; itemName: string; grossSales: number; returns: number; netSales: number }[] {
+  // Get returns
+  const returns = restocks.filter(r => 
+    r.reason === 'damaged-return' || r.reason === 'supplier-return'
+  )
+
+  // Group sales by item
+  const salesMap = new Map<string, { name: string; quantity: number }>()
+  transactions
+    .filter(t => t.type === 'sale' && t.transactionType === 'sale')
+    .forEach(t => {
+      const current = salesMap.get(t.itemId) || { name: t.itemName, quantity: 0 }
+      salesMap.set(t.itemId, {
+        name: t.itemName,
+        quantity: current.quantity + t.quantity
+      })
+    })
+
+  // Group returns by item
+  const returnsMap = new Map<string, number>()
+  returns.forEach(r => {
+    returnsMap.set(r.itemId, (returnsMap.get(r.itemId) || 0) + r.quantity)
+  })
+
+  // Calculate net sales
+  const netSalesData: { itemId: string; itemName: string; grossSales: number; returns: number; netSales: number }[] = []
+
+  salesMap.forEach((data, itemId) => {
+    const returnQty = returnsMap.get(itemId) || 0
+    netSalesData.push({
+      itemId,
+      itemName: data.name,
+      grossSales: data.quantity,
+      returns: returnQty,
+      netSales: data.quantity - returnQty
+    })
+  })
+
+  return netSalesData.sort((a, b) => b.netSales - a.netSales)
+}
+
+/**
+ * Adjust ABC Analysis to account for returns
+ */
+export function performABCAnalysisWithReturns(
+  items: InventoryItem[],
+  transactions: Transaction[],
+  restocks: Restock[]
+): ABCAnalysis[] {
+  const returns = restocks.filter(r => 
+    r.reason === 'damaged-return' || r.reason === 'supplier-return'
+  )
+
+  // Calculate net revenue per item (sales revenue - return cost)
+  const itemRevenue = new Map<string, { name: string; revenue: number }>()
+  
+  // Add sales revenue
+  transactions
+    .filter(t => t.type === 'sale' && t.transactionType === 'sale')
+    .forEach(t => {
+      const current = itemRevenue.get(t.itemId) || { name: t.itemName, revenue: 0 }
+      itemRevenue.set(t.itemId, {
+        name: t.itemName,
+        revenue: current.revenue + t.totalRevenue
+      })
+    })
+
+  // Subtract return costs
+  returns.forEach(r => {
+    const current = itemRevenue.get(r.itemId)
+    if (current) {
+      itemRevenue.set(r.itemId, {
+        name: current.name,
+        revenue: current.revenue - r.totalCost
+      })
+    }
+  })
+
+  // Sort by net revenue descending
+  const sortedItems = Array.from(itemRevenue.entries())
+    .map(([id, data]) => ({ itemId: id, ...data }))
+    .filter(item => item.revenue > 0) // Only items with positive net revenue
+    .sort((a, b) => b.revenue - a.revenue)
+
+  const totalRevenue = sortedItems.reduce((sum, item) => sum + item.revenue, 0)
+
+  // Calculate cumulative percentage and assign categories
+  let cumulativeRevenue = 0
+  const analysis: ABCAnalysis[] = sortedItems.map((item) => {
+    cumulativeRevenue += item.revenue
+    const cumulativePercentage = (cumulativeRevenue / totalRevenue) * 100
+    const revenueContribution = (item.revenue / totalRevenue) * 100
+
+    let category: 'A' | 'B' | 'C'
+    let recommendation: string
+
+    if (cumulativePercentage <= 80) {
+      category = 'A'
+      recommendation = 'High priority - maintain optimal stock levels, monitor closely'
+    } else if (cumulativePercentage <= 95) {
+      category = 'B'
+      recommendation = 'Medium priority - regular monitoring, moderate stock levels'
+    } else {
+      category = 'C'
+      recommendation = 'Low priority - minimal stock, consider discontinuation if slow-moving'
+    }
+
+    return {
+      itemId: item.itemId,
+      itemName: item.name,
+      category,
+      revenueContribution,
+      cumulativePercentage,
+      recommendation
+    }
+  })
+
+  return analysis
 }
