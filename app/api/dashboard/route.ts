@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
     const totalItems = items.length
     const lowStockItems = items.filter((item: InventoryItem) => item.quantity <= item.reorderLevel).length
-    const totalValue = items.reduce((sum, item: InventoryItem) => sum + item.quantity * item.costPrice, 0)
+    const totalValue = items.reduce((sum, item: InventoryItem) => sum + item.quantity * item.sellingPrice, 0)
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
