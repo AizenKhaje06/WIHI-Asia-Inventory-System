@@ -29,11 +29,14 @@ export interface Transaction {
   profit: number
   timestamp: string
   type: "sale" | "restock"
+  transactionType?: "sale" | "demo" | "internal" | "transfer" // Distinguishes sales from non-sales movements
   department?: string
   customerId?: string
   customerName?: string
   discount?: number
   discountAmount?: number
+  staffName?: string
+  notes?: string
 }
 
 export interface Customer {
@@ -105,7 +108,7 @@ export interface DashboardStats {
   totalProfit: number
   profitMargin: number
   salesOverTime: { date: string; purchases: number; sales: number }[]
-  topProducts: { name: string; sales: number }[]
+  topProducts: { name: string; sales: number; revenue: number }[]
   recentTransactions: Transaction[]
   topCategories: { name: string; sales: number }[]
   totalCategories: number
@@ -116,6 +119,17 @@ export interface DashboardStats {
   totalCustomers?: number
   topCustomers?: { name: string; spent: number }[]
   averageOrderValue?: number
+  returnRate?: number
+  totalReturns?: number
+  returnValue?: number
+  itemsSoldToday?: number
+  revenueToday?: number
+  supplierReturns?: { itemName: string; quantity: number; value: number }[]
+  recentRestocks?: any[]
+  outOfStockCount?: number
+  inventoryHealthScore?: number
+  insights?: { type: string; message: string }[]
+  salesVelocity?: number
 }
 
 export interface Log {

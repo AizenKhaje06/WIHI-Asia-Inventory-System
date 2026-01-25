@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getInventoryItems, getTransactions } from "@/lib/google-sheets"
+import { getInventoryItems, getTransactions, getRestocks } from "@/lib/google-sheets"
 import { parse } from "date-fns"
 import type { DashboardStats, Transaction, InventoryItem } from "@/lib/types"
 
@@ -10,6 +10,7 @@ export async function GET(request: Request) {
 
     const items = await getInventoryItems()
     const transactions = await getTransactions()
+    const restockHistory = await getRestocks()
 
     const totalItems = items.length
     const lowStockItems = items.filter((item: InventoryItem) => item.quantity <= item.reorderLevel).length
@@ -17,7 +18,17 @@ export async function GET(request: Request) {
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const recentSales = transactions.filter((t: Transaction) => t.type === "sale" && parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date()) >= today).length
+    const recentSales = transactions.filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date()) >= today).length
+
+    // Items sold today (quantity)
+    const itemsSoldToday = transactions
+      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date()) >= today)
+      .reduce((sum, t) => sum + t.quantity, 0)
+    
+    // Revenue today
+    const revenueToday = transactions
+      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date()) >= today)
+      .reduce((sum, t) => sum + t.totalRevenue, 0)
 
     // Sales over time based on period
     let salesOverTime: { date: string; purchases: number; sales: number }[] = []
@@ -30,12 +41,12 @@ export async function GET(request: Request) {
         const hourStr = hour.toISOString().split('T')[0] + ' ' + hour.getHours().toString().padStart(2, '0') + ':00'
         const sales = transactions.filter((t: Transaction) => {
           const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
-          return t.type === "sale" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
-        }).length
+          return t.type === "sale" && t.transactionType === "sale" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
+        }).reduce((sum, t) => sum + t.totalRevenue, 0)
         const purchases = transactions.filter((t: Transaction) => {
           const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
           return t.type === "restock" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
-        }).length
+        }).reduce((sum, t) => sum + t.totalCost, 0)
         return { date: hourStr, purchases, sales }
       }).reverse()
     } else if (period === '1W') {
@@ -49,12 +60,12 @@ export async function GET(request: Request) {
         nextDay.setDate(nextDay.getDate() + 1)
         const sales = transactions.filter((t: Transaction) => {
           const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
-          return t.type === "sale" && tDate >= day && tDate < nextDay
-        }).length
+          return t.type === "sale" && t.transactionType === "sale" && tDate >= day && tDate < nextDay
+        }).reduce((sum, t) => sum + t.totalRevenue, 0)
         const purchases = transactions.filter((t: Transaction) => {
           const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
           return t.type === "restock" && tDate >= day && tDate < nextDay
-        }).length
+        }).reduce((sum, t) => sum + t.totalCost, 0)
         return { date: dayStr, purchases, sales }
       }).reverse()
     } else if (period === '1M') {
@@ -68,95 +79,46 @@ export async function GET(request: Request) {
         nextDay.setDate(nextDay.getDate() + 1)
         const sales = transactions.filter((t: Transaction) => {
           const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
-          return t.type === "sale" && tDate >= day && tDate < nextDay
-        }).length
+          return t.type === "sale" && t.transactionType === "sale" && tDate >= day && tDate < nextDay
+        }).reduce((sum, t) => sum + t.totalRevenue, 0)
         const purchases = transactions.filter((t: Transaction) => {
           const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
           return t.type === "restock" && tDate >= day && tDate < nextDay
-        }).length
+        }).reduce((sum, t) => sum + t.totalCost, 0)
         return { date: dayStr, purchases, sales }
-      }).reverse()
-    } else if (period === '3M') {
-      // Last 90 days, weekly data points
-      salesOverTime = Array.from({ length: 12 }, (_, i) => {
-        const weekStart = new Date()
-        weekStart.setDate(weekStart.getDate() - (i * 7))
-        weekStart.setHours(0, 0, 0, 0)
-        const weekEnd = new Date(weekStart)
-        weekEnd.setDate(weekEnd.getDate() + 7)
-        const weekStr = weekStart.toISOString().split('T')[0] + ' 00:00'
-        const sales = transactions.filter((t: Transaction) => {
-          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
-          return t.type === "sale" && tDate >= weekStart && tDate < weekEnd
-        }).length
-        const purchases = transactions.filter((t: Transaction) => {
-          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
-          return t.type === "restock" && tDate >= weekStart && tDate < weekEnd
-        }).length
-        return { date: weekStr, purchases, sales }
-      }).reverse()
-    } else if (period === '6M') {
-      // Last 180 days, weekly data points
-      salesOverTime = Array.from({ length: 26 }, (_, i) => {
-        const weekStart = new Date()
-        weekStart.setDate(weekStart.getDate() - (i * 7))
-        weekStart.setHours(0, 0, 0, 0)
-        const weekEnd = new Date(weekStart)
-        weekEnd.setDate(weekEnd.getDate() + 7)
-        const weekStr = weekStart.toISOString().split('T')[0] + ' 00:00'
-        const sales = transactions.filter((t: Transaction) => {
-          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
-          return t.type === "sale" && tDate >= weekStart && tDate < weekEnd
-        }).length
-        const purchases = transactions.filter((t: Transaction) => {
-          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
-          return t.type === "restock" && tDate >= weekStart && tDate < weekEnd
-        }).length
-        return { date: weekStr, purchases, sales }
-      }).reverse()
-    } else if (period === '1Y') {
-      // Last 365 days, monthly data points
-      salesOverTime = Array.from({ length: 12 }, (_, i) => {
-        const monthStart = new Date()
-        monthStart.setMonth(monthStart.getMonth() - i, 1)
-        monthStart.setHours(0, 0, 0, 0)
-        const monthEnd = new Date(monthStart)
-        monthEnd.setMonth(monthEnd.getMonth() + 1)
-        const monthStr = monthStart.toISOString().split('T')[0] + ' 00:00'
-        const sales = transactions.filter((t: Transaction) => {
-          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
-          return t.type === "sale" && tDate >= monthStart && tDate < monthEnd
-        }).length
-        const purchases = transactions.filter((t: Transaction) => {
-          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
-          return t.type === "restock" && tDate >= monthStart && tDate < monthEnd
-        }).length
-        return { date: monthStr, purchases, sales }
       }).reverse()
     }
 
-    // Top products (top 4 by sales count)
+    // Top products (top 4 by sales count) with revenue
     const productSales = transactions
-      .filter((t: Transaction) => t.type === "sale")
-      .reduce((acc: { [key: string]: number }, t: Transaction) => {
-        acc[t.itemName] = (acc[t.itemName] || 0) + t.quantity
+      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale")
+      .reduce((acc: { [key: string]: { quantity: number; revenue: number } }, t: Transaction) => {
+        if (!acc[t.itemName]) {
+          acc[t.itemName] = { quantity: 0, revenue: 0 }
+        }
+        acc[t.itemName].quantity += t.quantity
+        acc[t.itemName].revenue += t.totalRevenue
         return acc
       }, {})
     const topProducts = Object.entries(productSales)
-      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .sort(([, a], [, b]) => b.quantity - a.quantity)
       .slice(0, 4)
-      .map(([name, sales]) => ({ name, sales: sales as number }))
+      .map(([name, data]) => ({ 
+        name, 
+        sales: data.quantity,
+        revenue: data.revenue
+      }))
 
     // Recent transactions (last 5 sales)
     const recentTransactions = transactions
-      .filter((t: Transaction) => t.type === "sale")
+      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale")
       .sort((a: Transaction, b: Transaction) => parse(b.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime() - parse(a.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime())
       .slice(0, 5)
 
     // Top categories (top 3 by sales)
     const categorySales = items.reduce((acc: { [key: string]: number }, item: InventoryItem) => {
       const sales = transactions
-        .filter((t: Transaction) => t.type === "sale" && t.itemName === item.name)
+        .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && t.itemName === item.name)
         .reduce((sum, t) => sum + t.quantity, 0)
       acc[item.category] = (acc[item.category] || 0) + sales
       return acc
@@ -170,9 +132,9 @@ export async function GET(request: Request) {
     const totalCategories = new Set(items.map((item: InventoryItem) => item.category)).size
     const totalProducts = totalItems
 
-    // Calculate financial metrics
+    // Calculate financial metrics (only actual sales, not demo/internal)
     const totalRevenue = transactions
-      .filter((t: Transaction) => t.type === "sale")
+      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale")
       .reduce((sum, t) => sum + t.totalRevenue, 0)
 
     const totalCost = transactions.reduce((sum, t) => sum + t.totalCost, 0)
@@ -212,6 +174,100 @@ export async function GET(request: Request) {
       .map(([name, count]) => ({ name, count: count as number }))
       .sort((a, b) => b.count - a.count)
 
+    // Supplier returns (top 5 items returned to supplier)
+    const supplierReturns = restockHistory
+      .filter(r => r.reason === 'supplier-return')
+      .reduce((acc: { [key: string]: { quantity: number; value: number } }, r) => {
+        if (!acc[r.itemName]) {
+          acc[r.itemName] = { quantity: 0, value: 0 }
+        }
+        acc[r.itemName].quantity += r.quantity
+        acc[r.itemName].value += r.totalCost
+        return acc
+      }, {})
+    
+    const topSupplierReturns = Object.entries(supplierReturns)
+      .sort(([, a], [, b]) => (b as { quantity: number; value: number }).value - (a as { quantity: number; value: number }).value)
+      .slice(0, 5)
+      .map(([name, data]) => ({
+        itemName: name,
+        quantity: (data as { quantity: number; value: number }).quantity,
+        value: (data as { quantity: number; value: number }).value
+      }))
+
+    // Recent restocks (last 5)
+    const recentRestocks = restockHistory
+      .filter(r => r.reason === 'restock' || r.reason === 'initial-stock')
+      .sort((a, b) => parse(b.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime() - parse(a.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime())
+      .slice(0, 5)
+
+    // Average order value
+    const averageOrderValue = recentSales > 0 ? totalRevenue / recentSales : 0
+
+    // Out of stock count
+    const outOfStockCount = items.filter((item: InventoryItem) => item.quantity === 0).length
+
+    // Return rate (will be 0 for now, can be calculated from restock history)
+    const returnRate = 0
+
+    // Inventory health score (0-100)
+    const stockHealthPercent = totalItems > 0 ? ((totalItems - outOfStockCount) / totalItems) * 100 : 100
+    const returnHealthPercent = 100 - Math.min(returnRate * 10, 100)
+    const lowStockHealthPercent = totalItems > 0 ? ((totalItems - lowStockItems) / totalItems) * 100 : 100
+    const inventoryHealthScore = Math.round((stockHealthPercent * 0.4 + returnHealthPercent * 0.3 + lowStockHealthPercent * 0.3))
+
+    // Business insights
+    const insights = []
+    
+    // Best selling product
+    if (topProducts.length > 0) {
+      const revenue = topProducts[0].revenue
+      insights.push({
+        type: 'success',
+        message: `Best seller: ${topProducts[0].name} with ₱${revenue.toLocaleString()} revenue`
+      })
+    }
+    
+    // Low stock warning
+    if (lowStockItems > 0) {
+      insights.push({
+        type: 'warning',
+        message: `${lowStockItems} items need restocking soon`
+      })
+    }
+    
+    // Out of stock alert
+    if (outOfStockCount > 0) {
+      insights.push({
+        type: 'error',
+        message: `${outOfStockCount} items are out of stock - immediate action required`
+      })
+    }
+    
+    // Profit margin insight
+    if (profitMargin >= 30) {
+      insights.push({
+        type: 'success',
+        message: `Excellent profit margin of ${profitMargin.toFixed(1)}% - keep it up!`
+      })
+    } else if (profitMargin < 15) {
+      insights.push({
+        type: 'warning',
+        message: `Profit margin is ${profitMargin.toFixed(1)}% - consider reviewing pricing`
+      })
+    }
+    
+    // Return rate insight
+    if ((returnRate || 0) > 10) {
+      insights.push({
+        type: 'error',
+        message: `High return rate of ${(returnRate || 0).toFixed(1)}% - check product quality`
+      })
+    }
+
+    // Sales velocity (items sold per day)
+    const salesVelocity = itemsSoldToday
+
     const stats: DashboardStats = {
       totalItems,
       lowStockItems,
@@ -230,11 +286,23 @@ export async function GET(request: Request) {
       stockPercentageByCategory,
       stocksCountByCategory: stocksCountByCategorySorted,
       stocksCountByStorageRoom: stocksCountByStorageRoomSorted,
+      returnRate: 0,
+      totalReturns: 0,
+      returnValue: 0,
+      itemsSoldToday,
+      revenueToday,
+      supplierReturns: topSupplierReturns,
+      recentRestocks,
+      averageOrderValue,
+      outOfStockCount,
+      inventoryHealthScore,
+      insights,
+      salesVelocity,
     }
 
     return NextResponse.json(stats)
   } catch (error) {
-    console.error("[v0] Error fetching dashboard stats:", error)
+    console.error("[Dashboard API] Error:", error)
     return NextResponse.json({ error: "Failed to fetch dashboard stats" }, { status: 500 })
   }
 }
