@@ -59,14 +59,20 @@ export default function DashboardPage() {
 
       console.log('[Dashboard] Data received:', {
         stats: statsData,
-        itemsCount: itemsData.length
+        itemsData: itemsData
       })
 
+      // Ensure itemsData is an array before filtering
+      const items = Array.isArray(itemsData) ? itemsData : []
+
       setStats(statsData)
-      setLowStockItems(itemsData.filter((item: InventoryItem) => item.quantity > 0 && item.quantity <= item.reorderLevel))
-      setOutOfStockItems(itemsData.filter((item: InventoryItem) => item.quantity === 0))
+      setLowStockItems(items.filter((item: InventoryItem) => item.quantity > 0 && item.quantity <= item.reorderLevel))
+      setOutOfStockItems(items.filter((item: InventoryItem) => item.quantity === 0))
     } catch (error) {
       console.error("Error fetching dashboard data:", error)
+      setStats(null)
+      setLowStockItems([])
+      setOutOfStockItems([])
     } finally {
       setLoading(false)
       setRefreshing(false)
