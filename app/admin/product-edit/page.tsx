@@ -53,11 +53,20 @@ export default function ProductEditPage() {
   async function fetchItems() {
     try {
       const res = await fetch("/api/items")
+      if (!res.ok) {
+        console.error("[Product Edit] Failed to fetch items, status:", res.status)
+        setItems([])
+        setFilteredItems([])
+        return
+      }
       const data = await res.json()
-      setItems(data)
-      setFilteredItems(data)
+      const itemsArray = Array.isArray(data) ? data : []
+      setItems(itemsArray)
+      setFilteredItems(itemsArray)
     } catch (error) {
-      console.error("[v0] Error fetching items:", error)
+      console.error("[Product Edit] Error fetching items:", error)
+      setItems([])
+      setFilteredItems([])
     } finally {
       setLoading(false)
     }

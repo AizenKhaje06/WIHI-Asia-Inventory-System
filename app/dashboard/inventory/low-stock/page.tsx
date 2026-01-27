@@ -91,10 +91,17 @@ export default function LowStockPage() {
   async function fetchItems() {
     try {
       const res = await fetch("/api/items")
+      if (!res.ok) {
+        console.error("[Low Stock] Failed to fetch items, status:", res.status)
+        setItems([])
+        return
+      }
       const data = await res.json()
-      setItems(data)
+      const itemsArray = Array.isArray(data) ? data : []
+      setItems(itemsArray)
     } catch (error) {
-      console.error("Error fetching items:", error)
+      console.error("[Low Stock] Error fetching items:", error)
+      setItems([])
     } finally {
       setLoading(false)
     }

@@ -49,11 +49,18 @@ export default function POSPage() {
   async function fetchItems() {
     try {
       const res = await fetch("/api/items")
-      if (!res.ok) throw new Error("Failed to fetch items")
+      if (!res.ok) {
+        console.error("[POS] Failed to fetch items, status:", res.status)
+        setItems([])
+        return
+      }
       const data = await res.json()
-      setItems(data)
+      // Ensure data is an array
+      const itemsArray = Array.isArray(data) ? data : []
+      setItems(itemsArray)
     } catch (error) {
-      console.error("[v0] Error fetching items:", error)
+      console.error("[POS] Error fetching items:", error)
+      setItems([])
     }
   }
 

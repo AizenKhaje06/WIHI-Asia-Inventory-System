@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { SetupRequiredAlert } from "@/components/setup-required-alert"
 import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart3, ShoppingCart, TrendingDown, Users, BarChart2, Activity, ArrowUpRight, ArrowDownRight, Percent, RefreshCw, Download, Plus, FileText, AlertCircle, PackageX, PackageOpen, RotateCcw } from "lucide-react"
 import {
   XAxis,
@@ -171,6 +172,13 @@ export default function DashboardPage() {
           </Button>
         </div>
       </div>
+
+      {/* Setup Required Alert */}
+      {!stats && !loading && (
+        <div className="animate-in fade-in-0 slide-in-from-top-4 duration-500">
+          <SetupRequiredAlert />
+        </div>
+      )}
 
       {/* Enhanced Metric Cards - 6 KPIs */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">

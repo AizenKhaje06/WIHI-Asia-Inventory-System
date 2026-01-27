@@ -79,10 +79,17 @@ export default function OutOfStockPage() {
   async function fetchItems() {
     try {
       const res = await fetch("/api/items")
+      if (!res.ok) {
+        console.error("[Out of Stock] Failed to fetch items, status:", res.status)
+        setItems([])
+        return
+      }
       const data = await res.json()
-      setItems(data)
+      const itemsArray = Array.isArray(data) ? data : []
+      setItems(itemsArray)
     } catch (error) {
-      console.error("Error fetching items:", error)
+      console.error("[Out of Stock] Error fetching items:", error)
+      setItems([])
     } finally {
       setLoading(false)
     }

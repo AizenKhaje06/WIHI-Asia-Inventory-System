@@ -112,11 +112,20 @@ export default function InventoryPage() {
   async function fetchItems() {
     try {
       const res = await fetch("/api/items")
+      if (!res.ok) {
+        console.error("[Inventory] Failed to fetch items, status:", res.status)
+        setItems([])
+        setFilteredItems([])
+        return
+      }
       const data = await res.json()
-      setItems(data)
-      setFilteredItems(data)
+      const itemsArray = Array.isArray(data) ? data : []
+      setItems(itemsArray)
+      setFilteredItems(itemsArray)
     } catch (error) {
-      console.error("[v0] Error fetching items:", error)
+      console.error("[Inventory] Error fetching items:", error)
+      setItems([])
+      setFilteredItems([])
     } finally {
       setLoading(false)
     }
