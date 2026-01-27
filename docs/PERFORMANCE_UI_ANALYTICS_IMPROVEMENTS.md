@@ -567,7 +567,6 @@ npm install react-intersection-observer
 
 # Advanced Charts
 npm install @nivo/core @nivo/heatmap @nivo/sankey @nivo/funnel
-npm install recharts-to-png  # Export charts as images
 npm install react-gauge-chart
 
 # Animations
