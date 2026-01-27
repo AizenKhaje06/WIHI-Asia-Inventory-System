@@ -84,6 +84,11 @@ export default function DashboardPage() {
     fetchData()
   }, [timePeriod])
 
+  // Show loading state
+  if (loading) {
+    return <PremiumDashboardLoading />
+  }
+
   // Calculate additional metrics
   const netProfit = (stats?.totalRevenue || 0) - (stats?.totalCost || 0) - (stats?.returnValue || 0)
   const lowStockCount = lowStockItems.length

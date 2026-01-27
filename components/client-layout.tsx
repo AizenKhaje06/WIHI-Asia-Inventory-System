@@ -9,6 +9,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { ThemeProvider } from "@/components/theme-provider"
 import { CommandPalette } from "@/components/command-palette"
 import { Toaster } from "@/components/ui/sonner"
+import { QueryProvider } from "@/components/providers/query-provider"
 
 export default function ClientLayout({
   children,
@@ -20,12 +21,13 @@ export default function ClientLayout({
 
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="dark"
-        enableSystem
-        disableTransitionOnChange
-      >
+      <QueryProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
         <div className="flex h-screen w-full overflow-hidden bg-background">
           {/* Premium Sidebar */}
           <PremiumSidebar 
@@ -60,6 +62,7 @@ export default function ClientLayout({
         <Toaster richColors position="top-right" />
         <Analytics />
       </ThemeProvider>
+      </QueryProvider>
     </ErrorBoundary>
   )
 }
