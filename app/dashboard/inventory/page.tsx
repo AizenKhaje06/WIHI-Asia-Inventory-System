@@ -351,7 +351,7 @@ export default function InventoryPage() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+              <div className="p-2 rounded-[5px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
                 <Package className="h-5 w-5" />
               </div>
               Product Inventory ({filteredItems.length} items)
@@ -421,7 +421,7 @@ export default function InventoryPage() {
                           {/* Product Name */}
                           <td className="py-4 pr-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center flex-shrink-0">
+                              <div className="w-10 h-10 rounded-[5px] bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center flex-shrink-0">
                                 <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                               </div>
                               <div className="min-w-0 flex-1">

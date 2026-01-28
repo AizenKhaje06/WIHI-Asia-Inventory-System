@@ -543,7 +543,7 @@ h6 { font-size: 1rem; }        /* 16px */
   font-size: 0.9375rem;
   font-weight: 500;
   line-height: 1.5;
-  border-radius: var(--radius-md);
+  border-radius: 5px;
   transition: all var(--transition-base);
   cursor: pointer;
   user-select: none;
@@ -650,7 +650,7 @@ h6 { font-size: 1rem; }        /* 16px */
   color: var(--foreground);
   background: var(--background);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 5px;
   transition: all var(--transition-base);
 }
 
@@ -746,7 +746,7 @@ h6 { font-size: 1rem; }        /* 16px */
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.5;
-  border-radius: var(--radius-full);
+  border-radius: 5px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -920,7 +920,7 @@ h6 { font-size: 1rem; }        /* 16px */
     rgba(249, 250, 251, 0.95)
   );
   border: 1px solid rgba(226, 232, 240, 0.8);
-  border-radius: 1rem;
+  border-radius: 5px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -987,7 +987,7 @@ h6 { font-size: 1rem; }        /* 16px */
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: var(--radius-md);
+  border-radius: 5px;
 }
 
 /* ============================================

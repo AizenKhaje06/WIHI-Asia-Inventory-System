@@ -107,7 +107,7 @@ export default function ReportsPage() {
           <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+                <div className="p-2 rounded-[5px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
                   <BarChart3 className="h-5 w-5" />
                 </div>
                 Recent Transactions ({filteredTransactions.length})

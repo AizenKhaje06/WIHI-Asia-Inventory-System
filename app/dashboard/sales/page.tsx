@@ -232,7 +232,7 @@ export default function SalesAnalyticsPage() {
                 return (
                   <div
                     key={day}
-                    className="aspect-square border rounded-lg p-2 flex flex-col items-center justify-center hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="aspect-square border rounded-[5px] p-2 flex flex-col items-center justify-center hover:bg-gray-50 cursor-pointer transition-colors"
                   >
                     <div className="text-sm font-medium">{day}</div>
                     {dayData && (

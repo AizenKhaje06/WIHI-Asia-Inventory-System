@@ -85,7 +85,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         {/* Logo/Brand */}
         <div className="text-center mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-xl mb-4 animate-in zoom-in-50 duration-500">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-[5px] bg-gradient-to-br from-blue-600 to-purple-600 shadow-xl mb-4 animate-in zoom-in-50 duration-500">
             <Shield className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl font-bold gradient-text mb-2">StockSync</h1>
@@ -206,7 +206,7 @@ export default function LoginPage() {
             </form>
 
             {isDevelopment && (
-              <div className="mt-6 p-4 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+              <div className="mt-6 p-4 rounded-[5px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
                 <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Development Mode - Test Passwords:</p>
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs">

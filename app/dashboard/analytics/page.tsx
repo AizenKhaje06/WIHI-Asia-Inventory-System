@@ -156,7 +156,7 @@ export default function AnalyticsPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
                 <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
               <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0">
@@ -174,7 +174,7 @@ export default function AnalyticsPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+              <div className="p-2 rounded-[5px] bg-purple-100 dark:bg-purple-900/30">
                 <TrendingDown className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
               <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-0">
@@ -191,7 +191,7 @@ export default function AnalyticsPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+              <div className="p-2 rounded-[5px] bg-emerald-100 dark:bg-emerald-900/30">
                 <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
               <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
@@ -213,7 +213,7 @@ export default function AnalyticsPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+              <div className="p-2 rounded-[5px] bg-amber-100 dark:bg-amber-900/30">
                 <Percent className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
               <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0">
@@ -233,7 +233,7 @@ export default function AnalyticsPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
                 <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="text-xs text-slate-600 dark:text-slate-400">Avg Daily Revenue</div>
@@ -247,7 +247,7 @@ export default function AnalyticsPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+              <div className="p-2 rounded-[5px] bg-emerald-100 dark:bg-emerald-900/30">
                 <ShoppingCart className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div className="text-xs text-slate-600 dark:text-slate-400">Total Transactions</div>
@@ -261,7 +261,7 @@ export default function AnalyticsPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+              <div className="p-2 rounded-[5px] bg-amber-100 dark:bg-amber-900/30">
                 <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
               <div className="text-xs text-slate-600 dark:text-slate-400">Highest Sale Day</div>
@@ -357,7 +357,7 @@ export default function AnalyticsPage() {
           <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-250">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+                <div className="p-2 rounded-[5px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
                   <Calendar className="h-5 w-5" />
                 </div>
                 Daily Sales Calendar - {monthYear}
@@ -380,7 +380,7 @@ export default function AnalyticsPage() {
                     {cell.day !== null ? (
                       <div
                         className={cn(
-                          "h-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 flex flex-col justify-between shadow-sm",
+                          "h-full p-2 border border-slate-200 dark:border-slate-700 rounded-[5px] bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 flex flex-col justify-between shadow-sm",
                           cell.revenue > 0 && "border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/20 dark:to-emerald-900/20"
                         )}
                       >
@@ -401,7 +401,7 @@ export default function AnalyticsPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="h-full p-2 opacity-30 rounded-lg bg-slate-100 dark:bg-slate-800/20" />
+                      <div className="h-full p-2 opacity-30 rounded-[5px] bg-slate-100 dark:bg-slate-800/20" />
                     )}
                   </div>
                 ))}
@@ -424,7 +424,7 @@ export default function AnalyticsPage() {
           <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-250">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
+                <div className="p-2 rounded-[5px] bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
                   <BarChart3 className="h-5 w-5" />
                 </div>
                 Monthly Sales Revenue Trend

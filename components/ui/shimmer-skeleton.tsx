@@ -16,7 +16,7 @@ export function ShimmerSkeleton({
   
   if (variant === "card") {
     return (
-      <div className={cn(baseStyles, "rounded-lg", className)}>
+      <div className={cn(baseStyles, "rounded-[5px]", className)}>
         <Skeleton className="h-full w-full" />
         <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] 
           bg-gradient-to-r from-transparent via-white/20 dark:via-white/10 to-transparent" />
@@ -28,7 +28,7 @@ export function ShimmerSkeleton({
     return (
       <div className={cn(baseStyles, "space-y-4", className)}>
         <Skeleton className="h-4 w-3/4" />
-        <div className="h-64 rounded-lg relative overflow-hidden">
+        <div className="h-64 rounded-[5px] relative overflow-hidden">
           <Skeleton className="h-full w-full" />
           <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] 
             bg-gradient-to-r from-transparent via-white/20 dark:via-white/10 to-transparent" />

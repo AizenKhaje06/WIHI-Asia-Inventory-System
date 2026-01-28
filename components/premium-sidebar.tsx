@@ -213,7 +213,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           isMobile && !mobileOpen && "-translate-x-full",
           isMobile && mobileOpen && "translate-x-0",
           // Desktop: floating card with margin and subtle rounded corners
-          "lg:left-4 lg:top-4 lg:h-[calc(100vh-2rem)] lg:rounded-lg lg:shadow-2xl",
+          "lg:left-4 lg:top-4 lg:h-[calc(100vh-2rem)] lg:rounded-[5px] lg:shadow-2xl",
           // Mobile: full screen
           "left-0 top-0 h-screen",
           // Light mode
@@ -263,7 +263,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             isMobile ? (
               <button
                 onClick={onMobileClose}
-                className="p-1.5 rounded-lg transition-colors text-slate-600 hover:bg-slate-100 dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-[#E0E0E0] flex-shrink-0 ml-1"
+                className="p-1.5 rounded-[5px] transition-colors text-slate-600 hover:bg-slate-100 dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-[#E0E0E0] flex-shrink-0 ml-1"
                 aria-label="Close navigation menu"
               >
                 <X className="h-4 w-4" />
@@ -271,7 +271,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             ) : (
               <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="p-1.5 rounded-lg transition-colors text-slate-600 hover:bg-slate-100 dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-[#E0E0E0] flex-shrink-0 ml-1"
+                className="p-1.5 rounded-[5px] transition-colors text-slate-600 hover:bg-slate-100 dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-[#E0E0E0] flex-shrink-0 ml-1"
                 aria-label="Collapse sidebar"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -293,7 +293,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
 
         {/* User Profile Section */}
         <div className="p-3 border-b flex-shrink-0 border-slate-200 dark:border-[#444444]">
-          <div className={cn("flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#2a2a2a]", collapsed && "justify-center")}>
+          <div className={cn("flex items-center gap-3 px-3 py-2 rounded-[5px] bg-slate-50 dark:bg-[#2a2a2a]", collapsed && "justify-center")}>
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center text-white font-semibold text-sm from-orange-500 to-orange-600">
               <User className="h-4 w-4" />
             </div>
@@ -331,7 +331,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                       href={item.href}
                       onClick={handleNavClick}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg group relative border",
+                        "flex items-center gap-3 px-3 py-2.5 rounded-[5px] group relative border",
                         reducedMotion ? "" : "transition-all duration-200",
                         isActive 
                           ? "bg-orange-500 text-white border-transparent dark:bg-orange-500 dark:text-white" 
@@ -401,7 +401,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
               window.location.href = "/"
             }}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg w-full group border",
+              "flex items-center gap-3 px-3 py-2.5 rounded-[5px] w-full group border",
               reducedMotion ? "" : "transition-all duration-200",
               "text-slate-600 hover:bg-red-50 hover:text-red-600 border-transparent dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-red-400"
             )}

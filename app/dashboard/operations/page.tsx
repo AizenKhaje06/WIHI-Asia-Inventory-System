@@ -139,7 +139,7 @@ export default function OperationsDashboardPage() {
             {lowStockItems.length > 0 ? (
               <div className="space-y-2">
                 {lowStockItems.slice(0, 5).map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-amber-50 dark:bg-amber-900/10">
+                  <div key={item.id} className="flex items-center justify-between p-2 rounded-[5px] bg-amber-50 dark:bg-amber-900/10">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.name}</p>
                       <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
@@ -184,7 +184,7 @@ export default function OperationsDashboardPage() {
             {outOfStockItems.length > 0 ? (
               <div className="space-y-2">
                 {outOfStockItems.slice(0, 5).map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-red-50 dark:bg-red-900/10">
+                  <div key={item.id} className="flex items-center justify-between p-2 rounded-[5px] bg-red-50 dark:bg-red-900/10">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.name}</p>
                       <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>

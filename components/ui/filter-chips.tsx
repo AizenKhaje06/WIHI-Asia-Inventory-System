@@ -16,7 +16,7 @@ export function FilterChips({ filters, onClearAll }: FilterChipsProps) {
   if (filters.length === 0) return null
 
   return (
-    <div className="flex flex-wrap items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+    <div className="flex flex-wrap items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-[5px] border border-slate-200 dark:border-slate-700">
       <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
         Active Filters:
       </span>

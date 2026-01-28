@@ -62,7 +62,7 @@ export function AdminSidebar({ onBackClick }: AdminSidebarProps) {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg py-2 px-3 text-sm font-medium transition-colors w-full",
+                  "flex items-center gap-2 rounded-[5px] py-2 px-3 text-sm font-medium transition-colors w-full",
                   isActive
                     ? (theme === 'light' ? "bg-primary text-primary-foreground" : "bg-orange-500 text-white")
                     : (theme === 'light' ? "text-foreground hover:bg-accent hover:text-accent-foreground" : "text-gray-300 hover:bg-gray-800 hover:text-white")

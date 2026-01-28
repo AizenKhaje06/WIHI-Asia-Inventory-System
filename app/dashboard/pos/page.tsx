@@ -233,7 +233,7 @@ export default function POSPage() {
                 {cart.map((cartItem) => (
                   <div
                     key={cartItem.item.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
+                    className="flex items-center gap-3 p-3 rounded-[5px] border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{cartItem.item.name}</p>
@@ -300,7 +300,7 @@ export default function POSPage() {
                   onClick={() => addToCart(item)}
                   disabled={isOutOfStock}
                   className={`
-                    relative rounded-lg border-2 p-3 text-left transition-all duration-200
+                    relative rounded-[5px] border-2 p-3 text-left transition-all duration-200
                     ${isOutOfStock 
                       ? 'border-red-200 bg-red-50 dark:bg-red-900/10 opacity-60 cursor-not-allowed' 
                       : isLowStock
@@ -364,7 +364,7 @@ export default function POSPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-[5px] p-4">
               <p className="text-center text-green-800 dark:text-green-200 font-medium mb-2">
                 Stock Released to {department}
               </p>

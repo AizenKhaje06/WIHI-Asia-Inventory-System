@@ -24,7 +24,7 @@ export function EnhancedCard({
   variant = "default"
 }: EnhancedCardProps) {
   const baseStyles = cn(
-    "group relative overflow-hidden rounded-lg border-0 shadow-lg",
+    "group relative overflow-hidden rounded-[5px] border-0 shadow-lg",
     "transition-all duration-300",
     "hover:scale-[1.02] hover:shadow-2xl",
     "animate-in fade-in-0 slide-in-from-bottom-4 duration-700",
@@ -50,7 +50,7 @@ export function EnhancedCard({
           {header || (
             <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-800 dark:text-slate-200">
               {icon && (
-                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
+                <div className="p-2 rounded-[5px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
                   {icon}
                 </div>
               )}

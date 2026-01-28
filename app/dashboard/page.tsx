@@ -192,7 +192,7 @@ export default function DashboardPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+              <div className="p-2 rounded-[5px] bg-green-100 dark:bg-green-900/30">
                 <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function DashboardPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+              <div className="p-2 rounded-[5px] bg-purple-100 dark:bg-purple-900/30">
                 <DollarSign className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
@@ -238,7 +238,7 @@ export default function DashboardPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
                 <RotateCcw className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
@@ -265,7 +265,7 @@ export default function DashboardPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+              <div className="p-2 rounded-[5px] bg-orange-100 dark:bg-orange-900/30">
                 <ShoppingCart className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
@@ -288,7 +288,7 @@ export default function DashboardPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+              <div className="p-2 rounded-[5px] bg-amber-100 dark:bg-amber-900/30">
                 <Percent className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
@@ -316,7 +316,7 @@ export default function DashboardPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+              <div className="p-2 rounded-[5px] bg-indigo-100 dark:bg-indigo-900/30">
                 <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               </div>
             </div>
@@ -658,7 +658,7 @@ export default function DashboardPage() {
                     {stats.supplierReturns.slice(0, 3).map((item, index) => (
                       <div 
                         key={index}
-                        className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="flex items-center justify-between p-3 rounded-[5px] bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                       >
                         <div className="flex items-center gap-3">
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-semibold text-sm">
@@ -877,7 +877,7 @@ export default function DashboardPage() {
             <div className="space-y-2">
               {stats?.recentTransactions && stats.recentTransactions.length > 0 ? (
                 stats.recentTransactions.map((tx, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                  <div key={index} className="flex items-center justify-between p-3 rounded-[5px] bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm truncate text-slate-900 dark:text-white">{tx.itemName}</div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">{tx.quantity} units</div>
@@ -909,7 +909,7 @@ export default function DashboardPage() {
             <div className="space-y-2">
               {stats?.recentRestocks && stats.recentRestocks.length > 0 ? (
                 stats.recentRestocks.map((restock, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                  <div key={index} className="flex items-center justify-between p-3 rounded-[5px] bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm truncate text-slate-900 dark:text-white">{restock.itemName}</div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">{restock.quantity} units</div>

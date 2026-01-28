@@ -255,7 +255,7 @@ export default function LowStockPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+              <div className="p-2 rounded-[5px] bg-amber-100 dark:bg-amber-900/30">
                 <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
@@ -269,7 +269,7 @@ export default function LowStockPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+              <div className="p-2 rounded-[5px] bg-red-100 dark:bg-red-900/30">
                 <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
               </div>
             </div>
@@ -283,7 +283,7 @@ export default function LowStockPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
                 <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
@@ -417,7 +417,7 @@ export default function LowStockPage() {
       <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md">
+            <div className="p-2 rounded-[5px] bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md">
               <AlertTriangle className="h-5 w-5" />
             </div>
             Low Stock Items ({filteredItems.length})
@@ -460,7 +460,7 @@ export default function LowStockPage() {
                           <td className="py-4 pr-4">
                             <div className="flex items-center gap-3">
                               <div className={cn(
-                                "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
+                                "w-10 h-10 rounded-[5px] flex items-center justify-center flex-shrink-0",
                                 urgency === "critical" 
                                   ? "bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/30"
                                   : "bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/30"

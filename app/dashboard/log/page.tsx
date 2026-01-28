@@ -222,7 +222,7 @@ export default function LogPage() {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+            <div className="p-2.5 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
               <Database className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
@@ -234,7 +234,7 @@ export default function LogPage() {
 
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-green-100 dark:bg-green-900/30">
+            <div className="p-2.5 rounded-[5px] bg-green-100 dark:bg-green-900/30">
               <Activity className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
@@ -246,7 +246,7 @@ export default function LogPage() {
 
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+            <div className="p-2.5 rounded-[5px] bg-purple-100 dark:bg-purple-900/30">
               <Plus className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
@@ -258,7 +258,7 @@ export default function LogPage() {
 
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+            <div className="p-2.5 rounded-[5px] bg-orange-100 dark:bg-orange-900/30">
               <Edit className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
@@ -270,7 +270,7 @@ export default function LogPage() {
 
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-red-100 dark:bg-red-900/30">
+            <div className="p-2.5 rounded-[5px] bg-red-100 dark:bg-red-900/30">
               <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
             </div>
             <div>
@@ -360,7 +360,7 @@ export default function LogPage() {
       <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+            <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
               <Database className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             Activity Log

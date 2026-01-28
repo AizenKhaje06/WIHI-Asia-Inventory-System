@@ -37,7 +37,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
         reducedMotion ? "" : "transition-all duration-300",
         // Desktop: floating card with margin and subtle rounded corners - adjust based on sidebar
         sidebarCollapsed ? "lg:left-[100px]" : "lg:left-[260px]",
-        "lg:right-4 lg:top-4 lg:h-14 lg:rounded-lg lg:border",
+        "lg:right-4 lg:top-4 lg:h-14 lg:rounded-[5px] lg:border",
         // Mobile: full width at top
         "left-0 right-0 top-0 h-16 border-b",
         // Light mode
@@ -52,7 +52,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
         <div className="flex items-center gap-3 flex-shrink-0">
           <button
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2 rounded-lg transition-colors duration-200 flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="lg:hidden p-2 rounded-[5px] transition-colors duration-200 flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
             aria-label="Open navigation menu"
             aria-expanded="false"
           >
@@ -65,7 +65,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="p-2 rounded-lg transition-colors duration-200 group flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="p-2 rounded-[5px] transition-colors duration-200 group flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
             title={mounted ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
             aria-label={mounted ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
           >
@@ -82,7 +82,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="relative p-2 rounded-lg transition-colors duration-200 group flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
+                className="relative p-2 rounded-[5px] transition-colors duration-200 group flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
                 aria-label="Notifications (2 unread)"
               >
                 <Bell className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
@@ -113,7 +113,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           {/* Settings */}
           <button
             onClick={() => window.location.href = '/dashboard/settings'}
-            className="hidden md:block p-2 rounded-lg transition-colors duration-200 group flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="hidden md:block p-2 rounded-[5px] transition-colors duration-200 group flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
             title="Settings"
             aria-label="Open settings"
           >
@@ -124,7 +124,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg transition-colors duration-200 group flex-shrink-0 hover:bg-accent"
+                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-[5px] transition-colors duration-200 group flex-shrink-0 hover:bg-accent"
                 aria-label="User menu"
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center shadow-lg flex-shrink-0 from-blue-600 to-blue-700 dark:from-cyan-500 dark:to-cyan-600 dark:shadow-cyan-500/30" aria-hidden="true">

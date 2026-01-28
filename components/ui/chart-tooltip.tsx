@@ -25,7 +25,7 @@ export function ChartTooltip({
   if (!active || !payload || payload.length === 0) return null
 
   return (
-    <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-xl border 
+    <div className="bg-white dark:bg-slate-800 p-4 rounded-[5px] shadow-xl border 
       border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200
       min-w-[200px]">
       {label && (

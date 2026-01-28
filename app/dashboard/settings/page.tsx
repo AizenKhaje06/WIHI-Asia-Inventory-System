@@ -21,7 +21,7 @@ export default function SettingsPage() {
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-green-600 text-white shadow-md">
+              <div className="p-2 rounded-[5px] bg-gradient-to-br from-green-500 to-green-600 text-white shadow-md">
                 <FileSpreadsheet className="h-5 w-5" />
               </div>
               Google Sheets Integration
@@ -48,7 +48,7 @@ export default function SettingsPage() {
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+              <div className="p-2 rounded-[5px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
                 <Database className="h-5 w-5" />
               </div>
               Sheet Structure
@@ -61,7 +61,7 @@ export default function SettingsPage() {
             <div>
               <h3 className="mb-2 font-semibold text-slate-900 dark:text-white">Inventory Sheet</h3>
               <p className="mb-2 text-sm text-slate-600 dark:text-slate-400">Create a sheet named &ldquo;Inventory&rdquo; with these columns:</p>
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-800 p-4">
+              <div className="rounded-[5px] bg-slate-50 dark:bg-slate-800 p-4">
                 <code className="text-sm text-slate-800 dark:text-slate-200">
                   ID | Name | SKU | Category | Quantity | Cost Price | Selling Price | Reorder Level | Supplier | Last
                   Updated
@@ -74,7 +74,7 @@ export default function SettingsPage() {
               <p className="mb-2 text-sm text-slate-600 dark:text-slate-400">
                 Create a sheet named &ldquo;Transactions&rdquo; with these columns:
               </p>
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-800 p-4">
+              <div className="rounded-[5px] bg-slate-50 dark:bg-slate-800 p-4">
                 <code className="text-sm text-slate-800 dark:text-slate-200">
                   ID | Item ID | Item Name | Quantity | Cost Price | Selling Price | Total Cost | Total Revenue | Profit
                   | Timestamp | Type
@@ -87,7 +87,7 @@ export default function SettingsPage() {
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md">
+              <div className="p-2 rounded-[5px] bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md">
                 <Key className="h-5 w-5" />
               </div>
               Setup Instructions

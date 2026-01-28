@@ -15,7 +15,7 @@ export function OfflineIndicator() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg p-4 max-w-sm">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[5px] shadow-lg p-4 max-w-sm">
         <div className="flex items-center gap-3">
           {/* Status Icon */}
           <div className="flex-shrink-0">

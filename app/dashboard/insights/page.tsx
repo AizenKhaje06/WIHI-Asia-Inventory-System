@@ -336,7 +336,7 @@ export default function InsightsPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
                 <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
               <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0">
@@ -353,7 +353,7 @@ export default function InsightsPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+              <div className="p-2 rounded-[5px] bg-emerald-100 dark:bg-emerald-900/30">
                 <Target className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
               <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
@@ -370,7 +370,7 @@ export default function InsightsPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+              <div className="p-2 rounded-[5px] bg-purple-100 dark:bg-purple-900/30">
                 <TrendingUpIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
               <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-0">
@@ -387,7 +387,7 @@ export default function InsightsPage() {
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+              <div className="p-2 rounded-[5px] bg-red-100 dark:bg-red-900/30">
                 <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
               </div>
               <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0">
@@ -460,7 +460,7 @@ export default function InsightsPage() {
             <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                  <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+                  <div className="p-2 rounded-[5px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
                     <Target className="h-5 w-5" />
                   </div>
                   ABC Distribution
@@ -495,7 +495,7 @@ export default function InsightsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-[5px] border border-green-200 dark:border-green-800">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-slate-900 dark:text-white">Category A</span>
                       <Badge className="bg-green-600 text-white border-0">High Value</Badge>
@@ -504,7 +504,7 @@ export default function InsightsPage() {
                       {abcAnalysis.filter(a => a.category === 'A').length} items • ~80% of revenue
                     </p>
                   </div>
-                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-[5px] border border-blue-200 dark:border-blue-800">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-slate-900 dark:text-white">Category B</span>
                       <Badge className="bg-blue-600 text-white border-0">Medium Value</Badge>
@@ -513,7 +513,7 @@ export default function InsightsPage() {
                       {abcAnalysis.filter(a => a.category === 'B').length} items • ~15% of revenue
                     </p>
                   </div>
-                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-[5px] border border-amber-200 dark:border-amber-800">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-slate-900 dark:text-white">Category C</span>
                       <Badge className="bg-amber-600 text-white border-0">Low Value</Badge>
@@ -660,25 +660,25 @@ export default function InsightsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-[5px]">
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Avg Turnover Ratio</span>
                     <span className="text-lg font-bold text-slate-900 dark:text-white">
                       {avgTurnoverRatio.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-[5px]">
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Fast Moving Items</span>
                     <span className="text-lg font-bold text-green-600">
                       {turnover.filter(t => t.status === 'fast-moving').length}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-[5px]">
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Slow Moving Items</span>
                     <span className="text-lg font-bold text-amber-600">
                       {turnover.filter(t => t.status === 'slow-moving').length}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-[5px]">
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Dead Stock Items</span>
                     <span className="text-lg font-bold text-red-600">
                       {turnover.filter(t => t.status === 'dead-stock').length}
@@ -866,7 +866,7 @@ export default function InsightsPage() {
           <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md">
+                <div className="p-2 rounded-[5px] bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md">
                   <BarChart3 className="h-5 w-5" />
                 </div>
                 Predictive Sales Forecast
@@ -1319,7 +1319,7 @@ export default function InsightsPage() {
           <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-red-500 to-red-600 text-white shadow-md">
+                <div className="p-2 rounded-[5px] bg-gradient-to-br from-red-500 to-red-600 text-white shadow-md">
                   <AlertTriangle className="h-5 w-5" />
                 </div>
                 Dead Stock Alert ({filteredDeadStock.length} items)
