@@ -258,38 +258,48 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             )}
           </div>
           
-          {/* Collapse/Close Button */}
-          {!collapsed && (
-            isMobile ? (
-              <button
-                onClick={onMobileClose}
-                className="p-1.5 rounded-[5px] transition-colors text-slate-600 hover:bg-slate-100 dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-[#E0E0E0] flex-shrink-0 ml-1"
-                aria-label="Close navigation menu"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            ) : (
-              <button
-                onClick={() => setCollapsed(!collapsed)}
-                className="p-1.5 rounded-[5px] transition-colors text-slate-600 hover:bg-slate-100 dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-[#E0E0E0] flex-shrink-0 ml-1"
-                aria-label="Collapse sidebar"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-            )
-          )}
-          
-          {/* Expand button when collapsed */}
-          {collapsed && !isMobile && (
+          {/* Mobile Close Button */}
+          {isMobile && (
             <button
-              onClick={() => setCollapsed(false)}
-              className="absolute -right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white dark:bg-[#2a2a2a] border-2 border-slate-200 dark:border-[#444444] shadow-lg hover:shadow-xl transition-all text-slate-600 dark:text-[#B0B0B0] hover:text-slate-900 dark:hover:text-[#E0E0E0]"
-              aria-label="Expand sidebar"
+              onClick={onMobileClose}
+              className="p-1.5 rounded-[5px] transition-colors text-slate-600 hover:bg-slate-100 dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-[#E0E0E0] flex-shrink-0 ml-1"
+              aria-label="Close navigation menu"
             >
-              <ChevronRight className="h-4 w-4" />
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>
+
+        {/* Professional Collapse/Expand Button - Desktop Only */}
+        {!isMobile && (
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className={cn(
+              "absolute top-24 -right-3 z-50",
+              "w-6 h-6 flex items-center justify-center",
+              "bg-white dark:bg-[#2a2a2a]",
+              "border-2 border-slate-200 dark:border-[#444444]",
+              "rounded-full",
+              "shadow-lg hover:shadow-xl",
+              "transition-all duration-200 ease-out",
+              "text-slate-600 dark:text-[#B0B0B0]",
+              "hover:text-orange-500 dark:hover:text-orange-400",
+              "hover:bg-slate-50 dark:hover:bg-[#333333]",
+              "hover:border-orange-500 dark:hover:border-orange-400",
+              "hover:scale-110",
+              "active:scale-95",
+              "group"
+            )}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <div className={cn(
+              "transition-transform duration-200",
+              collapsed ? "rotate-180" : "rotate-0"
+            )}>
+              <ChevronLeft className="h-3.5 w-3.5" strokeWidth={2.5} />
+            </div>
+          </button>
+        )}
 
         {/* User Profile Section */}
         <div className="p-3 border-b flex-shrink-0 border-slate-200 dark:border-[#444444]">
