@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/tabs"
 import { AnimatedNumber } from "@/components/ui/animated-number"
 import { ChartTooltip } from "@/components/ui/chart-tooltip"
+import { GaugeChart } from "@/components/charts/gauge-chart"
 import type { DashboardStats, InventoryItem } from "@/lib/types"
 import { formatNumber } from "@/lib/utils"
 import { cn } from "@/lib/utils"
@@ -639,50 +640,57 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {stats?.supplierReturns && stats.supplierReturns.length > 0 ? (
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart 
-                  data={stats.supplierReturns} 
-                  layout="vertical"
-                  margin={{ left: 80, right: 20, top: 10, bottom: 10 }}
-                >
-                  <defs>
-                    <linearGradient id="returnGradient" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#EF4444" stopOpacity={0.9}/>
-                      <stop offset="100%" stopColor="#DC2626" stopOpacity={0.8}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
-                  <XAxis 
-                    type="number"
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+              <div className="space-y-6">
+                {/* Overall Return Rate Gauge - Bigger */}
+                <div className="flex justify-center py-6">
+                  <GaugeChart
+                    value={stats.supplierReturns.reduce((sum, item) => sum + item.quantity, 0)}
+                    max={stats.totalSales || 100}
+                    label="Return Rate"
+                    size={240}
                   />
-                  <YAxis 
-                    type="category"
-                    dataKey="itemName" 
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
-                    width={80}
-                  />
-                  <Tooltip 
-                    content={<ChartTooltip formatter={(value, name) => {
-                      if (name === 'value') return [`₱${formatNumber(Number(value))}`, 'Return Value']
-                      return [value.toString(), 'Quantity']
-                    }} />}
-                    cursor={{ fill: 'rgba(239, 68, 68, 0.1)' }}
-                  />
-                  <Bar 
-                    dataKey="value" 
-                    fill="url(#returnGradient)" 
-                    radius={[0, 8, 8, 0]}
-                    maxBarSize={40}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+                </div>
+
+                {/* Top Returned Products - Clean List */}
+                <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
+                  <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Top Returned Products</h4>
+                  <div className="space-y-3">
+                    {stats.supplierReturns.slice(0, 3).map((item, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-semibold text-sm">
+                            {index + 1}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">
+                              {item.itemName}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              {item.quantity} {item.quantity === 1 ? 'item' : 'items'} returned
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-red-600 dark:text-red-400">
+                            ₱{formatNumber(item.value)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {stats.supplierReturns.length > 3 && (
+                    <div className="mt-3 text-center">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        +{stats.supplierReturns.length - 3} more products
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             ) : (
               <div className="text-center py-20">
                 <RotateCcw className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />

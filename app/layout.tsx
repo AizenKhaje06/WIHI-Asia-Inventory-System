@@ -63,9 +63,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
       <head>
         {/* Favicon */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/System Logo.png" sizes="any" />
+        <link rel="icon" href="/System Logo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/System Logo.png" />
       </head>
       <body className={`min-h-screen w-full overflow-x-hidden antialiased ${GeistSans.variable} ${GeistMono.variable} font-sans`}>
         {/* Skip to main content for accessibility */}

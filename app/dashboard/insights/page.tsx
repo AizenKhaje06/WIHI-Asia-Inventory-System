@@ -16,6 +16,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 export default function InsightsPage() {
   const [abcAnalysis, setAbcAnalysis] = useState<ABCAnalysis[]>([])
   const [turnover, setTurnover] = useState<InventoryTurnover[]>([])
+  const [fastMoving, setFastMoving] = useState<any[]>([])
+  const [slowMoving, setSlowMoving] = useState<any[]>([])
   const [deadStock, setDeadStock] = useState<any[]>([])
   const [profitMargin, setProfitMargin] = useState<any[]>([])
   const [forecasts, setForecasts] = useState<PredictiveAnalytics[]>([])
@@ -45,6 +47,12 @@ export default function InsightsPage() {
   
   const [returnSearch, setReturnSearch] = useState("")
   const [returnSortBy, setReturnSortBy] = useState("quantity-desc")
+  
+  const [fastMovingSearch, setFastMovingSearch] = useState("")
+  const [fastMovingSortBy, setFastMovingSortBy] = useState("ratio-desc")
+  
+  const [slowMovingSearch, setSlowMovingSearch] = useState("")
+  const [slowMovingSortBy, setSlowMovingSortBy] = useState("days-desc")
 
   useEffect(() => {
     fetchAnalytics()
@@ -69,8 +77,32 @@ export default function InsightsPage() {
       setForecasts(Array.isArray(forecastData) ? forecastData : [])
       setReturnAnalytics(analyticsData.returns || null)
       
+      // Categorize items by turnover speed
+      const turnoverData = analyticsData.turnover || []
+      
+      // Fast Moving: turnover ratio > 4 (sells in < 90 days)
+      const fastMovingItems = turnoverData
+        .filter(t => t.status === 'fast-moving')
+        .map(t => {
+          const item = itemsData.find(i => i.id === t.itemId)
+          return item ? { ...item, daysToSell: t.daysToSell, turnoverRatio: t.turnoverRatio } : null
+        })
+        .filter(Boolean)
+      
+      // Slow Moving: turnover ratio 1-2 (sells in 180-365 days)
+      const slowMovingItems = turnoverData
+        .filter(t => t.status === 'slow-moving')
+        .map(t => {
+          const item = itemsData.find(i => i.id === t.itemId)
+          return item ? { ...item, daysToSell: t.daysToSell, turnoverRatio: t.turnoverRatio } : null
+        })
+        .filter(Boolean)
+      
+      setFastMoving(fastMovingItems)
+      setSlowMoving(slowMovingItems)
+      
       // Use turnover data for dead stock (items with 180+ days to sell)
-      const deadStockItems = (analyticsData.turnover || [])
+      const deadStockItems = turnoverData
         .filter(t => t.status === 'dead-stock')
         .map(t => {
           const item = itemsData.find(i => i.id === t.itemId)
@@ -246,14 +278,57 @@ export default function InsightsPage() {
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden">
-      {/* Page Header */}
-      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold gradient-text mb-2">
-          Business Insights
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
-          AI-powered analytics and strategic recommendations for data-driven decisions
-        </p>
+      {/* Header with Actions */}
+      <div className="flex items-center justify-between mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+        <div>
+          <h1 className="text-4xl font-bold gradient-text">Business Insights</h1>
+          <p className="text-slate-600 dark:text-slate-400 text-base mt-2">
+            AI-powered analytics and strategic recommendations for data-driven decisions
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            onClick={fetchAnalytics}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Button
+            onClick={() => {
+              if (activeTab === 'abc') {
+                exportToCSV(filteredAbcAnalysis, 'abc-analysis', ['Product', 'Category', 'Revenue %', 'Recommendation'])
+              } else if (activeTab === 'turnover') {
+                exportToCSV(filteredTurnover, 'inventory-turnover', ['Product', 'Turnover Ratio', 'Days to Sell', 'Status'])
+              } else if (activeTab === 'forecast') {
+                exportToCSV(filteredForecasts, 'sales-forecast', ['Product', 'Predicted Demand', 'Recommended Reorder', 'Trend', 'Confidence'])
+              } else if (activeTab === 'profit') {
+                exportToCSV(filteredProfitMargin, 'profit-margins', ['Category', 'Revenue', 'Profit', 'Margin %'])
+              } else if (activeTab === 'deadstock') {
+                exportToCSV(filteredDeadStock, 'dead-stock', ['Product', 'Category', 'Quantity', 'Value'])
+              } else if (activeTab === 'returns') {
+                const filteredReturns = returnAnalytics?.returnsByItem
+                  ?.filter((item: any) => item.itemName.toLowerCase().includes(returnSearch.toLowerCase()))
+                  .sort((a: any, b: any) => {
+                    if (returnSortBy === "quantity-desc") return b.quantity - a.quantity
+                    if (returnSortBy === "quantity-asc") return a.quantity - b.quantity
+                    if (returnSortBy === "value-desc") return b.value - a.value
+                    if (returnSortBy === "value-asc") return a.value - b.value
+                    return 0
+                  })
+                exportToCSV(filteredReturns || [], 'returns-analysis', ['Product', 'Quantity', 'Value', 'Rate'])
+              }
+            }}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -327,101 +402,57 @@ export default function InsightsPage() {
         </Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <TabsList className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm p-1 rounded-lg">
-            <TabsTrigger 
-              value="abc"
-              className="data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900"
-            >
-              ABC Analysis
-            </TabsTrigger>
-            <TabsTrigger 
-              value="turnover"
-              className="data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900"
-            >
-              Turnover
-            </TabsTrigger>
-            <TabsTrigger 
-              value="forecast"
-              className="data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900"
-            >
-              Forecast
-            </TabsTrigger>
-            <TabsTrigger 
-              value="profit"
-              className="data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900"
-            >
-              Profit
-            </TabsTrigger>
-            <TabsTrigger 
-              value="deadstock"
-              className="data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900"
-            >
-              Dead Stock
-            </TabsTrigger>
-            <TabsTrigger 
-              value="returns"
-              className="data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900"
-            >
-              <RotateCcw className="h-4 w-4 mr-1.5" />
-              Returns
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="flex gap-2">
-            <Button
-              onClick={fetchAnalytics}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-            <Button
-              onClick={() => {
-                if (activeTab === 'abc') {
-                  exportToCSV(filteredAbcAnalysis, 'abc-analysis', ['Product', 'Category', 'Revenue %', 'Recommendation'])
-                } else if (activeTab === 'turnover') {
-                  exportToCSV(filteredTurnover, 'inventory-turnover', ['Product', 'Turnover Ratio', 'Days to Sell', 'Status'])
-                } else if (activeTab === 'forecast') {
-                  exportToCSV(filteredForecasts, 'sales-forecast', ['Product', 'Predicted Demand', 'Recommended Reorder', 'Trend', 'Confidence'])
-                } else if (activeTab === 'profit') {
-                  exportToCSV(filteredProfitMargin, 'profit-margins', ['Category', 'Revenue', 'Profit', 'Margin %'])
-                } else if (activeTab === 'deadstock') {
-                  exportToCSV(filteredDeadStock, 'dead-stock', ['Product', 'Category', 'Quantity', 'Value'])
-                } else if (activeTab === 'returns') {
-                  const filteredReturns = returnAnalytics?.returnsByItem
-                    ?.filter((item: any) => item.itemName.toLowerCase().includes(returnSearch.toLowerCase()))
-                    .sort((a: any, b: any) => {
-                      if (returnSortBy === "quantity-desc") return b.quantity - a.quantity
-                      if (returnSortBy === "quantity-asc") return a.quantity - b.quantity
-                      if (returnSortBy === "value-desc") return b.value - a.value
-                      if (returnSortBy === "rate-desc") return b.returnRate - a.returnRate
-                      if (returnSortBy === "name-asc") return a.itemName.localeCompare(b.itemName)
-                      return 0
-                    }) || []
-                  exportToCSV(filteredReturns, 'returns-analysis', ['Product', 'Quantity Returned', 'Return Value', 'Return Rate %'])
-                }
-              }}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              disabled={
-                (activeTab === 'abc' && filteredAbcAnalysis.length === 0) ||
-                (activeTab === 'turnover' && filteredTurnover.length === 0) ||
-                (activeTab === 'forecast' && filteredForecasts.length === 0) ||
-                (activeTab === 'profit' && filteredProfitMargin.length === 0) ||
-                (activeTab === 'deadstock' && filteredDeadStock.length === 0) ||
-                (activeTab === 'returns' && (!returnAnalytics?.returnsByItem || returnAnalytics.returnsByItem.length === 0))
-              }
-            >
-              <Download className="h-4 w-4" />
-              Export CSV
-            </Button>
-          </div>
-        </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
+        <TabsList className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 p-0 h-auto rounded-none w-full justify-start overflow-x-auto">
+          <TabsTrigger 
+            value="abc"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
+          >
+            ABC Analysis
+          </TabsTrigger>
+          <TabsTrigger 
+            value="turnover"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
+          >
+            Turnover
+          </TabsTrigger>
+          <TabsTrigger 
+            value="forecast"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
+          >
+            Forecast
+          </TabsTrigger>
+          <TabsTrigger 
+            value="profit"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
+          >
+            Profit
+          </TabsTrigger>
+          <TabsTrigger 
+            value="fast-moving"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-green-600 dark:data-[state=active]:border-green-400 data-[state=active]:text-green-600 dark:data-[state=active]:text-green-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
+          >
+            Fast Moving
+          </TabsTrigger>
+          <TabsTrigger 
+            value="slow-moving"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 dark:data-[state=active]:border-amber-400 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
+          >
+            Slow Moving
+          </TabsTrigger>
+          <TabsTrigger 
+            value="deadstock"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 dark:data-[state=active]:border-red-400 data-[state=active]:text-red-600 dark:data-[state=active]:text-red-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
+          >
+            Dead Stock
+          </TabsTrigger>
+          <TabsTrigger 
+            value="returns"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 dark:data-[state=active]:border-purple-400 data-[state=active]:text-purple-600 dark:data-[state=active]:text-purple-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
+          >
+            Returns
+          </TabsTrigger>
+        </TabsList>
 
         {/* ABC Analysis */}
         <TabsContent value="abc" className="space-y-4 mt-4">
@@ -995,6 +1026,224 @@ export default function InsightsPage() {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        {/* Fast Moving Items */}
+        <TabsContent value="fast-moving" className="space-y-4 mt-4">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl font-bold text-green-700 dark:text-green-400 flex items-center gap-2">
+                    <TrendingUp className="h-6 w-6" />
+                    Fast Moving Items
+                  </CardTitle>
+                  <p className="text-sm text-green-600 dark:text-green-500 mt-1">
+                    High turnover products (sells in &lt; 90 days)
+                  </p>
+                </div>
+                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-lg px-4 py-2">
+                  {fastMoving.length} Items
+                </Badge>
+              </div>
+            </CardHeader>
+          </Card>
+
+          {/* Filters */}
+          <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+            <CardContent className="p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Search</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      placeholder="Search fast moving products..."
+                      value={fastMovingSearch}
+                      onChange={(e) => setFastMovingSearch(e.target.value)}
+                      className="pl-10 h-9"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Sort By</Label>
+                  <Select value={fastMovingSortBy} onValueChange={setFastMovingSortBy}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ratio-desc">Turnover Ratio (High to Low)</SelectItem>
+                      <SelectItem value="ratio-asc">Turnover Ratio (Low to High)</SelectItem>
+                      <SelectItem value="days-asc">Days to Sell (Low to High)</SelectItem>
+                      <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-slate-900 dark:text-white">Fast Moving Products</CardTitle>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                These products have high demand and quick turnover
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto -mx-6 px-6">
+                <div className="min-w-full inline-block align-middle">
+                  <table className="w-full min-w-[800px]">
+                    <thead>
+                      <tr className="border-b-2 border-slate-200 dark:border-slate-700">
+                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">SKU</th>
+                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock</th>
+                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Turnover Ratio</th>
+                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
+                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fastMoving
+                        .filter(item => item.name.toLowerCase().includes(fastMovingSearch.toLowerCase()))
+                        .sort((a, b) => {
+                          if (fastMovingSortBy === "ratio-desc") return b.turnoverRatio - a.turnoverRatio
+                          if (fastMovingSortBy === "ratio-asc") return a.turnoverRatio - b.turnoverRatio
+                          if (fastMovingSortBy === "days-asc") return a.daysToSell - b.daysToSell
+                          if (fastMovingSortBy === "name-asc") return a.name.localeCompare(b.name)
+                          return 0
+                        })
+                        .map((item) => (
+                        <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-green-50 dark:hover:bg-green-950/10 transition-colors duration-200">
+                          <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
+                          <td className="py-4 text-sm text-slate-600 dark:text-slate-400">{item.sku}</td>
+                          <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{item.quantity}</td>
+                          <td className="py-4 text-right font-bold text-green-600 dark:text-green-400">{item.turnoverRatio.toFixed(2)}</td>
+                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">{item.daysToSell} days</td>
+                          <td className="py-4 text-right text-slate-800 dark:text-slate-200">{formatCurrency(item.price)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {fastMoving.length === 0 && (
+                    <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                      No fast moving items found
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Slow Moving Items */}
+        <TabsContent value="slow-moving" className="space-y-4 mt-4">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl font-bold text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                    <TrendingDown className="h-6 w-6" />
+                    Slow Moving Items
+                  </CardTitle>
+                  <p className="text-sm text-amber-600 dark:text-amber-500 mt-1">
+                    Low turnover products (sells in 180-365 days)
+                  </p>
+                </div>
+                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-lg px-4 py-2">
+                  {slowMoving.length} Items
+                </Badge>
+              </div>
+            </CardHeader>
+          </Card>
+
+          {/* Filters */}
+          <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+            <CardContent className="p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Search</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      placeholder="Search slow moving products..."
+                      value={slowMovingSearch}
+                      onChange={(e) => setSlowMovingSearch(e.target.value)}
+                      className="pl-10 h-9"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Sort By</Label>
+                  <Select value={slowMovingSortBy} onValueChange={setSlowMovingSortBy}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="days-desc">Days to Sell (High to Low)</SelectItem>
+                      <SelectItem value="days-asc">Days to Sell (Low to High)</SelectItem>
+                      <SelectItem value="ratio-asc">Turnover Ratio (Low to High)</SelectItem>
+                      <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-slate-900 dark:text-white">Slow Moving Products</CardTitle>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                These products have low demand and may need promotional strategies
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto -mx-6 px-6">
+                <div className="min-w-full inline-block align-middle">
+                  <table className="w-full min-w-[800px]">
+                    <thead>
+                      <tr className="border-b-2 border-slate-200 dark:border-slate-700">
+                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">SKU</th>
+                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock</th>
+                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Turnover Ratio</th>
+                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
+                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {slowMoving
+                        .filter(item => item.name.toLowerCase().includes(slowMovingSearch.toLowerCase()))
+                        .sort((a, b) => {
+                          if (slowMovingSortBy === "days-desc") return b.daysToSell - a.daysToSell
+                          if (slowMovingSortBy === "days-asc") return a.daysToSell - b.daysToSell
+                          if (slowMovingSortBy === "ratio-asc") return a.turnoverRatio - b.turnoverRatio
+                          if (slowMovingSortBy === "name-asc") return a.name.localeCompare(b.name)
+                          return 0
+                        })
+                        .map((item) => (
+                        <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-amber-50 dark:hover:bg-amber-950/10 transition-colors duration-200">
+                          <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
+                          <td className="py-4 text-sm text-slate-600 dark:text-slate-400">{item.sku}</td>
+                          <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{item.quantity}</td>
+                          <td className="py-4 text-right font-bold text-amber-600 dark:text-amber-400">{item.turnoverRatio.toFixed(2)}</td>
+                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">{item.daysToSell} days</td>
+                          <td className="py-4 text-right text-slate-800 dark:text-slate-200">{formatCurrency(item.price * item.quantity)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {slowMoving.length === 0 && (
+                    <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                      No slow moving items found
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Dead Stock */}

@@ -31,6 +31,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { getCurrentUser, hasPermission, clearCurrentUser, ROLES, type UserRole } from "@/lib/auth"
 
 interface NavItem {
   name: string
@@ -49,9 +50,10 @@ const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0): 
   {
     section: "Main",
     items: [
-      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { name: "Warehouse Dispatch", href: "/dashboard/pos", icon: ShoppingCart },
-      { name: "Reports", href: "/dashboard/reports", icon: FileText },
+      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, // Admin only
+      { name: "Operations Dashboard", href: "/dashboard/operations", icon: LayoutDashboard }, // Operations only
+      { name: "Warehouse Dispatch", href: "/dashboard/pos", icon: ShoppingCart }, // Operations only
+      { name: "Reports", href: "/dashboard/reports", icon: FileText }, // Admin only
     ],
   },
   {
@@ -98,15 +100,27 @@ interface PremiumSidebarProps {
   onNavClick?: () => void
   mobileOpen?: boolean
   onMobileClose?: () => void
+  onCollapsedChange?: (collapsed: boolean) => void
 }
 
-export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }: PremiumSidebarProps) {
+export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, onCollapsedChange }: PremiumSidebarProps) {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
   const reducedMotion = useReducedMotion()
   const [isMobile, setIsMobile] = useState(false)
   const [lowStockCount, setLowStockCount] = useState(0)
   const [outOfStockCount, setOutOfStockCount] = useState(0)
+  const [currentUser, setCurrentUser] = useState<ReturnType<typeof getCurrentUser>>(null)
+
+  // Get current user
+  useEffect(() => {
+    setCurrentUser(getCurrentUser())
+  }, [])
+
+  // Notify parent when collapsed state changes
+  useEffect(() => {
+    onCollapsedChange?.(collapsed)
+  }, [collapsed, onCollapsedChange])
 
   // Fetch inventory counts for badges
   useEffect(() => {
@@ -131,7 +145,17 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
     return () => clearInterval(interval)
   }, [])
 
-  const navigation = getNavigation(lowStockCount, outOfStockCount)
+  const allNavigation = getNavigation(lowStockCount, outOfStockCount)
+  
+  // Filter navigation based on user role
+  const navigation = currentUser ? allNavigation.map(section => ({
+    ...section,
+    items: section.items.filter(item => {
+      const hasAccess = hasPermission(currentUser.role, item.href)
+      console.log(`[Sidebar] ${currentUser.role} - ${item.name} (${item.href}): ${hasAccess}`)
+      return hasAccess
+    })
+  })).filter(section => section.items.length > 0) : allNavigation
 
   useEffect(() => {
     const checkMobile = () => {
@@ -183,78 +207,102 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 h-screen z-50 ease-in-out border-r flex flex-col",
+          "fixed z-50 ease-in-out flex flex-col",
           reducedMotion ? "" : "transition-all duration-300",
           collapsed ? "w-20" : "w-[240px]",
           isMobile && !mobileOpen && "-translate-x-full",
           isMobile && mobileOpen && "translate-x-0",
+          // Desktop: floating card with margin and subtle rounded corners
+          "lg:left-4 lg:top-4 lg:h-[calc(100vh-2rem)] lg:rounded-lg lg:shadow-2xl",
+          // Mobile: full screen
+          "left-0 top-0 h-screen",
           // Light mode
-          "bg-white border-slate-200 shadow-xl",
-          // Dark mode - black with cyan glow
-          "dark:bg-black dark:border-white/10 dark:shadow-2xl",
-          "dark:after:absolute dark:after:top-0 dark:after:right-0 dark:after:w-[1px] dark:after:h-full dark:after:bg-gradient-to-b dark:after:from-cyan-500/0 dark:after:via-cyan-500/50 dark:after:to-cyan-500/0"
+          "bg-white border border-slate-200",
+          // Dark mode - Material Design dark surface
+          "dark:bg-[#1e1e1e] dark:border-[#444444] dark:shadow-2xl"
         )}
         role="navigation"
         aria-label="Main navigation"
       >
-        {/* Logo & Brand */}
+        {/* Logo & Brand - Premium Layout */}
         <div 
-          className="h-16 flex items-center justify-between px-3 border-b relative flex-shrink-0 border-slate-200 dark:border-white/10 dark:bg-gradient-to-r dark:from-transparent dark:via-cyan-500/5 dark:to-transparent"
+          className="h-20 flex items-center justify-between px-3 border-b relative flex-shrink-0 border-slate-200 dark:border-[#444444] bg-gradient-to-r from-transparent via-slate-50/50 to-transparent dark:via-[#2a2a2a]/30"
         >
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
             {!collapsed ? (
-              <div className="flex flex-col gap-1 w-full">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-gradient-to-br shadow-lg flex-shrink-0 from-blue-600 to-purple-600 dark:from-cyan-500 dark:to-cyan-600 dark:shadow-cyan-500/50" aria-hidden="true">
-                    <Warehouse className="h-4 w-4 text-white" strokeWidth={2.5} />
-                  </div>
-                  <h1 className="text-sm font-bold tracking-tight leading-none whitespace-nowrap text-slate-900 dark:text-white">
+              <div className="flex items-center gap-2.5 w-full min-w-0">
+                <div className="flex-shrink-0 w-11 h-11 relative" aria-hidden="true">
+                  <img 
+                    src="/System Logo.png" 
+                    alt="StockSync Logo" 
+                    className="w-full h-full object-contain drop-shadow-lg"
+                  />
+                </div>
+                <div className="flex flex-col justify-center gap-0.5 min-w-0 flex-1">
+                  <h1 className="text-[11px] font-extrabold tracking-tight leading-none bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-slate-100 dark:to-white bg-clip-text text-transparent whitespace-nowrap">
                     StockSync
                   </h1>
+                  <p className="text-[8px] leading-none text-slate-500 dark:text-[#888888] font-semibold tracking-wide uppercase whitespace-nowrap">
+                    Inventory System
+                  </p>
                 </div>
-                <p className="text-[10px] leading-none whitespace-nowrap text-slate-600 dark:text-gray-400 ml-8">Inventory System</p>
               </div>
             ) : (
-              <div className="p-1.5 rounded-lg bg-gradient-to-br shadow-lg flex-shrink-0 from-blue-600 to-purple-600 dark:from-cyan-500 dark:to-cyan-600 dark:shadow-cyan-500/50" aria-hidden="true">
-                <Warehouse className="h-4 w-4 text-white" strokeWidth={2.5} />
+              <div className="flex-shrink-0 w-11 h-11 relative mx-auto" aria-hidden="true">
+                <img 
+                  src="/System Logo.png" 
+                  alt="StockSync Logo" 
+                  className="w-full h-full object-contain drop-shadow-lg"
+                />
               </div>
             )}
           </div>
           
           {/* Collapse/Close Button */}
-          {isMobile ? (
-            <button
-              onClick={onMobileClose}
-              className="p-1.5 rounded-lg transition-colors text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
-              aria-label="Close navigation menu"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          ) : (
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className="p-1.5 rounded-lg transition-colors text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {collapsed ? (
-                <ChevronRight className="h-4 w-4" />
-              ) : (
+          {!collapsed && (
+            isMobile ? (
+              <button
+                onClick={onMobileClose}
+                className="p-1.5 rounded-lg transition-colors text-slate-600 hover:bg-slate-100 dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-[#E0E0E0] flex-shrink-0 ml-1"
+                aria-label="Close navigation menu"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : (
+              <button
+                onClick={() => setCollapsed(!collapsed)}
+                className="p-1.5 rounded-lg transition-colors text-slate-600 hover:bg-slate-100 dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-[#E0E0E0] flex-shrink-0 ml-1"
+                aria-label="Collapse sidebar"
+              >
                 <ChevronLeft className="h-4 w-4" />
-              )}
+              </button>
+            )
+          )}
+          
+          {/* Expand button when collapsed */}
+          {collapsed && !isMobile && (
+            <button
+              onClick={() => setCollapsed(false)}
+              className="absolute -right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white dark:bg-[#2a2a2a] border-2 border-slate-200 dark:border-[#444444] shadow-lg hover:shadow-xl transition-all text-slate-600 dark:text-[#B0B0B0] hover:text-slate-900 dark:hover:text-[#E0E0E0]"
+              aria-label="Expand sidebar"
+            >
+              <ChevronRight className="h-4 w-4" />
             </button>
           )}
         </div>
 
         {/* User Profile Section */}
-        <div className="p-3 border-b flex-shrink-0 border-slate-200 dark:border-white/10">
-          <div className={cn("flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-50 dark:bg-white/5 dark:border dark:border-white/10", collapsed && "justify-center")}>
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center text-white font-semibold text-sm from-blue-600 to-purple-600 dark:from-cyan-500 dark:to-cyan-600 dark:shadow-lg dark:shadow-cyan-500/30">
+        <div className="p-3 border-b flex-shrink-0 border-slate-200 dark:border-[#444444]">
+          <div className={cn("flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#2a2a2a]", collapsed && "justify-center")}>
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center text-white font-semibold text-sm from-orange-500 to-orange-600">
               <User className="h-4 w-4" />
             </div>
-            {!collapsed && (
+            {!collapsed && currentUser && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate text-slate-900 dark:text-white">Admin User</p>
-                <p className="text-xs truncate text-slate-600 dark:text-gray-400">Administrator</p>
+                <p className="text-sm font-semibold truncate text-slate-900 dark:text-[#E0E0E0]">{currentUser.displayName}</p>
+                <p className="text-xs truncate text-slate-600 dark:text-[#B0B0B0]">
+                  {ROLES[currentUser.role]?.name || currentUser.role}
+                </p>
               </div>
             )}
           </div>
@@ -266,13 +314,13 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
             <div key={section.section} className={cn("mb-6", sectionIdx === 0 && "mt-0")}>
               {!collapsed && (
                 <div className="px-3 mb-2">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-gray-500">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-[#888888]">
                     {section.section}
                   </p>
                 </div>
               )}
               {collapsed && sectionIdx > 0 && (
-                <div className="h-px my-2 mx-2 bg-slate-200 dark:bg-white/10" />
+                <div className="h-px my-2 mx-2 bg-slate-200 dark:bg-[#444444]" />
               )}
               <div className="space-y-1" role="list">
                 {section.items.map((item) => {
@@ -286,8 +334,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
                         "flex items-center gap-3 px-3 py-2.5 rounded-lg group relative border",
                         reducedMotion ? "" : "transition-all duration-200",
                         isActive 
-                          ? "bg-blue-50 text-blue-600 border-transparent dark:bg-cyan-500/10 dark:text-cyan-400 dark:border-cyan-500/30 dark:shadow-lg dark:shadow-cyan-500/20" 
-                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 border-transparent dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+                          ? "bg-orange-500 text-white border-transparent dark:bg-orange-500 dark:text-white" 
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 border-transparent dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-[#E0E0E0]"
                       )}
                       aria-current={isActive ? "page" : undefined}
                       role="listitem"
@@ -307,7 +355,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
                               variant={item.badgeVariant === 'destructive' ? 'destructive' : item.badgeVariant === 'warning' ? 'default' : 'default'}
                               className={cn(
                                 "ml-auto",
-                                item.badgeVariant === 'warning' && "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800"
+                                item.badgeVariant === 'warning' && "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+                                isActive && "bg-white/20 text-white border-white/30 dark:bg-white/20 dark:text-white dark:border-white/30"
                               )}
                             >
                               {item.badge}
@@ -345,16 +394,16 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose }
         </nav>
 
         {/* Logout */}
-        <div className="p-3 border-t flex-shrink-0 border-slate-200 dark:border-white/10 dark:bg-gradient-to-r dark:from-transparent dark:via-red-500/5 dark:to-transparent">
+        <div className="p-3 border-t flex-shrink-0 border-slate-200 dark:border-[#444444]">
           <button
             onClick={() => {
-              localStorage.removeItem("isLoggedIn")
+              clearCurrentUser()
               window.location.href = "/"
             }}
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-lg w-full group border",
               reducedMotion ? "" : "transition-all duration-200",
-              "text-slate-600 hover:bg-red-50 hover:text-red-600 border-transparent dark:text-gray-400 dark:hover:bg-red-500/10 dark:hover:text-red-400 dark:hover:border-red-500/30"
+              "text-slate-600 hover:bg-red-50 hover:text-red-600 border-transparent dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-red-400"
             )}
             title={collapsed ? "Logout" : undefined}
             aria-label="Logout from application"

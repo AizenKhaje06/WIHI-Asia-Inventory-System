@@ -10,20 +10,18 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Eye, EyeOff, Lock, User, Loader2, ArrowRight, AlertCircle, Shield } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Eye, EyeOff, Lock, User, Loader2, ArrowRight, AlertCircle, Shield, UserCircle } from "lucide-react"
+import { DEFAULT_PASSWORDS, ROLES, setCurrentUser, getDefaultRoute, type UserRole, validateRolePassword } from "@/lib/auth"
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [role, setRole] = useState<UserRole>("admin")
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-
-  // Default credentials (can be changed via settings later)
-  const DEFAULT_USERNAME = "admin"
-  const DEFAULT_PASSWORD = "password123"
 
   // Check if in development mode
   const isDevelopment = process.env.NODE_ENV === 'development'
@@ -32,10 +30,10 @@ export default function LoginPage() {
     // Clear any existing login state on login page load to force re-authentication
     localStorage.removeItem("isLoggedIn")
     
-    // Load remembered username if exists
-    const rememberedUsername = localStorage.getItem("rememberedUsername")
-    if (rememberedUsername) {
-      setUsername(rememberedUsername)
+    // Load remembered role if exists
+    const rememberedRole = localStorage.getItem("rememberedRole") as UserRole
+    if (rememberedRole) {
+      setRole(rememberedRole)
       setRememberMe(true)
     }
   }, [])
@@ -48,22 +46,29 @@ export default function LoginPage() {
     // Simulate network delay for better UX
     await new Promise(resolve => setTimeout(resolve, 800))
 
-    // Get stored credentials or use defaults
-    const storedUsername = localStorage.getItem("adminUsername") || DEFAULT_USERNAME
-    const storedPassword = localStorage.getItem("adminPassword") || DEFAULT_PASSWORD
+    // Validate password for selected role
+    const isValid = validateRolePassword(role, password)
 
-    if (username === storedUsername && password === storedPassword) {
+    if (isValid) {
       // Handle Remember Me
       if (rememberMe) {
-        localStorage.setItem("rememberedUsername", username)
+        localStorage.setItem("rememberedRole", role)
       } else {
-        localStorage.removeItem("rememberedUsername")
+        localStorage.removeItem("rememberedRole")
       }
       
-      localStorage.setItem("isLoggedIn", "true")
-      router.push("/dashboard")
+      // Set user session
+      setCurrentUser({
+        username: role, // Use role as username
+        role: role,
+        displayName: ROLES[role].name
+      })
+      
+      // Redirect to appropriate dashboard
+      const defaultRoute = getDefaultRoute(role)
+      router.push(defaultRoute)
     } else {
-      setError("Invalid username or password. Please try again.")
+      setError("Invalid password. Please try again.")
     }
 
     setLoading(false)
@@ -104,22 +109,32 @@ export default function LoginPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-slate-700 dark:text-slate-300 font-medium">
-                  Username
+                <Label htmlFor="role" className="text-slate-700 dark:text-slate-300 font-medium">
+                  Login As
                 </Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3.5 h-5 w-5 text-slate-400 dark:text-slate-500" />
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="pl-10 h-12 border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-slate-800"
-                    required
-                    autoComplete="username"
-                  />
-                </div>
+                <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+                  <SelectTrigger className="h-12 border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-slate-800">
+                    <div className="flex items-center gap-2">
+                      <UserCircle className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+                      <SelectValue />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(ROLES).map((roleOption) => (
+                      <SelectItem key={roleOption.id} value={roleOption.id}>
+                        <div className="flex items-center gap-3 py-1">
+                          <span className="text-xl">{roleOption.icon}</span>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{roleOption.name}</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                              {roleOption.description}
+                            </span>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -191,12 +206,18 @@ export default function LoginPage() {
             </form>
 
             {isDevelopment && (
-              <div className="mt-6 p-3 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                <p className="text-xs text-slate-600 dark:text-slate-400 text-center">
-                  <span className="font-semibold text-slate-700 dark:text-slate-300">Development Mode:</span> Default credentials are{" "}
-                  <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">admin</span> /{" "}
-                  <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">password123</span>
-                </p>
+              <div className="mt-6 p-4 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Development Mode - Test Passwords:</p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-600 dark:text-slate-400">👔 Administrator:</span>
+                    <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">admin123</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-600 dark:text-slate-400">📦 Operations Staff:</span>
+                    <span className="font-mono font-semibold text-purple-600 dark:text-purple-400">ops456</span>
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>

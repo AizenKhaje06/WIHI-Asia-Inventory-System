@@ -33,14 +33,17 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 h-16 backdrop-blur-xl border-b z-40 shadow-lg",
+        "fixed z-40 backdrop-blur-xl shadow-lg",
         reducedMotion ? "" : "transition-all duration-300",
-        "lg:left-[240px] left-0",
+        // Desktop: floating card with margin and subtle rounded corners - adjust based on sidebar
+        sidebarCollapsed ? "lg:left-[100px]" : "lg:left-[260px]",
+        "lg:right-4 lg:top-4 lg:h-14 lg:rounded-lg lg:border",
+        // Mobile: full width at top
+        "left-0 right-0 top-0 h-16 border-b",
         // Light mode
         "bg-white/95 border-slate-200",
-        // Dark mode - black with cyan glow
-        "dark:bg-black/95 dark:border-white/10",
-        "dark:after:absolute dark:after:bottom-0 dark:after:left-0 dark:after:right-0 dark:after:h-[1px] dark:after:bg-gradient-to-r dark:after:from-transparent dark:after:via-cyan-500/50 dark:after:to-transparent"
+        // Dark mode - match sidebar with Material Design palette
+        "dark:bg-[#1e1e1e]/95 dark:border-[#444444]"
       )}
       role="banner"
     >

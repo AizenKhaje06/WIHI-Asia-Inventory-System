@@ -10,6 +10,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { CommandPalette } from "@/components/command-palette"
 import { Toaster } from "@/components/ui/sonner"
 import { QueryProvider } from "@/components/providers/query-provider"
+import { RouteGuard } from "@/components/route-guard"
+import { cn } from "@/lib/utils"
 
 export default function ClientLayout({
   children,
@@ -28,15 +30,20 @@ export default function ClientLayout({
           enableSystem
           disableTransitionOnChange
         >
-        <div className="flex h-screen w-full overflow-hidden bg-background">
+        <RouteGuard>
+        <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-[#121212]">
           {/* Premium Sidebar */}
           <PremiumSidebar 
             mobileOpen={mobileMenuOpen}
             onMobileClose={() => setMobileMenuOpen(false)}
+            onCollapsedChange={setSidebarCollapsed}
           />
 
           {/* Main content area */}
-          <div className="flex-1 flex flex-col min-w-0 overflow-hidden lg:ml-[240px] ml-0 transition-all duration-300">
+          <div className={cn(
+            "flex-1 flex flex-col min-w-0 overflow-hidden ml-0 transition-all duration-300",
+            sidebarCollapsed ? "lg:ml-[96px]" : "lg:ml-[256px]"
+          )}>
             {/* Premium Navbar */}
             <PremiumNavbar 
               sidebarCollapsed={sidebarCollapsed}
@@ -46,7 +53,7 @@ export default function ClientLayout({
             {/* Main content */}
             <main 
               id="main-content" 
-              className="flex-1 overflow-y-auto overflow-x-hidden mt-16 p-4 lg:p-6 min-w-0 w-full bg-background"
+              className="flex-1 overflow-y-auto overflow-x-hidden lg:mt-20 mt-16 lg:p-6 p-4 min-w-0 w-full"
               role="main"
             >
               <div className="w-full max-w-full min-w-0">
@@ -61,6 +68,7 @@ export default function ClientLayout({
         <OfflineIndicator />
         <Toaster richColors position="top-right" />
         <Analytics />
+        </RouteGuard>
       </ThemeProvider>
       </QueryProvider>
     </ErrorBoundary>
