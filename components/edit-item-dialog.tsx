@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { InventoryItem } from "@/lib/types"
+import type { InventoryItem, StorageRoom } from "@/lib/types"
 
 interface EditItemDialogProps {
   open: boolean
@@ -19,6 +19,8 @@ interface EditItemDialogProps {
 
 export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItemDialogProps) {
   const [loading, setLoading] = useState(false)
+  const [storageRooms, setStorageRooms] = useState<StorageRoom[]>([])
+  const [loadingRooms, setLoadingRooms] = useState(true)
   const [formData, setFormData] = useState({
     name: item.name,
     category: item.category,
@@ -40,6 +42,27 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
       reorderLevel: item.reorderLevel,
     })
   }, [item])
+
+  useEffect(() => {
+    if (open) {
+      fetchStorageRooms()
+    }
+  }, [open])
+
+  async function fetchStorageRooms() {
+    try {
+      setLoadingRooms(true)
+      const response = await fetch("/api/storage-rooms")
+      if (response.ok) {
+        const data = await response.json()
+        setStorageRooms(data)
+      }
+    } catch (error) {
+      console.error("Error fetching storage rooms:", error)
+    } finally {
+      setLoadingRooms(false)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -126,14 +149,20 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
               </Label>
               <Select value={formData.storageRoom} onValueChange={(value) => setFormData({ ...formData, storageRoom: value })} required>
                 <SelectTrigger id="edit-storageRoom" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
-                  <SelectValue placeholder="Select a storage room" />
+                  <SelectValue placeholder={loadingRooms ? "Loading rooms..." : "Select a storage room"} />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  <SelectItem value="A">Room A</SelectItem>
-                  <SelectItem value="B">Room B</SelectItem>
-                  <SelectItem value="C">Room C</SelectItem>
-                  <SelectItem value="D">Room D</SelectItem>
-                  <SelectItem value="E">Room E</SelectItem>
+                  {loadingRooms ? (
+                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                  ) : storageRooms.length === 0 ? (
+                    <SelectItem value="none" disabled>No rooms available</SelectItem>
+                  ) : (
+                    storageRooms.map((room) => (
+                      <SelectItem key={room.id} value={room.name}>
+                        {room.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
