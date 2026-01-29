@@ -116,7 +116,7 @@ export async function getGoogleSheetsClient() {
   })
 
   const authClient = await auth.getClient()
-  const sheets = google.sheets({ version: "v4", auth: authClient })
+  const sheets = google.sheets({ version: "v4", auth: authClient as any })
   return sheets
 }
 
@@ -204,7 +204,7 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
     updates.lastUpdated = formatTimestamp(new Date())
   }
 
-  const fieldToColumn: Record<keyof InventoryItem, number> = {
+  const fieldToColumn: Partial<Record<keyof InventoryItem, number>> = {
     id: 0,
     name: 1,
     category: 2,
@@ -578,4 +578,163 @@ export async function getRestocks(): Promise<Restock[]> {
     timestamp: row[6] || "",
     reason: row[7] || "",
   })).sort((a, b) => parse(b.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime() - parse(a.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime())
+}
+
+// ============================================
+// STORAGE ROOMS MANAGEMENT
+// ============================================
+
+async function initializeStorageRoomsSheet() {
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  try {
+    await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: "StorageRooms!A1:C1"
+    })
+  } catch (error) {
+    // Sheet doesn't exist, create it
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [{
+          addSheet: {
+            properties: {
+              title: 'StorageRooms',
+              gridProperties: {
+                rowCount: 100,
+                columnCount: 3
+              }
+            }
+          }
+        }]
+      }
+    })
+    // Add headers
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: "StorageRooms!A1:C1",
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [["ID", "Room Name", "Created At"]]
+      }
+    })
+    
+    // Add default storage rooms
+    const defaultRooms = [
+      ["ROOM-DEFAULT-1", "Main Warehouse", formatTimestamp(new Date())],
+      ["ROOM-DEFAULT-2", "Cold Storage", formatTimestamp(new Date())],
+      ["ROOM-DEFAULT-3", "Dry Storage", formatTimestamp(new Date())],
+      ["ROOM-DEFAULT-4", "Receiving Area", formatTimestamp(new Date())],
+    ]
+    
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: "StorageRooms!A:C",
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: defaultRooms }
+    })
+  }
+}
+
+export async function getStorageRooms(): Promise<import("./types").StorageRoom[]> {
+  await initializeStorageRoomsSheet()
+
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: "StorageRooms!A2:C",
+  })
+
+  const rows = response.data.values || []
+  return rows.map((row) => ({
+    id: row[0] || "",
+    name: row[1] || "",
+    createdAt: row[2] || formatTimestamp(new Date()),
+  }))
+}
+
+export async function addStorageRoom(name: string): Promise<import("./types").StorageRoom> {
+  await initializeStorageRoomsSheet()
+
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  const id = `ROOM-${Date.now()}`
+  const createdAt = formatTimestamp(new Date())
+
+  const values = [[id, name, createdAt]]
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: "StorageRooms!A:C",
+    valueInputOption: "USER_ENTERED",
+    requestBody: { values },
+  })
+
+  return { id, name, createdAt }
+}
+
+export async function updateStorageRoom(id: string, name: string): Promise<void> {
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  const rooms = await getStorageRooms()
+  const index = rooms.findIndex((room) => room.id === id)
+
+  if (index === -1) {
+    throw new Error("Storage room not found")
+  }
+
+  const rowNumber = index + 2
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `StorageRooms!B${rowNumber}`,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [[name]]
+    }
+  })
+}
+
+export async function deleteStorageRoom(id: string): Promise<void> {
+  const sheets = await getGoogleSheetsClient()
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+
+  const rooms = await getStorageRooms()
+  const index = rooms.findIndex((room) => room.id === id)
+
+  if (index === -1) {
+    throw new Error("Storage room not found")
+  }
+
+  const rowNumber = index + 2
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      requests: [
+        {
+          deleteDimension: {
+            range: {
+              sheetId: await getSheetId(sheets, spreadsheetId, "StorageRooms"),
+              dimension: "ROWS",
+              startIndex: rowNumber - 1,
+              endIndex: rowNumber,
+            },
+          },
+        },
+      ],
+    },
+  })
+}
+
+async function getSheetId(sheets: any, spreadsheetId: string, sheetName: string): Promise<number> {
+  const response = await sheets.spreadsheets.get({ spreadsheetId })
+  const sheet = response.data.sheets.find((s: any) => s.properties.title === sheetName)
+  return sheet?.properties?.sheetId || 0
 }

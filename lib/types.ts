@@ -178,3 +178,9 @@ export interface InventoryTurnover {
   daysToSell: number
   status: 'fast-moving' | 'normal' | 'slow-moving' | 'dead-stock'
 }
+
+export interface StorageRoom {
+  id: string
+  name: string
+  createdAt: string
+}
