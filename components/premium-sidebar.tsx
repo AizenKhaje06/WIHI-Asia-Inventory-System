@@ -226,7 +226,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
       >
         {/* Logo & Brand - Premium Layout */}
         <div 
-          className="h-20 flex items-center justify-between px-3 border-b relative flex-shrink-0 border-slate-200 dark:border-[#444444] bg-gradient-to-r from-transparent via-slate-50/50 to-transparent dark:via-[#2a2a2a]/30"
+          className="h-16 lg:h-14 flex items-center justify-between px-3 border-b relative flex-shrink-0 border-slate-200 dark:border-[#444444] bg-gradient-to-r from-transparent via-slate-50/50 to-transparent dark:via-[#2a2a2a]/30"
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {!collapsed ? (
@@ -242,8 +242,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                   <h1 className="text-[10px] font-extrabold tracking-tight leading-none bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-slate-100 dark:to-white bg-clip-text text-transparent whitespace-nowrap">
                     StockSync
                   </h1>
-                  <p className="text-[7px] leading-none text-slate-500 dark:text-[#888888] font-semibold tracking-wide uppercase whitespace-nowrap">
-                    Inventory System
+                  <p className="text xs-[10px] leading-none text-slate-500 dark:text-[#888888] font-semibold tracking-wide uppercase whitespace-nowrap">
+                  
                   </p>
                 </div>
               </div>
@@ -275,7 +275,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           <button
             onClick={() => setCollapsed(!collapsed)}
             className={cn(
-              "absolute top-24 -right-3 z-50",
+              "absolute top-16 lg:top-14 -right-3 z-50",
               "w-6 h-6 flex items-center justify-center",
               "bg-white dark:bg-[#2a2a2a]",
               "border-2 border-slate-200 dark:border-[#444444]",
