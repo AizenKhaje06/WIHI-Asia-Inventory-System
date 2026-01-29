@@ -275,12 +275,12 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           <button
             onClick={() => setCollapsed(!collapsed)}
             className={cn(
-              "absolute top-16 lg:top-14 -right-3 z-50",
-              "w-6 h-6 flex items-center justify-center",
+              "absolute top-8 lg:top-7 -right-2 z-50 -translate-y-1/2",
+              "w-5 h-5 flex items-center justify-center",
               "bg-white dark:bg-[#2a2a2a]",
-              "border-2 border-slate-200 dark:border-[#444444]",
+              "border border-slate-200 dark:border-[#444444]",
               "rounded-full",
-              "shadow-lg hover:shadow-xl",
+              "shadow-md hover:shadow-lg",
               "transition-all duration-200 ease-out",
               "text-slate-600 dark:text-[#B0B0B0]",
               "hover:text-orange-500 dark:hover:text-orange-400",
@@ -296,7 +296,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
               "transition-transform duration-200",
               collapsed ? "rotate-180" : "rotate-0"
             )}>
-              <ChevronLeft className="h-3.5 w-3.5" strokeWidth={2.5} />
+              <ChevronLeft className="h-3 w-3" strokeWidth={2.5} />
             </div>
           </button>
         )}
