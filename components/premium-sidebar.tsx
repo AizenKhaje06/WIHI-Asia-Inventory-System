@@ -228,10 +228,10 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         <div 
           className="h-20 flex items-center justify-between px-3 border-b relative flex-shrink-0 border-slate-200 dark:border-[#444444] bg-gradient-to-r from-transparent via-slate-50/50 to-transparent dark:via-[#2a2a2a]/30"
         >
-          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {!collapsed ? (
-              <div className="flex items-center gap-2.5 w-full min-w-0">
-                <div className="flex-shrink-0 w-11 h-11 relative" aria-hidden="true">
+              <div className="flex items-center gap-2 w-full min-w-0">
+                <div className="flex-shrink-0 w-9 h-9 relative" aria-hidden="true">
                   <img 
                     src="/System Logo.png" 
                     alt="StockSync Logo" 
@@ -239,10 +239,10 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                   />
                 </div>
                 <div className="flex flex-col justify-center gap-0.5 min-w-0 flex-1">
-                  <h1 className="text-[11px] font-extrabold tracking-tight leading-none bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-slate-100 dark:to-white bg-clip-text text-transparent whitespace-nowrap">
+                  <h1 className="text-[10px] font-extrabold tracking-tight leading-none bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-slate-100 dark:to-white bg-clip-text text-transparent whitespace-nowrap">
                     StockSync
                   </h1>
-                  <p className="text-[8px] leading-none text-slate-500 dark:text-[#888888] font-semibold tracking-wide uppercase whitespace-nowrap">
+                  <p className="text-[7px] leading-none text-slate-500 dark:text-[#888888] font-semibold tracking-wide uppercase whitespace-nowrap">
                     Inventory System
                   </p>
                 </div>
