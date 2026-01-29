@@ -142,11 +142,11 @@ export default function POSPage() {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden">
       {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
+      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+        <h1 className="text-4xl font-bold gradient-text mb-2">
           Warehouse Dispatch
         </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-sm">
+        <p className="text-slate-600 dark:text-slate-400 text-base">
           Stock release and distribution management
         </p>
       </div>

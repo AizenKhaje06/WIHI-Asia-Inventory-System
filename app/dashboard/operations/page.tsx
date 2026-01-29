@@ -44,10 +44,10 @@ export default function OperationsDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Operations Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Quick overview of inventory and operations</p>
+          <h1 className="text-4xl font-bold gradient-text mb-2">Operations Dashboard</h1>
+          <p className="text-slate-600 dark:text-slate-400 text-base">Quick overview of inventory and operations</p>
         </div>
         <Button
           onClick={fetchData}
