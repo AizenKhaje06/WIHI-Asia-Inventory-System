@@ -270,39 +270,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           )}
         </div>
 
-        {/* Professional Collapse/Expand Button - Desktop Only */}
-        {!isMobile && (
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className={cn(
-              "absolute top-8 lg:top-7 -right-2 z-50 -translate-y-1/2",
-              "w-5 h-5 flex items-center justify-center",
-              "bg-white dark:bg-[#2a2a2a]",
-              "border border-slate-200 dark:border-[#444444]",
-              "rounded-full",
-              "shadow-md hover:shadow-lg",
-              "transition-all duration-200 ease-out",
-              "text-slate-600 dark:text-[#B0B0B0]",
-              "hover:text-orange-500 dark:hover:text-orange-400",
-              "hover:bg-slate-50 dark:hover:bg-[#333333]",
-              "hover:border-orange-500 dark:hover:border-orange-400",
-              "hover:scale-110",
-              "active:scale-95",
-              "group"
-            )}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            <div className={cn(
-              "transition-transform duration-200",
-              collapsed ? "rotate-180" : "rotate-0"
-            )}>
-              <ChevronLeft className="h-3 w-3" strokeWidth={2.5} />
-            </div>
-          </button>
-        )}
-
         {/* User Profile Section */}
-        <div className="p-3 border-b flex-shrink-0 border-slate-200 dark:border-[#444444]">
+        <div className="p-3 border-b flex-shrink-0 border-slate-200 dark:border-[#444444] relative">
           <div className={cn("flex items-center gap-3 px-3 py-2 rounded-[5px] bg-slate-50 dark:bg-[#2a2a2a]", collapsed && "justify-center")}>
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center text-white font-semibold text-sm from-orange-500 to-orange-600">
               <User className="h-4 w-4" />
@@ -316,6 +285,37 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
               </div>
             )}
           </div>
+          
+          {/* Collapse/Expand Button - Desktop Only */}
+          {!isMobile && (
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className={cn(
+                "absolute top-1/2 -translate-y-1/2 -right-2 z-50",
+                "w-5 h-5 flex items-center justify-center",
+                "bg-white dark:bg-[#2a2a2a]",
+                "border border-slate-200 dark:border-[#444444]",
+                "rounded-full",
+                "shadow-md hover:shadow-lg",
+                "transition-all duration-200 ease-out",
+                "text-slate-600 dark:text-[#B0B0B0]",
+                "hover:text-orange-500 dark:hover:text-orange-400",
+                "hover:bg-slate-50 dark:hover:bg-[#333333]",
+                "hover:border-orange-500 dark:hover:border-orange-400",
+                "hover:scale-110",
+                "active:scale-95",
+                "group"
+              )}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <div className={cn(
+                "transition-transform duration-200",
+                collapsed ? "rotate-180" : "rotate-0"
+              )}>
+                <ChevronLeft className="h-3 w-3" strokeWidth={2.5} />
+              </div>
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
