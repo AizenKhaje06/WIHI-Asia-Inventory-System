@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -100,11 +100,14 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border">
+      <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-foreground">Add New Product</DialogTitle>
+          <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold">Add New Product</DialogTitle>
+          <DialogDescription className="text-slate-600 dark:text-slate-400">
+            Create a new product in your inventory
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-slate-700 dark:text-slate-300 font-medium">
@@ -115,7 +118,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
 
@@ -124,10 +127,10 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 Category
               </Label>
               <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })} required>
-                <SelectTrigger id="category" className="w-full max-w-xs rounded-xl border-2 border-slate-300 dark:border-slate-700 focus:border-orange-500 focus:ring-0 focus:ring-offset-0">
+                <SelectTrigger id="category" className="w-full max-w-xs rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
                   <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Select a category"} />
                 </SelectTrigger>
-                <SelectContent className="w-full max-w-xs">
+                <SelectContent className="w-full max-w-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                   {loadingCategories ? (
                     <SelectItem value="loading" disabled>Loading...</SelectItem>
                   ) : categories.length === 0 ? (
@@ -152,7 +155,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: Number.parseInt(e.target.value) })}
-                className="rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
             <div className="space-y-2">
@@ -166,7 +169,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.costPrice}
                 onChange={(e) => setFormData({ ...formData, costPrice: Number.parseFloat(e.target.value) })}
-                className="rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
             <div className="space-y-2">
@@ -180,7 +183,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.sellingPrice}
                 onChange={(e) => setFormData({ ...formData, sellingPrice: Number.parseFloat(e.target.value) })}
-                className="rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
             <div className="space-y-2">
@@ -193,7 +196,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.reorderLevel}
                 onChange={(e) => setFormData({ ...formData, reorderLevel: Number.parseInt(e.target.value) })}
-                className="rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
             <div className="space-y-2">
@@ -201,10 +204,10 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 Storage Room
               </Label>
               <Select value={formData.storageRoom} onValueChange={(value) => setFormData({ ...formData, storageRoom: value })} required>
-                <SelectTrigger id="storageRoom" className="rounded-xl border-2 border-slate-300 dark:border-slate-700 focus:border-orange-500 focus:ring-0 focus:ring-offset-0">
+                <SelectTrigger id="storageRoom" className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
                   <SelectValue placeholder={loadingRooms ? "Loading rooms..." : "Select a storage room"} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                   {loadingRooms ? (
                     <SelectItem value="loading" disabled>Loading...</SelectItem>
                   ) : storageRooms.length === 0 ? (
@@ -224,7 +227,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white">
               {loading ? "Adding..." : "Add Product"}
             </Button>
           </div>

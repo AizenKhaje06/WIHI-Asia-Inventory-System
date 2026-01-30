@@ -616,14 +616,14 @@ export default function LowStockPage() {
 
       {selectedRestockItem && (
         <Dialog open={restockDialogOpen} onOpenChange={setRestockDialogOpen}>
-          <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+          <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="text-slate-900 dark:text-white">Restock {selectedRestockItem.name}</DialogTitle>
+              <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold">Restock {selectedRestockItem.name}</DialogTitle>
               <DialogDescription className="text-slate-600 dark:text-slate-400">
                 Current stock: {selectedRestockItem.quantity} | Reorder level: {selectedRestockItem.reorderLevel}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 py-4">
               <div>
                 <Label htmlFor="restock-amount" className="text-slate-700 dark:text-slate-300 font-medium">Amount to Restock</Label>
                 <Input
@@ -633,7 +633,7 @@ export default function LowStockPage() {
                   value={restockAmount}
                   onChange={(e) => setRestockAmount(Number.parseInt(e.target.value) || 0)}
                   placeholder="Enter amount"
-                  className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                  className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 />
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   Suggested: {Math.max(selectedRestockItem.reorderLevel * 2 - selectedRestockItem.quantity, 0)} units
@@ -642,7 +642,7 @@ export default function LowStockPage() {
               <div>
                 <Label htmlFor="restock-reason" className="text-slate-700 dark:text-slate-300 font-medium">Reason for Restock</Label>
                 <Select value={restockReason} onValueChange={setRestockReason}>
-                  <SelectTrigger id="restock-reason" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                  <SelectTrigger id="restock-reason" className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
                     <SelectValue placeholder="Select a reason" />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
@@ -669,7 +669,7 @@ export default function LowStockPage() {
                 type="submit" 
                 onClick={handleRestockSubmit} 
                 disabled={restockAmount <= 0 || !restockReason}
-                className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white"
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
               >
                 Restock Item
               </Button>

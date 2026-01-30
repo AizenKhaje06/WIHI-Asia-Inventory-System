@@ -356,14 +356,17 @@ export default function POSPage() {
 
       {/* Success Modal */}
       <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold flex items-center gap-2">
               <CheckCircle className="h-6 w-6 text-green-500" />
               Items Dispatched Successfully!
             </DialogTitle>
+            <DialogDescription className="text-slate-600 dark:text-slate-400">
+              Stock has been released and transaction logged
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 py-4">
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-[5px] p-4">
               <p className="text-center text-green-800 dark:text-green-200 font-medium mb-2">
                 Stock Released to {department}
@@ -380,7 +383,7 @@ export default function POSPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => setSuccessModalOpen(false)} className="w-full">
+            <Button onClick={() => setSuccessModalOpen(false)} className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white">
               Close
             </Button>
           </DialogFooter>

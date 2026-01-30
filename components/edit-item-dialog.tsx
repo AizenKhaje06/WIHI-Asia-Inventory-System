@@ -89,8 +89,11 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
       <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold">Edit Product</DialogTitle>
+          <DialogDescription className="text-slate-600 dark:text-slate-400">
+            Update product information and pricing
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="edit-name" className="text-slate-700 dark:text-slate-300 font-medium">
@@ -101,7 +104,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
 
@@ -110,7 +113,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 Category
               </Label>
               <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })} required>
-                <SelectTrigger id="edit-category" className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                <SelectTrigger id="edit-category" className="w-full rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
@@ -138,7 +141,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 required
                 value={formData.quantity}
                 readOnly
-                className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white cursor-not-allowed"
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white cursor-not-allowed"
               />
               <p className="text-xs text-slate-500 dark:text-slate-400">Use Restock to change quantity</p>
             </div>
@@ -148,7 +151,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 Storage Room
               </Label>
               <Select value={formData.storageRoom} onValueChange={(value) => setFormData({ ...formData, storageRoom: value })} required>
-                <SelectTrigger id="edit-storageRoom" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                <SelectTrigger id="edit-storageRoom" className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
                   <SelectValue placeholder={loadingRooms ? "Loading rooms..." : "Select a storage room"} />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
@@ -178,7 +181,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 required
                 value={formData.costPrice}
                 onChange={(e) => setFormData({ ...formData, costPrice: Number.parseFloat(e.target.value) })}
-                className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
             
@@ -193,7 +196,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 required
                 value={formData.sellingPrice}
                 onChange={(e) => setFormData({ ...formData, sellingPrice: Number.parseFloat(e.target.value) })}
-                className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
             
@@ -207,7 +210,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
                 required
                 value={formData.reorderLevel}
                 onChange={(e) => setFormData({ ...formData, reorderLevel: Number.parseInt(e.target.value) })}
-                className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
           </div>
@@ -224,7 +227,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
             <Button 
               type="submit" 
               disabled={loading}
-              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
             >
               {loading ? "Saving..." : "Save Changes"}
             </Button>

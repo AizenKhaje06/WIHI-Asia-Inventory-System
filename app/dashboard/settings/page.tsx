@@ -292,13 +292,13 @@ export default function SettingsPage() {
 
       {/* Change Username Dialog */}
       <Dialog open={changeUsernameOpen} onOpenChange={setChangeUsernameOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold flex items-center gap-2">
               <User className="h-5 w-5 text-blue-600" />
               Change Username
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-slate-600 dark:text-slate-400">
               Update your display name and login username
             </DialogDescription>
           </DialogHeader>
@@ -309,7 +309,7 @@ export default function SettingsPage() {
                 id="current-username"
                 value={currentUser?.username || ""}
                 disabled
-                className="bg-slate-100 dark:bg-slate-800"
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white"
               />
             </div>
             <div className="space-y-2">
@@ -320,6 +320,7 @@ export default function SettingsPage() {
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleChangeUsername()}
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Minimum 3 characters
@@ -359,13 +360,13 @@ export default function SettingsPage() {
 
       {/* Change Password Dialog */}
       <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold flex items-center gap-2">
               <Lock className="h-5 w-5 text-green-600" />
               Change Password
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-slate-600 dark:text-slate-400">
               Update your login password for enhanced security
             </DialogDescription>
           </DialogHeader>
@@ -380,6 +381,7 @@ export default function SettingsPage() {
                   placeholder="Enter current password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 />
                 <Button
                   type="button"
@@ -407,6 +409,7 @@ export default function SettingsPage() {
                   placeholder="Enter new password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
+                  className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 />
                 <Button
                   type="button"
@@ -438,6 +441,7 @@ export default function SettingsPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleChangePassword()}
+                  className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 />
                 <Button
                   type="button"

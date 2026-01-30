@@ -817,16 +817,16 @@ export default function InventoryPage() {
 
       {selectedRestockItem && (
         <Dialog open={restockDialogOpen} onOpenChange={setRestockDialogOpen}>
-          <DialogContent>
+          <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Restock {selectedRestockItem.name}</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold">Restock {selectedRestockItem.name}</DialogTitle>
+              <DialogDescription className="text-slate-600 dark:text-slate-400">
                 Enter the amount to add to the current stock of {selectedRestockItem.quantity}.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="restock-amount">Amount to Restock</Label>
+                <Label htmlFor="restock-amount" className="text-slate-700 dark:text-slate-300 font-medium">Amount to Restock</Label>
                 <Input
                   id="restock-amount"
                   type="number"
@@ -834,15 +834,16 @@ export default function InventoryPage() {
                   value={restockAmount}
                   onChange={(e) => setRestockAmount(Number.parseInt(e.target.value) || 0)}
                   placeholder="Enter amount"
+                  className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 />
               </div>
               <div>
-                <Label htmlFor="restock-reason">Reason for Restock</Label>
+                <Label htmlFor="restock-reason" className="text-slate-700 dark:text-slate-300 font-medium">Reason for Restock</Label>
                 <Select value={restockReason} onValueChange={setRestockReason}>
-                  <SelectTrigger id="restock-reason">
+                  <SelectTrigger id="restock-reason" className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
                     <SelectValue placeholder="Select a reason" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                     <SelectItem value="new-stock">New Stock Arrival</SelectItem>
                     <SelectItem value="damaged-return">Damaged Item Return</SelectItem>
                     <SelectItem value="supplier-return">Supplier Return</SelectItem>
@@ -853,7 +854,10 @@ export default function InventoryPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" onClick={handleRestockSubmit} disabled={restockAmount <= 0 || !restockReason}>
+              <Button type="button" variant="outline" onClick={() => setRestockDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" onClick={handleRestockSubmit} disabled={restockAmount <= 0 || !restockReason} className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white">
                 Restock Item
               </Button>
             </DialogFooter>
@@ -863,13 +867,13 @@ export default function InventoryPage() {
 
       {/* Category Management Dialog */}
       <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl max-h-[85vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="flex items-center gap-2 text-lg">
+            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold flex items-center gap-2">
               <Tag className="h-5 w-5 text-orange-600" />
               Category Management
             </DialogTitle>
-            <DialogDescription className="text-sm">
+            <DialogDescription className="text-slate-600 dark:text-slate-400">
               Manage product categories
             </DialogDescription>
           </DialogHeader>
@@ -886,7 +890,7 @@ export default function InventoryPage() {
                     handleAddCategory()
                   }
                 }}
-                className="h-10 text-sm rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
+                className="h-10 text-sm rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 disabled={submitting}
               />
               <Button
@@ -989,13 +993,13 @@ export default function InventoryPage() {
 
       {/* Warehouse Management Dialog */}
       <Dialog open={warehouseDialogOpen} onOpenChange={setWarehouseDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl max-h-[85vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="flex items-center gap-2 text-lg">
+            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold flex items-center gap-2">
               <Warehouse className="h-5 w-5 text-orange-600" />
               Storage Management
             </DialogTitle>
-            <DialogDescription className="text-sm">
+            <DialogDescription className="text-slate-600 dark:text-slate-400">
               Manage storage locations
             </DialogDescription>
           </DialogHeader>
@@ -1009,7 +1013,7 @@ export default function InventoryPage() {
                 onChange={(e) => setNewWarehouse(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddWarehouse()}
                 disabled={submitting}
-                className="h-10 text-sm rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
+                className="h-10 text-sm rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
               <Button
                 onClick={handleAddWarehouse}
@@ -1120,10 +1124,10 @@ export default function InventoryPage() {
 
       {/* Delete Warehouse Confirmation */}
       <Dialog open={!!deleteWarehouseId} onOpenChange={() => setDeleteWarehouseId(null)}>
-        <DialogContent>
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Delete Warehouse</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold">Delete Warehouse</DialogTitle>
+            <DialogDescription className="text-slate-600 dark:text-slate-400">
               Are you sure you want to delete this warehouse? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
@@ -1155,10 +1159,10 @@ export default function InventoryPage() {
 
       {/* Delete Category Confirmation */}
       <Dialog open={!!deleteCategoryId} onOpenChange={() => setDeleteCategoryId(null)}>
-        <DialogContent>
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Delete Category</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold">Delete Category</DialogTitle>
+            <DialogDescription className="text-slate-600 dark:text-slate-400">
               Are you sure you want to delete this category? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
