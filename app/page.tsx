@@ -48,47 +48,46 @@ export default function SlidingLoginPage() {
     setLoading(true)
     setError("")
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800))
+    try {
+      // Validate credentials against Google Sheets
+      const response = await fetch("/api/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "validate",
+          username,
+          password
+        })
+      })
 
-    // Get stored credentials or use defaults
-    const storedAdminUsername = localStorage.getItem("adminUsername") || DEFAULT_ADMIN_USERNAME
-    const storedAdminPassword = localStorage.getItem("adminPassword") || DEFAULT_ADMIN_PASSWORD
-    const storedStaffUsername = localStorage.getItem("staffUsername") || DEFAULT_STAFF_USERNAME
-    const storedStaffPassword = localStorage.getItem("staffPassword") || DEFAULT_STAFF_PASSWORD
+      const data = await response.json()
 
-    let isValid = false
-
-    if (loginMode === "admin") {
-      isValid = username === storedAdminUsername && password === storedAdminPassword
-    } else {
-      isValid = username === storedStaffUsername && password === storedStaffPassword
-    }
-
-    if (isValid) {
-      // Handle Remember Me
-      if (rememberMe) {
-        localStorage.setItem("rememberedUsername", username)
+      if (data.success && data.account) {
+        // Handle Remember Me
+        if (rememberMe) {
+          localStorage.setItem("rememberedUsername", username)
+        } else {
+          localStorage.removeItem("rememberedUsername")
+        }
+        
+        // Store user info
+        localStorage.setItem("isLoggedIn", "true")
+        localStorage.setItem("username", data.account.username)
+        localStorage.setItem("userRole", data.account.role)
+        localStorage.setItem("displayName", data.account.displayName)
+        
+        // Redirect to appropriate dashboard
+        const redirectPath = data.account.role === "admin" ? "/dashboard" : "/dashboard/operations"
+        router.push(redirectPath)
       } else {
-        localStorage.removeItem("rememberedUsername")
+        setError("Invalid username or password. Please try again.")
       }
-      
-      // Map loginMode to correct userRole
-      const userRole = loginMode === "admin" ? "admin" : "operations"
-      
-      localStorage.setItem("isLoggedIn", "true")
-      localStorage.setItem("username", username)
-      localStorage.setItem("userRole", userRole)
-      localStorage.setItem("displayName", loginMode === "admin" ? "Administrator" : "Operations Staff")
-      
-      // Redirect to appropriate dashboard
-      const redirectPath = loginMode === "admin" ? "/dashboard" : "/dashboard/operations"
-      router.push(redirectPath)
-    } else {
-      setError("Invalid username or password. Please try again.")
+    } catch (error) {
+      console.error("Login error:", error)
+      setError("Login failed. Please try again.")
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (

@@ -1,413 +1,372 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Separator } from "@/components/ui/separator"
-import { 
-  UserCog, 
-  Key, 
-  Shield, 
-  Save, 
-  Eye, 
-  EyeOff, 
-  CheckCircle, 
-  AlertCircle,
-  RefreshCw
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
+import { Users, Lock, Eye, EyeOff, Loader2, CheckCircle2, User, Shield } from "lucide-react"
+import { showSuccess, showError } from "@/lib/toast-utils"
+import { Badge } from "@/components/ui/badge"
 
-export default function AdminCredentialsPage() {
-  const [loginCredentials, setLoginCredentials] = useState({
-    username: "",
-    password: "",
-    confirmPassword: ""
-  })
-  const [settingsCode, setSettingsCode] = useState({
-    currentCode: "",
-    newCode: "",
-    confirmCode: ""
-  })
-  const [showPasswords, setShowPasswords] = useState({
-    password: false,
-    confirmPassword: false,
-    currentCode: false,
-    newCode: false,
-    confirmCode: false
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
+interface Account {
+  id: string
+  username: string
+  role: 'admin' | 'operations'
+  displayName: string
+  createdAt: string
+}
+
+export default function CredentialsManagementPage() {
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false)
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    // Load existing credentials and settings code
-    loadSettings()
+    fetchAccounts()
   }, [])
 
-  const loadSettings = async () => {
+  async function fetchAccounts() {
     try {
-      // In a real app, this would fetch from your backend
-      const savedCredentials = localStorage.getItem("adminCredentials")
-      const savedCode = localStorage.getItem("adminSettingsCode")
-      
-      if (savedCredentials) {
-        const creds = JSON.parse(savedCredentials)
-        setLoginCredentials(prev => ({
-          ...prev,
-          username: creds.username || ""
-        }))
-      }
-      
-      if (savedCode) {
-        setSettingsCode(prev => ({
-          ...prev,
-          currentCode: savedCode
-        }))
+      setLoading(true)
+      const response = await fetch("/api/accounts")
+      if (response.ok) {
+        const data = await response.json()
+        setAccounts(data)
       }
     } catch (error) {
-      console.error("Error loading settings:", error)
-    }
-  }
-
-  const handleSaveCredentials = async () => {
-    if (loginCredentials.password !== loginCredentials.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive"
-      })
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Save to localStorage (in real app, save to backend)
-      localStorage.setItem("adminCredentials", JSON.stringify({
-        username: loginCredentials.username,
-        password: loginCredentials.password
-      }))
-      
-      toast({
-        title: "Success",
-        description: "Login credentials updated successfully"
-      })
-      
-      setLoginCredentials(prev => ({
-        ...prev,
-        password: "",
-        confirmPassword: ""
-      }))
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update credentials",
-        variant: "destructive"
-      })
+      console.error("Error fetching accounts:", error)
+      showError("Failed to load accounts")
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  const handleSaveSettingsCode = async () => {
-    if (settingsCode.newCode !== settingsCode.confirmCode) {
-      toast({
-        title: "Error",
-        description: "New codes do not match",
-        variant: "destructive"
-      })
+  function openChangePassword(account: Account) {
+    setSelectedAccount(account)
+    setNewPassword("")
+    setConfirmPassword("")
+    setChangePasswordOpen(true)
+  }
+
+  async function handleChangePassword() {
+    if (!selectedAccount) return
+
+    if (!newPassword || !confirmPassword) {
+      showError("Please fill in all fields")
       return
     }
 
-    if (settingsCode.newCode.length < 4) {
-      toast({
-        title: "Error",
-        description: "Settings code must be at least 4 characters",
-        variant: "destructive"
-      })
+    if (newPassword !== confirmPassword) {
+      showError("Passwords do not match")
       return
     }
 
-    setIsLoading(true)
+    if (newPassword.length < 6) {
+      showError("Password must be at least 6 characters")
+      return
+    }
+
+    setSubmitting(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Save to localStorage (in real app, save to backend)
-      localStorage.setItem("adminSettingsCode", settingsCode.newCode)
-      
-      toast({
-        title: "Success",
-        description: "Settings code updated successfully"
+      const response = await fetch("/api/accounts", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "updatePassword",
+          username: selectedAccount.username,
+          password: newPassword
+        })
       })
-      
-      setSettingsCode(prev => ({
-        ...prev,
-        currentCode: prev.newCode,
-        newCode: "",
-        confirmCode: ""
-      }))
+
+      const data = await response.json()
+
+      if (data.success) {
+        showSuccess("Password updated successfully", `Password for ${selectedAccount.username} has been changed`)
+        setChangePasswordOpen(false)
+        setNewPassword("")
+        setConfirmPassword("")
+        setSelectedAccount(null)
+      } else {
+        showError(data.error || "Failed to update password")
+      }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update settings code",
-        variant: "destructive"
-      })
+      console.error("Error updating password:", error)
+      showError("Failed to update password")
     } finally {
-      setIsLoading(false)
+      setSubmitting(false)
     }
   }
 
-  const togglePasswordVisibility = (field: string) => {
-    setShowPasswords(prev => ({
-      ...prev,
-      [field]: !prev[field]
-    }))
+  async function handleResetToDefault(account: Account) {
+    const defaultPassword = account.role === 'admin' ? 'admin123' : 'ops456'
+    
+    setSubmitting(true)
+    try {
+      const response = await fetch("/api/accounts", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "updatePassword",
+          username: account.username,
+          password: defaultPassword
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        showSuccess("Password reset to default", `${account.username}: ${defaultPassword}`)
+      } else {
+        showError(data.error || "Failed to reset password")
+      }
+    } catch (error) {
+      console.error("Error resetting password:", error)
+      showError("Failed to reset password")
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Shield className="h-6 w-6 text-orange-500" />
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-          Admin Settings
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      {/* Page Header */}
+      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+        <h1 className="text-4xl font-bold gradient-text mb-2">
+          User Credentials Management
         </h1>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          Manage all user accounts and passwords (Admin Only)
+        </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Login Credentials Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserCog className="h-5 w-5 text-orange-500" />
-              Login Credentials
-            </CardTitle>
-            <CardDescription>
-              Manage admin login username and password
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                value={loginCredentials.username}
-                onChange={(e) => setLoginCredentials(prev => ({
-                  ...prev,
-                  username: e.target.value
-                }))}
-                placeholder="Enter admin username"
-              />
+      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
+            <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/30">
+              <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            </div>
+            All User Accounts
+            <Badge className="ml-2 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+              {accounts.length} {accounts.length === 1 ? 'Account' : 'Accounts'}
+            </Badge>
+          </CardTitle>
+          <CardDescription className="text-slate-600 dark:text-slate-400 mt-2">
+            View and manage credentials for all users. Changes are saved to Google Sheets.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+            </div>
+          ) : accounts.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="h-12 w-12 mx-auto text-slate-400 mb-4" />
+              <p className="text-slate-600 dark:text-slate-400">No accounts found</p>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {accounts.map((account) => (
+                <div
+                  key={account.id}
+                  className="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-purple-300 dark:hover:border-purple-700 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`p-3 rounded-full ${
+                        account.role === 'admin' 
+                          ? 'bg-purple-100 dark:bg-purple-900/30' 
+                          : 'bg-blue-100 dark:bg-blue-900/30'
+                      }`}>
+                        {account.role === 'admin' ? (
+                          <Shield className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                        ) : (
+                          <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-lg text-slate-900 dark:text-white">{account.displayName}</p>
+                          <Badge className={
+                            account.role === 'admin'
+                              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                              : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          }>
+                            {account.role === 'admin' ? 'Administrator' : 'Operations Staff'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          Username: <span className="font-semibold">{account.username}</span>
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-500">
+                          Created: {account.createdAt}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() => openChangePassword(account)}
+                        className="h-10 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                      >
+                        <Lock className="h-4 w-4 mr-2" />
+                        Change Password
+                      </Button>
+                      <Button
+                        onClick={() => handleResetToDefault(account)}
+                        className="h-10 rounded-full border-2 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        disabled={submitting}
+                      >
+                        Reset to Default
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Change Password Dialog */}
+      <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-orange-600" />
+              Change Password for {selectedAccount?.username}
+            </DialogTitle>
+            <DialogDescription>
+              Set a new password for this user account
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {/* Account Info */}
+            <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800">
+              <p className="text-sm text-slate-600 dark:text-slate-400">Changing password for:</p>
+              <p className="font-bold text-slate-900 dark:text-white">{selectedAccount?.displayName}</p>
+              <p className="text-xs text-slate-500">Username: {selectedAccount?.username}</p>
             </div>
 
+            {/* New Password */}
             <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
+              <Label htmlFor="new-password">New Password</Label>
               <div className="relative">
                 <Input
-                  id="password"
-                  type={showPasswords.password ? "text" : "password"}
-                  value={loginCredentials.password}
-                  onChange={(e) => setLoginCredentials(prev => ({
-                    ...prev,
-                    password: e.target.value
-                  }))}
+                  id="new-password"
+                  type={showNewPassword ? "text" : "password"}
                   placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
                 />
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => togglePasswordVisibility("password")}
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent text-sm"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
                 >
-                  {showPasswords.password ? (
-                    <EyeOff className="h-4 w-4" />
+                  {showNewPassword ? (
+                    <EyeOff className="h-4 w-4 text-slate-400" />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-4 w-4 text-slate-400" />
                   )}
                 </Button>
               </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Minimum 6 characters
+              </p>
             </div>
 
+            {/* Confirm Password */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirm-password">Confirm New Password</Label>
               <div className="relative">
                 <Input
-                  id="confirmPassword"
-                  type={showPasswords.confirmPassword ? "text" : "password"}
-                  value={loginCredentials.confirmPassword}
-                  onChange={(e) => setLoginCredentials(prev => ({
-                    ...prev,
-                    confirmPassword: e.target.value
-                  }))}
+                  id="confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleChangePassword()}
                 />
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => togglePasswordVisibility("confirmPassword")}
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent text-sm"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
-                  {showPasswords.confirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 text-slate-400" />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-4 w-4 text-slate-400" />
                   )}
                 </Button>
               </div>
             </div>
 
-            <Button 
-              onClick={handleSaveCredentials}
-              disabled={isLoading || !loginCredentials.username || !loginCredentials.password}
-              className="w-full bg-orange-500 hover:bg-orange-600"
+            {/* Password Match Indicator */}
+            {newPassword && confirmPassword && (
+              <div className={`text-xs flex items-center gap-1 ${
+                newPassword === confirmPassword 
+                  ? "text-green-600 dark:text-green-400" 
+                  : "text-red-600 dark:text-red-400"
+              }`}>
+                {newPassword === confirmPassword ? (
+                  <>
+                    <CheckCircle2 className="h-3 w-3" />
+                    Passwords match
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-3 w-3" />
+                    Passwords do not match
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setChangePasswordOpen(false)
+                setNewPassword("")
+                setConfirmPassword("")
+              }}
+              disabled={submitting}
             >
-              {isLoading ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Credentials
-                </>
-              )}
+              Cancel
             </Button>
-          </CardContent>
-        </Card>
-
-        {/* Settings Code Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5 text-orange-500" />
-              Settings Access Code
-            </CardTitle>
-            <CardDescription>
-              Manage the code required to access admin settings
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentCode">Current Code</Label>
-              <div className="relative">
-                <Input
-                  id="currentCode"
-                  type={showPasswords.currentCode ? "text" : "password"}
-                  value={settingsCode.currentCode}
-                  readOnly
-                  className="bg-gray-50"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => togglePasswordVisibility("currentCode")}
-                >
-                  {showPasswords.currentCode ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-2">
-              <Label htmlFor="newCode">New Code</Label>
-              <div className="relative">
-                <Input
-                  id="newCode"
-                  type={showPasswords.newCode ? "text" : "password"}
-                  value={settingsCode.newCode}
-                  onChange={(e) => setSettingsCode(prev => ({
-                    ...prev,
-                    newCode: e.target.value
-                  }))}
-                  placeholder="Enter new settings code"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => togglePasswordVisibility("newCode")}
-                >
-                  {showPasswords.newCode ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmCode">Confirm New Code</Label>
-              <div className="relative">
-                <Input
-                  id="confirmCode"
-                  type={showPasswords.confirmCode ? "text" : "password"}
-                  value={settingsCode.confirmCode}
-                  onChange={(e) => setSettingsCode(prev => ({
-                    ...prev,
-                    confirmCode: e.target.value
-                  }))}
-                  placeholder="Confirm new settings code"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => togglePasswordVisibility("confirmCode")}
-                >
-                  {showPasswords.confirmCode ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            <Button 
-              onClick={handleSaveSettingsCode}
-              disabled={isLoading || !settingsCode.newCode}
-              className="w-full bg-orange-500 hover:bg-orange-600"
+            <Button
+              onClick={handleChangePassword}
+              disabled={
+                submitting ||
+                !newPassword || 
+                !confirmPassword || 
+                newPassword !== confirmPassword ||
+                newPassword.length < 6
+              }
+              className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
             >
-              {isLoading ? (
+              {submitting ? (
                 <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                   Updating...
                 </>
               ) : (
                 <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Update Settings Code
+                  <CheckCircle2 className="h-5 w-5 mr-2" />
+                  Update Password
                 </>
               )}
             </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          <strong>Security Note:</strong> These settings control access to the admin panel. 
-          Make sure to use strong passwords and codes. Changes are saved locally for demo purposes.
-        </AlertDescription>
-      </Alert>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -19,7 +19,9 @@ interface AddItemDialogProps {
 export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogProps) {
   const [loading, setLoading] = useState(false)
   const [storageRooms, setStorageRooms] = useState<StorageRoom[]>([])
+  const [categories, setCategories] = useState<Array<{id: string, name: string}>>([])
   const [loadingRooms, setLoadingRooms] = useState(true)
+  const [loadingCategories, setLoadingCategories] = useState(true)
   const [formData, setFormData] = useState({
     name: "",
     category: "",
@@ -33,6 +35,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
   useEffect(() => {
     if (open) {
       fetchStorageRooms()
+      fetchCategories()
     }
   }, [open])
 
@@ -48,6 +51,21 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
       console.error("Error fetching storage rooms:", error)
     } finally {
       setLoadingRooms(false)
+    }
+  }
+
+  async function fetchCategories() {
+    try {
+      setLoadingCategories(true)
+      const response = await fetch("/api/categories")
+      if (response.ok) {
+        const data = await response.json()
+        setCategories(data)
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error)
+    } finally {
+      setLoadingCategories(false)
     }
   }
 
@@ -97,7 +115,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
+                className="rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
               />
             </div>
 
@@ -106,20 +124,21 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 Category
               </Label>
               <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })} required>
-                <SelectTrigger id="category" className="w-full max-w-xs border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
-                  <SelectValue placeholder="Select a category" />
+                <SelectTrigger id="category" className="w-full max-w-xs rounded-xl border-2 border-slate-300 dark:border-slate-700 focus:border-orange-500 focus:ring-0 focus:ring-offset-0">
+                  <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Select a category"} />
                 </SelectTrigger>
                 <SelectContent className="w-full max-w-xs">
-                  <SelectItem value="Electronics & Gadgets">Electronics & Gadgets</SelectItem>
-                  <SelectItem value="Fashion & Apparel">Fashion & Apparel</SelectItem>
-                  <SelectItem value="Health, Beauty & Personal Care">Health, Beauty & Personal Care</SelectItem>
-                  <SelectItem value="Home & Living">Home & Living</SelectItem>
-                  <SelectItem value="Sports & Outdoors">Sports & Outdoors</SelectItem>
-                  <SelectItem value="Baby, Kids & Toys">Baby, Kids & Toys</SelectItem>
-                  <SelectItem value="Groceries & Pets">Groceries & Pets</SelectItem>
-                  <SelectItem value="Automotive & Industrial">Automotive & Industrial</SelectItem>
-                  <SelectItem value="Stationery & Books">Stationery & Books</SelectItem>
-                  <SelectItem value="Other / Miscellaneous">Other / Miscellaneous</SelectItem>
+                  {loadingCategories ? (
+                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                  ) : categories.length === 0 ? (
+                    <SelectItem value="none" disabled>No categories available</SelectItem>
+                  ) : (
+                    categories.map((category) => (
+                      <SelectItem key={category.id} value={category.name}>
+                        {category.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -133,7 +152,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: Number.parseInt(e.target.value) })}
-                className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
+                className="rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
               />
             </div>
             <div className="space-y-2">
@@ -147,7 +166,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.costPrice}
                 onChange={(e) => setFormData({ ...formData, costPrice: Number.parseFloat(e.target.value) })}
-                className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
+                className="rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
               />
             </div>
             <div className="space-y-2">
@@ -161,7 +180,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.sellingPrice}
                 onChange={(e) => setFormData({ ...formData, sellingPrice: Number.parseFloat(e.target.value) })}
-                className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
+                className="rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
               />
             </div>
             <div className="space-y-2">
@@ -174,7 +193,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 required
                 value={formData.reorderLevel}
                 onChange={(e) => setFormData({ ...formData, reorderLevel: Number.parseInt(e.target.value) })}
-                className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
+                className="rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
               />
             </div>
             <div className="space-y-2">
@@ -182,7 +201,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 Storage Room
               </Label>
               <Select value={formData.storageRoom} onValueChange={(value) => setFormData({ ...formData, storageRoom: value })} required>
-                <SelectTrigger id="storageRoom" className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20">
+                <SelectTrigger id="storageRoom" className="rounded-xl border-2 border-slate-300 dark:border-slate-700 focus:border-orange-500 focus:ring-0 focus:ring-offset-0">
                   <SelectValue placeholder={loadingRooms ? "Loading rooms..." : "Select a storage room"} />
                 </SelectTrigger>
                 <SelectContent>

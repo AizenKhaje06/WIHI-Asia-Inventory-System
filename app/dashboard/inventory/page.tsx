@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Search, Pencil, Trash2, PackagePlus, Package, Filter, X, ArrowUpDown, AlertCircle, TrendingUp, Warehouse } from "lucide-react"
+import { Plus, Search, Pencil, Trash2, PackagePlus, Package, Filter, X, ArrowUpDown, AlertCircle, TrendingUp, Warehouse, Tag, Loader2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -15,6 +15,8 @@ import type { InventoryItem } from "@/lib/types"
 import { AddItemDialog } from "@/components/add-item-dialog"
 import { EditItemDialog } from "@/components/edit-item-dialog"
 import { formatNumber, formatCurrency } from "@/lib/utils"
+import { showSuccess, showError } from "@/lib/toast-utils"
+import type { StorageRoom } from "@/lib/types"
 
 import { PremiumTableLoading } from "@/components/premium-loading"
 
@@ -35,13 +37,34 @@ export default function InventoryPage() {
   const [selectedRestockItem, setSelectedRestockItem] = useState<InventoryItem | null>(null)
   const [restockAmount, setRestockAmount] = useState(0)
   const [restockReason, setRestockReason] = useState("")
+  
+  // Category Management
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
+  const [categories, setCategories] = useState<Array<{id: string, name: string, createdAt: string}>>([])
+  const [newCategory, setNewCategory] = useState("")
+  const [editingCategory, setEditingCategory] = useState<{id: string, name: string} | null>(null)
+  const [editCategoryValue, setEditCategoryValue] = useState("")
+  const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null)
+  
+  // Warehouse Management
+  const [warehouseDialogOpen, setWarehouseDialogOpen] = useState(false)
+  const [warehouses, setWarehouses] = useState<StorageRoom[]>([])
+  const [newWarehouse, setNewWarehouse] = useState("")
+  const [editingWarehouse, setEditingWarehouse] = useState<StorageRoom | null>(null)
+  const [editWarehouseValue, setEditWarehouseValue] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+  const [deleteWarehouseId, setDeleteWarehouseId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchItems()
+    fetchWarehouses()
+    fetchCategories()
 
     // Refresh data when window regains focus (e.g., after switching tabs)
     const handleFocus = () => {
       fetchItems()
+      fetchWarehouses()
+      fetchCategories()
     }
 
     window.addEventListener('focus', handleFocus)
@@ -131,6 +154,30 @@ export default function InventoryPage() {
     }
   }
 
+  async function fetchWarehouses() {
+    try {
+      const res = await fetch("/api/storage-rooms")
+      if (res.ok) {
+        const data = await res.json()
+        setWarehouses(data)
+      }
+    } catch (error) {
+      console.error("Error fetching warehouses:", error)
+    }
+  }
+
+  async function fetchCategories() {
+    try {
+      const res = await fetch("/api/categories")
+      if (res.ok) {
+        const data = await res.json()
+        setCategories(data)
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error)
+    }
+  }
+
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this item?")) return
 
@@ -181,22 +228,176 @@ export default function InventoryPage() {
     }
   }
 
+  // Warehouse Management Functions
+  async function handleAddWarehouse() {
+    if (!newWarehouse.trim()) {
+      showError("Please enter a warehouse name")
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      const response = await fetch("/api/storage-rooms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newWarehouse.trim() })
+      })
+
+      if (response.ok) {
+        showSuccess("Warehouse added successfully")
+        setNewWarehouse("")
+        fetchWarehouses()
+      } else {
+        showError("Failed to add warehouse")
+      }
+    } catch (error) {
+      console.error("Error adding warehouse:", error)
+      showError("Failed to add warehouse")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleEditWarehouse() {
+    if (!editingWarehouse || !editWarehouseValue.trim()) {
+      showError("Please enter a warehouse name")
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      const response = await fetch(`/api/storage-rooms/${editingWarehouse.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: editWarehouseValue.trim() })
+      })
+
+      if (response.ok) {
+        showSuccess("Warehouse updated successfully")
+        setEditingWarehouse(null)
+        setEditWarehouseValue("")
+        fetchWarehouses()
+      } else {
+        showError("Failed to update warehouse")
+      }
+    } catch (error) {
+      console.error("Error updating warehouse:", error)
+      showError("Failed to update warehouse")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleDeleteWarehouse(id: string) {
+    try {
+      setSubmitting(true)
+      const response = await fetch(`/api/storage-rooms/${id}`, {
+        method: "DELETE"
+      })
+
+      if (response.ok) {
+        showSuccess("Warehouse deleted successfully")
+        setDeleteWarehouseId(null)
+        fetchWarehouses()
+      } else {
+        showError("Failed to delete warehouse")
+      }
+    } catch (error) {
+      console.error("Error deleting warehouse:", error)
+      showError("Failed to delete warehouse")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  // Category Management Functions
+  async function handleAddCategory() {
+    if (!newCategory.trim()) {
+      showError("Please enter a category name")
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      const response = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newCategory.trim() })
+      })
+
+      if (response.ok) {
+        showSuccess("Category added successfully")
+        setNewCategory("")
+        fetchCategories()
+      } else {
+        showError("Failed to add category")
+      }
+    } catch (error) {
+      console.error("Error adding category:", error)
+      showError("Failed to add category")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleEditCategory() {
+    if (!editingCategory || !editCategoryValue.trim()) {
+      showError("Please enter a category name")
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      const response = await fetch(`/api/categories/${editingCategory.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: editCategoryValue.trim() })
+      })
+
+      if (response.ok) {
+        showSuccess("Category updated successfully")
+        setEditingCategory(null)
+        setEditCategoryValue("")
+        fetchCategories()
+      } else {
+        showError("Failed to update category")
+      }
+    } catch (error) {
+      console.error("Error updating category:", error)
+      showError("Failed to update category")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleDeleteCategory(id: string) {
+    try {
+      setSubmitting(true)
+      const response = await fetch(`/api/categories/${id}`, {
+        method: "DELETE"
+      })
+
+      if (response.ok) {
+        showSuccess("Category deleted successfully")
+        setDeleteCategoryId(null)
+        fetchCategories()
+      } else {
+        showError("Failed to delete category")
+      }
+    } catch (error) {
+      console.error("Error deleting category:", error)
+      showError("Failed to delete category")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   if (loading) {
     return <PremiumTableLoading />
   }
 
-  const categories = [
-    "Electronics & Gadgets",
-    "Fashion & Apparel",
-    "Health, Beauty & Personal Care",
-    "Home & Living",
-    "Sports & Outdoors",
-    "Baby, Kids & Toys",
-    "Groceries & Pets",
-    "Automotive & Industrial",
-    "Stationery & Books",
-    "Other / Miscellaneous",
-  ]
+  // Extract unique category names for filter
+  const categoryNames = categories.map(cat => cat.name)
 
   const activeFiltersCount = [
     categoryFilter !== "all",
@@ -219,19 +420,48 @@ export default function InventoryPage() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden">
       {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold mb-2 gradient-text">
-          Inventory Management
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
-          Comprehensive product inventory control and management
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 gradient-text">
+              Inventory Management
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 text-base">
+              Comprehensive product inventory control and management
+            </p>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <Button
+              onClick={() => setAddDialogOpen(true)}
+              className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Add Product
+            </Button>
+            <Button
+              onClick={() => setCategoryDialogOpen(true)}
+              className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Tag className="h-5 w-5 mr-2" />
+              Categories
+            </Button>
+            <Button
+              onClick={() => setWarehouseDialogOpen(true)}
+              className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Warehouse className="h-5 w-5 mr-2" />
+              Storage
+            </Button>
+          </div>
+        </div>
       </div>
 
       <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <CardContent className="p-4">
           {/* Compact Filter Layout */}
           <div className="space-y-3">
-            {/* Row 1: Search + Add Button */}
+            {/* Row 1: Search Only */}
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -242,13 +472,6 @@ export default function InventoryPage() {
                   className="pl-10 h-10 border-slate-200 dark:border-slate-700"
                 />
               </div>
-              <Button
-                onClick={() => setAddDialogOpen(true)}
-                className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 h-10 px-4"
-              >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Add</span>
-              </Button>
             </div>
 
             {/* Row 2: Filters Grid */}
@@ -259,7 +482,7 @@ export default function InventoryPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                  {categoryNames.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                 </SelectContent>
               </Select>
 
@@ -637,6 +860,333 @@ export default function InventoryPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Category Management Dialog */}
+      <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <Tag className="h-5 w-5 text-orange-600" />
+              Category Management
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              Manage product categories
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto space-y-3 py-2">
+            {/* Add New Category */}
+            <div className="flex gap-2 sticky top-0 bg-white dark:bg-slate-950 pb-2 z-10">
+              <Input
+                placeholder="Add new category"
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newCategory.trim()) {
+                    handleAddCategory()
+                  }
+                }}
+                className="h-10 text-sm rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
+                disabled={submitting}
+              />
+              <Button
+                onClick={handleAddCategory}
+                disabled={!newCategory.trim() || submitting}
+                size="sm"
+                className="h-10 w-10 p-0 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white flex-shrink-0"
+              >
+                {submitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            {/* Category List */}
+            <div className="space-y-1.5">
+              {categories.map((category) => (
+                <div
+                  key={category.id}
+                  className="flex items-center justify-between p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-orange-300 dark:hover:border-orange-700 transition-colors"
+                >
+                  {editingCategory?.id === category.id ? (
+                    <div className="flex-1 flex gap-2">
+                      <Input
+                        value={editCategoryValue}
+                        onChange={(e) => setEditCategoryValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleEditCategory()
+                          }
+                          if (e.key === "Escape") {
+                            setEditingCategory(null)
+                            setEditCategoryValue("")
+                          }
+                        }}
+                        className="h-9 text-sm flex-1"
+                        disabled={submitting}
+                        autoFocus
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handleEditCategory}
+                        disabled={submitting || !editCategoryValue.trim()}
+                        className="h-9 px-4 bg-green-600 hover:bg-green-700 text-white text-sm whitespace-nowrap"
+                      >
+                        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingCategory(null)
+                          setEditCategoryValue("")
+                        }}
+                        disabled={submitting}
+                        className="h-9 px-4 text-sm whitespace-nowrap"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <Tag className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                        <span className="text-sm font-medium text-slate-900 dark:text-white truncate">{category.name}</span>
+                      </div>
+                      <div className="flex items-center gap-0.5 flex-shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingCategory(category)
+                            setEditCategoryValue(category.name)
+                          }}
+                          disabled={submitting}
+                          className="h-7 w-7 p-0 text-slate-600 hover:text-orange-600 dark:text-slate-400 dark:hover:text-orange-400"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteCategoryId(category.id)}
+                          disabled={submitting}
+                          className="h-7 w-7 p-0 text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Warehouse Management Dialog */}
+      <Dialog open={warehouseDialogOpen} onOpenChange={setWarehouseDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <Warehouse className="h-5 w-5 text-orange-600" />
+              Storage Management
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              Manage storage locations
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto space-y-3 py-2">
+            {/* Add New Warehouse */}
+            <div className="flex gap-2 sticky top-0 bg-white dark:bg-slate-950 pb-2 z-10">
+              <Input
+                placeholder="Add new storage room"
+                value={newWarehouse}
+                onChange={(e) => setNewWarehouse(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddWarehouse()}
+                disabled={submitting}
+                className="h-10 text-sm rounded-xl border-2 border-slate-300 dark:border-slate-700 focus-visible:border-orange-500 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-orange-500"
+              />
+              <Button
+                onClick={handleAddWarehouse}
+                disabled={!newWarehouse.trim() || submitting}
+                size="sm"
+                className="h-10 w-10 p-0 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white flex-shrink-0"
+              >
+                {submitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            {/* Warehouse List */}
+            {warehouses.length === 0 ? (
+              <div className="text-center py-8">
+                <Warehouse className="h-10 w-10 mx-auto text-slate-400 mb-2" />
+                <p className="text-sm text-slate-600 dark:text-slate-400">No storage rooms yet</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Add your first storage room</p>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                {warehouses.map((warehouse) => (
+                  <div
+                    key={warehouse.id}
+                    className="flex items-center justify-between p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-orange-300 dark:hover:border-orange-700 transition-colors"
+                  >
+                    {editingWarehouse?.id === warehouse.id ? (
+                      <div className="flex-1 flex gap-2">
+                        <Input
+                          value={editWarehouseValue}
+                          onChange={(e) => setEditWarehouseValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleEditWarehouse()
+                            if (e.key === "Escape") {
+                              setEditingWarehouse(null)
+                              setEditWarehouseValue("")
+                            }
+                          }}
+                          disabled={submitting}
+                          className="h-9 text-sm flex-1"
+                          autoFocus
+                        />
+                        <Button
+                          size="sm"
+                          onClick={handleEditWarehouse}
+                          disabled={submitting || !editWarehouseValue.trim()}
+                          className="h-9 px-4 bg-green-600 hover:bg-green-700 text-white text-sm whitespace-nowrap"
+                        >
+                          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setEditingWarehouse(null)
+                            setEditWarehouseValue("")
+                          }}
+                          disabled={submitting}
+                          className="h-9 px-4 text-sm whitespace-nowrap"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <Warehouse className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{warehouse.name}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{warehouse.createdAt}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-0.5 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setEditingWarehouse(warehouse)
+                              setEditWarehouseValue(warehouse.name)
+                            }}
+                            disabled={submitting}
+                            className="h-7 w-7 p-0 text-slate-600 hover:text-orange-600 dark:text-slate-400 dark:hover:text-orange-400"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteWarehouseId(warehouse.id)}
+                            disabled={submitting}
+                            className="h-7 w-7 p-0 text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Warehouse Confirmation */}
+      <Dialog open={!!deleteWarehouseId} onOpenChange={() => setDeleteWarehouseId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Warehouse</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this warehouse? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteWarehouseId(null)}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => deleteWarehouseId && handleDeleteWarehouse(deleteWarehouseId)}
+              disabled={submitting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Category Confirmation */}
+      <Dialog open={!!deleteCategoryId} onOpenChange={() => setDeleteCategoryId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Category</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this category? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteCategoryId(null)}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => deleteCategoryId && handleDeleteCategory(deleteCategoryId)}
+              disabled={submitting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
