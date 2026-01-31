@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Package, Loader2 } from "lucide-react"
 import type { StorageRoom } from "@/lib/types"
 
 interface AddItemDialogProps {
@@ -100,9 +101,12 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl">
+      <DialogContent className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 max-w-2xl shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold">Add New Product</DialogTitle>
+          <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold flex items-center gap-2">
+            <Package className="h-5 w-5 text-orange-600" />
+            Add New Product
+          </DialogTitle>
           <DialogDescription className="text-slate-600 dark:text-slate-400">
             Create a new product in your inventory
           </DialogDescription>
@@ -110,8 +114,8 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-slate-700 dark:text-slate-300 font-medium">
-                Name
+              <Label htmlFor="name" className="text-slate-700 dark:text-slate-300 font-medium text-sm">
+                Product Name
               </Label>
               <Input
                 id="name"
@@ -227,8 +231,18 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white">
-              {loading ? "Adding..." : "Add Product"}
+            <Button type="submit" disabled={loading} className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg">
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Adding Product...
+                </>
+              ) : (
+                <>
+                  <Package className="h-4 w-4 mr-2" />
+                  Add Product
+                </>
+              )}
             </Button>
           </div>
         </form>
