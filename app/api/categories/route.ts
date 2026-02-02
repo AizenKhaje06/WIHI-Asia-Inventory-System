@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { getCategories, addCategory } from "@/lib/google-sheets"
+// Using Supabase as primary database
+import { getCategories, addCategory } from "@/lib/supabase-db"
 
 export async function GET() {
   try {

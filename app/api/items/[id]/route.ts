@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { updateInventoryItem, deleteInventoryItem, getInventoryItems, addLog } from "@/lib/google-sheets"
+// Using Supabase as primary database
+import { updateInventoryItem, deleteInventoryItem, getInventoryItems, addLog } from "@/lib/supabase-db"
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

@@ -76,38 +76,61 @@ export function getDefaultRoute(role: UserRole): string {
 export function getCurrentUser(): User | null {
   if (typeof window === 'undefined') return null
   
-  const isLoggedIn = localStorage.getItem('isLoggedIn')
-  const username = localStorage.getItem('username')
-  const role = localStorage.getItem('userRole') as UserRole
-  const displayName = localStorage.getItem('displayName')
-  
-  if (isLoggedIn === 'true' && username && role) {
-    return { username, role, displayName: displayName || username }
+  try {
+    const isLoggedIn = localStorage.getItem('isLoggedIn')
+    const username = localStorage.getItem('username')
+    const role = localStorage.getItem('userRole') as UserRole
+    const displayName = localStorage.getItem('displayName')
+    
+    if (isLoggedIn === 'true' && username && role) {
+      return { username, role, displayName: displayName || username }
+    }
+  } catch (error) {
+    console.error('Error reading user from localStorage:', error)
   }
   
   return null
 }
 
 export function setCurrentUser(user: User): void {
-  localStorage.setItem('isLoggedIn', 'true')
-  localStorage.setItem('username', user.username)
-  localStorage.setItem('userRole', user.role)
-  localStorage.setItem('displayName', user.displayName)
+  if (typeof window === 'undefined') return
+  
+  try {
+    localStorage.setItem('isLoggedIn', 'true')
+    localStorage.setItem('username', user.username)
+    localStorage.setItem('userRole', user.role)
+    localStorage.setItem('displayName', user.displayName)
+  } catch (error) {
+    console.error('Error saving user to localStorage:', error)
+  }
 }
 
 export function validateRolePassword(role: UserRole, password: string): boolean {
-  // Check custom stored password first
-  const storedPassword = localStorage.getItem(`${role}Password`)
-  if (storedPassword) {
-    return password === storedPassword
+  if (typeof window === 'undefined') return false
+  
+  try {
+    // Check custom stored password first
+    const storedPassword = localStorage.getItem(`${role}Password`)
+    if (storedPassword) {
+      return password === storedPassword
+    }
+    // Fall back to default password
+    return password === DEFAULT_PASSWORDS[role]
+  } catch (error) {
+    console.error('Error validating password:', error)
+    return false
   }
-  // Fall back to default password
-  return password === DEFAULT_PASSWORDS[role]
 }
 
 export function clearCurrentUser(): void {
-  localStorage.removeItem('isLoggedIn')
-  localStorage.removeItem('username')
-  localStorage.removeItem('userRole')
-  localStorage.removeItem('displayName')
+  if (typeof window === 'undefined') return
+  
+  try {
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('username')
+    localStorage.removeItem('userRole')
+    localStorage.removeItem('displayName')
+  } catch (error) {
+    console.error('Error clearing user from localStorage:', error)
+  }
 }

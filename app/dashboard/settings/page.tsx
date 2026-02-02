@@ -108,9 +108,15 @@ export default function SettingsPage() {
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          // Update localStorage
-          localStorage.setItem('username', newUsername.trim())
-          localStorage.setItem('displayName', newUsername.trim())
+          // Update localStorage - SSR safe
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('username', newUsername.trim())
+              localStorage.setItem('displayName', newUsername.trim())
+            } catch (error) {
+              console.error('Error updating localStorage:', error)
+            }
+          }
 
           showSuccess("Username changed successfully", "Your new username is now active")
 

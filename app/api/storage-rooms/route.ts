@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { getStorageRooms, addStorageRoom } from "@/lib/google-sheets"
+// Using Supabase as primary database
+import { getStorageRooms, addStorageRoom } from "@/lib/supabase-db"
 
 export async function GET() {
   try {

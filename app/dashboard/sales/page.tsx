@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, BarChart3, TrendingUp, DollarSign, Package, Users } from 'lucide-react';
+import { Calendar, BarChart3, TrendingUp, DollarSign, Package, Users, ShoppingCart } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 interface SalesData {
@@ -36,16 +36,20 @@ export default function SalesAnalyticsPage() {
 
   useEffect(() => {
     fetchSalesData();
-  }, [currentMonth]);
+  }, []); // Remove currentMonth dependency to fetch all data once
 
   const fetchSalesData = async () => {
     try {
       setLoading(true);
+      // Fetch ALL sales data without date filtering
       const response = await fetch('/api/reports');
       if (!response.ok) {
         throw new Error('Failed to fetch sales data');
       }
       const data = await response.json();
+      console.log('Sales Analytics Data:', data); // Debug log
+      console.log('Total Orders:', data.totalOrders); // Debug log
+      console.log('Total Revenue:', data.totalRevenue); // Debug log
       setSalesData(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -87,8 +91,27 @@ export default function SalesAnalyticsPage() {
 
   if (!salesData) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>No data available</p>
+      <div className="min-h-screen w-full max-w-full overflow-x-hidden p-6">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold gradient-text mb-2">
+            Sales Analytics
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 text-base">
+            Track your sales performance and trends
+          </p>
+        </div>
+        <Card className="w-full max-w-2xl mx-auto">
+          <CardContent className="pt-6">
+            <div className="text-center py-12">
+              <Package className="h-16 w-16 mx-auto mb-4 text-slate-400" />
+              <h3 className="text-xl font-semibold mb-2">No Sales Data Available</h3>
+              <p className="text-slate-600 dark:text-slate-400 mb-4">
+                Start making sales to see analytics and insights here.
+              </p>
+              <Button onClick={fetchSalesData}>Refresh Data</Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -106,6 +129,61 @@ export default function SalesAnalyticsPage() {
 
   // Calculate profit margin to ensure accuracy
   const calculatedProfitMargin = salesData.totalRevenue > 0 ? salesData.totalProfit / salesData.totalRevenue : 0;
+
+  // Check if there's any sales data
+  const hasNoSales = salesData.totalOrders === 0 && salesData.totalRevenue === 0;
+  
+  console.log('Sales Check:', {
+    totalOrders: salesData.totalOrders,
+    totalRevenue: salesData.totalRevenue,
+    hasNoSales
+  }); // Debug log
+
+  if (hasNoSales) {
+    return (
+      <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+        <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+          <h1 className="text-4xl font-bold gradient-text mb-2">
+            Sales Analytics
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 text-base">
+            Track your sales performance and trends
+          </p>
+        </div>
+        
+        <Card className="w-full max-w-2xl mx-auto border-0 shadow-lg">
+          <CardContent className="pt-6">
+            <div className="text-center py-12">
+              <div className="bg-blue-100 dark:bg-blue-900/20 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                <BarChart3 className="h-12 w-12 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-3 text-slate-900 dark:text-white">
+                No Sales Data Yet
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto">
+                Start processing sales through the Warehouse Dispatch page to see analytics, trends, and insights here.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Button 
+                  onClick={() => window.location.href = '/dashboard/pos'}
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                >
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Go to Warehouse Dispatch
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={fetchSalesData}
+                >
+                  Refresh Data
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden">

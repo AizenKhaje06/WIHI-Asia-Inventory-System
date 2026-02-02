@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { updateStorageRoom, deleteStorageRoom } from "@/lib/google-sheets"
+// Using Supabase as primary database
+import { updateStorageRoom, deleteStorageRoom } from "@/lib/supabase-db"
 
 export async function PUT(
   request: Request,

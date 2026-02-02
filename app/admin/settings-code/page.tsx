@@ -37,6 +37,8 @@ export default function SettingsCodePage() {
   }, [])
 
   const loadCurrentCode = async () => {
+    if (typeof window === 'undefined') return
+    
     try {
       const savedCode = localStorage.getItem("adminSettingsCode") || "ADMIN123"
       setSettingsCode(prev => ({
@@ -72,8 +74,10 @@ export default function SettingsCodePage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // Save to localStorage (in real app, save to backend)
-      localStorage.setItem("adminSettingsCode", settingsCode.newCode)
+      // Save to localStorage (in real app, save to backend) - SSR safe
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("adminSettingsCode", settingsCode.newCode)
+      }
       
       toast({
         title: "Success",

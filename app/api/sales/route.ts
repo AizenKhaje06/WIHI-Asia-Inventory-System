@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { addTransaction, updateInventoryItem, getInventoryItems, addLog } from "@/lib/google-sheets"
+// Using Supabase as primary database
+import { addTransaction, updateInventoryItem, getInventoryItems, addLog } from "@/lib/supabase-db"
+import { invalidateCachePattern } from "@/lib/cache"
 
 export async function POST(request: NextRequest) {
   try {
@@ -66,9 +68,14 @@ export async function POST(request: NextRequest) {
       transactions.push(transaction)
     }
 
+    // Invalidate all relevant caches after sale
+    invalidateCachePattern('inventory')
+    invalidateCachePattern('transactions')
+    invalidateCachePattern('dashboard')
+
     return NextResponse.json({ transactions })
   } catch (error) {
-    console.error("[v0] Error processing sale:", error)
+    console.error("[API] Error processing sale:", error)
     return NextResponse.json({ error: "Failed to process sale" }, { status: 500 })
   }
 }

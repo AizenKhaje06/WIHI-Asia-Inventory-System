@@ -107,10 +107,23 @@ async function initializeTransactionsSheet() {
 }
 
 export async function getGoogleSheetsClient() {
+  // Validate required environment variables
+  if (!process.env.GOOGLE_CLIENT_EMAIL) {
+    throw new Error('Missing required environment variable: GOOGLE_CLIENT_EMAIL')
+  }
+  
+  if (!process.env.GOOGLE_PRIVATE_KEY) {
+    throw new Error('Missing required environment variable: GOOGLE_PRIVATE_KEY')
+  }
+  
+  if (!process.env.GOOGLE_SHEET_ID) {
+    throw new Error('Missing required environment variable: GOOGLE_SHEET_ID')
+  }
+
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_CLIENT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
     },
     scopes: SCOPES,
   })

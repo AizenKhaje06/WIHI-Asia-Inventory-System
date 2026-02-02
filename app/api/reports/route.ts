@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getTransactions } from "@/lib/google-sheets"
+// Using Supabase as primary database
+import { getTransactions } from "@/lib/supabase-db"
+import { getCachedData } from "@/lib/cache"
 import type { SalesReport, DailySales, MonthlySales } from "@/lib/types"
 
 // Helper function to parse Google Sheets timestamp format: "YYYY-MM-DD / H:MM AM/PM"
@@ -42,7 +44,12 @@ export async function GET(request: NextRequest) {
     const period = searchParams.get("period")
     const view = searchParams.get("view")
 
-    let transactions = await getTransactions()
+    // Use caching for transactions (1 minute TTL)
+    let transactions = await getCachedData(
+      'transactions',
+      () => getTransactions(),
+      60000 // 1 minute
+    )
 
     // Helper function to safely parse timestamp
     const safeParseTimestamp = (timestamp: string): Date | null => {
@@ -96,12 +103,23 @@ export async function GET(request: NextRequest) {
 
     const salesTransactions = transactions.filter((t) => t.type === "sale" && t.transactionType === "sale")
 
+    console.log('[Reports API] Total transactions:', transactions.length);
+    console.log('[Reports API] Sales transactions:', salesTransactions.length);
+    console.log('[Reports API] Sample transaction:', salesTransactions[0]);
+
     const totalRevenue = salesTransactions.reduce((sum, t) => sum + t.totalRevenue, 0)
     const totalCost = salesTransactions.reduce((sum, t) => sum + t.totalCost, 0)
     const totalProfit = totalRevenue - totalCost
     const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
     const itemsSold = salesTransactions.reduce((sum, t) => sum + t.quantity, 0)
     const totalOrders = salesTransactions.length
+
+    console.log('[Reports API] Calculated:', {
+      totalRevenue,
+      totalCost,
+      totalProfit,
+      totalOrders
+    });
 
     // Generate salesOverTime data based on period or view
     let salesOverTime: { date: string; revenue: number }[] = []

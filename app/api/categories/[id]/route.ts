@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { updateCategory, deleteCategory } from "@/lib/google-sheets"
+// Using Supabase as primary database
+import { updateCategory, deleteCategory } from "@/lib/supabase-db"
 
 export async function PUT(
   request: Request,

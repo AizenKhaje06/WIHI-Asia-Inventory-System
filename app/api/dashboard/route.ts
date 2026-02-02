@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server"
-import { getInventoryItems, getTransactions, getRestocks } from "@/lib/google-sheets"
+// Using Supabase as primary database
+import { getInventoryItems, getTransactions, getRestocks } from "@/lib/supabase-db"
+import { getCachedData } from "@/lib/cache"
 import { parse } from "date-fns"
 import type { DashboardStats, Transaction, InventoryItem } from "@/lib/types"
 
@@ -8,9 +10,26 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || 'ID'
 
-    const items = await getInventoryItems()
-    const transactions = await getTransactions()
-    const restockHistory = await getRestocks()
+    // Cache dashboard data with period-specific keys (1 minute TTL for real-time feel)
+    const cacheKey = `dashboard-${period}`
+    
+    const items = await getCachedData(
+      'inventory-items',
+      () => getInventoryItems(),
+      60000 // 1 minute
+    )
+    
+    const transactions = await getCachedData(
+      'transactions',
+      () => getTransactions(),
+      60000 // 1 minute
+    )
+    
+    const restockHistory = await getCachedData(
+      'restocks',
+      () => getRestocks(),
+      60000 // 1 minute
+    )
 
     const totalItems = items.length
     const lowStockItems = items.filter((item: InventoryItem) => item.quantity <= item.reorderLevel).length

@@ -32,14 +32,20 @@ export default function SlidingLoginPage() {
   const isDevelopment = process.env.NODE_ENV === 'development'
 
   useEffect(() => {
-    // Clear any existing login state
-    localStorage.removeItem("isLoggedIn")
-    
-    // Load remembered username if exists
-    const rememberedUsername = localStorage.getItem("rememberedUsername")
-    if (rememberedUsername) {
-      setUsername(rememberedUsername)
-      setRememberMe(true)
+    // Clear any existing login state - SSR safe
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem("isLoggedIn")
+        
+        // Load remembered username if exists
+        const rememberedUsername = localStorage.getItem("rememberedUsername")
+        if (rememberedUsername) {
+          setUsername(rememberedUsername)
+          setRememberMe(true)
+        }
+      } catch (error) {
+        console.error('Error accessing localStorage:', error)
+      }
     }
   }, [])
 
@@ -63,18 +69,24 @@ export default function SlidingLoginPage() {
       const data = await response.json()
 
       if (data.success && data.account) {
-        // Handle Remember Me
-        if (rememberMe) {
-          localStorage.setItem("rememberedUsername", username)
-        } else {
-          localStorage.removeItem("rememberedUsername")
+        // Handle Remember Me - SSR safe
+        if (typeof window !== 'undefined') {
+          try {
+            if (rememberMe) {
+              localStorage.setItem("rememberedUsername", username)
+            } else {
+              localStorage.removeItem("rememberedUsername")
+            }
+            
+            // Store user info
+            localStorage.setItem("isLoggedIn", "true")
+            localStorage.setItem("username", data.account.username)
+            localStorage.setItem("userRole", data.account.role)
+            localStorage.setItem("displayName", data.account.displayName)
+          } catch (error) {
+            console.error('Error saving to localStorage:', error)
+          }
         }
-        
-        // Store user info
-        localStorage.setItem("isLoggedIn", "true")
-        localStorage.setItem("username", data.account.username)
-        localStorage.setItem("userRole", data.account.role)
-        localStorage.setItem("displayName", data.account.displayName)
         
         // Redirect to appropriate dashboard
         const redirectPath = data.account.role === "admin" ? "/dashboard" : "/dashboard/operations"

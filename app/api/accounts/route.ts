@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getAccounts, validateCredentials, updateAccount, updateUsername, addAccount } from "@/lib/google-sheets"
+// Using Supabase as primary database
+import { getAccounts, validateCredentials, updateAccount, updateUsername, addAccount } from "@/lib/supabase-db"
 
 // GET - Get all accounts (admin only)
 export async function GET() {

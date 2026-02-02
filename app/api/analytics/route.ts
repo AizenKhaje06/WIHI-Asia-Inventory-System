@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getInventoryItems, getTransactions, getRestocks } from "@/lib/google-sheets"
+// Using Supabase as primary database
+import { getInventoryItems, getTransactions, getRestocks } from "@/lib/supabase-db"
 import {
   calculateSalesForecast,
   performABCAnalysis,

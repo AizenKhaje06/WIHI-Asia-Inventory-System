@@ -84,6 +84,8 @@ export default function CustomersPage() {
   }
 
   async function loadTierSettings() {
+    if (typeof window === 'undefined') return
+    
     try {
       const saved = localStorage.getItem('tierSettings')
       if (saved) {
@@ -95,6 +97,8 @@ export default function CustomersPage() {
   }
 
   async function saveTierSettings() {
+    if (typeof window === 'undefined') return
+    
     try {
       localStorage.setItem('tierSettings', JSON.stringify(tierSettings))
       

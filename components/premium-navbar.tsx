@@ -152,7 +152,16 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
               <DropdownMenuItem
                 className="text-red-600 dark:text-red-400"
                 onSelect={() => {
-                  localStorage.removeItem("isLoggedIn")
+                  if (typeof window !== 'undefined') {
+                    try {
+                      localStorage.removeItem("isLoggedIn")
+                      localStorage.removeItem("username")
+                      localStorage.removeItem("userRole")
+                      localStorage.removeItem("displayName")
+                    } catch (error) {
+                      console.error('Error clearing localStorage:', error)
+                    }
+                  }
                   window.location.href = "/"
                 }}
               >
