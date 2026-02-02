@@ -4,12 +4,18 @@ import { getTransactions } from "@/lib/supabase-db"
 import { getCachedData } from "@/lib/cache"
 import type { SalesReport, DailySales, MonthlySales } from "@/lib/types"
 
-// Helper function to parse Google Sheets timestamp format: "YYYY-MM-DD / H:MM AM/PM"
-function parseGoogleSheetsTimestamp(timestamp: string): Date {
-  // Format: "2025-10-21 / 1:20 PM"
+// Helper function to parse timestamp - handle both ISO and Google Sheets format
+function parseTimestamp(timestamp: string): Date {
+  // Try ISO format first (from Supabase): "2026-02-02T18:32:00"
+  if (timestamp.includes('T')) {
+    return new Date(timestamp)
+  }
+  
+  // Fall back to Google Sheets format: "YYYY-MM-DD / H:MM AM/PM"
   const parts = timestamp.split(' / ')
   if (parts.length !== 2) {
-    throw new Error(`Invalid timestamp format: ${timestamp}`)
+    // If neither format matches, try direct Date parsing
+    return new Date(timestamp)
   }
 
   const datePart = parts[0] // "2025-10-21"
@@ -18,7 +24,7 @@ function parseGoogleSheetsTimestamp(timestamp: string): Date {
   // Parse time part
   const timeMatch = timePart.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
   if (!timeMatch) {
-    throw new Error(`Invalid time format: ${timePart}`)
+    return new Date(timestamp)
   }
 
   let hours = parseInt(timeMatch[1])
@@ -54,7 +60,7 @@ export async function GET(request: NextRequest) {
     // Helper function to safely parse timestamp
     const safeParseTimestamp = (timestamp: string): Date | null => {
       try {
-        return parseGoogleSheetsTimestamp(timestamp)
+        return parseTimestamp(timestamp)
       } catch (error) {
         console.error(`Failed to parse timestamp: ${timestamp}`, error)
         return null

@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, BarChart3, TrendingUp, DollarSign, Package, Users, ShoppingCart } from 'lucide-react';
+import { Calendar, BarChart3, TrendingUp, DollarSign, Package, Users, ShoppingCart, FileDown } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { exportSalesAnalyticsPDF } from '@/lib/pdf-export';
 
 interface SalesData {
   totalRevenue: number;
@@ -50,6 +51,8 @@ export default function SalesAnalyticsPage() {
       console.log('Sales Analytics Data:', data); // Debug log
       console.log('Total Orders:', data.totalOrders); // Debug log
       console.log('Total Revenue:', data.totalRevenue); // Debug log
+      console.log('Daily Sales:', data.dailySales); // Debug log
+      console.log('Monthly Sales:', data.monthlySales); // Debug log
       setSalesData(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -130,12 +133,13 @@ export default function SalesAnalyticsPage() {
   // Calculate profit margin to ensure accuracy
   const calculatedProfitMargin = salesData.totalRevenue > 0 ? salesData.totalProfit / salesData.totalRevenue : 0;
 
-  // Check if there's any sales data
-  const hasNoSales = salesData.totalOrders === 0 && salesData.totalRevenue === 0;
+  // Check if there's any sales data - be more lenient
+  const hasNoSales = !salesData || (salesData.totalOrders === 0 && salesData.totalRevenue === 0 && (!salesData.dailySales || salesData.dailySales.length === 0));
   
   console.log('Sales Check:', {
-    totalOrders: salesData.totalOrders,
-    totalRevenue: salesData.totalRevenue,
+    totalOrders: salesData?.totalOrders,
+    totalRevenue: salesData?.totalRevenue,
+    dailySalesLength: salesData?.dailySales?.length,
     hasNoSales
   }); // Debug log
 
@@ -200,6 +204,15 @@ export default function SalesAnalyticsPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div></div>
         <div className="flex gap-2 w-full sm:w-auto">
+          <Button
+            variant="outline"
+            onClick={() => salesData && exportSalesAnalyticsPDF(salesData)}
+            disabled={!salesData}
+            className="flex items-center gap-2 flex-1 sm:flex-initial"
+          >
+            <FileDown className="h-4 w-4" />
+            Export PDF
+          </Button>
           <Button
             variant={viewMode === 'daily' ? 'default' : 'outline'}
             onClick={() => setViewMode('daily')}

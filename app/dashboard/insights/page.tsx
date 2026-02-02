@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { TrendingUp, TrendingDown, Minus, AlertTriangle, Target, BarChart3, Package, DollarSign, Percent, Download, RefreshCw, TrendingUpIcon, Search, X, RotateCcw } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, Target, BarChart3, Package, DollarSign, Percent, Download, RefreshCw, TrendingUpIcon, Search, X, RotateCcw, FileDown } from "lucide-react"
 import type { ABCAnalysis, InventoryTurnover, PredictiveAnalytics } from "@/lib/types"
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { exportBusinessInsightsPDF } from "@/lib/pdf-export"
 
 export default function InsightsPage() {
   const [abcAnalysis, setAbcAnalysis] = useState<ABCAnalysis[]>([])
@@ -299,6 +300,38 @@ export default function InsightsPage() {
           <Button
             onClick={() => {
               if (activeTab === 'abc') {
+                exportBusinessInsightsPDF(filteredAbcAnalysis, 'abc', 'ABC Analysis Report')
+              } else if (activeTab === 'turnover') {
+                exportBusinessInsightsPDF(filteredTurnover, 'turnover', 'Inventory Turnover Report')
+              } else if (activeTab === 'forecast') {
+                exportBusinessInsightsPDF(filteredForecasts, 'forecast', 'Sales Forecast Report')
+              } else if (activeTab === 'profit') {
+                exportBusinessInsightsPDF(filteredProfitMargin, 'profit', 'Profit Margin Report')
+              } else if (activeTab === 'deadstock') {
+                exportBusinessInsightsPDF(filteredDeadStock, 'deadstock', 'Dead Stock Report')
+              } else if (activeTab === 'returns') {
+                const filteredReturns = returnAnalytics?.returnsByItem
+                  ?.filter((item: any) => item.itemName.toLowerCase().includes(returnSearch.toLowerCase()))
+                  .sort((a: any, b: any) => {
+                    if (returnSortBy === "quantity-desc") return b.quantity - a.quantity
+                    if (returnSortBy === "quantity-asc") return a.quantity - b.quantity
+                    if (returnSortBy === "value-desc") return b.value - a.value
+                    if (returnSortBy === "value-asc") return a.value - b.value
+                    return 0
+                  })
+                exportBusinessInsightsPDF(filteredReturns || [], 'returns', 'Returns Analysis Report')
+              }
+            }}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <FileDown className="h-4 w-4" />
+            PDF
+          </Button>
+          <Button
+            onClick={() => {
+              if (activeTab === 'abc') {
                 exportToCSV(filteredAbcAnalysis, 'abc-analysis', ['Product', 'Category', 'Revenue %', 'Recommendation'])
               } else if (activeTab === 'turnover') {
                 exportToCSV(filteredTurnover, 'inventory-turnover', ['Product', 'Turnover Ratio', 'Days to Sell', 'Status'])
@@ -326,7 +359,7 @@ export default function InsightsPage() {
             className="gap-2"
           >
             <Download className="h-4 w-4" />
-            Export CSV
+            CSV
           </Button>
         </div>
       </div>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { SetupRequiredAlert } from "@/components/setup-required-alert"
-import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart3, ShoppingCart, TrendingDown, Users, BarChart2, Activity, ArrowUpRight, ArrowDownRight, Percent, RefreshCw, Download, Plus, FileText, AlertCircle, PackageX, PackageOpen, RotateCcw } from "lucide-react"
+import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart3, ShoppingCart, TrendingDown, Users, BarChart2, Activity, ArrowUpRight, ArrowDownRight, Percent, RefreshCw, Download, Plus, FileText, AlertCircle, PackageX, PackageOpen, RotateCcw, FileDown } from "lucide-react"
 import {
   XAxis,
   YAxis,
@@ -32,6 +32,7 @@ import type { DashboardStats, InventoryItem } from "@/lib/types"
 import { formatNumber } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { PremiumDashboardLoading } from "@/components/premium-loading"
+import { exportDashboardPDF } from "@/lib/pdf-export"
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -174,7 +175,16 @@ export default function DashboardPage() {
             onClick={exportDashboard}
           >
             <Download className="h-4 w-4 mr-2" />
-            Export
+            CSV
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => stats && exportDashboardPDF(stats)}
+            disabled={!stats}
+          >
+            <FileDown className="h-4 w-4 mr-2" />
+            PDF
           </Button>
         </div>
       </div>

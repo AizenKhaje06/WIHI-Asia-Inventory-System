@@ -20,7 +20,9 @@ interface EditItemDialogProps {
 export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItemDialogProps) {
   const [loading, setLoading] = useState(false)
   const [storageRooms, setStorageRooms] = useState<StorageRoom[]>([])
+  const [categories, setCategories] = useState<Array<{id: string, name: string}>>([])
   const [loadingRooms, setLoadingRooms] = useState(true)
+  const [loadingCategories, setLoadingCategories] = useState(true)
   const [formData, setFormData] = useState({
     name: item.name,
     category: item.category,
@@ -46,6 +48,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
   useEffect(() => {
     if (open) {
       fetchStorageRooms()
+      fetchCategories()
     }
   }, [open])
 
@@ -61,6 +64,21 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
       console.error("Error fetching storage rooms:", error)
     } finally {
       setLoadingRooms(false)
+    }
+  }
+
+  async function fetchCategories() {
+    try {
+      setLoadingCategories(true)
+      const response = await fetch("/api/categories")
+      if (response.ok) {
+        const data = await response.json()
+        setCategories(data)
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error)
+    } finally {
+      setLoadingCategories(false)
     }
   }
 
@@ -114,19 +132,20 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
               </Label>
               <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })} required>
                 <SelectTrigger id="edit-category" className="w-full rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Select a category"} />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  <SelectItem value="Electronics & Gadgets">Electronics & Gadgets</SelectItem>
-                  <SelectItem value="Fashion & Apparel">Fashion & Apparel</SelectItem>
-                  <SelectItem value="Health, Beauty & Personal Care">Health, Beauty & Personal Care</SelectItem>
-                  <SelectItem value="Home & Living">Home & Living</SelectItem>
-                  <SelectItem value="Sports & Outdoors">Sports & Outdoors</SelectItem>
-                  <SelectItem value="Baby, Kids & Toys">Baby, Kids & Toys</SelectItem>
-                  <SelectItem value="Groceries & Pets">Groceries & Pets</SelectItem>
-                  <SelectItem value="Automotive & Industrial">Automotive & Industrial</SelectItem>
-                  <SelectItem value="Stationery & Books">Stationery & Books</SelectItem>
-                  <SelectItem value="Other / Miscellaneous">Other / Miscellaneous</SelectItem>
+                  {loadingCategories ? (
+                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                  ) : categories.length === 0 ? (
+                    <SelectItem value="none" disabled>No categories available</SelectItem>
+                  ) : (
+                    categories.map((category) => (
+                      <SelectItem key={category.id} value={category.name}>
+                        {category.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

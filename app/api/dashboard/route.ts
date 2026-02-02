@@ -214,9 +214,9 @@ export async function GET(request: Request) {
         value: (data as { quantity: number; value: number }).value
       }))
 
-    // Recent restocks (last 5)
+    // Recent restocks (last 5) - include all restock reasons except supplier returns
     const recentRestocks = restockHistory
-      .filter(r => r.reason === 'restock' || r.reason === 'initial-stock')
+      .filter(r => r.reason !== 'supplier-return') // Exclude supplier returns (they're shown separately)
       .sort((a, b) => parse(b.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime() - parse(a.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime())
       .slice(0, 5)
 
