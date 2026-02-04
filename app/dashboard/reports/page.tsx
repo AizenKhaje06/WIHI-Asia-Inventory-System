@@ -52,6 +52,9 @@ export default function ReportsPage() {
       const res = await fetch(`/api/reports?${params}`)
       const data = await res.json()
       setReport(data)
+      
+      // Open export modal after report is generated
+      setExportModalOpen(true)
     } catch (error) {
       console.error("[v0] Error fetching report:", error)
     } finally {
@@ -163,54 +166,47 @@ export default function ReportsPage() {
                 <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20" />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Button onClick={fetchReport} disabled={loading} className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300">
-                {loading ? "Loading..." : "Generate Report"}
-              </Button>
-              
-              <Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="gap-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition-all duration-300"
-                    disabled={!report || filteredTransactions.length === 0}
+            <Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  onClick={fetchReport} 
+                  disabled={loading} 
+                  className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 w-full"
+                >
+                  {loading ? "Loading..." : "Generate Report"}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold gradient-text">Export Report</DialogTitle>
+                  <DialogDescription className="text-slate-600 dark:text-slate-400">
+                    Choose your preferred export format
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-3 py-4">
+                  <Button
+                    onClick={exportToCSV}
+                    className="h-16 gap-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    <FileText className="h-4 w-4" />
-                    Export Report
+                    <FileSpreadsheet className="h-5 w-5" />
+                    <div className="text-left">
+                      <div className="font-semibold">Export as CSV</div>
+                      <div className="text-xs opacity-90">Excel-compatible spreadsheet</div>
+                    </div>
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold gradient-text">Export Report</DialogTitle>
-                    <DialogDescription className="text-slate-600 dark:text-slate-400">
-                      Choose your preferred export format
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-3 py-4">
-                    <Button
-                      onClick={exportToCSV}
-                      className="h-16 gap-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      <FileSpreadsheet className="h-5 w-5" />
-                      <div className="text-left">
-                        <div className="font-semibold">Export as CSV</div>
-                        <div className="text-xs opacity-90">Excel-compatible spreadsheet</div>
-                      </div>
-                    </Button>
-                    <Button
-                      onClick={exportToPDF}
-                      className="h-16 gap-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      <Download className="h-5 w-5" />
-                      <div className="text-left">
-                        <div className="font-semibold">Export as PDF</div>
-                        <div className="text-xs opacity-90">Professional report document</div>
-                      </div>
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
+                  <Button
+                    onClick={exportToPDF}
+                    className="h-16 gap-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    <Download className="h-5 w-5" />
+                    <div className="text-left">
+                      <div className="font-semibold">Export as PDF</div>
+                      <div className="text-xs opacity-90">Professional report document</div>
+                    </div>
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardContent>
       </Card>
