@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Filter, BarChart3, Package } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Search, Filter, BarChart3, Package, FileText, Download, FileSpreadsheet } from "lucide-react"
 import type { SalesReport } from "@/lib/types"
-
+import { toast } from "sonner"
 import { formatNumber } from "@/lib/utils"
 
 export default function ReportsPage() {
@@ -19,6 +20,7 @@ export default function ReportsPage() {
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [loading, setLoading] = useState(false)
+  const [exportModalOpen, setExportModalOpen] = useState(false)
 
   useEffect(() => {
     fetchReport()
@@ -54,6 +56,72 @@ export default function ReportsPage() {
       console.error("[v0] Error fetching report:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  function exportToCSV() {
+    if (!filteredTransactions || filteredTransactions.length === 0) {
+      toast.error("No data to export")
+      return
+    }
+
+    const headers = ["Date", "Time", "Item", "Quantity", "Revenue", "Cost", "Profit"]
+    const rows = filteredTransactions.map(t => [
+      new Date(t.timestamp).toLocaleDateString(),
+      new Date(t.timestamp).toLocaleTimeString(),
+      t.itemName,
+      t.quantity,
+      t.totalRevenue,
+      t.totalCost,
+      t.profit
+    ])
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n")
+
+    const blob = new Blob([csvContent], { type: "text/csv" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `sales-report-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    
+    toast.success("CSV exported successfully!")
+    setExportModalOpen(false)
+  }
+
+  async function exportToPDF() {
+    if (!filteredTransactions || filteredTransactions.length === 0) {
+      toast.error("No data to export")
+      return
+    }
+
+    try {
+      toast.info("Generating PDF...")
+      
+      // Dynamic import to reduce bundle size
+      const { exportSalesReportPDF } = await import("@/lib/pdf-export")
+      
+      await exportSalesReportPDF({
+        transactions: filteredTransactions,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+        totalRevenue: report?.totalRevenue || 0,
+        totalCost: report?.totalCost || 0,
+        totalProfit: report?.totalProfit || 0,
+        totalOrders: report?.totalOrders || 0
+      })
+      
+      toast.success("PDF exported successfully!")
+      setExportModalOpen(false)
+    } catch (error) {
+      console.error("PDF export error:", error)
+      toast.error("Failed to export PDF")
     }
   }
 
@@ -95,9 +163,54 @@ export default function ReportsPage() {
                 <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20" />
               </div>
             </div>
-            <Button onClick={fetchReport} disabled={loading} className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 w-full">
-              {loading ? "Loading..." : "Generate Report"}
-            </Button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Button onClick={fetchReport} disabled={loading} className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300">
+                {loading ? "Loading..." : "Generate Report"}
+              </Button>
+              
+              <Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="gap-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition-all duration-300"
+                    disabled={!report || filteredTransactions.length === 0}
+                  >
+                    <FileText className="h-4 w-4" />
+                    Export Report
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold gradient-text">Export Report</DialogTitle>
+                    <DialogDescription className="text-slate-600 dark:text-slate-400">
+                      Choose your preferred export format
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-3 py-4">
+                    <Button
+                      onClick={exportToCSV}
+                      className="h-16 gap-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      <FileSpreadsheet className="h-5 w-5" />
+                      <div className="text-left">
+                        <div className="font-semibold">Export as CSV</div>
+                        <div className="text-xs opacity-90">Excel-compatible spreadsheet</div>
+                      </div>
+                    </Button>
+                    <Button
+                      onClick={exportToPDF}
+                      className="h-16 gap-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      <Download className="h-5 w-5" />
+                      <div className="text-left">
+                        <div className="font-semibold">Export as PDF</div>
+                        <div className="text-xs opacity-90">Professional report document</div>
+                      </div>
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </CardContent>
       </Card>
