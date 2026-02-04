@@ -178,30 +178,32 @@ export default function ReportsPage() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold gradient-text">Export Report</DialogTitle>
-                  <DialogDescription className="text-slate-600 dark:text-slate-400">
+                  <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Export Report
+                  </DialogTitle>
+                  <DialogDescription className="text-slate-500 dark:text-slate-400 text-base">
                     Choose your preferred export format
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-3 py-4">
+                <div className="grid gap-4 py-6">
                   <Button
                     onClick={exportToCSV}
-                    className="h-16 gap-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="h-20 gap-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-300 rounded-full text-left justify-start px-8"
                   >
-                    <FileSpreadsheet className="h-5 w-5" />
-                    <div className="text-left">
-                      <div className="font-semibold">Export as CSV</div>
-                      <div className="text-xs opacity-90">Excel-compatible spreadsheet</div>
+                    <FileSpreadsheet className="h-6 w-6 flex-shrink-0" />
+                    <div className="flex-1">
+                      <div className="font-bold text-lg">Export as CSV</div>
+                      <div className="text-sm opacity-90 font-normal">Excel-compatible spreadsheet</div>
                     </div>
                   </Button>
                   <Button
                     onClick={exportToPDF}
-                    className="h-16 gap-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="h-20 gap-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all duration-300 rounded-full text-left justify-start px-8"
                   >
-                    <Download className="h-5 w-5" />
-                    <div className="text-left">
-                      <div className="font-semibold">Export as PDF</div>
-                      <div className="text-xs opacity-90">Professional report document</div>
+                    <Download className="h-6 w-6 flex-shrink-0" />
+                    <div className="flex-1">
+                      <div className="font-bold text-lg">Export as PDF</div>
+                      <div className="text-sm opacity-90 font-normal">Professional report document</div>
                     </div>
                   </Button>
                 </div>
