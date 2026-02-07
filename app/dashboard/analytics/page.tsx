@@ -117,7 +117,15 @@ export default function AnalyticsPage() {
 
   const monthYear = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
   const dailySales = report?.dailySales ?? []
-  const monthlySales = report?.monthlySales ?? []
+  const rawMonthlySales = report?.monthlySales ?? []
+  
+  // Ensure all 12 months are displayed (Jan-Dec) with 0 revenue if no data
+  const monthlySales = Array.from({ length: 12 }, (_, i) => {
+    const monthNum = (i + 1).toString().padStart(2, '0')
+    const monthKey = `2026-${monthNum}` // Current year
+    const existingData = rawMonthlySales.find(m => m.month === monthKey)
+    return existingData || { month: monthKey, revenue: 0 }
+  })
 
   // Calculate additional metrics
   const avgDailyRevenue = dailySales.length > 0 
@@ -325,17 +333,19 @@ export default function AnalyticsPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="flex items-center gap-2 flex-1">
-                <Button variant="outline" size="sm" onClick={prevMonth} className="h-9 flex-shrink-0">
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm font-semibold text-slate-900 dark:text-white text-center flex-1">
-                  {monthYear}
-                </span>
-                <Button variant="outline" size="sm" onClick={nextMonth} className="h-9 flex-shrink-0">
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
+              {view === 'daily' && (
+                <div className="flex items-center gap-2 flex-1">
+                  <Button variant="outline" size="sm" onClick={prevMonth} className="h-9 flex-shrink-0">
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white text-center flex-1">
+                    {monthYear}
+                  </span>
+                  <Button variant="outline" size="sm" onClick={nextMonth} className="h-9 flex-shrink-0">
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
               <Button
                 onClick={exportToCSV}
                 variant="outline"
@@ -430,43 +440,45 @@ export default function AnalyticsPage() {
                 Monthly Sales Revenue Trend
               </CardTitle>
             </CardHeader>
-            <CardContent className="h-[400px] p-6">
-              <ChartContainer config={chartConfig}>
-                {chartType === 'bar' ? (
-                  <BarChart data={monthlySales} margin={{ left: 12, right: 12, top: 12, bottom: 12 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                    <XAxis
-                      dataKey="month"
-                      tickLine={false}
-                      tickMargin={10}
-                      minTickGap={32}
-                      tickFormatter={(month) => new Date(month + '-01').toLocaleDateString('en-US', { month: 'short' })}
-                      className="text-xs"
-                    />
-                    <YAxis 
-                      tickLine={false}
-                      tickMargin={10}
-                      tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
-                      className="text-xs"
-                    />
-                    <ChartTooltipContent
-                      formatter={(value) => [formatCurrency(value as number), 'Revenue']}
-                    />
-                    <Bar 
-                      dataKey="revenue" 
-                      fill="url(#colorRevenue)" 
-                      radius={[8, 8, 0, 0]}
-                      maxBarSize={60}
-                    />
-                    <defs>
-                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
-                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                      </linearGradient>
-                    </defs>
-                  </BarChart>
+            <CardContent className="p-6">
+              <div className="w-full h-[350px]">
+                <ChartContainer config={chartConfig} className="h-full w-full">
+                  {chartType === 'bar' ? (
+                    <BarChart data={monthlySales} margin={{ left: 0, right: 30, top: 20, bottom: 40 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                      <XAxis
+                        dataKey="month"
+                        tickLine={false}
+                        tickMargin={10}
+                        minTickGap={32}
+                        tickFormatter={(month) => new Date(month + '-01').toLocaleDateString('en-US', { month: 'short' })}
+                        className="text-xs"
+                      />
+                      <YAxis 
+                        tickLine={false}
+                        tickMargin={10}
+                        tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                        className="text-xs"
+                        width={45}
+                      />
+                      <ChartTooltipContent
+                        formatter={(value) => [formatCurrency(value as number), 'Revenue']}
+                      />
+                      <Bar 
+                        dataKey="revenue" 
+                        fill="url(#colorRevenue)" 
+                        radius={[8, 8, 0, 0]}
+                        maxBarSize={60}
+                      />
+                      <defs>
+                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
+                          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        </linearGradient>
+                      </defs>
+                    </BarChart>
                 ) : chartType === 'line' ? (
-                  <LineChart data={monthlySales} margin={{ left: 12, right: 12, top: 12, bottom: 12 }}>
+                  <LineChart data={monthlySales} margin={{ left: 0, right: 30, top: 20, bottom: 40 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                     <XAxis
                       dataKey="month"
@@ -481,6 +493,7 @@ export default function AnalyticsPage() {
                       tickMargin={10}
                       tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
                       className="text-xs"
+                      width={45}
                     />
                     <ChartTooltipContent
                       formatter={(value) => [formatCurrency(value as number), 'Revenue']}
@@ -495,7 +508,7 @@ export default function AnalyticsPage() {
                     />
                   </LineChart>
                 ) : (
-                  <AreaChart data={monthlySales} margin={{ left: 12, right: 12, top: 12, bottom: 12 }}>
+                  <AreaChart data={monthlySales} margin={{ left: 0, right: 30, top: 20, bottom: 40 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                     <XAxis
                       dataKey="month"
@@ -510,6 +523,7 @@ export default function AnalyticsPage() {
                       tickMargin={10}
                       tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
                       className="text-xs"
+                      width={45}
                     />
                     <ChartTooltipContent
                       formatter={(value) => [formatCurrency(value as number), 'Revenue']}
@@ -530,6 +544,7 @@ export default function AnalyticsPage() {
                   </AreaChart>
                 )}
               </ChartContainer>
+              </div>
             </CardContent>
           </Card>
         ) : (

@@ -340,36 +340,13 @@ export default function SalesAnalyticsPage() {
       ) : (
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
           <CardHeader>
-            <CardTitle className="text-slate-900 dark:text-white">Monthly Sales Trends</CardTitle>
+            <CardTitle className="text-slate-900 dark:text-white">Monthly Sales Revenue Trend</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={[
-                { month: 'Jan', revenue: salesData.monthlySales?.find(d => d.month.endsWith('-01'))?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month.endsWith('-01'))?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month.endsWith('-01'))?.profit || 0 },
-                { month: 'Feb', revenue: salesData.monthlySales?.find(d => d.month.endsWith('-02'))?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month.endsWith('-02'))?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month.endsWith('-02'))?.profit || 0 },
-                { month: 'Mar', revenue: salesData.monthlySales?.find(d => d.month.endsWith('-03'))?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month.endsWith('-03'))?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month.endsWith('-03'))?.profit || 0 },
-                { month: 'Apr', revenue: salesData.monthlySales?.find(d => d.month.endsWith('-04'))?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month.endsWith('-04'))?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month.endsWith('-04'))?.profit || 0 },
-                { month: 'May', revenue: salesData.monthlySales?.find(d => d.month.endsWith('-05'))?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month.endsWith('-05'))?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month.endsWith('-05'))?.profit || 0 },
-                { month: 'Jun', revenue: salesData.monthlySales?.find(d => d.month.endsWith('-06'))?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month.endsWith('-06'))?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month.endsWith('-06'))?.profit || 0 },
-                { month: 'Jul', revenue: salesData.monthlySales?.find(d => d.month.endsWith('-07'))?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month.endsWith('-07'))?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month.endsWith('-07'))?.profit || 0 },
-                { month: 'Aug', revenue: salesData.monthlySales?.find(d => d.month.endsWith('-08'))?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month.endsWith('-08'))?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month.endsWith('-08'))?.profit || 0 },
-                { month: 'Sep', revenue: salesData.monthlySales?.find(d => d.month.endsWith('-09'))?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month.endsWith('-09'))?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month.endsWith('-09'))?.profit || 0 },
-                { month: 'Oct', revenue: salesData.monthlySales?.find(d => d.month.endsWith('-10'))?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month.endsWith('-10'))?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month.endsWith('-10'))?.profit || 0 },
-                { month: 'Nov', revenue: salesData.monthlySales?.find(d => d.month.endsWith('-11'))?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month.endsWith('-11'))?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month.endsWith('-11'))?.profit || 0 },
-                { month: 'Dec', revenue: salesData.monthlySales?.find(d => d.month.endsWith('-12'))?.revenue || 0, itemsSold: salesData.monthlySales?.find(d => d.month.endsWith('-12'))?.itemsSold || 0, profit: salesData.monthlySales?.find(d => d.month.endsWith('-12'))?.profit || 0 }
-              ]}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis tickFormatter={formatCurrency} />
-                <Tooltip
-                  formatter={(value: number) => [formatCurrency(value), '']}
-                  labelFormatter={(label) => `Month: ${label}`}
-                />
-                <Bar dataKey="revenue" fill="hsl(var(--chart-1))" name="Revenue" />
-                <Bar dataKey="itemsSold" fill="hsl(var(--chart-2))" name="Items Sold" />
-                <Bar dataKey="profit" fill="hsl(var(--chart-3))" name="Profit" />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent className="pt-6">
+            <div className="text-center py-20">
+              <BarChart3 className="h-16 w-16 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+              <p className="text-slate-600 dark:text-slate-400">Chart will be recreated here</p>
+            </div>
           </CardContent>
         </Card>
       )}

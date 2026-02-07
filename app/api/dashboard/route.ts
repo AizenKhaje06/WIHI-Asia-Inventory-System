@@ -2,8 +2,45 @@ import { NextResponse } from "next/server"
 // Using Supabase as primary database
 import { getInventoryItems, getTransactions, getRestocks } from "@/lib/supabase-db"
 import { getCachedData } from "@/lib/cache"
-import { parse } from "date-fns"
 import type { DashboardStats, Transaction, InventoryItem } from "@/lib/types"
+
+// Helper function to parse timestamp - handle both ISO and Google Sheets format
+function parseTimestamp(timestamp: string): Date {
+  // Try ISO format first (from Supabase): "2026-02-02T18:32:00"
+  if (timestamp.includes('T')) {
+    return new Date(timestamp)
+  }
+  
+  // Fall back to Google Sheets format: "YYYY-MM-DD / H:MM AM/PM"
+  const parts = timestamp.split(' / ')
+  if (parts.length !== 2) {
+    // If neither format matches, try direct Date parsing
+    return new Date(timestamp)
+  }
+
+  const datePart = parts[0] // "2026-02-06"
+  const timePart = parts[1] // "4:42 PM"
+
+  // Parse time part
+  const timeMatch = timePart.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (!timeMatch) {
+    return new Date(timestamp)
+  }
+
+  let hours = parseInt(timeMatch[1])
+  const minutes = parseInt(timeMatch[2])
+  const ampm = timeMatch[3].toUpperCase()
+
+  if (ampm === 'PM' && hours !== 12) {
+    hours += 12
+  } else if (ampm === 'AM' && hours === 12) {
+    hours = 0
+  }
+
+  // Create date object
+  const [year, month, day] = datePart.split('-').map(Number)
+  return new Date(year, month - 1, day, hours, minutes)
+}
 
 export async function GET(request: Request) {
   try {
@@ -37,16 +74,16 @@ export async function GET(request: Request) {
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const recentSales = transactions.filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date()) >= today).length
+    const recentSales = transactions.filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && parseTimestamp(t.timestamp) >= today).length
 
     // Items sold today (quantity)
     const itemsSoldToday = transactions
-      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date()) >= today)
+      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && parseTimestamp(t.timestamp) >= today)
       .reduce((sum, t) => sum + t.quantity, 0)
     
     // Revenue today
     const revenueToday = transactions
-      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date()) >= today)
+      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && parseTimestamp(t.timestamp) >= today)
       .reduce((sum, t) => sum + t.totalRevenue, 0)
 
     // Sales over time based on period
@@ -59,53 +96,67 @@ export async function GET(request: Request) {
         hour.setHours(hour.getHours() - i, 0, 0, 0)
         const hourStr = hour.toISOString().split('T')[0] + ' ' + hour.getHours().toString().padStart(2, '0') + ':00'
         const sales = transactions.filter((t: Transaction) => {
-          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          const tDate = parseTimestamp(t.timestamp)
           return t.type === "sale" && t.transactionType === "sale" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
         }).reduce((sum, t) => sum + t.totalRevenue, 0)
         const purchases = transactions.filter((t: Transaction) => {
-          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          const tDate = parseTimestamp(t.timestamp)
           return t.type === "restock" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
         }).reduce((sum, t) => sum + t.totalCost, 0)
         return { date: hourStr, purchases, sales }
       }).reverse()
     } else if (period === '1W') {
-      // Last 7 days, daily data points
+      // Last 7 days, daily data points (including today)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
       salesOverTime = Array.from({ length: 7 }, (_, i) => {
-        const day = new Date()
-        day.setDate(day.getDate() - i)
-        day.setHours(0, 0, 0, 0)
-        const dayStr = day.toISOString().split('T')[0] + ' 00:00'
+        const day = new Date(today)
+        day.setDate(today.getDate() - (6 - i)) // Start from 6 days ago to today
         const nextDay = new Date(day)
-        nextDay.setDate(nextDay.getDate() + 1)
+        nextDay.setDate(day.getDate() + 1)
+        
+        const dayStr = day.toISOString().split('T')[0] + ' 00:00'
+        
         const sales = transactions.filter((t: Transaction) => {
-          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          const tDate = parseTimestamp(t.timestamp)
           return t.type === "sale" && t.transactionType === "sale" && tDate >= day && tDate < nextDay
         }).reduce((sum, t) => sum + t.totalRevenue, 0)
+        
         const purchases = transactions.filter((t: Transaction) => {
-          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          const tDate = parseTimestamp(t.timestamp)
           return t.type === "restock" && tDate >= day && tDate < nextDay
         }).reduce((sum, t) => sum + t.totalCost, 0)
+        
         return { date: dayStr, purchases, sales }
-      }).reverse()
+      })
+      
+      console.log('[Dashboard API] Final salesOverTime:', salesOverTime)
     } else if (period === '1M') {
-      // Last 30 days, daily data points
-      salesOverTime = Array.from({ length: 30 }, (_, i) => {
-        const day = new Date()
-        day.setDate(day.getDate() - i)
+      // Current month: 30 days, daily data points
+      const today = new Date()
+      const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
+      
+      salesOverTime = Array.from({ length: daysInMonth }, (_, i) => {
+        const day = new Date(today.getFullYear(), today.getMonth(), i + 1)
         day.setHours(0, 0, 0, 0)
-        const dayStr = day.toISOString().split('T')[0] + ' 00:00'
         const nextDay = new Date(day)
         nextDay.setDate(nextDay.getDate() + 1)
+        
+        const dayStr = `${today.toLocaleDateString('en-US', { month: 'short' })} ${i + 1}`
+        
         const sales = transactions.filter((t: Transaction) => {
-          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          const tDate = parseTimestamp(t.timestamp)
           return t.type === "sale" && t.transactionType === "sale" && tDate >= day && tDate < nextDay
         }).reduce((sum, t) => sum + t.totalRevenue, 0)
+        
         const purchases = transactions.filter((t: Transaction) => {
-          const tDate = parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date())
+          const tDate = parseTimestamp(t.timestamp)
           return t.type === "restock" && tDate >= day && tDate < nextDay
         }).reduce((sum, t) => sum + t.totalCost, 0)
+        
         return { date: dayStr, purchases, sales }
-      }).reverse()
+      })
     }
 
     // Top products (top 4 by sales count) with revenue
@@ -131,7 +182,7 @@ export async function GET(request: Request) {
     // Recent transactions (last 5 sales)
     const recentTransactions = transactions
       .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale")
-      .sort((a: Transaction, b: Transaction) => parse(b.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime() - parse(a.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime())
+      .sort((a: Transaction, b: Transaction) => parseTimestamp(b.timestamp).getTime() - parseTimestamp(a.timestamp).getTime())
       .slice(0, 5)
 
     // Top categories (top 3 by sales)
@@ -217,7 +268,7 @@ export async function GET(request: Request) {
     // Recent restocks (last 5) - include all restock reasons except supplier returns
     const recentRestocks = restockHistory
       .filter(r => r.reason !== 'supplier-return') // Exclude supplier returns (they're shown separately)
-      .sort((a, b) => parse(b.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime() - parse(a.timestamp, "yyyy-MM-dd / hh:mm a", new Date()).getTime())
+      .sort((a, b) => parseTimestamp(b.timestamp).getTime() - parseTimestamp(a.timestamp).getTime())
       .slice(0, 5)
 
     // Average order value

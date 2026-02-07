@@ -847,7 +847,12 @@ export default function InsightsPage() {
                         <tr key={item.itemId} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
                           <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
                           <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{item.turnoverRatio}</td>
-                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">{item.daysToSell}</td>
+                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">
+                            {item.daysToSell !== null && item.daysToSell !== undefined 
+                              ? `${item.daysToSell} days` 
+                              : <span className="text-slate-500 dark:text-slate-500">No Sales</span>
+                            }
+                          </td>
                           <td className="py-4 text-center">
                             <Badge className={`${getStatusColor(item.status)} border`}>
                               {item.status.replace('-', ' ').toUpperCase()}
@@ -1189,8 +1194,13 @@ export default function InsightsPage() {
                           <td className="py-4 text-sm text-slate-600 dark:text-slate-400">{item.sku}</td>
                           <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{item.quantity}</td>
                           <td className="py-4 text-right font-bold text-green-600 dark:text-green-400">{item.turnoverRatio.toFixed(2)}</td>
-                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">{item.daysToSell} days</td>
-                          <td className="py-4 text-right text-slate-800 dark:text-slate-200">{formatCurrency(item.price)}</td>
+                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">
+                            {item.daysToSell !== null && item.daysToSell !== undefined 
+                              ? `${item.daysToSell} days` 
+                              : <span className="text-slate-500 dark:text-slate-500">No Sales</span>
+                            }
+                          </td>
+                          <td className="py-4 text-right text-slate-800 dark:text-slate-200">{formatCurrency(item.sellingPrice || item.costPrice || 0)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1298,8 +1308,13 @@ export default function InsightsPage() {
                           <td className="py-4 text-sm text-slate-600 dark:text-slate-400">{item.sku}</td>
                           <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{item.quantity}</td>
                           <td className="py-4 text-right font-bold text-amber-600 dark:text-amber-400">{item.turnoverRatio.toFixed(2)}</td>
-                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">{item.daysToSell} days</td>
-                          <td className="py-4 text-right text-slate-800 dark:text-slate-200">{formatCurrency(item.price * item.quantity)}</td>
+                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">
+                            {item.daysToSell !== null && item.daysToSell !== undefined 
+                              ? `${item.daysToSell} days` 
+                              : <span className="text-slate-500 dark:text-slate-500">No Sales</span>
+                            }
+                          </td>
+                          <td className="py-4 text-right text-slate-800 dark:text-slate-200">{formatCurrency((item.sellingPrice || item.costPrice || 0) * item.quantity)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1413,8 +1428,8 @@ export default function InsightsPage() {
                           <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
                           <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Quantity</th>
                           <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
-                          <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
-                          <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Action</th>
+                          <th className="pb-3 pr-6 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
+                          <th className="pb-3 pl-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1424,10 +1439,13 @@ export default function InsightsPage() {
                             <td className="py-4 text-sm text-slate-600 dark:text-slate-400">{item.category}</td>
                             <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{item.quantity}</td>
                             <td className="py-4 text-right font-bold text-red-600">
-                              {item.daysToSell ? `${item.daysToSell} days` : 'N/A'}
+                              {item.daysToSell !== null && item.daysToSell !== undefined 
+                                ? `${item.daysToSell} days` 
+                                : <span className="text-red-700 dark:text-red-400">No Sales</span>
+                              }
                             </td>
-                            <td className="py-4 text-right font-bold text-red-600">{formatCurrency(item.quantity * item.costPrice)}</td>
-                            <td className="py-4">
+                            <td className="py-4 pr-6 text-right font-bold text-red-600">{formatCurrency(item.quantity * item.costPrice)}</td>
+                            <td className="py-4 pl-6">
                               <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 border">
                                 Slow Moving (180+ days)
                               </Badge>

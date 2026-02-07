@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
     const allItems = await getInventoryItems()
     const transactions = []
 
+    // Process items sequentially to avoid race conditions
     for (const saleItem of items) {
       const inventoryItem = allItems.find((item) => item.id === saleItem.itemId)
 
@@ -37,33 +38,33 @@ export async function POST(request: NextRequest) {
       const totalRevenue = transactionType === 'sale' ? inventoryItem.sellingPrice * saleItem.quantity : 0
       const profit = totalRevenue - totalCost
 
-      const transaction = await addTransaction({
-        itemId: inventoryItem.id,
-        itemName: inventoryItem.name,
-        quantity: saleItem.quantity,
-        costPrice: inventoryItem.costPrice,
-        sellingPrice: inventoryItem.sellingPrice,
-        totalCost,
-        totalRevenue,
-        profit,
-        type: "sale",
-        transactionType,
-        department,
-        staffName,
-        notes,
-      })
-
-      await updateInventoryItem(inventoryItem.id, {
-        quantity: inventoryItem.quantity - saleItem.quantity,
-      })
-
-      const operationType = transactionType === 'sale' ? 'dispatch' : transactionType
-      await addLog({
-        operation: operationType,
-        itemId: inventoryItem.id,
-        itemName: inventoryItem.name,
-        details: `${transactionType === 'sale' ? 'Dispatched' : transactionType === 'demo' ? 'Demo/Display' : transactionType === 'internal' ? 'Internal Use' : 'Transferred'} "${inventoryItem.name}" - Qty: ${saleItem.quantity}, ${transactionType === 'sale' ? `Total: ₱${totalRevenue.toFixed(2)}, ` : ''}Department: ${department}, Staff: ${staffName || 'N/A'}`
-      })
+      // Execute all 3 operations in parallel for this item
+      const [transaction] = await Promise.all([
+        addTransaction({
+          itemId: inventoryItem.id,
+          itemName: inventoryItem.name,
+          quantity: saleItem.quantity,
+          costPrice: inventoryItem.costPrice,
+          sellingPrice: inventoryItem.sellingPrice,
+          totalCost,
+          totalRevenue,
+          profit,
+          type: "sale",
+          transactionType,
+          department,
+          staffName,
+          notes,
+        }),
+        updateInventoryItem(inventoryItem.id, {
+          quantity: inventoryItem.quantity - saleItem.quantity,
+        }),
+        addLog({
+          operation: transactionType === 'sale' ? 'dispatch' : transactionType,
+          itemId: inventoryItem.id,
+          itemName: inventoryItem.name,
+          details: `${transactionType === 'sale' ? 'Dispatched' : transactionType === 'demo' ? 'Demo/Display' : transactionType === 'internal' ? 'Internal Use' : 'Transferred'} "${inventoryItem.name}" - Qty: ${saleItem.quantity}, ${transactionType === 'sale' ? `Total: ₱${totalRevenue.toFixed(2)}, ` : ''}Department: ${department}, Staff: ${staffName || 'N/A'}`
+        })
+      ])
 
       transactions.push(transaction)
     }

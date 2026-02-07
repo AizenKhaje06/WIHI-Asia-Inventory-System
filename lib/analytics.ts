@@ -161,19 +161,42 @@ export function calculateInventoryTurnover(
     const avgInventoryValue = item.totalCOGS || (item.quantity * item.costPrice)
 
     const turnoverRatio = avgInventoryValue > 0 ? totalCOGS / avgInventoryValue : 0
-    const daysToSell = turnoverRatio > 0 ? periodDays / turnoverRatio : Infinity
+    let daysToSell: number | null = null
+    
+    if (turnoverRatio > 0) {
+      // Has sales in period - calculate based on turnover
+      daysToSell = Math.round(periodDays / turnoverRatio)
+    } else {
+      // No sales in period - calculate days since last sale
+      const allItemSales = transactions.filter(t => 
+        t.itemId === item.id && 
+        t.type === 'sale' &&
+        t.transactionType === 'sale'
+      )
+      
+      if (allItemSales.length > 0) {
+        // Has sales history - calculate days since last sale
+        const lastSaleDate = allItemSales
+          .map(t => parse(t.timestamp, "yyyy-MM-dd / hh:mm a", new Date()))
+          .sort((a, b) => b.getTime() - a.getTime())[0]
+        
+        const daysSinceLastSale = Math.floor((now.getTime() - lastSaleDate.getTime()) / (24 * 60 * 60 * 1000))
+        daysToSell = daysSinceLastSale
+      }
+      // else: No sales history at all - daysToSell remains null
+    }
 
     let status: 'fast-moving' | 'normal' | 'slow-moving' | 'dead-stock'
-    if (daysToSell < 30) status = 'fast-moving'
+    if (daysToSell === null || daysToSell >= 180) status = 'dead-stock'
+    else if (daysToSell < 30) status = 'fast-moving'
     else if (daysToSell < 90) status = 'normal'
-    else if (daysToSell < 180) status = 'slow-moving'
-    else status = 'dead-stock'
+    else status = 'slow-moving'
 
     return {
       itemId: item.id,
       itemName: item.name,
       turnoverRatio: Math.round(turnoverRatio * 100) / 100,
-      daysToSell: Math.round(daysToSell),
+      daysToSell: daysToSell,
       status
     }
   })

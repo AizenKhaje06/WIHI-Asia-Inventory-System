@@ -134,12 +134,31 @@ export default function DashboardPage() {
   const formattedSalesData = stats?.salesOverTime?.map(item => {
     let displayDate = item.date
     if (timePeriod === "ID") {
-      displayDate = item.date.split(' ')[1]
-    } else if (timePeriod === "1W" || timePeriod === "1M") {
-      displayDate = new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      // Today: show hour only (e.g., "14:00")
+      displayDate = item.date.split(' ')[1] || item.date
+    } else if (timePeriod === "1W") {
+      // Week: format date string
+      try {
+        const datePart = item.date.split(' ')[0]
+        if (datePart && datePart.includes('-')) {
+          const dateObj = new Date(datePart)
+          if (!isNaN(dateObj.getTime())) {
+            displayDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          }
+        }
+      } catch (e) {
+        console.error('Date parsing error:', e, item.date)
+        displayDate = item.date // Fallback to original
+      }
+    } else if (timePeriod === "1M") {
+      // Month: date is already formatted as "Feb 1", "Feb 2", etc. from API
+      displayDate = item.date
     }
     return { ...item, date: displayDate }
   }) || []
+
+  console.log('[Dashboard] Formatted sales data:', formattedSalesData)
+  console.log('[Dashboard] Time period:', timePeriod)
 
   const stocksCountData = stats?.stocksCountByCategory?.map((cat) => ({
     name: cat.name,
@@ -555,25 +574,72 @@ export default function DashboardPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={350} className="min-h-[250px]">
-            <AreaChart data={formattedSalesData}>
+          <ResponsiveContainer width="100%" height={timePeriod === '1M' ? 400 : 350} className="min-h-[250px]">
+            <AreaChart data={formattedSalesData} margin={{ top: 10, bottom: 30, left: 0, right: 20 }}>
               <defs>
                 <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05}/>
                 </linearGradient>
                 <linearGradient id="purchaseGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
-              <XAxis dataKey="date" className="fill-gray-600 dark:fill-gray-400" fontSize={12} />
-              <YAxis className="fill-gray-600 dark:fill-gray-400" fontSize={12} />
-              <Tooltip content={<ChartTooltip formatter={(value, name) => [`₱${formatNumber(Number(value))}`, name]} />} />
-              <Legend />
-              <Area type="monotone" dataKey="sales" stroke="#3B82F6" strokeWidth={2} fill="url(#salesGradient)" name="Sales Revenue" />
-              <Area type="monotone" dataKey="purchases" stroke="#10B981" strokeWidth={2} fill="url(#purchaseGradient)" name="Purchase Cost" />
+              <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.5} />
+              <XAxis 
+                dataKey="date" 
+                className="fill-gray-600 dark:fill-gray-400" 
+                fontSize={11}
+                tickLine={false}
+                axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                interval={timePeriod === '1M' ? 5 : 0}
+                angle={0}
+                textAnchor="middle"
+                height={30}
+              />
+              <YAxis 
+                className="fill-gray-600 dark:fill-gray-400" 
+                fontSize={12}
+                tickLine={false}
+                axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                tickFormatter={(value) => `₱${formatNumber(value)}`}
+                width={70}
+              />
+              <Tooltip 
+                content={<ChartTooltip 
+                  formatter={(value, name) => [`₱${formatNumber(Number(value))}`, name === 'sales' ? 'Sales Revenue' : 'Purchase Cost']} 
+                />} 
+                cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '5 5' }}
+              />
+              <Legend 
+                wrapperStyle={{ paddingTop: '20px' }}
+                iconType="circle"
+              />
+              <Area 
+                type="monotone" 
+                dataKey="sales" 
+                stroke="#3B82F6" 
+                strokeWidth={timePeriod === '1M' ? 2 : 3} 
+                fill="url(#salesGradient)" 
+                name="Sales Revenue"
+                dot={timePeriod === '1M' ? false : { fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, strokeWidth: 2 }}
+                animationDuration={1000}
+                animationEasing="ease-in-out"
+              />
+              <Area 
+                type="monotone" 
+                dataKey="purchases" 
+                stroke="#10B981" 
+                strokeWidth={timePeriod === '1M' ? 2 : 3} 
+                fill="url(#purchaseGradient)" 
+                name="Purchase Cost"
+                dot={timePeriod === '1M' ? false : { fill: '#10B981', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, strokeWidth: 2 }}
+                animationDuration={1000}
+                animationEasing="ease-in-out"
+              />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>
@@ -595,7 +661,7 @@ export default function DashboardPage() {
                 <BarChart 
                   data={stats.topProducts} 
                   layout="vertical"
-                  margin={{ left: 80, right: 20, top: 10, bottom: 10 }}
+                  margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
                 >
                   <defs>
                     <linearGradient id="topProductsGradient" x1="0" y1="0" x2="1" y2="0">
@@ -607,7 +673,7 @@ export default function DashboardPage() {
                   <XAxis 
                     type="number"
                     className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={12}
+                    fontSize={11}
                     tickLine={false}
                     axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
                   />
@@ -615,10 +681,10 @@ export default function DashboardPage() {
                     type="category"
                     dataKey="name" 
                     className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={12}
+                    fontSize={11}
                     tickLine={false}
                     axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
-                    width={80}
+                    width={100}
                   />
                   <Tooltip 
                     content={<ChartTooltip formatter={(value, name) => {
@@ -730,7 +796,7 @@ export default function DashboardPage() {
                 <BarChart 
                   data={stats.topCategories} 
                   layout="vertical"
-                  margin={{ left: 80, right: 20, top: 10, bottom: 10 }}
+                  margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
                 >
                   <defs>
                     <linearGradient id="categoryGradient2" x1="0" y1="0" x2="1" y2="0">
@@ -742,7 +808,7 @@ export default function DashboardPage() {
                   <XAxis 
                     type="number"
                     className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={12}
+                    fontSize={11}
                     tickLine={false}
                     axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
                   />
@@ -750,10 +816,10 @@ export default function DashboardPage() {
                     type="category"
                     dataKey="name" 
                     className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={12}
+                    fontSize={11}
                     tickLine={false}
                     axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
-                    width={80}
+                    width={100}
                   />
                   <Tooltip 
                     content={<ChartTooltip formatter={(value) => [value.toString(), 'Units Sold']} />}
@@ -790,7 +856,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={stocksCountData} margin={{ bottom: 60 }}>
+              <BarChart data={stocksCountData} margin={{ top: 10, bottom: 60, left: 0, right: 10 }}>
                 <defs>
                   <linearGradient id="categoryGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#10B981" stopOpacity={0.9}/>
@@ -801,7 +867,7 @@ export default function DashboardPage() {
                 <XAxis 
                   dataKey="name" 
                   className="fill-gray-600 dark:fill-gray-400" 
-                  fontSize={11}
+                  fontSize={10}
                   tickLine={false}
                   axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
                   angle={-45}
@@ -811,9 +877,10 @@ export default function DashboardPage() {
                 />
                 <YAxis 
                   className="fill-gray-600 dark:fill-gray-400" 
-                  fontSize={12}
+                  fontSize={11}
                   tickLine={false}
                   axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                  width={50}
                 />
                 <Tooltip 
                   content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />}
@@ -840,7 +907,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={stocksCountByStorageRoomData} margin={{ bottom: 20 }}>
+              <BarChart data={stocksCountByStorageRoomData} margin={{ top: 10, bottom: 20, left: 0, right: 10 }}>
                 <defs>
                   <linearGradient id="storageGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.9}/>
@@ -851,16 +918,17 @@ export default function DashboardPage() {
                 <XAxis 
                   dataKey="name" 
                   className="fill-gray-600 dark:fill-gray-400" 
-                  fontSize={12}
+                  fontSize={11}
                   tickLine={false}
                   axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
                   interval={0}
                 />
                 <YAxis 
                   className="fill-gray-600 dark:fill-gray-400" 
-                  fontSize={12}
+                  fontSize={11}
                   tickLine={false}
                   axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                  width={50}
                 />
                 <Tooltip 
                   content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />}
