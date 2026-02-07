@@ -226,8 +226,20 @@ export async function GET(request: Request) {
     // Out of stock count
     const outOfStockCount = items.filter((item: InventoryItem) => item.quantity === 0).length
 
-    // Return rate (will be 0 for now, can be calculated from restock history)
-    const returnRate = 0
+    // Return rate - calculate from restock history (damaged-return and supplier-return)
+    // Use overall return rate: total returns / total sales
+    const returns = restockHistory.filter(r => r.reason === 'damaged-return' || r.reason === 'supplier-return')
+    const totalReturns = returns.reduce((sum, r) => sum + r.quantity, 0)
+    const totalSales = transactions
+      .filter((t: Transaction) => t.type === 'sale' && t.transactionType === 'sale')
+      .reduce((sum, t) => sum + t.quantity, 0)
+    const returnRate = totalSales > 0 ? (totalReturns / totalSales) * 100 : 0
+    
+    // Calculate breakdown by reason
+    const damagedReturns = returns.filter(r => r.reason === 'damaged-return').reduce((sum, r) => sum + r.quantity, 0)
+    const supplierReturnsCount = returns.filter(r => r.reason === 'supplier-return').reduce((sum, r) => sum + r.quantity, 0)
+    const damagedReturnRate = totalSales > 0 ? (damagedReturns / totalSales) * 100 : 0
+    const supplierReturnRate = totalSales > 0 ? (supplierReturnsCount / totalSales) * 100 : 0
 
     // Inventory health score (0-100)
     const stockHealthPercent = totalItems > 0 ? ((totalItems - outOfStockCount) / totalItems) * 100 : 100
@@ -305,9 +317,12 @@ export async function GET(request: Request) {
       stockPercentageByCategory,
       stocksCountByCategory: stocksCountByCategorySorted,
       stocksCountByStorageRoom: stocksCountByStorageRoomSorted,
-      returnRate: 0,
-      totalReturns: 0,
-      returnValue: 0,
+      totalSales, // Overall quantity sold (all-time)
+      returnRate: Math.round(returnRate * 100) / 100,
+      damagedReturnRate: Math.round(damagedReturnRate * 100) / 100,
+      supplierReturnRate: Math.round(supplierReturnRate * 100) / 100,
+      totalReturns,
+      returnValue: returns.reduce((sum, r) => sum + r.totalCost, 0),
       itemsSoldToday,
       revenueToday,
       supplierReturns: topSupplierReturns,

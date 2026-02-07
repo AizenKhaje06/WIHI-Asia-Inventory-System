@@ -284,8 +284,11 @@ export function calculateReturnAnalytics(
   totalReturns: number
   totalReturnValue: number
   returnRate: number
-  returnsByReason: { reason: string; count: number; value: number }[]
-  returnsByItem: { itemId: string; itemName: string; quantity: number; value: number; returnRate: number }[]
+  damagedReturnRate: number
+  supplierReturnRate: number
+  hasReturnsWithoutSales: boolean
+  returnsByReason: { reason: string; count: number; value: number; percentage: number }[]
+  returnsByItem: { itemId: string; itemName: string; quantity: number; value: number; returnRate: number; itemSales: number; hasReturnsWithoutSales: boolean }[]
 } {
   // Filter returns only (damaged-return and supplier-return)
   const returns = restocks.filter(r => 
@@ -302,6 +305,13 @@ export function calculateReturnAnalytics(
 
   const returnRate = totalSales > 0 ? (totalReturns / totalSales) * 100 : 0
 
+  // Calculate return rate breakdown by reason
+  const damagedReturns = returns.filter(r => r.reason === 'damaged-return').reduce((sum, r) => sum + r.quantity, 0)
+  const supplierReturns = returns.filter(r => r.reason === 'supplier-return').reduce((sum, r) => sum + r.quantity, 0)
+  
+  const damagedReturnRate = totalSales > 0 ? (damagedReturns / totalSales) * 100 : 0
+  const supplierReturnRate = totalSales > 0 ? (supplierReturns / totalSales) * 100 : 0
+
   // Group by reason
   const reasonMap = new Map<string, { count: number; value: number }>()
   returns.forEach(r => {
@@ -312,11 +322,15 @@ export function calculateReturnAnalytics(
     })
   })
 
-  const returnsByReason = Array.from(reasonMap.entries()).map(([reason, data]) => ({
-    reason: reason === 'damaged-return' ? 'Damaged Item Return' : 'Supplier Return',
-    count: data.count,
-    value: data.value
-  }))
+  const returnsByReason = Array.from(reasonMap.entries()).map(([reason, data]) => {
+    const percentage = totalReturns > 0 ? (data.count / totalReturns) * 100 : 0
+    return {
+      reason: reason === 'damaged-return' ? 'Damaged Stock' : 'Returns to Supplier',
+      count: data.count,
+      value: data.value,
+      percentage: Math.round(percentage * 100) / 100
+    }
+  })
 
   // Group by item
   const itemMap = new Map<string, { name: string; quantity: number; value: number }>()
@@ -342,14 +356,26 @@ export function calculateReturnAnalytics(
       itemName: data.name,
       quantity: data.quantity,
       value: data.value,
-      returnRate: Math.round(itemReturnRate * 100) / 100
+      returnRate: Math.round(itemReturnRate * 100) / 100,
+      itemSales, // Track sales per item
+      hasReturnsWithoutSales: data.quantity > 0 && itemSales === 0 // Flag items with returns but no sales
     }
   }).sort((a, b) => b.quantity - a.quantity)
+
+  // Calculate overall return rate (total returns / total sales)
+  // This shows the true ratio even if some items have returns without sales
+  const overallReturnRate = totalSales > 0 ? (totalReturns / totalSales) * 100 : 0
+  
+  // Check if there are items with returns but no sales (data quality issue)
+  const hasReturnsWithoutSales = returnsByItem.some(item => item.hasReturnsWithoutSales)
 
   return {
     totalReturns,
     totalReturnValue,
-    returnRate: Math.round(returnRate * 100) / 100,
+    returnRate: Math.round(overallReturnRate * 100) / 100, // Overall return rate
+    damagedReturnRate: Math.round(damagedReturnRate * 100) / 100, // Damaged stock return rate
+    supplierReturnRate: Math.round(supplierReturnRate * 100) / 100, // Supplier return rate
+    hasReturnsWithoutSales, // Flag for UI warning
     returnsByReason,
     returnsByItem
   }

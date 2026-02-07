@@ -500,15 +500,15 @@ export default function InventoryPage() {
 
               <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
                 <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Room" />
+                  <SelectValue placeholder="Storage" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Rooms</SelectItem>
-                  <SelectItem value="A">Room A</SelectItem>
-                  <SelectItem value="B">Room B</SelectItem>
-                  <SelectItem value="C">Room C</SelectItem>
-                  <SelectItem value="D">Room D</SelectItem>
-                  <SelectItem value="E">Room E</SelectItem>
+                  <SelectItem value="all">All Storage</SelectItem>
+                  {warehouses.map((warehouse) => (
+                    <SelectItem key={warehouse.id} value={warehouse.name}>
+                      {warehouse.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -624,8 +624,8 @@ export default function InventoryPage() {
                       <th className="pb-3 pr-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[280px]">Product</th>
                       <th className="pb-3 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[180px]">Category</th>
                       <th className="pb-3 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[140px]">Stock Status</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Stock</th>
-                      <th className="pb-3 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[80px]">Room</th>
+                      <th className="pb-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[120px]">Stock</th>
+                      <th className="pb-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[140px]">Storage Room</th>
                       <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Cost</th>
                       <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Price</th>
                       <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Margin</th>
@@ -687,7 +687,7 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Stock with Progress */}
-                          <td className="py-4 px-3">
+                          <td className="py-4 px-4">
                             <div className="flex flex-col items-end gap-1.5">
                               <span className="text-sm font-bold text-slate-900 dark:text-white">
                                 {formatNumber(item.quantity)}
@@ -706,7 +706,7 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Storage Room */}
-                          <td className="py-4 px-3">
+                          <td className="py-4 px-4">
                             <div className="flex justify-center">
                               <Badge variant="outline" className="font-mono whitespace-nowrap">
                                 <Warehouse className="h-3 w-3 mr-1" />

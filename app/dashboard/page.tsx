@@ -244,27 +244,22 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Return Rate - NEW */}
+        {/* Total Sold - REPLACED Return Rate */}
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
-                <RotateCcw className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
             <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              <AnimatedNumber value={stats?.returnRate || 0} decimals={1} duration={1500} />%
+              <AnimatedNumber value={stats?.totalSales || 0} duration={1500} />
             </div>
-            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Return Rate</div>
-            {stats?.totalReturns !== undefined && (
+            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Total Sold</div>
+            {stats?.totalSales !== undefined && (
               <div className="flex items-center gap-1">
-                <span className={cn(
-                  "text-xs font-medium",
-                  (stats.returnRate || 0) < 5 ? "text-green-600 dark:text-green-400" :
-                  (stats.returnRate || 0) < 10 ? "text-amber-600 dark:text-amber-400" :
-                  "text-red-600 dark:text-red-400"
-                )}>
-                  {stats.totalReturns} items returned
+                <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                  All-time quantity sold
                 </span>
               </div>
             )}
@@ -390,16 +385,26 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-md bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
+        <Card className="border-0 shadow-md bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-                  <AnimatedNumber value={stats?.totalCategories || 0} duration={1000} />
+              <div className="flex-1">
+                <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">
+                  <AnimatedNumber value={stats?.returnRate || 0} decimals={1} duration={1000} />%
                 </div>
-                <div className="text-sm font-medium text-green-700 dark:text-green-300 mt-1">Categories</div>
+                <div className="text-sm font-medium text-orange-700 dark:text-orange-300 mb-2">Return Rate</div>
+                {stats?.damagedReturnRate !== undefined && stats?.supplierReturnRate !== undefined && (
+                  <div className="space-y-1">
+                    <div className="text-xs text-orange-600 dark:text-orange-400">
+                      • Damaged: {stats.damagedReturnRate.toFixed(1)}%
+                    </div>
+                    <div className="text-xs text-orange-600 dark:text-orange-400">
+                      • Supplier: {stats.supplierReturnRate.toFixed(1)}%
+                    </div>
+                  </div>
+                )}
               </div>
-              <BarChart2 className="h-10 w-10 text-green-400 dark:text-green-500 opacity-50" />
+              <RotateCcw className="h-10 w-10 text-orange-400 dark:text-orange-500 opacity-50" />
             </div>
           </CardContent>
         </Card>

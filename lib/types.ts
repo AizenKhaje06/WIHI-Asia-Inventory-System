@@ -120,6 +120,9 @@ export interface DashboardStats {
   topCustomers?: { name: string; spent: number }[]
   averageOrderValue?: number
   returnRate?: number
+  damagedReturnRate?: number
+  supplierReturnRate?: number
+  totalSales?: number
   totalReturns?: number
   returnValue?: number
   itemsSoldToday?: number

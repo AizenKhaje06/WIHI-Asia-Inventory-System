@@ -149,7 +149,89 @@ export default function InsightsPage() {
     const a = document.createElement("a")
     a.href = url
     a.download = `${filename}-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
+  }
+
+  // Comprehensive CSV Export - ALL TABS
+  function exportComprehensiveCSV() {
+    let csvContent = "COMPREHENSIVE BUSINESS INSIGHTS REPORT\n"
+    csvContent += `Generated: ${new Date().toLocaleString()}\n\n`
+
+    // ABC Analysis
+    csvContent += "=== ABC ANALYSIS ===\n"
+    csvContent += "Product,Category,Revenue %,Classification,Recommendation\n"
+    abcAnalysis.forEach(item => {
+      csvContent += `${item.itemName},${item.category},${item.revenueContribution},${item.classification},${item.recommendation}\n`
+    })
+    csvContent += "\n"
+
+    // Inventory Turnover
+    csvContent += "=== INVENTORY TURNOVER ===\n"
+    csvContent += "Product,Turnover Ratio,Days to Sell,Status\n"
+    turnover.forEach(item => {
+      csvContent += `${item.itemName},${item.turnoverRatio},${item.daysToSell},${item.status}\n`
+    })
+    csvContent += "\n"
+
+    // Sales Forecast
+    csvContent += "=== SALES FORECAST ===\n"
+    csvContent += "Product,Predicted Demand,Recommended Reorder,Trend,Confidence %\n"
+    forecasts.forEach(item => {
+      csvContent += `${item.itemName},${item.predictedDemand},${item.recommendedReorderQty},${item.trend},${item.confidence}\n`
+    })
+    csvContent += "\n"
+
+    // Profit Margin
+    csvContent += "=== PROFIT MARGIN BY CATEGORY ===\n"
+    csvContent += "Category,Revenue,Profit,Margin %\n"
+    profitMargin.forEach(item => {
+      csvContent += `${item.category},${item.revenue},${item.profit},${item.margin}\n`
+    })
+    csvContent += "\n"
+
+    // Dead Stock
+    csvContent += "=== DEAD STOCK ===\n"
+    csvContent += "Product,Category,Quantity,Days to Sell,Value\n"
+    deadStock.forEach(item => {
+      csvContent += `${item.name},${item.category},${item.quantity},${item.daysToSell},${item.quantity * item.costPrice}\n`
+    })
+    csvContent += "\n"
+
+    // Returns Analysis
+    if (returnAnalytics?.returnsByItem) {
+      csvContent += "=== RETURNS ANALYSIS ===\n"
+      csvContent += "Product,Quantity Returned,Return Value,Return Rate %\n"
+      returnAnalytics.returnsByItem.forEach((item: any) => {
+        csvContent += `${item.itemName},${item.quantity},${item.value},${item.returnRate}\n`
+      })
+    }
+
+    const blob = new Blob([csvContent], { type: "text/csv" })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `comprehensive-business-insights-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
+  }
+
+  // Comprehensive PDF Export - ALL TABS
+  async function exportComprehensivePDF() {
+    const { exportComprehensiveBusinessInsightsPDF } = await import("@/lib/pdf-export")
+    
+    exportComprehensiveBusinessInsightsPDF({
+      abcAnalysis,
+      turnover,
+      forecasts,
+      profitMargin,
+      deadStock,
+      returnAnalytics: returnAnalytics?.returnsByItem || []
+    })
   }
 
   const getTrendIcon = (trend: string) => {
@@ -298,68 +380,22 @@ export default function InsightsPage() {
             Refresh
           </Button>
           <Button
-            onClick={() => {
-              if (activeTab === 'abc') {
-                exportBusinessInsightsPDF(filteredAbcAnalysis, 'abc', 'ABC Analysis Report')
-              } else if (activeTab === 'turnover') {
-                exportBusinessInsightsPDF(filteredTurnover, 'turnover', 'Inventory Turnover Report')
-              } else if (activeTab === 'forecast') {
-                exportBusinessInsightsPDF(filteredForecasts, 'forecast', 'Sales Forecast Report')
-              } else if (activeTab === 'profit') {
-                exportBusinessInsightsPDF(filteredProfitMargin, 'profit', 'Profit Margin Report')
-              } else if (activeTab === 'deadstock') {
-                exportBusinessInsightsPDF(filteredDeadStock, 'deadstock', 'Dead Stock Report')
-              } else if (activeTab === 'returns') {
-                const filteredReturns = returnAnalytics?.returnsByItem
-                  ?.filter((item: any) => item.itemName.toLowerCase().includes(returnSearch.toLowerCase()))
-                  .sort((a: any, b: any) => {
-                    if (returnSortBy === "quantity-desc") return b.quantity - a.quantity
-                    if (returnSortBy === "quantity-asc") return a.quantity - b.quantity
-                    if (returnSortBy === "value-desc") return b.value - a.value
-                    if (returnSortBy === "value-asc") return a.value - b.value
-                    return 0
-                  })
-                exportBusinessInsightsPDF(filteredReturns || [], 'returns', 'Returns Analysis Report')
-              }
-            }}
+            onClick={exportComprehensivePDF}
             variant="outline"
             size="sm"
             className="gap-2"
           >
             <FileDown className="h-4 w-4" />
-            PDF
+            PDF (All Reports)
           </Button>
           <Button
-            onClick={() => {
-              if (activeTab === 'abc') {
-                exportToCSV(filteredAbcAnalysis, 'abc-analysis', ['Product', 'Category', 'Revenue %', 'Recommendation'])
-              } else if (activeTab === 'turnover') {
-                exportToCSV(filteredTurnover, 'inventory-turnover', ['Product', 'Turnover Ratio', 'Days to Sell', 'Status'])
-              } else if (activeTab === 'forecast') {
-                exportToCSV(filteredForecasts, 'sales-forecast', ['Product', 'Predicted Demand', 'Recommended Reorder', 'Trend', 'Confidence'])
-              } else if (activeTab === 'profit') {
-                exportToCSV(filteredProfitMargin, 'profit-margins', ['Category', 'Revenue', 'Profit', 'Margin %'])
-              } else if (activeTab === 'deadstock') {
-                exportToCSV(filteredDeadStock, 'dead-stock', ['Product', 'Category', 'Quantity', 'Value'])
-              } else if (activeTab === 'returns') {
-                const filteredReturns = returnAnalytics?.returnsByItem
-                  ?.filter((item: any) => item.itemName.toLowerCase().includes(returnSearch.toLowerCase()))
-                  .sort((a: any, b: any) => {
-                    if (returnSortBy === "quantity-desc") return b.quantity - a.quantity
-                    if (returnSortBy === "quantity-asc") return a.quantity - b.quantity
-                    if (returnSortBy === "value-desc") return b.value - a.value
-                    if (returnSortBy === "value-asc") return a.value - b.value
-                    return 0
-                  })
-                exportToCSV(filteredReturns || [], 'returns-analysis', ['Product', 'Quantity', 'Value', 'Rate'])
-              }
-            }}
+            onClick={exportComprehensiveCSV}
             variant="outline"
             size="sm"
             className="gap-2"
           >
             <Download className="h-4 w-4" />
-            CSV
+            CSV (All Reports)
           </Button>
         </div>
       </div>

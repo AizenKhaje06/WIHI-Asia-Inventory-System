@@ -302,6 +302,57 @@ export function exportTransactionsPDF(transactions: any[]) {
   })
 }
 
+export function exportSalesReportPDF(reportData: {
+  transactions: any[]
+  startDate?: string
+  endDate?: string
+  totalRevenue: number
+  totalCost: number
+  totalProfit: number
+  totalOrders: number
+}) {
+  const { transactions, startDate, endDate, totalRevenue, totalCost, totalProfit, totalOrders } = reportData
+  
+  // Format date range for subtitle
+  let dateRange = 'All Time'
+  if (startDate && endDate) {
+    dateRange = `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`
+  } else if (startDate) {
+    dateRange = `From ${new Date(startDate).toLocaleDateString()}`
+  } else if (endDate) {
+    dateRange = `Until ${new Date(endDate).toLocaleDateString()}`
+  }
+  
+  exportToPDF({
+    title: 'Comprehensive Sales Report',
+    subtitle: `Period: ${dateRange}`,
+    filename: 'comprehensive-sales-report',
+    orientation: 'landscape',
+    summary: [
+      { label: 'Total Orders', value: totalOrders },
+      { label: 'Total Transactions', value: transactions.length },
+      { label: 'Total Revenue', value: `PHP ${totalRevenue.toLocaleString('en-US')}` },
+      { label: 'Total Cost', value: `PHP ${totalCost.toLocaleString('en-US')}` },
+      { label: 'Total Profit', value: `PHP ${totalProfit.toLocaleString('en-US')}` },
+      { label: 'Profit Margin', value: `${totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(2) : 0}%` },
+      { label: 'Average Order Value', value: `PHP ${totalOrders > 0 ? (totalRevenue / totalOrders).toLocaleString('en-US') : 0}` },
+      { label: 'Items Sold', value: transactions.reduce((sum, t) => sum + (t.quantity || 0), 0) }
+    ],
+    columns: [
+      { header: 'Date', dataKey: 'timestamp' },
+      { header: 'Item', dataKey: 'itemName' },
+      { header: 'Quantity', dataKey: 'quantity' },
+      { header: 'Revenue', dataKey: 'totalRevenue' },
+      { header: 'Cost', dataKey: 'totalCost' },
+      { header: 'Profit', dataKey: 'profit' }
+    ],
+    data: transactions.map(t => ({
+      ...t,
+      timestamp: new Date(t.timestamp).toLocaleString()
+    }))
+  })
+}
+
 export function exportBusinessInsightsPDF(data: any[], type: string, title: string) {
   let columns: { header: string; dataKey: string }[] = []
   let summary: { label: string; value: string | number }[] = []
@@ -406,4 +457,497 @@ export function exportBusinessInsightsPDF(data: any[], type: string, title: stri
     columns,
     data
   })
+}
+
+// Comprehensive Business Insights PDF - ALL TABS IN ONE
+export function exportComprehensiveBusinessInsightsPDF(allData: {
+  abcAnalysis: any[]
+  turnover: any[]
+  forecasts: any[]
+  profitMargin: any[]
+  deadStock: any[]
+  returnAnalytics: any[]
+}) {
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a4'
+  })
+
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
+
+  // Helper function to add section header
+  const addSectionHeader = (title: string, subtitle: string, yPos: number) => {
+    doc.setFontSize(20)
+    doc.setTextColor(40, 40, 40)
+    doc.setFont('helvetica', 'bold')
+    doc.text(title, pageWidth / 2, yPos, { align: 'center' })
+    
+    doc.setFontSize(12)
+    doc.setTextColor(100, 100, 100)
+    doc.setFont('helvetica', 'normal')
+    doc.text(subtitle, pageWidth / 2, yPos + 7, { align: 'center' })
+    
+    doc.setFontSize(10)
+    doc.setTextColor(120, 120, 120)
+    doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth / 2, yPos + 13, { align: 'center' })
+    
+    return yPos + 20
+  }
+
+  // Filter data by status
+  const fastMovingItems = allData.turnover.filter(t => t.status === 'fast-moving')
+  const slowMovingItems = allData.turnover.filter(t => t.status === 'slow-moving')
+
+  // 1. ABC ANALYSIS
+  let yPosition = addSectionHeader('ABC Analysis Report', 'Business Intelligence Analysis', 20)
+
+  // Summary
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Summary', 14, yPosition)
+  yPosition += 8
+
+  const abcSummary = [
+    ['Total Products Analyzed', allData.abcAnalysis.length.toString()],
+    ['Class A Products', allData.abcAnalysis.filter(d => d.classification === 'A').length.toString()],
+    ['Class B Products', allData.abcAnalysis.filter(d => d.classification === 'B').length.toString()],
+    ['Class C Products', allData.abcAnalysis.filter(d => d.classification === 'C').length.toString()]
+  ]
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Metric', 'Value']],
+    body: abcSummary,
+    theme: 'grid',
+    headStyles: { fillColor: [249, 115, 22], textColor: 255, fontStyle: 'bold', fontSize: 11 },
+    bodyStyles: { fontSize: 10 },
+    alternateRowStyles: { fillColor: [250, 250, 250] },
+    margin: { left: 14, right: 14 }
+  })
+
+  yPosition = (doc as any).lastAutoTable.finalY + 10
+
+  // Detailed Report
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Detailed Report', 14, yPosition)
+  yPosition += 8
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Product', 'Category', 'Revenue %', 'Classification', 'Recommendation']],
+    body: allData.abcAnalysis.map(item => [
+      item.itemName || 'N/A',
+      item.category || 'N/A',
+      `${(item.revenueContribution || 0).toFixed(2)}%`,
+      item.classification || 'N/A',
+      item.recommendation || 'N/A'
+    ]),
+    theme: 'striped',
+    headStyles: { fillColor: [249, 115, 22], fontSize: 10, fontStyle: 'bold' },
+    bodyStyles: { fontSize: 9 },
+    alternateRowStyles: { fillColor: [252, 252, 252] },
+    margin: { left: 14, right: 14 }
+  })
+
+  // 2. INVENTORY TURNOVER
+  doc.addPage()
+  yPosition = addSectionHeader('Inventory Turnover Report', 'Business Intelligence Analysis', 20)
+
+  // Summary
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Summary', 14, yPosition)
+  yPosition += 8
+
+  const turnoverSummary = [
+    ['Total Products', allData.turnover.length.toString()],
+    ['Fast Moving', allData.turnover.filter(d => d.status === 'fast-moving').length.toString()],
+    ['Slow Moving', allData.turnover.filter(d => d.status === 'slow-moving').length.toString()],
+    ['Average Turnover Ratio', (allData.turnover.reduce((sum, d) => sum + d.turnoverRatio, 0) / allData.turnover.length).toFixed(2)]
+  ]
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Metric', 'Value']],
+    body: turnoverSummary,
+    theme: 'grid',
+    headStyles: { fillColor: [249, 115, 22], textColor: 255, fontStyle: 'bold', fontSize: 11 },
+    bodyStyles: { fontSize: 10 },
+    alternateRowStyles: { fillColor: [250, 250, 250] },
+    margin: { left: 14, right: 14 }
+  })
+
+  yPosition = (doc as any).lastAutoTable.finalY + 10
+
+  // Detailed Report
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Detailed Report', 14, yPosition)
+  yPosition += 8
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Product', 'Turnover Ratio', 'Days to Sell', 'Status']],
+    body: allData.turnover.map(item => [
+      item.itemName || 'N/A',
+      (item.turnoverRatio || 0).toFixed(2),
+      (item.daysToSell || 0).toString(),
+      item.status || 'N/A'
+    ]),
+    theme: 'striped',
+    headStyles: { fillColor: [249, 115, 22], fontSize: 10, fontStyle: 'bold' },
+    bodyStyles: { fontSize: 9 },
+    alternateRowStyles: { fillColor: [252, 252, 252] },
+    margin: { left: 14, right: 14 }
+  })
+
+  // 3. SALES FORECAST
+  doc.addPage()
+  yPosition = addSectionHeader('Sales Forecast Report', 'Business Intelligence Analysis', 20)
+
+  // Summary
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Summary', 14, yPosition)
+  yPosition += 8
+
+  const forecastSummary = [
+    ['Total Products', allData.forecasts.length.toString()],
+    ['Total Predicted Demand', allData.forecasts.reduce((sum, d) => sum + (d.predictedDemand || 0), 0).toString()],
+    ['Total Recommended Reorder', allData.forecasts.reduce((sum, d) => sum + (d.recommendedReorderQty || 0), 0).toString()],
+    ['Average Confidence', `${(allData.forecasts.reduce((sum, d) => sum + d.confidence, 0) / allData.forecasts.length).toFixed(2)}%`]
+  ]
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Metric', 'Value']],
+    body: forecastSummary,
+    theme: 'grid',
+    headStyles: { fillColor: [249, 115, 22], textColor: 255, fontStyle: 'bold', fontSize: 11 },
+    bodyStyles: { fontSize: 10 },
+    alternateRowStyles: { fillColor: [250, 250, 250] },
+    margin: { left: 14, right: 14 }
+  })
+
+  yPosition = (doc as any).lastAutoTable.finalY + 10
+
+  // Detailed Report
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Detailed Report', 14, yPosition)
+  yPosition += 8
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Product', 'Predicted Demand', 'Recommended Reorder', 'Trend', 'Confidence %']],
+    body: allData.forecasts.map(item => [
+      item.itemName || 'N/A',
+      (item.predictedDemand || 0).toString(),
+      (item.recommendedReorderQty || 0).toString(),
+      item.trend || 'N/A',
+      `${(item.confidence || 0).toFixed(2)}%`
+    ]),
+    theme: 'striped',
+    headStyles: { fillColor: [249, 115, 22], fontSize: 10, fontStyle: 'bold' },
+    bodyStyles: { fontSize: 9 },
+    alternateRowStyles: { fillColor: [252, 252, 252] },
+    margin: { left: 14, right: 14 }
+  })
+
+  // 4. FAST MOVING ITEMS
+  doc.addPage()
+  yPosition = addSectionHeader('Fast Moving Items Report', 'Business Intelligence Analysis', 20)
+
+  // Summary
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Summary', 14, yPosition)
+  yPosition += 8
+
+  const fastMovingSummary = [
+    ['Total Fast Moving Items', fastMovingItems.length.toString()],
+    ['Average Turnover Ratio', fastMovingItems.length > 0 ? (fastMovingItems.reduce((sum, d) => sum + (d.turnoverRatio || 0), 0) / fastMovingItems.length).toFixed(2) : '0'],
+    ['Average Days to Sell', fastMovingItems.length > 0 ? (fastMovingItems.reduce((sum, d) => sum + (d.daysToSell || 0), 0) / fastMovingItems.length).toFixed(0) : '0'],
+    ['Status', 'High Demand - Quick Turnover']
+  ]
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Metric', 'Value']],
+    body: fastMovingSummary,
+    theme: 'grid',
+    headStyles: { fillColor: [249, 115, 22], textColor: 255, fontStyle: 'bold', fontSize: 11 },
+    bodyStyles: { fontSize: 10 },
+    alternateRowStyles: { fillColor: [250, 250, 250] },
+    margin: { left: 14, right: 14 }
+  })
+
+  yPosition = (doc as any).lastAutoTable.finalY + 10
+
+  // Detailed Report
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Detailed Report', 14, yPosition)
+  yPosition += 8
+
+  if (fastMovingItems.length > 0) {
+    autoTable(doc, {
+      startY: yPosition,
+      head: [['Product', 'Turnover Ratio', 'Days to Sell', 'Status']],
+      body: fastMovingItems.map(item => [
+        item.itemName || 'N/A',
+        (item.turnoverRatio || 0).toFixed(2),
+        (item.daysToSell || 0).toString(),
+        'Fast Moving'
+      ]),
+      theme: 'striped',
+      headStyles: { fillColor: [249, 115, 22], fontSize: 10, fontStyle: 'bold' },
+      bodyStyles: { fontSize: 9 },
+      alternateRowStyles: { fillColor: [252, 252, 252] },
+      margin: { left: 14, right: 14 }
+    })
+  } else {
+    doc.setFontSize(10)
+    doc.setTextColor(100, 100, 100)
+    doc.text('No fast moving items found', 14, yPosition)
+  }
+
+  // 5. SLOW MOVING ITEMS
+  doc.addPage()
+  yPosition = addSectionHeader('Slow Moving Items Report', 'Business Intelligence Analysis', 20)
+
+  // Summary
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Summary', 14, yPosition)
+  yPosition += 8
+
+  const slowMovingSummary = [
+    ['Total Slow Moving Items', slowMovingItems.length.toString()],
+    ['Average Turnover Ratio', slowMovingItems.length > 0 ? (slowMovingItems.reduce((sum, d) => sum + (d.turnoverRatio || 0), 0) / slowMovingItems.length).toFixed(2) : '0'],
+    ['Average Days to Sell', slowMovingItems.length > 0 ? (slowMovingItems.reduce((sum, d) => sum + (d.daysToSell || 0), 0) / slowMovingItems.length).toFixed(0) : '0'],
+    ['Status', 'Low Demand - Needs Promotion']
+  ]
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Metric', 'Value']],
+    body: slowMovingSummary,
+    theme: 'grid',
+    headStyles: { fillColor: [249, 115, 22], textColor: 255, fontStyle: 'bold', fontSize: 11 },
+    bodyStyles: { fontSize: 10 },
+    alternateRowStyles: { fillColor: [250, 250, 250] },
+    margin: { left: 14, right: 14 }
+  })
+
+  yPosition = (doc as any).lastAutoTable.finalY + 10
+
+  // Detailed Report
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Detailed Report', 14, yPosition)
+  yPosition += 8
+
+  if (slowMovingItems.length > 0) {
+    autoTable(doc, {
+      startY: yPosition,
+      head: [['Product', 'Turnover Ratio', 'Days to Sell', 'Status']],
+      body: slowMovingItems.map(item => [
+        item.itemName || 'N/A',
+        (item.turnoverRatio || 0).toFixed(2),
+        (item.daysToSell || 0).toString(),
+        'Slow Moving'
+      ]),
+      theme: 'striped',
+      headStyles: { fillColor: [249, 115, 22], fontSize: 10, fontStyle: 'bold' },
+      bodyStyles: { fontSize: 9 },
+      alternateRowStyles: { fillColor: [252, 252, 252] },
+      margin: { left: 14, right: 14 }
+    })
+  } else {
+    doc.setFontSize(10)
+    doc.setTextColor(100, 100, 100)
+    doc.text('No slow moving items found', 14, yPosition)
+  }
+
+  // 6. PROFIT MARGIN
+  doc.addPage()
+  yPosition = addSectionHeader('Profit Margin Report', 'Business Intelligence Analysis', 20)
+
+  // Summary
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Summary', 14, yPosition)
+  yPosition += 8
+
+  const profitSummary = [
+    ['Total Categories', allData.profitMargin.length.toString()],
+    ['Total Revenue', `PHP ${allData.profitMargin.reduce((sum, d) => sum + (d.revenue || 0), 0).toLocaleString('en-US')}`],
+    ['Total Profit', `PHP ${allData.profitMargin.reduce((sum, d) => sum + (d.profit || 0), 0).toLocaleString('en-US')}`],
+    ['Average Margin', `${(allData.profitMargin.reduce((sum, d) => sum + d.margin, 0) / allData.profitMargin.length).toFixed(2)}%`]
+  ]
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Metric', 'Value']],
+    body: profitSummary,
+    theme: 'grid',
+    headStyles: { fillColor: [249, 115, 22], textColor: 255, fontStyle: 'bold', fontSize: 11 },
+    bodyStyles: { fontSize: 10 },
+    alternateRowStyles: { fillColor: [250, 250, 250] },
+    margin: { left: 14, right: 14 }
+  })
+
+  yPosition = (doc as any).lastAutoTable.finalY + 10
+
+  // Detailed Report
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Detailed Report', 14, yPosition)
+  yPosition += 8
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Category', 'Revenue', 'Profit', 'Margin %']],
+    body: allData.profitMargin.map(item => [
+      item.category || 'N/A',
+      `PHP ${(item.revenue || 0).toLocaleString('en-US')}`,
+      `PHP ${(item.profit || 0).toLocaleString('en-US')}`,
+      `${(item.margin || 0).toFixed(2)}%`
+    ]),
+    theme: 'striped',
+    headStyles: { fillColor: [249, 115, 22], fontSize: 10, fontStyle: 'bold' },
+    bodyStyles: { fontSize: 9 },
+    alternateRowStyles: { fillColor: [252, 252, 252] },
+    margin: { left: 14, right: 14 }
+  })
+
+  // 7. DEAD STOCK
+  doc.addPage()
+  yPosition = addSectionHeader('Dead Stock Report', 'Business Intelligence Analysis', 20)
+
+  // Summary
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Summary', 14, yPosition)
+  yPosition += 8
+
+  const deadStockSummary = [
+    ['Total Dead Stock Items', allData.deadStock.length.toString()],
+    ['Total Quantity', allData.deadStock.reduce((sum, d) => sum + (d.quantity || 0), 0).toString()],
+    ['Total Value Locked', `PHP ${allData.deadStock.reduce((sum, d) => sum + ((d.quantity || 0) * (d.costPrice || 0)), 0).toLocaleString('en-US')}`],
+    ['Average Days to Sell', (allData.deadStock.reduce((sum, d) => sum + (d.daysToSell || 0), 0) / allData.deadStock.length).toFixed(0)]
+  ]
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Metric', 'Value']],
+    body: deadStockSummary,
+    theme: 'grid',
+    headStyles: { fillColor: [249, 115, 22], textColor: 255, fontStyle: 'bold', fontSize: 11 },
+    bodyStyles: { fontSize: 10 },
+    alternateRowStyles: { fillColor: [250, 250, 250] },
+    margin: { left: 14, right: 14 }
+  })
+
+  yPosition = (doc as any).lastAutoTable.finalY + 10
+
+  // Detailed Report
+  doc.setFontSize(14)
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Detailed Report', 14, yPosition)
+  yPosition += 8
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Product', 'Category', 'Quantity', 'Days to Sell', 'Value']],
+    body: allData.deadStock.map(item => [
+      item.name || 'N/A',
+      item.category || 'N/A',
+      (item.quantity || 0).toString(),
+      (item.daysToSell || 0).toString(),
+      `PHP ${((item.quantity || 0) * (item.costPrice || 0)).toLocaleString('en-US')}`
+    ]),
+    theme: 'striped',
+    headStyles: { fillColor: [249, 115, 22], fontSize: 10, fontStyle: 'bold' },
+    bodyStyles: { fontSize: 9 },
+    alternateRowStyles: { fillColor: [252, 252, 252] },
+    margin: { left: 14, right: 14 }
+  })
+
+  // 8. RETURNS ANALYSIS
+  if (allData.returnAnalytics && allData.returnAnalytics.length > 0) {
+    doc.addPage()
+    yPosition = addSectionHeader('Returns Analysis Report', 'Business Intelligence Analysis', 20)
+
+    // Summary
+    doc.setFontSize(14)
+    doc.setTextColor(40, 40, 40)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Summary', 14, yPosition)
+    yPosition += 8
+
+    const returnsSummary = [
+      ['Total Products with Returns', allData.returnAnalytics.length.toString()],
+      ['Total Returns', allData.returnAnalytics.reduce((sum: number, d: any) => sum + (d.quantity || 0), 0).toString()],
+      ['Total Return Value', `PHP ${allData.returnAnalytics.reduce((sum: number, d: any) => sum + (d.value || 0), 0).toLocaleString('en-US')}`],
+      ['Average Return Rate', `${(allData.returnAnalytics.reduce((sum: number, d: any) => sum + (d.returnRate || 0), 0) / allData.returnAnalytics.length).toFixed(2)}%`]
+    ]
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [['Metric', 'Value']],
+      body: returnsSummary,
+      theme: 'grid',
+      headStyles: { fillColor: [249, 115, 22], textColor: 255, fontStyle: 'bold', fontSize: 11 },
+      bodyStyles: { fontSize: 10 },
+      alternateRowStyles: { fillColor: [250, 250, 250] },
+      margin: { left: 14, right: 14 }
+    })
+
+    yPosition = (doc as any).lastAutoTable.finalY + 10
+
+    // Detailed Report
+    doc.setFontSize(14)
+    doc.setTextColor(40, 40, 40)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Detailed Report', 14, yPosition)
+    yPosition += 8
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [['Product', 'Quantity Returned', 'Return Value', 'Return Rate %']],
+      body: allData.returnAnalytics.map((item: any) => [
+        item.itemName || 'N/A',
+        (item.quantity || 0).toString(),
+        `PHP ${(item.value || 0).toLocaleString('en-US')}`,
+        `${(item.returnRate || 0).toFixed(2)}%`
+      ]),
+      theme: 'striped',
+      headStyles: { fillColor: [249, 115, 22], fontSize: 10, fontStyle: 'bold' },
+      bodyStyles: { fontSize: 9 },
+      alternateRowStyles: { fillColor: [252, 252, 252] },
+      margin: { left: 14, right: 14 }
+    })
+  }
+
+  // Save
+  doc.save(`comprehensive-business-insights-${new Date().toISOString().split('T')[0]}.pdf`)
 }

@@ -23,7 +23,8 @@ export default function ReportsPage() {
   const [exportModalOpen, setExportModalOpen] = useState(false)
 
   useEffect(() => {
-    fetchReport()
+    // Fetch initial data but don't open modal
+    loadInitialData()
   }, [])
 
   useEffect(() => {
@@ -42,6 +43,25 @@ export default function ReportsPage() {
     }
   }, [search, report])
 
+  async function loadInitialData() {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (startDate) params.append("startDate", startDate)
+      if (endDate) params.append("endDate", endDate)
+
+      const res = await fetch(`/api/reports?${params}`)
+      const data = await res.json()
+      setReport(data)
+      // Don't open modal on initial load
+    } catch (error) {
+      console.error("[v0] Error fetching report:", error)
+      toast.error("Failed to load report data")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function fetchReport() {
     setLoading(true)
     try {
@@ -57,6 +77,7 @@ export default function ReportsPage() {
       setExportModalOpen(true)
     } catch (error) {
       console.error("[v0] Error fetching report:", error)
+      toast.error("Failed to generate report")
     } finally {
       setLoading(false)
     }
