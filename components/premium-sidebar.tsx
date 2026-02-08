@@ -53,6 +53,7 @@ const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0): 
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, // Admin only
       { name: "Operations Dashboard", href: "/dashboard/operations", icon: LayoutDashboard }, // Operations only
       { name: "Warehouse Dispatch", href: "/dashboard/pos", icon: ShoppingCart }, // Operations only
+      { name: "Internal Usage", href: "/dashboard/internal-usage", icon: Users }, // Track Demo & Internal Use
       { name: "Reports", href: "/dashboard/reports", icon: FileText }, // Admin only
     ],
   },

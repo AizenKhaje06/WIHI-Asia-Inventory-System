@@ -21,6 +21,7 @@ export default function POSPage() {
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(false)
   const [department, setDepartment] = useState('')
+  const [salesChannel, setSalesChannel] = useState('') // For demo/internal use
   const [staffName, setStaffName] = useState('')
   const [notes, setNotes] = useState('')
   const [dispatchId, setDispatchId] = useState('')
@@ -100,6 +101,13 @@ export default function POSPage() {
 
   async function handleCheckout() {
     if (cart.length === 0 || !department || !staffName) return
+    
+    // Check if demo/internal use requires sales channel
+    const requiresSalesChannel = ['Demo/Display', 'Internal Use'].includes(department)
+    if (requiresSalesChannel && !salesChannel) {
+      alert('Please select a sales channel for demo/internal use')
+      return
+    }
 
     setLoading(true)
     try {
@@ -108,12 +116,17 @@ export default function POSPage() {
         quantity: cartItem.quantity,
       }))
 
+      // Combine department and sales channel if applicable
+      const finalDepartment = requiresSalesChannel && salesChannel 
+        ? `${department} / ${salesChannel}`
+        : department
+
       await fetch("/api/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: saleItems,
-          department,
+          department: finalDepartment,
           staffName,
           notes,
         }),
@@ -129,6 +142,7 @@ export default function POSPage() {
 
       // Reset form fields
       setDepartment('')
+      setSalesChannel('')
       setStaffName('')
       setNotes('')
     } catch (error) {
@@ -173,7 +187,13 @@ export default function POSPage() {
 
             <div>
               <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Destination *</Label>
-              <Select value={department} onValueChange={(value) => setDepartment(value)}>
+              <Select value={department} onValueChange={(value) => {
+                setDepartment(value)
+                // Reset sales channel when destination changes
+                if (!['Demo/Display', 'Internal Use'].includes(value)) {
+                  setSalesChannel('')
+                }
+              }}>
                 <SelectTrigger className="mt-1.5">
                   <SelectValue placeholder="Select destination" />
                 </SelectTrigger>
@@ -191,6 +211,30 @@ export default function POSPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Conditional Sales Channel Dropdown */}
+            {(department === 'Demo/Display' || department === 'Internal Use') && (
+              <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Sales Channel * <span className="text-xs text-slate-500">(Where will this be used?)</span>
+                </Label>
+                <Select value={salesChannel} onValueChange={setSalesChannel}>
+                  <SelectTrigger className="mt-1.5 border-blue-300 dark:border-blue-700">
+                    <SelectValue placeholder="Select sales channel" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Facebook">📘 Facebook Store</SelectItem>
+                    <SelectItem value="Tiktok">🎵 Tiktok Shop</SelectItem>
+                    <SelectItem value="Lazada">🛒 Lazada</SelectItem>
+                    <SelectItem value="Shopee">🛍️ Shopee</SelectItem>
+                    <SelectItem value="Physical Store">🏪 Physical Store</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  This will be saved as: <span className="font-semibold text-blue-600 dark:text-blue-400">{department} / {salesChannel || '...'}</span>
+                </p>
+              </div>
+            )}
 
             <div>
               <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Notes (Optional)</Label>

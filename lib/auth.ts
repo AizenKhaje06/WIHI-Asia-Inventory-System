@@ -38,12 +38,14 @@ export const ROLE_PERMISSIONS = {
     '/dashboard/inventory/low-stock',
     '/dashboard/inventory/out-of-stock',
     '/dashboard/pos',
+    '/dashboard/internal-usage',
     '/dashboard/settings',
     '/dashboard/log'
   ],
   operations: [
     '/dashboard/operations',
     '/dashboard/pos',
+    '/dashboard/internal-usage',
     '/dashboard/inventory',
     '/dashboard/inventory/create',
     '/dashboard/inventory/low-stock',

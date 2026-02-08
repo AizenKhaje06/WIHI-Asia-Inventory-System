@@ -1,28 +1,30 @@
 // Service Worker for Inventory Pro PWA
-const CACHE_NAME = 'inventory-pro-v1';
-const STATIC_CACHE = 'inventory-pro-static-v1';
-const DYNAMIC_CACHE = 'inventory-pro-dynamic-v1';
+const CACHE_NAME = 'inventory-pro-v2';
+const STATIC_CACHE = 'inventory-pro-static-v2';
+const DYNAMIC_CACHE = 'inventory-pro-dynamic-v2';
 
-// Files to cache immediately
+// Files to cache immediately (only essential files that definitely exist)
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
   '/STOCKIFY  ICON.png',
-  '/placeholder-logo.svg',
-  '/Login BG.png',
-  '/Corporate Building.png',
-  '/_next/static/css/app/layout.css',
-  '/_next/static/chunks/webpack.js',
-  '/_next/static/chunks/main.js',
-  '/_next/static/chunks/pages/_app.js'
+  '/placeholder-logo.svg'
 ];
 
-// Install event - cache static assets
+// Install event - cache static assets with error handling
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+      // Cache files individually to avoid failing if one file is missing
+      return Promise.allSettled(
+        STATIC_ASSETS.map(url => 
+          cache.add(url).catch(err => {
+            console.warn(`Failed to cache ${url}:`, err);
+            return null;
+          })
+        )
+      );
     })
   );
   self.skipWaiting();
