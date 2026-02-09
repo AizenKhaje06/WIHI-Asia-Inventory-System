@@ -9,7 +9,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, className }: PageHeaderProps) {
   return (
-    <div className={cn("mb-8", className)}>
+    <div className={cn("mb-6", className)}>
       <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
         {title}
       </h1>

@@ -328,18 +328,18 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-3 min-h-0 max-h-full" style={{ scrollbarGutter: 'stable' }} aria-label="Primary">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 min-h-0 max-h-full" style={{ scrollbarGutter: 'stable' }} aria-label="Primary">
           {navigation.map((section, sectionIdx) => (
             <div key={section.section} className={cn("mb-6", sectionIdx === 0 && "mt-0")}>
               {!collapsed && (
-                <div className="px-3 mb-2">
+                <div className="px-3 mb-3">
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-[#888888]">
                     {section.section}
                   </p>
                 </div>
               )}
               {collapsed && sectionIdx > 0 && (
-                <div className="h-px my-2 mx-2 bg-slate-200 dark:bg-[#444444]" />
+                <div className="h-px my-3 mx-2 bg-slate-200 dark:bg-[#444444]" />
               )}
               <div className="space-y-1" role="list">
                 {section.items.map((item) => {
