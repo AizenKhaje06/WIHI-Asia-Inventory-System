@@ -62,10 +62,10 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           {/* Page Context - Hidden on mobile, shown on desktop */}
           <div className="hidden lg:flex items-center gap-3 min-w-0 flex-1">
             <div className="flex flex-col justify-center min-w-0">
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-[#E0E0E0] truncate">
+              <h2 className="text-xs font-bold tracking-wide text-slate-800 dark:text-[#E0E0E0] truncate uppercase">
                 Inventory Management System
               </h2>
-              <p className="text-xs text-slate-500 dark:text-[#888888] truncate">
+              <p className="text-[10px] text-slate-500 dark:text-[#999999] truncate mt-0.5">
                 Real-time stock monitoring and analytics
               </p>
             </div>
