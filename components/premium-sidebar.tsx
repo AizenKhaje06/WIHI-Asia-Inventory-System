@@ -271,16 +271,24 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           )}
         </div>
 
-        {/* User Profile Section */}
+          {/* User Profile Section */}
         <div className="p-3 border-b flex-shrink-0 border-slate-200 dark:border-[#444444] relative">
-          <div className={cn("flex items-center gap-3 px-3 py-2 rounded-[5px] bg-slate-50 dark:bg-[#2a2a2a]", collapsed && "justify-center")}>
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center text-white font-semibold text-sm from-orange-500 to-orange-600">
-              <User className="h-4 w-4" />
+          <div className={cn(
+            "flex items-center gap-3 px-3 py-2.5 rounded-md bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-[#2a2a2a] dark:to-[#2a2a2a]/50 border border-slate-200/50 dark:border-[#444444]/50 shadow-sm",
+            collapsed && "justify-center"
+          )}>
+            <div className="relative flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br flex items-center justify-center text-white font-semibold text-sm from-orange-500 to-orange-600 shadow-md ring-2 ring-white/50 dark:ring-[#1e1e1e]/50">
+                <User className="h-4.5 w-4.5" />
+              </div>
+              {/* Online status indicator */}
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-[#2a2a2a]" aria-hidden="true" />
             </div>
             {!collapsed && currentUser && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate text-slate-900 dark:text-[#E0E0E0]">{currentUser.displayName}</p>
-                <p className="text-xs truncate text-slate-600 dark:text-[#B0B0B0]">
+                <p className="text-xs truncate text-slate-600 dark:text-[#888888] flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full" aria-hidden="true" />
                   {ROLES[currentUser.role]?.name || currentUser.role}
                 </p>
               </div>
@@ -342,17 +350,21 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                       href={item.href}
                       onClick={handleNavClick}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-[5px] group relative border",
+                        "flex items-center gap-3 px-3 py-2.5 rounded-md group relative",
                         reducedMotion ? "" : "transition-all duration-200",
                         isActive 
-                          ? "bg-orange-500 text-white border-transparent dark:bg-orange-500 dark:text-white" 
-                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 border-transparent dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-[#E0E0E0]"
+                          ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30 dark:bg-orange-500 dark:text-white dark:shadow-orange-500/20 scale-[1.02]" 
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-[#B0B0B0] dark:hover:bg-[#2a2a2a] dark:hover:text-[#E0E0E0] hover:scale-[1.01] active:scale-[0.98]"
                       )}
                       aria-current={isActive ? "page" : undefined}
                       role="listitem"
                     >
+                      {/* Active indicator bar */}
+                      {isActive && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white/80 rounded-r-full" aria-hidden="true" />
+                      )}
                       <item.icon
-                        className={cn("h-5 w-5 flex-shrink-0", reducedMotion ? "" : "transition-colors duration-200")}
+                        className={cn("h-5 w-5 flex-shrink-0", reducedMotion ? "" : "transition-all duration-200", isActive && "drop-shadow-sm")}
                         strokeWidth={isActive ? 2.5 : 2}
                         aria-hidden="true"
                       />
