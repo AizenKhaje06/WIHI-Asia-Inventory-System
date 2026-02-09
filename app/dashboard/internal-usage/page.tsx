@@ -486,31 +486,31 @@ export default function InternalUsagePage() {
 
       {/* Tabs for different views */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 dark:text-slate-400 shadow-sm gap-2">
+        <TabsList className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-700 dark:text-slate-300 shadow-sm gap-2">
           <TabsTrigger 
             value="overview" 
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 dark:hover:bg-slate-700 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-blue-600 dark:data-[state=active]:to-blue-500"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-blue-600 dark:data-[state=active]:to-blue-500"
           >
             <PieChart className="h-4 w-4 mr-2.5" />
             Overview
           </TabsTrigger>
           <TabsTrigger 
             value="department" 
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 dark:hover:bg-slate-700 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-purple-600 dark:data-[state=active]:to-purple-500"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-purple-600 dark:data-[state=active]:to-purple-500"
           >
             <BarChart3 className="h-4 w-4 mr-2.5" />
             Sales Channels
           </TabsTrigger>
           <TabsTrigger 
             value="cost" 
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-green-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 dark:hover:bg-slate-700 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-green-600 dark:data-[state=active]:to-green-500"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-green-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-green-600 dark:data-[state=active]:to-green-500"
           >
             <TrendingUp className="h-4 w-4 mr-2.5" />
             Cost Analysis
           </TabsTrigger>
           <TabsTrigger 
             value="history" 
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 dark:hover:bg-slate-700 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-amber-600 dark:data-[state=active]:to-amber-500"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-amber-600 dark:data-[state=active]:to-amber-500"
           >
             <Calendar className="h-4 w-4 mr-2.5" />
             Transaction History

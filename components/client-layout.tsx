@@ -7,7 +7,6 @@ import { OfflineIndicator } from "@/components/offline-indicator"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { CommandPalette } from "@/components/command-palette"
 import { RouteGuard } from "@/components/route-guard"
-import { DynamicBreadcrumbs } from "@/components/dynamic-breadcrumbs"
 import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal"
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
 import { cn } from "@/lib/utils"
@@ -51,9 +50,6 @@ export default function ClientLayout({
             role="main"
           >
             <div className="w-full max-w-full min-w-0">
-              {/* Breadcrumb Navigation */}
-              <DynamicBreadcrumbs />
-              
               <ErrorBoundary>
                 {children}
               </ErrorBoundary>
