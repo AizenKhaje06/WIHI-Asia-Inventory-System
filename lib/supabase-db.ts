@@ -493,32 +493,61 @@ export async function getAccounts(): Promise<Account[]> {
 }
 
 export async function getAccountByUsername(username: string): Promise<Account | null> {
-  const { data, error } = await supabaseAdmin
-    .from('users')
-    .select('*')
-    .eq('username', username)
-    .single()
+  try {
+    console.log("[v0] Querying Supabase for username:", username)
+    
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .single()
 
-  if (error || !data) {
-    return null
-  }
+    if (error) {
+      console.error("[v0] Supabase query error:", error.message, error.code)
+      if (error.code === 'PGRST116') {
+        // No rows returned - user doesn't exist
+        console.log("[v0] User not found in database")
+        return null
+      }
+      throw new Error(`Database query failed: ${error.message}`)
+    }
 
-  return {
-    id: data.id,
-    username: data.username,
-    password: data.password,
-    role: data.role as 'admin' | 'operations',
-    displayName: data.display_name,
-    createdAt: data.created_at,
+    if (!data) {
+      console.log("[v0] No data returned from query")
+      return null
+    }
+
+    console.log("[v0] User data retrieved successfully")
+    return {
+      id: data.id,
+      username: data.username,
+      password: data.password,
+      role: data.role as 'admin' | 'operations',
+      displayName: data.display_name,
+      createdAt: data.created_at,
+    }
+  } catch (error: any) {
+    console.error("[v0] Error in getAccountByUsername:", error)
+    throw error
   }
 }
 
 export async function validateCredentials(username: string, password: string): Promise<Account | null> {
-  const account = await getAccountByUsername(username)
-  if (account && account.password === password) {
-    return account
+  try {
+    console.log("[v0] validateCredentials called for username:", username)
+    const account = await getAccountByUsername(username)
+    console.log("[v0] Account found:", !!account)
+    
+    if (account && account.password === password) {
+      console.log("[v0] Password match successful")
+      return account
+    }
+    console.log("[v0] Password match failed or account not found")
+    return null
+  } catch (error) {
+    console.error("[v0] Error in validateCredentials:", error)
+    throw error
   }
-  return null
 }
 
 export async function updateAccount(username: string, updates: { password?: string; displayName?: string }): Promise<void> {

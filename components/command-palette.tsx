@@ -37,8 +37,15 @@ export function CommandPalette() {
       }
     }
 
+    // Listen for custom event
+    const handleOpen = () => setOpen(true)
+    window.addEventListener('open-command-palette', handleOpen)
+
     document.addEventListener("keydown", down)
-    return () => document.removeEventListener("keydown", down)
+    return () => {
+      document.removeEventListener("keydown", down)
+      window.removeEventListener('open-command-palette', handleOpen)
+    }
   }, [])
 
   const runCommand = React.useCallback((command: () => void) => {
