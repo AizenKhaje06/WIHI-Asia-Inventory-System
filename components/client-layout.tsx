@@ -34,8 +34,9 @@ export default function ClientLayout({
 
         {/* Main content area */}
         <div className={cn(
-          "flex-1 flex flex-col min-w-0 overflow-hidden ml-0 transition-all duration-300",
-          sidebarCollapsed ? "lg:ml-[96px]" : "lg:ml-[256px]"
+          "flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-300",
+          "ml-0",
+          sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
         )}>
           {/* Premium Navbar */}
           <PremiumNavbar 
@@ -46,7 +47,7 @@ export default function ClientLayout({
           {/* Main content */}
           <main 
             id="main-content" 
-            className="flex-1 overflow-y-auto overflow-x-hidden lg:mt-20 mt-16 lg:p-6 p-4 min-w-0 w-full"
+            className="flex-1 overflow-y-auto overflow-x-hidden mt-16 lg:px-8 px-4 min-w-0 w-full"
             role="main"
           >
             <div className="w-full max-w-full min-w-0">

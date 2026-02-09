@@ -360,7 +360,7 @@ export default function InsightsPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-6">
       {/* Header with Actions */}
       <div className="flex items-center justify-between mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <div>

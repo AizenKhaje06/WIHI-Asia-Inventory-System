@@ -203,10 +203,13 @@ class OfflineStorage {
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['syncQueue'], 'readonly')
       const store = transaction.objectStore('syncQueue')
-      const index = store.index('synced')
-      const request = index.getAll(IDBKeyRange.only(false))
+      const request = store.getAll()
 
-      request.onsuccess = () => resolve(request.result)
+      request.onsuccess = () => {
+        // Filter unsynced items in memory instead of using index
+        const unsyncedItems = request.result.filter((item: SyncQueueItem) => !item.synced)
+        resolve(unsyncedItems)
+      }
       request.onerror = () => reject(request.error)
     })
   }

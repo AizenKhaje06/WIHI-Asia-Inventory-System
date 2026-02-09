@@ -133,6 +133,9 @@ export interface DashboardStats {
   inventoryHealthScore?: number
   insights?: { type: string; message: string }[]
   salesVelocity?: number
+  yesterdaySales?: number
+  lastWeekSales?: number
+  lastMonthSales?: number
 }
 
 export interface Log {

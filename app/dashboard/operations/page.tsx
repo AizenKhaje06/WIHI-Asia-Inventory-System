@@ -42,7 +42,7 @@ export default function OperationsDashboardPage() {
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-6">
       {/* Header */}
       <div className="flex items-center justify-between animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <div>

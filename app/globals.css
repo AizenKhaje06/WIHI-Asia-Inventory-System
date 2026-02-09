@@ -305,13 +305,7 @@ body {
    GRADIENT TEXT UTILITY
    ============================================ */
 
-.gradient-text {
-  background: linear-gradient(90deg, #2563eb 0%, #9333ea 50%, #2563eb 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
-}
+/* Removed duplicate - see line 1047 for the correct gradient-text definition */
 
 /* ============================================
    TYPOGRAPHY SYSTEM
@@ -1049,6 +1043,7 @@ h6 { font-size: 1rem; }        /* 16px */
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
 }
 
 /* ============================================

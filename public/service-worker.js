@@ -1,7 +1,7 @@
 // Service Worker for Inventory Pro PWA
-const CACHE_NAME = 'inventory-pro-v2';
-const STATIC_CACHE = 'inventory-pro-static-v2';
-const DYNAMIC_CACHE = 'inventory-pro-dynamic-v2';
+const CACHE_NAME = 'inventory-pro-v13';
+const STATIC_CACHE = 'inventory-pro-static-v13';
+const DYNAMIC_CACHE = 'inventory-pro-dynamic-v13';
 
 // Files to cache immediately (only essential files that definitely exist)
 const STATIC_ASSETS = [

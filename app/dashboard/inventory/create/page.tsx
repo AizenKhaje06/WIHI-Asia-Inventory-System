@@ -65,7 +65,7 @@ export default function CreateProductPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-6">
       {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <Link href="/dashboard/inventory" className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 mb-4 inline-flex transition-colors">

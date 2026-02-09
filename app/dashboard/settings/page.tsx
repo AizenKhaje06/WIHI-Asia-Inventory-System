@@ -179,7 +179,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-6">
       {/* Page Header */}
       <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <h1 className="text-4xl font-bold gradient-text mb-2">
