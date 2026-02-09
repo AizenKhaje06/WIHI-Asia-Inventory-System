@@ -47,34 +47,46 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
       )}
       role="banner"
     >
-      <div className="h-full px-4 lg:px-6 flex items-center justify-between gap-3 min-w-0">
-        {/* Left: Mobile Menu */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+      <div className="h-full px-4 lg:px-6 flex items-center justify-between gap-4 min-w-0">
+        {/* Left: Mobile Menu + Page Context */}
+        <div className="flex items-center gap-4 flex-1 min-w-0">
           <button
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2 rounded-[5px] transition-colors duration-200 flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="lg:hidden p-2 rounded-md transition-all duration-200 flex-shrink-0 text-slate-600 dark:text-[#B0B0B0] hover:bg-slate-100 dark:hover:bg-[#2a2a2a] hover:text-slate-900 dark:hover:text-[#E0E0E0]"
             aria-label="Open navigation menu"
             aria-expanded="false"
           >
             <Menu className="h-5 w-5" />
           </button>
+          
+          {/* Page Context - Hidden on mobile, shown on desktop */}
+          <div className="hidden lg:flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex flex-col justify-center min-w-0">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-[#E0E0E0] truncate">
+                Inventory Management System
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-[#888888] truncate">
+                Real-time stock monitoring and analytics
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="p-2 rounded-[5px] transition-colors duration-200 group flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="p-2.5 rounded-md transition-all duration-200 group flex-shrink-0 text-slate-600 dark:text-[#B0B0B0] hover:bg-slate-100 dark:hover:bg-[#2a2a2a] hover:text-slate-900 dark:hover:text-[#E0E0E0] active:scale-95"
             title={mounted ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
             aria-label={mounted ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
           >
             {!mounted ? (
-              <Sun className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
+              <Sun className="h-4.5 w-4.5 transition-transform duration-200 group-hover:rotate-180" aria-hidden="true" />
             ) : theme === "dark" ? (
-              <Sun className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
+              <Sun className="h-4.5 w-4.5 transition-transform duration-200 group-hover:rotate-180" aria-hidden="true" />
             ) : (
-              <Moon className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
+              <Moon className="h-4.5 w-4.5 transition-transform duration-200 group-hover:-rotate-12" aria-hidden="true" />
             )}
           </button>
 
@@ -82,12 +94,12 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="relative p-2 rounded-[5px] transition-colors duration-200 group flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
+                className="relative p-2.5 rounded-md transition-all duration-200 group flex-shrink-0 text-slate-600 dark:text-[#B0B0B0] hover:bg-slate-100 dark:hover:bg-[#2a2a2a] hover:text-slate-900 dark:hover:text-[#E0E0E0] active:scale-95"
                 aria-label="Notifications (2 unread)"
               >
-                <Bell className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
+                <Bell className="h-4.5 w-4.5 transition-all duration-200 group-hover:rotate-12" aria-hidden="true" />
                 <span 
-                  className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-card" 
+                  className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-[#1e1e1e] animate-pulse" 
                   aria-hidden="true" 
                 />
               </button>
@@ -113,26 +125,29 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           {/* Settings */}
           <button
             onClick={() => window.location.href = '/dashboard/settings'}
-            className="hidden md:block p-2 rounded-[5px] transition-colors duration-200 group flex-shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="hidden md:block p-2.5 rounded-md transition-all duration-200 group flex-shrink-0 text-slate-600 dark:text-[#B0B0B0] hover:bg-slate-100 dark:hover:bg-[#2a2a2a] hover:text-slate-900 dark:hover:text-[#E0E0E0] active:scale-95"
             title="Settings"
             aria-label="Open settings"
           >
-            <Settings className="h-5 w-5 transition-colors duration-200" aria-hidden="true" />
+            <Settings className="h-4.5 w-4.5 transition-transform duration-200 group-hover:rotate-90" aria-hidden="true" />
           </button>
+
+          {/* Divider */}
+          <div className="h-8 w-px bg-slate-200 dark:bg-[#444444] hidden md:block" aria-hidden="true" />
 
           {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-[5px] transition-colors duration-200 group flex-shrink-0 hover:bg-accent"
+                className="flex items-center gap-3 pl-2 pr-3 py-2 rounded-md transition-all duration-200 group flex-shrink-0 hover:bg-slate-100 dark:hover:bg-[#2a2a2a] active:scale-95"
                 aria-label="User menu"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center shadow-lg flex-shrink-0 from-blue-600 to-blue-700 dark:from-cyan-500 dark:to-cyan-600 dark:shadow-cyan-500/30" aria-hidden="true">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center shadow-sm flex-shrink-0 from-orange-500 to-orange-600 ring-2 ring-white dark:ring-[#1e1e1e]" aria-hidden="true">
                   <User className="h-4 w-4 text-white" strokeWidth={2.5} />
                 </div>
                 <div className="hidden xl:block text-left min-w-0">
-                  <p className="text-sm font-medium truncate text-foreground">Admin User</p>
-                  <p className="text-xs truncate text-muted-foreground">Administrator</p>
+                  <p className="text-sm font-semibold truncate text-slate-900 dark:text-[#E0E0E0]">Admin User</p>
+                  <p className="text-xs truncate text-slate-500 dark:text-[#888888]">Administrator</p>
                 </div>
               </button>
             </DropdownMenuTrigger>
