@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
 // Using Supabase as primary database
 import { getAccounts, validateCredentials, updateAccount, updateUsername, addAccount } from "@/lib/supabase-db"
+import { isSupabaseConfigured } from "@/lib/supabase"
 
 // GET - Get all accounts (admin only)
 export async function GET() {
   try {
+    if (!isSupabaseConfigured) {
+      return NextResponse.json({ 
+        error: "Database not configured. Please add Supabase environment variables." 
+      }, { status: 503 })
+    }
+
     const accounts = await getAccounts()
     
     // Remove passwords from response for security
@@ -26,6 +33,12 @@ export async function GET() {
 // POST - Create new account or validate credentials
 export async function POST(request: NextRequest) {
   try {
+    if (!isSupabaseConfigured) {
+      return NextResponse.json({ 
+        error: "Database not configured. Please add Supabase environment variables." 
+      }, { status: 503 })
+    }
+
     const body = await request.json()
     const { action, username, password, role, displayName } = body
 
@@ -75,6 +88,12 @@ export async function POST(request: NextRequest) {
 // PUT - Update account
 export async function PUT(request: NextRequest) {
   try {
+    if (!isSupabaseConfigured) {
+      return NextResponse.json({ 
+        error: "Database not configured. Please add Supabase environment variables." 
+      }, { status: 503 })
+    }
+
     const body = await request.json()
     const { action, username, newUsername, password, displayName } = body
 

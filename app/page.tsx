@@ -81,7 +81,21 @@ export default function EnterpriseLoginPage() {
         })
       })
 
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type")
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error("Non-JSON response received:", response.status, response.statusText)
+        setError("Database connection error. Please contact administrator.")
+        return
+      }
+
       const data = await response.json()
+
+      // Check for configuration errors
+      if (response.status === 503) {
+        setError(data.error || "Database not configured. Please contact administrator.")
+        return
+      }
 
       if (data.success && data.account) {
         if (typeof window !== 'undefined') {
@@ -104,11 +118,11 @@ export default function EnterpriseLoginPage() {
         const redirectPath = data.account.role === "admin" ? "/dashboard" : "/dashboard/operations"
         router.push(redirectPath)
       } else {
-        setError("Invalid username or password. Please try again.")
+        setError(data.error || "Invalid username or password. Please try again.")
       }
     } catch (error) {
       console.error("Login error:", error)
-      setError("Login failed. Please try again.")
+      setError("Login failed. Please check your connection and try again.")
     } finally {
       setLoading(false)
     }
