@@ -1,9 +1,9 @@
-import CleanSaaSLayout from "@/components/clean-saas-layout"
+import ClientLayout from "@/components/client-layout"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return <CleanSaaSLayout>{children}</CleanSaaSLayout>
+  return <ClientLayout>{children}</ClientLayout>
 }
