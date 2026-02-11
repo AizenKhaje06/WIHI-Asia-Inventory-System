@@ -210,7 +210,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         className={cn(
           "fixed z-50 flex flex-col",
           reducedMotion ? "" : "transition-all duration-300",
-          collapsed ? "w-20" : "w-64",
+          collapsed ? "w-16" : "w-52", // Reduced from w-20/w-64 to w-16/w-52 (20% smaller)
           isMobile && !mobileOpen && "-translate-x-full",
           isMobile && mobileOpen && "translate-x-0",
           // Desktop: clean edge with subtle border
@@ -227,12 +227,12 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
       >
         {/* Logo & Brand - Clean Minimal Layout */}
         <div 
-          className="h-20 flex items-center justify-between px-4 border-b flex-shrink-0 border-slate-200/60 dark:border-slate-800/60"
+          className="h-16 flex items-center justify-between px-3 border-b flex-shrink-0 border-slate-200/60 dark:border-slate-800/60"
         >
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {!collapsed ? (
-              <div className="flex items-center gap-3 w-full min-w-0">
-                <div className="flex-shrink-0 w-12 h-12 relative" aria-hidden="true">
+              <div className="flex items-center gap-2 w-full min-w-0">
+                <div className="flex-shrink-0 w-10 h-10 relative" aria-hidden="true">
                   <img 
                     src="/System Logo.png" 
                     alt="StockSync Logo" 
@@ -240,16 +240,16 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                   />
                 </div>
                 <div className="flex flex-col justify-center min-w-0 flex-1">
-                  <h1 className="text-xs font-semibold text-slate-900 dark:text-white truncate">
+                  <h1 className="text-[10px] font-semibold text-slate-900 dark:text-white truncate">
                     StockSync
                   </h1>
-                  <p className="text-[12px] text-slate-500 dark:text-slate-400 truncate">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                     Advanced Inventory System
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="flex-shrink-0 w-12 h-12 relative mx-auto" aria-hidden="true">
+              <div className="flex-shrink-0 w-10 h-10 relative mx-auto" aria-hidden="true">
                 <img 
                   src="/System Logo.png" 
                   alt="StockSync Logo" 
@@ -272,22 +272,22 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         </div>
 
           {/* User Profile Section - Clean Minimal */}
-        <div className="p-4 border-b flex-shrink-0 border-slate-200/60 dark:border-slate-800/60">
+        <div className="p-3 border-b flex-shrink-0 border-slate-200/60 dark:border-slate-800/60">
           <div className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/50",
-            collapsed && "justify-center px-2"
+            "flex items-center gap-2 px-2 py-2 rounded-lg bg-slate-50 dark:bg-slate-900/50",
+            collapsed && "justify-center px-1"
           )}>
             <div className="relative flex-shrink-0">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white">
-                <User className="h-4 w-4" strokeWidth={2} />
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white">
+                <User className="h-3 w-3" strokeWidth={2} />
               </div>
               {/* Online status indicator */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-slate-900" aria-hidden="true" />
+              <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border-2 border-white dark:border-slate-900" aria-hidden="true" />
             </div>
             {!collapsed && currentUser && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{currentUser.displayName}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                <p className="text-xs font-medium text-slate-900 dark:text-white truncate">{currentUser.displayName}</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                   {ROLES[currentUser.role]?.name || currentUser.role}
                 </p>
               </div>
@@ -323,18 +323,18 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 min-h-0 max-h-full" style={{ scrollbarGutter: 'stable' }} aria-label="Primary">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 min-h-0 max-h-full" style={{ scrollbarGutter: 'stable' }} aria-label="Primary">
           {navigation.map((section, sectionIdx) => (
-            <div key={section.section} className={cn("mb-6", sectionIdx === 0 && "mt-0")}>
+            <div key={section.section} className={cn("mb-5", sectionIdx === 0 && "mt-0")}>
               {!collapsed && (
-                <div className="px-3 mb-2">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <div className="px-2 mb-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {section.section}
                   </p>
                 </div>
               )}
               {collapsed && sectionIdx > 0 && (
-                <div className="h-px my-3 mx-2 bg-slate-200 dark:bg-slate-800" />
+                <div className="h-px my-2 mx-1 bg-slate-200 dark:bg-slate-800" />
               )}
               <div className="space-y-1" role="list">
                 {section.items.map((item) => {
@@ -345,7 +345,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                       href={item.href}
                       onClick={handleNavClick}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg group relative",
+                        "flex items-center gap-2 px-2 py-2 rounded-lg group relative",
                         reducedMotion ? "" : "transition-colors duration-200",
                         isActive 
                           ? "bg-blue-500 text-white" 
@@ -355,20 +355,20 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                       role="listitem"
                     >
                       <item.icon
-                        className="h-[18px] w-[18px] flex-shrink-0"
+                        className="h-[14px] w-[14px] flex-shrink-0"
                         strokeWidth={2}
                         aria-hidden="true"
                       />
                       {!collapsed && (
                         <>
-                          <span className="text-sm font-medium flex-1">
+                          <span className="text-xs font-medium flex-1">
                             {item.name}
                           </span>
                           {item.badge !== undefined && (
                             <Badge 
                               variant={item.badgeVariant === 'destructive' ? 'destructive' : item.badgeVariant === 'warning' ? 'default' : 'default'}
                               className={cn(
-                                "ml-auto text-xs",
+                                "ml-auto text-[10px] px-1.5 py-0",
                                 item.badgeVariant === 'warning' && "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400",
                                 isActive && "bg-white/20 text-white"
                               )}
@@ -379,7 +379,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                         </>
                       )}
                       {collapsed && item.badge !== undefined && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center text-white text-xs font-bold">
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 flex items-center justify-center text-white text-[10px] font-bold">
                           {item.badge > 9 ? '9+' : item.badge}
                         </div>
                       )}
@@ -408,14 +408,14 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         </nav>
 
         {/* Logout */}
-        <div className="p-4 border-t flex-shrink-0 border-slate-200/60 dark:border-slate-800/60">
+        <div className="p-3 border-t flex-shrink-0 border-slate-200/60 dark:border-slate-800/60">
           <button
             onClick={() => {
               clearCurrentUser()
               window.location.href = "/"
             }}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg w-full",
+              "flex items-center gap-2 px-2 py-2 rounded-lg w-full",
               reducedMotion ? "" : "transition-colors duration-200",
               "text-slate-600 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
             )}
@@ -423,12 +423,12 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             aria-label="Logout from application"
           >
             <LogOut
-              className="h-[18px] w-[18px] flex-shrink-0"
+              className="h-[14px] w-[14px] flex-shrink-0"
               strokeWidth={2}
               aria-hidden="true"
             />
             {!collapsed && (
-              <span className="text-sm font-medium">
+              <span className="text-xs font-medium">
                 Logout
               </span>
             )}
