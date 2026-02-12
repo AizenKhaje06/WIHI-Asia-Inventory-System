@@ -8,11 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { TrendingUp, TrendingDown, Minus, AlertTriangle, Target, BarChart3, Package, DollarSign, Percent, Download, RefreshCw, TrendingUpIcon, Search, X, RotateCcw, FileDown } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, Target, BarChart3, Package, DollarSign, Percent, RefreshCw, TrendingUpIcon, Search, X, RotateCcw } from "lucide-react"
 import type { ABCAnalysis, InventoryTurnover, PredictiveAnalytics } from "@/lib/types"
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
-import { exportBusinessInsightsPDF } from "@/lib/pdf-export"
 
 export default function InsightsPage() {
   const [abcAnalysis, setAbcAnalysis] = useState<ABCAnalysis[]>([])
@@ -119,120 +118,7 @@ export default function InsightsPage() {
     }
   }
 
-  function exportToCSV(data: any[], filename: string, headers: string[]) {
-    if (data.length === 0) return
 
-    const rows = data.map(item => {
-      if (activeTab === 'abc') {
-        return [item.itemName, item.category, item.revenueContribution, item.recommendation]
-      } else if (activeTab === 'turnover') {
-        return [item.itemName, item.turnoverRatio, item.daysToSell, item.status]
-      } else if (activeTab === 'forecast') {
-        return [item.itemName, item.predictedDemand, item.recommendedReorderQty, item.trend, item.confidence]
-      } else if (activeTab === 'profit') {
-        return [item.category, item.revenue, item.profit, item.margin]
-      } else if (activeTab === 'deadstock') {
-        return [item.name, item.category, item.quantity, item.quantity * item.costPrice]
-      } else if (activeTab === 'returns') {
-        return [item.itemName, item.quantity, item.value, item.returnRate]
-      }
-      return []
-    })
-
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(row => row.join(","))
-    ].join("\n")
-
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `${filename}-${new Date().toISOString().split('T')[0]}.csv`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    window.URL.revokeObjectURL(url)
-  }
-
-  // Comprehensive CSV Export - ALL TABS
-  function exportComprehensiveCSV() {
-    let csvContent = "COMPREHENSIVE BUSINESS INSIGHTS REPORT\n"
-    csvContent += `Generated: ${new Date().toLocaleString()}\n\n`
-
-    // ABC Analysis
-    csvContent += "=== ABC ANALYSIS ===\n"
-    csvContent += "Product,Category,Revenue %,Classification,Recommendation\n"
-    abcAnalysis.forEach(item => {
-      csvContent += `${item.itemName},${item.category},${item.revenueContribution},${item.classification},${item.recommendation}\n`
-    })
-    csvContent += "\n"
-
-    // Inventory Turnover
-    csvContent += "=== INVENTORY TURNOVER ===\n"
-    csvContent += "Product,Turnover Ratio,Days to Sell,Status\n"
-    turnover.forEach(item => {
-      csvContent += `${item.itemName},${item.turnoverRatio},${item.daysToSell},${item.status}\n`
-    })
-    csvContent += "\n"
-
-    // Sales Forecast
-    csvContent += "=== SALES FORECAST ===\n"
-    csvContent += "Product,Predicted Demand,Recommended Reorder,Trend,Confidence %\n"
-    forecasts.forEach(item => {
-      csvContent += `${item.itemName},${item.predictedDemand},${item.recommendedReorderQty},${item.trend},${item.confidence}\n`
-    })
-    csvContent += "\n"
-
-    // Profit Margin
-    csvContent += "=== PROFIT MARGIN BY CATEGORY ===\n"
-    csvContent += "Category,Revenue,Profit,Margin %\n"
-    profitMargin.forEach(item => {
-      csvContent += `${item.category},${item.revenue},${item.profit},${item.margin}\n`
-    })
-    csvContent += "\n"
-
-    // Dead Stock
-    csvContent += "=== DEAD STOCK ===\n"
-    csvContent += "Product,Category,Quantity,Days to Sell,Value\n"
-    deadStock.forEach(item => {
-      csvContent += `${item.name},${item.category},${item.quantity},${item.daysToSell},${item.quantity * item.costPrice}\n`
-    })
-    csvContent += "\n"
-
-    // Returns Analysis
-    if (returnAnalytics?.returnsByItem) {
-      csvContent += "=== RETURNS ANALYSIS ===\n"
-      csvContent += "Product,Quantity Returned,Return Value,Return Rate %\n"
-      returnAnalytics.returnsByItem.forEach((item: any) => {
-        csvContent += `${item.itemName},${item.quantity},${item.value},${item.returnRate}\n`
-      })
-    }
-
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `comprehensive-business-insights-${new Date().toISOString().split('T')[0]}.csv`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    window.URL.revokeObjectURL(url)
-  }
-
-  // Comprehensive PDF Export - ALL TABS
-  async function exportComprehensivePDF() {
-    const { exportComprehensiveBusinessInsightsPDF } = await import("@/lib/pdf-export")
-    
-    exportComprehensiveBusinessInsightsPDF({
-      abcAnalysis,
-      turnover,
-      forecasts,
-      profitMargin,
-      deadStock,
-      returnAnalytics: returnAnalytics?.returnsByItem || []
-    })
-  }
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
@@ -378,24 +264,6 @@ export default function InsightsPage() {
           >
             <RefreshCw className="h-4 w-4" />
             Refresh
-          </Button>
-          <Button
-            onClick={exportComprehensivePDF}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <FileDown className="h-4 w-4" />
-            PDF (All Reports)
-          </Button>
-          <Button
-            onClick={exportComprehensiveCSV}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <Download className="h-4 w-4" />
-            CSV (All Reports)
           </Button>
         </div>
       </div>

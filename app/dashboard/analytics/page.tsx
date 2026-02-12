@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { DollarSign, TrendingUp, TrendingDown, Percent, BarChart3, ChevronLeft, ChevronRight, Download, Calendar, ShoppingCart, Package, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { DollarSign, TrendingUp, TrendingDown, Percent, BarChart3, ChevronLeft, ChevronRight, Calendar, ShoppingCart, Package, ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Line, LineChart, Area, AreaChart } from "recharts"
 import {
   ChartContainer,
@@ -73,27 +73,6 @@ export default function AnalyticsPage() {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
     setLoading(true)
     setError(null)
-  }
-
-  function exportToCSV() {
-    const data = view === 'daily' ? dailySales : monthlySales
-    const headers = view === 'daily' ? ['Date', 'Revenue'] : ['Month', 'Revenue']
-    const rows = data.map(item => [
-      view === 'daily' ? item.date : item.month,
-      item.revenue
-    ])
-
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(row => row.join(","))
-    ].join("\n")
-
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `sales-analytics-${view}-${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
   }
 
   if (loading) {
@@ -346,16 +325,6 @@ export default function AnalyticsPage() {
                   </Button>
                 </div>
               )}
-              <Button
-                onClick={exportToCSV}
-                variant="outline"
-                size="sm"
-                className="gap-2 h-9 w-full sm:w-auto"
-                disabled={dailySales.length === 0 && monthlySales.length === 0}
-              >
-                <Download className="h-4 w-4" />
-                Export
-              </Button>
             </div>
           </div>
         </CardContent>

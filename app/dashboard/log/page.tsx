@@ -140,39 +140,6 @@ export default function LogPage() {
     setCurrentPage(1)
   }
 
-  // Export to CSV
-  const exportToCSV = () => {
-    if (filteredLogs.length === 0) {
-      toast.error('No data to export')
-      return
-    }
-
-    const headers = ['Date & Time', 'Operation', 'Item', 'Details']
-    const rows = filteredLogs.map(log => [
-      format(new Date(log.timestamp), "MMM dd, yyyy HH:mm:ss"),
-      log.operation || '-',
-      log.itemName || '-',
-      log.details || '-'
-    ])
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `operation-logs-${format(new Date(), 'yyyy-MM-dd')}.csv`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    window.URL.revokeObjectURL(url)
-    
-    toast.success('Logs exported successfully')
-  }
-
   // Get operation badge
   const getOperationBadge = (operation: string) => {
     const op = operation?.toLowerCase() || 'default'
@@ -336,17 +303,6 @@ export default function LogPage() {
               <SelectItem value="oldest">Oldest First</SelectItem>
             </SelectContent>
           </Select>
-
-          {/* Export Button */}
-          <Button
-            onClick={exportToCSV}
-            variant="outline"
-            className="w-full"
-            disabled={filteredLogs.length === 0}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
-          </Button>
         </div>
 
         {/* Results Summary */}

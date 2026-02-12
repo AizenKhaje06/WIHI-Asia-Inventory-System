@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Package, Monitor, Users, Search, Download, RefreshCw, Calendar, TrendingUp, BarChart3, PieChart } from "lucide-react"
+import { Package, Monitor, Users, Search, RefreshCw, Calendar, TrendingUp, BarChart3, PieChart } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { cn } from "@/lib/utils"
@@ -281,36 +281,6 @@ export default function InternalUsagePage() {
     .sort((a, b) => b.totalValue - a.totalValue)
     .slice(0, 10)
 
-  // Export to CSV
-  function exportToCSV() {
-    const headers = ["Date", "Type", "Item", "Quantity", "Value", "Department", "Staff", "Notes"]
-    const rows = filteredTransactions.map(t => [
-      new Date(t.timestamp).toLocaleDateString(),
-      t.transactionType === "demo" ? "Demo/Display" : "Internal Use",
-      t.itemName,
-      t.quantity,
-      formatCurrency(t.totalCost),
-      t.department || "",
-      t.staffName || "",
-      t.notes || ""
-    ])
-
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(row => row.join(","))
-    ].join("\n")
-
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `internal-usage-${new Date().toISOString().split('T')[0]}.csv`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    window.URL.revokeObjectURL(url)
-  }
-
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -333,10 +303,6 @@ export default function InternalUsagePage() {
           <Button variant="outline" size="sm" onClick={fetchInternalUsage}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
-          </Button>
-          <Button variant="outline" size="sm" onClick={exportToCSV}>
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
           </Button>
         </div>
       </div>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { SetupRequiredAlert } from "@/components/setup-required-alert"
-import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart3, ShoppingCart, TrendingDown, Users, BarChart2, Activity, ArrowUpRight, ArrowDownRight, Percent, RefreshCw, Download, Plus, FileText, AlertCircle, PackageX, PackageOpen, RotateCcw, FileDown } from "lucide-react"
+import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart3, ShoppingCart, TrendingDown, Users, BarChart2, Activity, ArrowUpRight, ArrowDownRight, Percent, RefreshCw, Plus, FileText, AlertCircle, PackageX, PackageOpen, RotateCcw, FileDown } from "lucide-react"
 import {
   XAxis,
   YAxis,
@@ -32,7 +32,6 @@ import type { DashboardStats, InventoryItem } from "@/lib/types"
 import { formatNumber } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { PremiumDashboardLoading } from "@/components/premium-loading"
-import { exportDashboardPDF } from "@/lib/pdf-export"
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -95,36 +94,6 @@ export default function DashboardPage() {
   const netProfit = (stats?.totalRevenue || 0) - (stats?.totalCost || 0) - (stats?.returnValue || 0)
   const lowStockCount = lowStockItems.length
   const outOfStockCount = outOfStockItems.length
-
-  // Export dashboard data as CSV
-  const exportDashboard = () => {
-    const csvRows = [
-      ['Dashboard Export', new Date().toLocaleDateString()],
-      [],
-      ['Metric', 'Value'],
-      ['Total Revenue', `₱${formatNumber(stats?.totalRevenue || 0)}`],
-      ['Net Profit', `₱${formatNumber(netProfit)}`],
-      ['Return Rate', `${(stats?.returnRate || 0).toFixed(1)}%`],
-      ['Items Sold Today', stats?.itemsSoldToday || 0],
-      ['Profit Margin', `${(stats?.profitMargin || 0).toFixed(1)}%`],
-      ['Low Stock Items', lowStockCount],
-      ['Out of Stock Items', outOfStockCount],
-      [],
-      ['Top Products', 'Units Sold', 'Revenue'],
-      ...(stats?.topProducts || []).map(p => [p.name, p.sales, `₱${formatNumber(p.revenue)}`])
-    ]
-    
-    const csvContent = csvRows.map(row => row.join(',')).join('\n')
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `dashboard-export-${new Date().toISOString().split('T')[0]}.csv`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    window.URL.revokeObjectURL(url)
-  }
 
   if (loading) {
     return <PremiumDashboardLoading />
