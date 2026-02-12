@@ -17,6 +17,7 @@ import { EditItemDialog } from "@/components/edit-item-dialog"
 import { formatNumber, formatCurrency } from "@/lib/utils"
 import { showSuccess, showError } from "@/lib/toast-utils"
 import type { StorageRoom } from "@/lib/types"
+import { getCurrentUser } from "@/lib/auth"
 
 import { PremiumTableLoading } from "@/components/premium-loading"
 
@@ -430,30 +431,32 @@ export default function InventoryPage() {
             </p>
           </div>
           
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <Button
-              onClick={() => setAddDialogOpen(true)}
-              className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Add Product
-            </Button>
-            <Button
-              onClick={() => setCategoryDialogOpen(true)}
-              className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Tag className="h-5 w-5 mr-2" />
-              Categories
-            </Button>
-            <Button
-              onClick={() => setWarehouseDialogOpen(true)}
-              className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Warehouse className="h-5 w-5 mr-2" />
-              Storage
-            </Button>
-          </div>
+          {/* Action Buttons - Admin only */}
+          {getCurrentUser()?.role === 'admin' && (
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setAddDialogOpen(true)}
+                className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Add Product
+              </Button>
+              <Button
+                onClick={() => setCategoryDialogOpen(true)}
+                className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Tag className="h-5 w-5 mr-2" />
+                Categories
+              </Button>
+              <Button
+                onClick={() => setWarehouseDialogOpen(true)}
+                className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Warehouse className="h-5 w-5 mr-2" />
+                Storage
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -759,37 +762,42 @@ export default function InventoryPage() {
                                   </TooltipContent>
                                 </Tooltip>
 
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleEdit(item)}
-                                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200 h-8 w-8 p-0"
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Edit</p>
-                                  </TooltipContent>
-                                </Tooltip>
+                                {/* Edit and Delete buttons - Admin only */}
+                                {getCurrentUser()?.role === 'admin' && (
+                                  <>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => handleEdit(item)}
+                                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                        >
+                                          <Pencil className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Edit</p>
+                                      </TooltipContent>
+                                    </Tooltip>
 
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDelete(item.id)}
-                                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 h-8 w-8 p-0"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Delete</p>
-                                  </TooltipContent>
-                                </Tooltip>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => handleDelete(item.id)}
+                                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Delete</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </>
+                                )}
                               </div>
                             </TooltipProvider>
                           </td>
