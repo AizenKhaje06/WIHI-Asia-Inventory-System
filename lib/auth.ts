@@ -30,13 +30,11 @@ export const ROLE_PERMISSIONS = {
     '/dashboard',
     '/dashboard/analytics',
     '/dashboard/sales',
-    '/dashboard/sales-channels',
-    '/dashboard/sales-channels/*',
+    '/dashboard/sales-channels/**',
     '/dashboard/customers',
     '/dashboard/reports',
     '/dashboard/insights',
-    '/dashboard/inventory',
-    '/dashboard/inventory/*',
+    '/dashboard/inventory/**',
     '/dashboard/pos',
     '/dashboard/internal-usage',
     '/dashboard/settings',
@@ -46,8 +44,7 @@ export const ROLE_PERMISSIONS = {
     '/dashboard/operations',
     '/dashboard/pos',
     '/dashboard/internal-usage',
-    '/dashboard/inventory',
-    '/dashboard/inventory/*',
+    '/dashboard/inventory/**',
     '/dashboard/customers'
   ]
 } as const
@@ -61,7 +58,11 @@ export const DEFAULT_PASSWORDS: Record<UserRole, string> = {
 // Auth helpers
 /**
  * Check if a role has permission to access a path.
- * Supports exact matches and wildcard patterns (e.g., /dashboard/inventory/*)
+ * Supports exact matches and wildcard patterns (e.g., /dashboard/inventory/**)
+ * 
+ * Pattern matching rules:
+ * - Exact: /dashboard/sales matches only /dashboard/sales
+ * - Wildcard: /dashboard/inventory/** matches /dashboard/inventory and all sub-routes
  * 
  * @param role - User role to check
  * @param path - Path to validate access for
@@ -71,14 +72,20 @@ export function hasPermission(role: UserRole, path: string): boolean {
   const permissions = ROLE_PERMISSIONS[role]
   if (!permissions) return false
   
+  // Normalize path (remove trailing slash)
+  const normalizedPath = path.replace(/\/$/, '')
+  
   return permissions.some(pattern => {
-    // Exact match
-    if (pattern === path) return true
+    // Normalize pattern
+    const normalizedPattern = pattern.replace(/\/$/, '')
     
-    // Wildcard match: /dashboard/inventory/* matches /dashboard/inventory/create
-    if (pattern.endsWith('/*')) {
-      const basePattern = pattern.slice(0, -2)
-      return path.startsWith(basePattern + '/')
+    // Exact match
+    if (normalizedPattern === normalizedPath) return true
+    
+    // Wildcard match: /dashboard/inventory/** matches /dashboard/inventory/create
+    if (normalizedPattern.endsWith('/**')) {
+      const basePattern = normalizedPattern.slice(0, -3)
+      return normalizedPath === basePattern || normalizedPath.startsWith(basePattern + '/')
     }
     
     return false
