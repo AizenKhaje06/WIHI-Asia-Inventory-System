@@ -36,7 +36,7 @@ export default function ClientLayout({
         <div className={cn(
           "flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-300",
           "ml-0",
-          sidebarCollapsed ? "lg:ml-16" : "lg:ml-52"
+          sidebarCollapsed ? "lg:ml-[88px]" : "lg:ml-[200px]"
         )}>
           {/* Premium Navbar */}
           <PremiumNavbar 
