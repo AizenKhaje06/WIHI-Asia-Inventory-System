@@ -80,6 +80,7 @@ const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0): 
   {
     section: "Analytics",
     items: [
+      { name: "Sales Channels", href: "/dashboard/sales-channels", icon: TrendingUp },
       { name: "Sales Analytics", href: "/dashboard/analytics", icon: TrendingUp },
       { name: "Business Insights", href: "/dashboard/insights", icon: Brain },
     ],
