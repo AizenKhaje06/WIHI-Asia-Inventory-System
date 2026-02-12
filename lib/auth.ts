@@ -24,19 +24,19 @@ export const ROLES = {
   }
 } as const
 
-// Page permissions per role
+// Page permissions per role - supports wildcards for nested routes
 export const ROLE_PERMISSIONS = {
   admin: [
     '/dashboard',
     '/dashboard/analytics',
     '/dashboard/sales',
+    '/dashboard/sales-channels',
+    '/dashboard/sales-channels/*',
     '/dashboard/customers',
     '/dashboard/reports',
     '/dashboard/insights',
     '/dashboard/inventory',
-    '/dashboard/inventory/create',
-    '/dashboard/inventory/low-stock',
-    '/dashboard/inventory/out-of-stock',
+    '/dashboard/inventory/*',
     '/dashboard/pos',
     '/dashboard/internal-usage',
     '/dashboard/settings',
@@ -47,9 +47,7 @@ export const ROLE_PERMISSIONS = {
     '/dashboard/pos',
     '/dashboard/internal-usage',
     '/dashboard/inventory',
-    '/dashboard/inventory/create',
-    '/dashboard/inventory/low-stock',
-    '/dashboard/inventory/out-of-stock',
+    '/dashboard/inventory/*',
     '/dashboard/customers'
   ]
 } as const
@@ -61,11 +59,30 @@ export const DEFAULT_PASSWORDS: Record<UserRole, string> = {
 }
 
 // Auth helpers
+/**
+ * Check if a role has permission to access a path.
+ * Supports exact matches and wildcard patterns (e.g., /dashboard/inventory/*)
+ * 
+ * @param role - User role to check
+ * @param path - Path to validate access for
+ * @returns true if role has permission, false otherwise
+ */
 export function hasPermission(role: UserRole, path: string): boolean {
   const permissions = ROLE_PERMISSIONS[role]
+  if (!permissions) return false
   
-  // Check for exact match
-  return permissions.includes(path as any)
+  return permissions.some(pattern => {
+    // Exact match
+    if (pattern === path) return true
+    
+    // Wildcard match: /dashboard/inventory/* matches /dashboard/inventory/create
+    if (pattern.endsWith('/*')) {
+      const basePattern = pattern.slice(0, -2)
+      return path.startsWith(basePattern + '/')
+    }
+    
+    return false
+  })
 }
 
 export function getDefaultRoute(role: UserRole): string {
