@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { InventoryItem, StorageRoom } from "@/lib/types"
+import { apiGet, apiPut } from "@/lib/api-client"
 
 interface EditItemDialogProps {
   open: boolean
@@ -55,11 +56,8 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
   async function fetchStorageRooms() {
     try {
       setLoadingRooms(true)
-      const response = await fetch("/api/storage-rooms")
-      if (response.ok) {
-        const data = await response.json()
-        setStorageRooms(data)
-      }
+      const data = await apiGet<StorageRoom[]>("/api/storage-rooms")
+      setStorageRooms(data)
     } catch (error) {
       console.error("Error fetching storage rooms:", error)
     } finally {
@@ -70,11 +68,8 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
   async function fetchCategories() {
     try {
       setLoadingCategories(true)
-      const response = await fetch("/api/categories")
-      if (response.ok) {
-        const data = await response.json()
-        setCategories(data)
-      }
+      const data = await apiGet<Array<{id: string, name: string}>>("/api/categories")
+      setCategories(data)
     } catch (error) {
       console.error("Error fetching categories:", error)
     } finally {
@@ -87,12 +82,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
     setLoading(true)
 
     try {
-      await fetch(`/api/items/${item.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      })
-
+      await apiPut(`/api/items/${item.id}`, formData)
       onSuccess()
       onOpenChange(false)
     } catch (error) {

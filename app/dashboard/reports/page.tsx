@@ -10,6 +10,7 @@ import { Search, Filter, BarChart3, Package, FileText } from "lucide-react"
 import type { SalesReport } from "@/lib/types"
 import { toast } from "sonner"
 import { formatNumber } from "@/lib/utils"
+import { apiGet } from "@/lib/api-client"
 
 export default function ReportsPage() {
   const [report, setReport] = useState<SalesReport | null>(null)
@@ -48,8 +49,7 @@ export default function ReportsPage() {
       if (startDate) params.append("startDate", startDate)
       if (endDate) params.append("endDate", endDate)
 
-      const res = await fetch(`/api/reports?${params}`)
-      const data = await res.json()
+      const data = await apiGet<SalesReport>(`/api/reports?${params}`)
       setReport(data)
       // Don't open modal on initial load
     } catch (error) {
@@ -67,8 +67,7 @@ export default function ReportsPage() {
       if (startDate) params.append("startDate", startDate)
       if (endDate) params.append("endDate", endDate)
 
-      const res = await fetch(`/api/reports?${params}`)
-      const data = await res.json()
+      const data = await apiGet<SalesReport>(`/api/reports?${params}`)
       setReport(data)
     } catch (error) {
       console.error("[v0] Error fetching report:", error)

@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast"
 import type { Customer } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
 import { PremiumTableLoading } from "@/components/premium-loading"
+import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api-client"
 
 export default function CustomersPage() {
   const { toast } = useToast()
@@ -73,8 +74,7 @@ export default function CustomersPage() {
 
   async function fetchCustomers() {
     try {
-      const res = await fetch("/api/customers")
-      const data = await res.json()
+      const data = await apiGet<Customer[]>("/api/customers")
       setCustomers(data)
     } catch (error) {
       console.error("Error fetching customers:", error)
@@ -201,11 +201,7 @@ export default function CustomersPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     try {
-      await fetch("/api/customers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      })
+      await apiPost("/api/customers", formData)
       setAddDialogOpen(false)
       setFormData({ name: "", email: "", phone: "", address: "" })
       fetchCustomers()
@@ -218,11 +214,7 @@ export default function CustomersPage() {
     e.preventDefault()
     if (!selectedCustomer) return
     try {
-      await fetch(`/api/customers/${selectedCustomer.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      })
+      await apiPut(`/api/customers/${selectedCustomer.id}`, formData)
       setEditDialogOpen(false)
       setSelectedCustomer(null)
       setFormData({ name: "", email: "", phone: "", address: "" })
@@ -235,9 +227,7 @@ export default function CustomersPage() {
   async function handleDelete() {
     if (!selectedCustomer) return
     try {
-      await fetch(`/api/customers/${selectedCustomer.id}`, {
-        method: "DELETE",
-      })
+      await apiDelete(`/api/customers/${selectedCustomer.id}`)
       setDeleteDialogOpen(false)
       setSelectedCustomer(null)
       fetchCustomers()
@@ -308,24 +298,9 @@ export default function CustomersPage() {
 
       console.log('Updating customer:', selectedCustomer.id, updatedCustomer)
 
-      const response = await fetch(`/api/customers/${selectedCustomer.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedCustomer),
-      })
+      const result = await apiPut(`/api/customers/${selectedCustomer.id}`, updatedCustomer)
 
-      const result = await response.json()
       console.log('API Response:', result)
-
-      if (!response.ok) {
-        console.error('Update failed:', result)
-        toast({
-          title: "Update Failed",
-          description: result.error || "Failed to update customer. Please try again.",
-          variant: "destructive"
-        })
-        return
-      }
 
       console.log('Update successful')
       
@@ -341,7 +316,7 @@ export default function CustomersPage() {
       await fetchCustomers()
       
       // Update selected customer with new data
-      const updatedCustomers = await fetch("/api/customers").then(r => r.json())
+      const updatedCustomers = await apiGet<Customer[]>("/api/customers")
       const refreshedCustomer = updatedCustomers.find((c: Customer) => c.id === selectedCustomer.id)
       if (refreshedCustomer) {
         setSelectedCustomer(refreshedCustomer)

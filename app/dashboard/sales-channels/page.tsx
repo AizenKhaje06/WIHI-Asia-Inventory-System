@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { apiGet } from "@/lib/api-client"
 
 interface Department {
   name: string
@@ -76,8 +77,7 @@ export default function SalesChannelsPage() {
       if (startDate) params.append('startDate', startDate)
       if (endDate) params.append('endDate', endDate)
 
-      const res = await fetch(`/api/departments?${params}`)
-      const result = await res.json()
+      const result = await apiGet<DepartmentsData>(`/api/departments?${params}`)
       setData(result)
     } catch (error) {
       console.error("Error fetching departments:", error)

@@ -13,6 +13,7 @@ import { Search, Pencil, Trash2, PackagePlus, Filter, AlertTriangle, Package, Tr
 import type { InventoryItem } from "@/lib/types"
 import { cn, formatCurrency, formatNumber } from "@/lib/utils"
 import { EditItemDialog } from "@/components/edit-item-dialog"
+import { apiGet, apiPost, apiDelete } from "@/lib/api-client"
 
 export default function LowStockPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -90,13 +91,7 @@ export default function LowStockPage() {
 
   async function fetchItems() {
     try {
-      const res = await fetch("/api/items")
-      if (!res.ok) {
-        console.error("[Low Stock] Failed to fetch items, status:", res.status)
-        setItems([])
-        return
-      }
-      const data = await res.json()
+      const data = await apiGet<InventoryItem[]>("/api/items")
       const itemsArray = Array.isArray(data) ? data : []
       setItems(itemsArray)
     } catch (error) {
@@ -123,7 +118,7 @@ export default function LowStockPage() {
     if (!confirm("Are you sure you want to delete this item?")) return
 
     try {
-      await fetch(`/api/items/${id}`, { method: "DELETE" })
+      await apiDelete(`/api/items/${id}`)
       fetchItems()
     } catch (error) {
       console.error("Error deleting item:", error)
@@ -147,17 +142,10 @@ export default function LowStockPage() {
     if (!selectedRestockItem || restockAmount <= 0 || !restockReason) return
 
     try {
-      const res = await fetch(`/api/items/${selectedRestockItem.id}/restock`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: restockAmount, reason: restockReason }),
+      await apiPost(`/api/items/${selectedRestockItem.id}/restock`, { 
+        amount: restockAmount, 
+        reason: restockReason 
       })
-
-      if (!res.ok) {
-        const error = await res.json()
-        alert(`Error: ${error.error}`)
-        return
-      }
 
       setRestockDialogOpen(false)
       setSelectedRestockItem(null)
