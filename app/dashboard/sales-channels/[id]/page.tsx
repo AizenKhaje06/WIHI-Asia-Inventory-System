@@ -63,6 +63,7 @@ export default function SalesChannelDetailPage() {
   const [loading, setLoading] = useState(true)
   const [startDate, setStartDate] = useState(searchParams.get('startDate') || "")
   const [endDate, setEndDate] = useState(searchParams.get('endDate') || "")
+  const [chartPeriod, setChartPeriod] = useState<'day' | 'week' | 'month'>('week')
 
   useEffect(() => {
     if (!startDate || !endDate) {
@@ -121,6 +122,63 @@ export default function SalesChannelDetailPage() {
   }
 
   const isPositive = data.metrics.totalProfit >= 0
+
+  // Aggregate cash flow data based on selected period
+  const getAggregatedCashFlow = () => {
+    if (!data?.cashFlow) return []
+    
+    if (chartPeriod === 'day') {
+      return data.cashFlow
+    }
+    
+    const aggregated: { [key: string]: { revenue: number; cost: number; profit: number; count: number } } = {}
+    
+    data.cashFlow.forEach(item => {
+      const date = new Date(item.date)
+      let key: string
+      
+      if (chartPeriod === 'week') {
+        // Get week start (Sunday)
+        const weekStart = new Date(date)
+        weekStart.setDate(date.getDate() - date.getDay())
+        key = weekStart.toISOString().split('T')[0]
+      } else {
+        // Month
+        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`
+      }
+      
+      if (!aggregated[key]) {
+        aggregated[key] = { revenue: 0, cost: 0, profit: 0, count: 0 }
+      }
+      
+      aggregated[key].revenue += item.revenue
+      aggregated[key].cost += item.cost
+      aggregated[key].profit += item.profit
+      aggregated[key].count++
+    })
+    
+    return Object.entries(aggregated)
+      .map(([date, data]) => ({
+        date,
+        revenue: data.revenue,
+        cost: data.cost,
+        profit: data.profit
+      }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  }
+
+  const chartData = getAggregatedCashFlow()
+
+  const formatXAxisDate = (date: string) => {
+    const d = new Date(date)
+    if (chartPeriod === 'day') {
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    } else if (chartPeriod === 'week') {
+      return `Week ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+    } else {
+      return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    }
+  }
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-6">
@@ -272,13 +330,53 @@ export default function SalesChannelDetailPage() {
       {/* Cash Flow Chart */}
       <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900">
         <CardHeader className="pb-4">
-          <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">
-            Cash Flow Over Time
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">
+              Cash Flow Over Time
+            </CardTitle>
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+              <Button
+                variant={chartPeriod === 'day' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setChartPeriod('day')}
+                className={`h-8 px-3 text-xs ${
+                  chartPeriod === 'day' 
+                    ? 'bg-white dark:bg-slate-700 shadow-sm' 
+                    : 'hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                Day
+              </Button>
+              <Button
+                variant={chartPeriod === 'week' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setChartPeriod('week')}
+                className={`h-8 px-3 text-xs ${
+                  chartPeriod === 'week' 
+                    ? 'bg-white dark:bg-slate-700 shadow-sm' 
+                    : 'hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                Week
+              </Button>
+              <Button
+                variant={chartPeriod === 'month' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setChartPeriod('month')}
+                className={`h-8 px-3 text-xs ${
+                  chartPeriod === 'month' 
+                    ? 'bg-white dark:bg-slate-700 shadow-sm' 
+                    : 'hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                Month
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={350}>
-            <AreaChart data={data.cashFlow}>
+            <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
@@ -299,7 +397,7 @@ export default function SalesChannelDetailPage() {
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                tickFormatter={formatXAxisDate}
               />
               <YAxis 
                 fontSize={11}
@@ -309,7 +407,16 @@ export default function SalesChannelDetailPage() {
               />
               <Tooltip 
                 formatter={(value: number) => formatCurrency(value)}
-                labelFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                labelFormatter={(date) => {
+                  const d = new Date(date)
+                  if (chartPeriod === 'day') {
+                    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                  } else if (chartPeriod === 'week') {
+                    return `Week of ${d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+                  } else {
+                    return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                  }
+                }}
                 contentStyle={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e2e8f0',
