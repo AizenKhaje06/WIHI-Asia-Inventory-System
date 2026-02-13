@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-// Using Supabase as primary database
 import { getInventoryItems, getTransactions, getRestocks } from "@/lib/supabase-db"
+import { getCachedData } from "@/lib/cache"
 import {
   calculateSalesForecast,
   performABCAnalysis,
@@ -12,16 +12,31 @@ import {
   calculateNetSales,
   performABCAnalysisWithReturns
 } from "@/lib/analytics"
+import { withAuth } from "@/lib/api-helpers"
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { user }) => {
   try {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'all'
     const itemId = searchParams.get('itemId')
 
-    const items = await getInventoryItems()
-    const transactions = await getTransactions()
-    const restocks = await getRestocks()
+    const items = await getCachedData(
+      'inventory-items',
+      () => getInventoryItems(),
+      2 * 60 * 1000
+    )
+    
+    const transactions = await getCachedData(
+      'transactions',
+      () => getTransactions(),
+      2 * 60 * 1000
+    )
+    
+    const restocks = await getCachedData(
+      'restocks',
+      () => getRestocks(),
+      2 * 60 * 1000
+    )
 
     let result: any = {}
 
@@ -83,7 +98,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result)
   } catch (error) {
-    console.error("Error generating analytics:", error)
+    console.error("[API] Error generating analytics:", error)
     return NextResponse.json({ error: "Failed to generate analytics" }, { status: 500 })
   }
-}
+})

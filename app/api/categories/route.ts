@@ -1,18 +1,23 @@
-import { NextResponse } from "next/server"
-// Using Supabase as primary database
-import { getCategories, addCategory } from "@/lib/supabase-db"
+import { type NextRequest, NextResponse } from "next/server"
+import { getCategories, addCategory, addLog } from "@/lib/supabase-db"
+import { getCachedData, invalidateCachePattern } from "@/lib/cache"
+import { withAuth, withAdmin } from "@/lib/api-helpers"
 
-export async function GET() {
+export const GET = withAuth(async (request, { user }) => {
   try {
-    const categories = await getCategories()
+    const categories = await getCachedData(
+      'categories',
+      () => getCategories(),
+      5 * 60 * 1000 // 5 minutes
+    )
     return NextResponse.json(categories)
   } catch (error) {
-    console.error("Error fetching categories:", error)
+    console.error("[API] Error fetching categories:", error)
     return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 })
   }
-}
+})
 
-export async function POST(request: Request) {
+export const POST = withAdmin(async (request, { user }) => {
   try {
     const { name } = await request.json()
     
@@ -21,9 +26,18 @@ export async function POST(request: Request) {
     }
 
     const category = await addCategory(name.trim())
+    invalidateCachePattern('categories')
+    
+    await addLog({
+      operation: "create",
+      itemId: category.id,
+      itemName: name.trim(),
+      details: `Created category "${name.trim()}" by ${user.displayName}`
+    })
+    
     return NextResponse.json(category)
   } catch (error) {
-    console.error("Error adding category:", error)
+    console.error("[API] Error adding category:", error)
     return NextResponse.json({ error: "Failed to add category" }, { status: 500 })
   }
-}
+})

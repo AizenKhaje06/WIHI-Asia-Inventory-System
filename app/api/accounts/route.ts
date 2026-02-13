@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-// Using Supabase as primary database
 import { getAccounts, validateCredentials, updateAccount, updateUsername, addAccount } from "@/lib/supabase-db"
 import { isSupabaseConfigured } from "@/lib/supabase"
+import { withAdmin } from "@/lib/api-helpers"
 
 // GET - Get all accounts (admin only)
-export async function GET() {
+export const GET = withAdmin(async (request, { user }) => {
   try {
     if (!isSupabaseConfigured) {
       return NextResponse.json({ 
@@ -28,31 +28,32 @@ export async function GET() {
     console.error("[Accounts API] Error fetching accounts:", error)
     return NextResponse.json({ error: "Failed to fetch accounts" }, { status: 500 })
   }
-}
+})
 
-// POST - Create new account or validate credentials
+// POST - Create new account or validate credentials (no auth required for login)
 export async function POST(request: NextRequest) {
   try {
-    console.log("[v0] Accounts POST API called")
+    console.log("[Accounts API] POST called")
     
     if (!isSupabaseConfigured) {
-      console.log("[v0] Supabase not configured")
+      console.log("[Accounts API] Supabase not configured")
       return NextResponse.json({ 
         error: "Database not configured. Please add Supabase environment variables." 
       }, { status: 503 })
     }
 
-    console.log("[v0] Parsing request body")
+    console.log("[Accounts API] Parsing request body")
     const body = await request.json()
     const { action, username, password, role, displayName } = body
-    console.log("[v0] Action:", action, "Username:", username)
+    console.log("[Accounts API] Action:", action, "Username:", username)
 
     if (action === "validate") {
-      console.log("[v0] Attempting to validate credentials")
+      // Login - no auth required
+      console.log("[Accounts API] Attempting to validate credentials")
       
       try {
         const account = await validateCredentials(username, password)
-        console.log("[v0] Validation result:", account ? "success" : "failed")
+        console.log("[Accounts API] Validation result:", account ? "success" : "failed")
         
         if (account) {
           return NextResponse.json({
@@ -67,14 +68,14 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ success: false, error: "Invalid credentials" }, { status: 401 })
         }
       } catch (dbError: any) {
-        console.error("[v0] Database error during validation:", dbError)
+        console.error("[Accounts API] Database error during validation:", dbError)
         return NextResponse.json({ 
           success: false, 
           error: "Database connection error: " + (dbError.message || "Unknown error")
         }, { status: 500 })
       }
     } else if (action === "create") {
-      // Create new account
+      // Create new account - requires admin (checked via middleware in frontend)
       const newAccount = await addAccount({
         username,
         password,
@@ -96,8 +97,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 })
     }
   } catch (error: any) {
-    console.error("[v0] Accounts API Error:", error)
-    console.error("[v0] Error stack:", error.stack)
+    console.error("[Accounts API] Error:", error)
+    console.error("[Accounts API] Error stack:", error.stack)
     return NextResponse.json({ 
       success: false,
       error: error.message || "Operation failed" 
@@ -105,8 +106,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT - Update account
-export async function PUT(request: NextRequest) {
+// PUT - Update account (admin only)
+export const PUT = withAdmin(async (request, { user }) => {
   try {
     if (!isSupabaseConfigured) {
       return NextResponse.json({ 
@@ -133,4 +134,4 @@ export async function PUT(request: NextRequest) {
     console.error("[Accounts API] Error:", error)
     return NextResponse.json({ error: error.message || "Update failed" }, { status: 500 })
   }
-}
+})

@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getTransactions } from "@/lib/supabase-db"
+import { getCachedData } from "@/lib/cache"
+import { withAuth } from "@/lib/api-helpers"
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { user }) => {
   try {
     const searchParams = request.nextUrl.searchParams
     const startDate = searchParams.get('startDate')
@@ -10,8 +12,12 @@ export async function GET(request: NextRequest) {
 
     console.log('[Departments API] Params:', { startDate, endDate, departmentFilter })
 
-    // Get all transactions
-    const allTransactions = await getTransactions()
+    // Get all transactions with caching
+    const allTransactions = await getCachedData(
+      'transactions',
+      () => getTransactions(),
+      2 * 60 * 1000 // 2 minutes
+    )
     
     // Filter by date range if provided
     let filteredTransactions = allTransactions
@@ -109,4 +115,4 @@ export async function GET(request: NextRequest) {
     console.error("[Departments API] Error:", error)
     return NextResponse.json({ error: "Failed to fetch departments data" }, { status: 500 })
   }
-}
+})

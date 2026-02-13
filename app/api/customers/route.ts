@@ -1,17 +1,23 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getCustomers, addCustomer, calculateCustomerTier } from "@/lib/customer-management"
+import { getCachedData, invalidateCachePattern } from "@/lib/cache"
+import { withAuth, withAdmin } from "@/lib/api-helpers"
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { user }) => {
   try {
-    const customers = await getCustomers()
+    const customers = await getCachedData(
+      'customers',
+      () => getCustomers(),
+      2 * 60 * 1000 // 2 minutes
+    )
     return NextResponse.json(customers)
   } catch (error) {
-    console.error("Error fetching customers:", error)
+    console.error("[API] Error fetching customers:", error)
     return NextResponse.json({ error: "Failed to fetch customers" }, { status: 500 })
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = withAdmin(async (request, { user }) => {
   try {
     const body = await request.json()
     
@@ -26,9 +32,11 @@ export async function POST(request: NextRequest) {
       totalSpent: body.totalSpent || 0
     })
     
+    invalidateCachePattern('customers')
+    
     return NextResponse.json(customer)
   } catch (error) {
-    console.error("Error creating customer:", error)
+    console.error("[API] Error creating customer:", error)
     return NextResponse.json({ error: "Failed to create customer" }, { status: 500 })
   }
-}
+})

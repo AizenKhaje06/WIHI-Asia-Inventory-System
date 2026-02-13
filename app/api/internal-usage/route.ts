@@ -1,11 +1,16 @@
-import { NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { getTransactions } from "@/lib/supabase-db"
 import { getCachedData } from "@/lib/cache"
+import { withAuth } from "@/lib/api-helpers"
 
-export async function GET() {
+export const GET = withAuth(async (request, { user }) => {
   try {
-    // Get all transactions WITHOUT caching for debugging
-    const transactions = await getTransactions()
+    // Get all transactions with caching
+    const transactions = await getCachedData(
+      'transactions',
+      () => getTransactions(),
+      2 * 60 * 1000 // 2 minutes
+    )
 
     console.log('[Internal Usage API] Total transactions:', transactions.length)
     
@@ -38,4 +43,4 @@ export async function GET() {
     console.error("[Internal Usage API] Error:", error)
     return NextResponse.json({ error: "Failed to fetch internal usage data" }, { status: 500 })
   }
-}
+})
