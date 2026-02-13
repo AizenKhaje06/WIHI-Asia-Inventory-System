@@ -32,6 +32,7 @@ import type { DashboardStats, InventoryItem } from "@/lib/types"
 import { formatNumber } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { PremiumDashboardLoading } from "@/components/premium-loading"
+import { apiGet } from "@/lib/api-client"
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -46,28 +47,17 @@ export default function DashboardPage() {
       setRefreshing(true)
       console.log('[Dashboard] Fetching data for period:', timePeriod)
       
-      const [statsRes, itemsRes] = await Promise.all([
-        fetch(`/api/dashboard?period=${timePeriod}`),
-        fetch("/api/items")
+      const [stats, items] = await Promise.all([
+        apiGet<DashboardStats>(`/api/dashboard?period=${timePeriod}`),
+        apiGet<InventoryItem[]>("/api/items")
       ])
 
-      console.log('[Dashboard] Response status:', {
-        stats: statsRes.status,
-        items: itemsRes.status
-      })
-
-      const statsData = await statsRes.json()
-      const itemsData = await itemsRes.json()
-
       console.log('[Dashboard] Data received:', {
-        stats: statsData,
-        itemsData: itemsData
+        stats: stats,
+        items: items
       })
 
-      // Ensure itemsData is an array before filtering
-      const items = Array.isArray(itemsData) ? itemsData : []
-
-      setStats(statsData)
+      setStats(stats)
       setLowStockItems(items.filter((item: InventoryItem) => item.quantity > 0 && item.quantity <= item.reorderLevel))
       setOutOfStockItems(items.filter((item: InventoryItem) => item.quantity === 0))
     } catch (error) {
