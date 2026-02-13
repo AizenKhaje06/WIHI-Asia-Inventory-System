@@ -361,31 +361,6 @@ export default function CustomersPage() {
     }
   }
 
-  function exportToCSV() {
-    const headers = ["Name", "Email", "Phone", "Tier", "Points", "Purchases", "Total Spent"]
-    const rows = filteredCustomers.map(c => [
-      c.name,
-      c.email || "",
-      c.phone || "",
-      c.tier || "bronze",
-      c.loyaltyPoints,
-      c.totalPurchases,
-      c.totalSpent
-    ])
-
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(row => row.join(","))
-    ].join("\n")
-
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `customers-${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
-  }
-
   const getTierColor = (tier: string) => {
     switch (tier) {
       case 'platinum': 
@@ -597,16 +572,6 @@ export default function CustomersPage() {
               >
                 <Settings className="h-4 w-4" />
                 <span>Tier Settings</span>
-              </Button>
-              <Button
-                onClick={exportToCSV}
-                variant="outline"
-                size="sm"
-                className="h-9 gap-2 w-full"
-                disabled={filteredCustomers.length === 0}
-              >
-                <Download className="h-4 w-4" />
-                <span>Export</span>
               </Button>
               <Button
                 onClick={() => setAddDialogOpen(true)}

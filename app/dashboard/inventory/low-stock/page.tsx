@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Search, Pencil, Trash2, PackagePlus, Filter, AlertTriangle, Package, TrendingDown, DollarSign, Download, CheckCircle2, X, ArrowUpDown } from "lucide-react"
+import { Search, Pencil, Trash2, PackagePlus, Filter, AlertTriangle, Package, TrendingDown, DollarSign, CheckCircle2, X, ArrowUpDown } from "lucide-react"
 import type { InventoryItem } from "@/lib/types"
 import { cn, formatCurrency, formatNumber } from "@/lib/utils"
 import { EditItemDialog } from "@/components/edit-item-dialog"
@@ -170,32 +170,6 @@ export default function LowStockPage() {
     }
   }
 
-  function exportToCSV() {
-    const headers = ["Product Name", "Category", "Current Stock", "Reorder Level", "Urgency", "Cost Price", "Selling Price", "Storage Room"]
-    const rows = filteredItems.map(item => [
-      item.name,
-      item.category,
-      item.quantity,
-      item.reorderLevel,
-      getUrgencyLevel(item),
-      item.costPrice,
-      item.sellingPrice,
-      item.storageRoom
-    ])
-
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(row => row.join(","))
-    ].join("\n")
-
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `low-stock-report-${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
-  }
-
   function clearAllFilters() {
     setSearch("")
     setCategoryFilter("all")
@@ -310,15 +284,6 @@ export default function LowStockPage() {
                   className="pl-10 h-10"
                 />
               </div>
-              <Button
-                onClick={exportToCSV}
-                variant="outline"
-                className="gap-2 h-10 px-4"
-                disabled={filteredItems.length === 0}
-              >
-                <Download className="h-4 w-4" />
-                <span className="hidden sm:inline">Export</span>
-              </Button>
             </div>
 
             {/* Row 2: Filters Grid */}

@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Search, Filter, BarChart3, Package, FileText, Download, FileSpreadsheet } from "lucide-react"
+import { Search, Filter, BarChart3, Package, FileText } from "lucide-react"
 import type { SalesReport } from "@/lib/types"
 import { toast } from "sonner"
 import { formatNumber } from "@/lib/utils"
@@ -20,7 +19,6 @@ export default function ReportsPage() {
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [loading, setLoading] = useState(false)
-  const [exportModalOpen, setExportModalOpen] = useState(false)
 
   useEffect(() => {
     // Fetch initial data but don't open modal
@@ -72,80 +70,11 @@ export default function ReportsPage() {
       const res = await fetch(`/api/reports?${params}`)
       const data = await res.json()
       setReport(data)
-      
-      // Open export modal after report is generated
-      setExportModalOpen(true)
     } catch (error) {
       console.error("[v0] Error fetching report:", error)
       toast.error("Failed to generate report")
     } finally {
       setLoading(false)
-    }
-  }
-
-  function exportToCSV() {
-    if (!filteredTransactions || filteredTransactions.length === 0) {
-      toast.error("No data to export")
-      return
-    }
-
-    const headers = ["Date", "Time", "Item", "Quantity", "Revenue", "Cost", "Profit"]
-    const rows = filteredTransactions.map(t => [
-      new Date(t.timestamp).toLocaleDateString(),
-      new Date(t.timestamp).toLocaleTimeString(),
-      t.itemName,
-      t.quantity,
-      t.totalRevenue,
-      t.totalCost,
-      t.profit
-    ])
-
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(row => row.join(","))
-    ].join("\n")
-
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `sales-report-${new Date().toISOString().split('T')[0]}.csv`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    
-    toast.success("CSV exported successfully!")
-    setExportModalOpen(false)
-  }
-
-  async function exportToPDF() {
-    if (!filteredTransactions || filteredTransactions.length === 0) {
-      toast.error("No data to export")
-      return
-    }
-
-    try {
-      toast.info("Generating PDF...")
-      
-      // Dynamic import to reduce bundle size
-      const { exportSalesReportPDF } = await import("@/lib/pdf-export")
-      
-      await exportSalesReportPDF({
-        transactions: filteredTransactions,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined,
-        totalRevenue: report?.totalRevenue || 0,
-        totalCost: report?.totalCost || 0,
-        totalProfit: report?.totalProfit || 0,
-        totalOrders: report?.totalOrders || 0
-      })
-      
-      toast.success("PDF exported successfully!")
-      setExportModalOpen(false)
-    } catch (error) {
-      console.error("PDF export error:", error)
-      toast.error("Failed to export PDF")
     }
   }
 
@@ -187,49 +116,13 @@ export default function ReportsPage() {
                 <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20" />
               </div>
             </div>
-            <Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  onClick={fetchReport} 
-                  disabled={loading} 
-                  className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 w-full"
-                >
-                  {loading ? "Loading..." : "Generate Report"}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Export Report
-                  </DialogTitle>
-                  <DialogDescription className="text-slate-500 dark:text-slate-400 text-base">
-                    Choose your preferred export format
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-6">
-                  <Button
-                    onClick={exportToCSV}
-                    className="h-20 gap-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-300 rounded-full text-left justify-start px-8"
-                  >
-                    <FileSpreadsheet className="h-6 w-6 flex-shrink-0" />
-                    <div className="flex-1">
-                      <div className="font-bold text-lg">Export as CSV</div>
-                      <div className="text-sm opacity-90 font-normal">Excel-compatible spreadsheet</div>
-                    </div>
-                  </Button>
-                  <Button
-                    onClick={exportToPDF}
-                    className="h-20 gap-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all duration-300 rounded-full text-left justify-start px-8"
-                  >
-                    <Download className="h-6 w-6 flex-shrink-0" />
-                    <div className="flex-1">
-                      <div className="font-bold text-lg">Export as PDF</div>
-                      <div className="text-sm opacity-90 font-normal">Professional report document</div>
-                    </div>
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button 
+              onClick={fetchReport} 
+              disabled={loading} 
+              className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 w-full"
+            >
+              {loading ? "Loading..." : "Generate Report"}
+            </Button>
           </div>
         </CardContent>
       </Card>
