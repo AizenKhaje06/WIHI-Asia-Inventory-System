@@ -540,25 +540,25 @@ export default function InsightsPage() {
                   <table className="w-full min-w-[800px]">
                     <thead>
                       <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                        <th className="pb-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Revenue %</th>
-                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Recommendation</th>
+                        <th className="pb-3 pr-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                        <th className="pb-3 px-6 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                        <th className="pb-3 px-6 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Revenue %</th>
+                        <th className="pb-3 pl-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Recommendation</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredAbcAnalysis.slice(0, 20).map((item) => (
                         <tr key={item.itemId} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
-                          <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
-                          <td className="py-4 text-center">
+                          <td className="py-4 pr-6 text-sm font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
+                          <td className="py-4 px-6 text-center">
                             <Badge className={`${getCategoryColor(item.category)} border`}>
                               {item.category}
                             </Badge>
                           </td>
-                          <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">
+                          <td className="py-4 px-6 text-right font-semibold text-slate-800 dark:text-slate-200">
                             {item.revenueContribution.toFixed(2)}%
                           </td>
-                          <td className="py-4 text-sm text-slate-600 dark:text-slate-400">
+                          <td className="py-4 pl-6 text-sm text-slate-600 dark:text-slate-400">
                             {item.recommendation}
                           </td>
                         </tr>
