@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft } from "lucide-react"
 import type { InventoryItem } from "@/lib/types"
+import { apiPost } from "@/lib/api-client"
 
 export default function CreateProductPage() {
   const router = useRouter()
@@ -40,20 +41,10 @@ export default function CreateProductPage() {
     setError("")
 
     try {
-      const res = await fetch("/api/items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          lastUpdated: new Date().toISOString(),
-        }),
+      await apiPost("/api/items", {
+        ...formData,
+        lastUpdated: new Date().toISOString(),
       })
-
-      if (!res.ok) {
-        const errorData = await res.json()
-        setError(errorData.error || "Failed to create product")
-        return
-      }
 
       router.push("/inventory")
       router.refresh() // Refresh the inventory page to show new item

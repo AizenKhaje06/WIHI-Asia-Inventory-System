@@ -12,6 +12,7 @@ import { TrendingUp, TrendingDown, Minus, AlertTriangle, Target, BarChart3, Pack
 import type { ABCAnalysis, InventoryTurnover, PredictiveAnalytics } from "@/lib/types"
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { apiGet } from "@/lib/api-client"
 
 export default function InsightsPage() {
   const [abcAnalysis, setAbcAnalysis] = useState<ABCAnalysis[]>([])
@@ -61,15 +62,11 @@ export default function InsightsPage() {
   async function fetchAnalytics() {
     setLoading(true)
     try {
-      const [analyticsRes, forecastRes, itemsRes] = await Promise.all([
-        fetch("/api/analytics?type=all"),
-        fetch("/api/analytics?type=forecast"),
-        fetch("/api/items")
+      const [analyticsData, forecastData, itemsData] = await Promise.all([
+        apiGet<any>("/api/analytics?type=all"),
+        apiGet<PredictiveAnalytics[]>("/api/analytics?type=forecast"),
+        apiGet<any[]>("/api/items")
       ])
-
-      const analyticsData = await analyticsRes.json()
-      const forecastData = await forecastRes.json()
-      const itemsData = await itemsRes.json()
 
       setAbcAnalysis(analyticsData.abc || [])
       setTurnover(analyticsData.turnover || [])

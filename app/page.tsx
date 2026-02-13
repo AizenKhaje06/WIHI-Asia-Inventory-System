@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
+import { apiPost } from "@/lib/api-client"
 
 type LoginMode = "admin" | "staff"
 
@@ -71,31 +72,11 @@ export default function EnterpriseLoginPage() {
     setError("")
 
     try {
-      const response = await fetch("/api/accounts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "validate",
-          username,
-          password
-        })
+      const data = await apiPost("/api/accounts", {
+        action: "validate",
+        username,
+        password
       })
-
-      // Check if response is JSON
-      const contentType = response.headers.get("content-type")
-      if (!contentType || !contentType.includes("application/json")) {
-        console.error("Non-JSON response received:", response.status, response.statusText)
-        setError("Database connection error. Please contact administrator.")
-        return
-      }
-
-      const data = await response.json()
-
-      // Check for configuration errors
-      if (response.status === 503) {
-        setError(data.error || "Database not configured. Please contact administrator.")
-        return
-      }
 
       if (data.success && data.account) {
         if (typeof window !== 'undefined') {

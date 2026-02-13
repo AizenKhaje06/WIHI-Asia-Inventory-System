@@ -32,6 +32,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { getCurrentUser, hasPermission, clearCurrentUser, ROLES, type UserRole } from "@/lib/auth"
+import { apiGet } from "@/lib/api-client"
 
 interface NavItem {
   name: string
@@ -128,14 +129,11 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
   useEffect(() => {
     const fetchInventoryCounts = async () => {
       try {
-        const response = await fetch('/api/items')
-        if (response.ok) {
-          const items = await response.json()
-          const lowStock = items.filter((item: any) => item.quantity > 0 && item.quantity <= item.reorderLevel).length
-          const outOfStock = items.filter((item: any) => item.quantity === 0).length
-          setLowStockCount(lowStock)
-          setOutOfStockCount(outOfStock)
-        }
+        const items = await apiGet<any[]>('/api/items')
+        const lowStock = items.filter((item: any) => item.quantity > 0 && item.quantity <= item.reorderLevel).length
+        const outOfStock = items.filter((item: any) => item.quantity === 0).length
+        setLowStockCount(lowStock)
+        setOutOfStockCount(outOfStock)
       } catch (error) {
         console.error('Error fetching inventory counts:', error)
       }

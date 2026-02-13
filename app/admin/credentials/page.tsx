@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Users, Lock, Eye, EyeOff, Loader2, CheckCircle2, User, Shield } from "lucide-react"
 import { showSuccess, showError } from "@/lib/toast-utils"
 import { Badge } from "@/components/ui/badge"
+import { apiGet, apiPut } from "@/lib/api-client"
 
 interface Account {
   id: string
@@ -36,11 +37,8 @@ export default function CredentialsManagementPage() {
   async function fetchAccounts() {
     try {
       setLoading(true)
-      const response = await fetch("/api/accounts")
-      if (response.ok) {
-        const data = await response.json()
-        setAccounts(data)
-      }
+      const data = await apiGet<Account[]>("/api/accounts")
+      setAccounts(data)
     } catch (error) {
       console.error("Error fetching accounts:", error)
       showError("Failed to load accounts")
@@ -76,17 +74,11 @@ export default function CredentialsManagementPage() {
 
     setSubmitting(true)
     try {
-      const response = await fetch("/api/accounts", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "updatePassword",
-          username: selectedAccount.username,
-          password: newPassword
-        })
+      const data = await apiPut("/api/accounts", {
+        action: "updatePassword",
+        username: selectedAccount.username,
+        password: newPassword
       })
-
-      const data = await response.json()
 
       if (data.success) {
         showSuccess("Password updated successfully", `Password for ${selectedAccount.username} has been changed`)
@@ -110,17 +102,11 @@ export default function CredentialsManagementPage() {
     
     setSubmitting(true)
     try {
-      const response = await fetch("/api/accounts", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "updatePassword",
-          username: account.username,
-          password: defaultPassword
-        })
+      const data = await apiPut("/api/accounts", {
+        action: "updatePassword",
+        username: account.username,
+        password: defaultPassword
       })
-
-      const data = await response.json()
 
       if (data.success) {
         showSuccess("Password reset to default", `${account.username}: ${defaultPassword}`)
