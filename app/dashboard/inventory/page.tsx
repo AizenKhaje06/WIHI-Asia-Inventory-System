@@ -18,6 +18,7 @@ import { formatNumber, formatCurrency } from "@/lib/utils"
 import { showSuccess, showError } from "@/lib/toast-utils"
 import type { StorageRoom } from "@/lib/types"
 import { getCurrentUser } from "@/lib/auth"
+import { apiGet, apiDelete, apiPost } from "@/lib/api-client"
 
 import { PremiumTableLoading } from "@/components/premium-loading"
 
@@ -135,14 +136,7 @@ export default function InventoryPage() {
 
   async function fetchItems() {
     try {
-      const res = await fetch("/api/items")
-      if (!res.ok) {
-        console.error("[Inventory] Failed to fetch items, status:", res.status)
-        setItems([])
-        setFilteredItems([])
-        return
-      }
-      const data = await res.json()
+      const data = await apiGet<InventoryItem[]>("/api/items")
       const itemsArray = Array.isArray(data) ? data : []
       setItems(itemsArray)
       setFilteredItems(itemsArray)
@@ -157,11 +151,8 @@ export default function InventoryPage() {
 
   async function fetchWarehouses() {
     try {
-      const res = await fetch("/api/storage-rooms")
-      if (res.ok) {
-        const data = await res.json()
-        setWarehouses(data)
-      }
+      const data = await apiGet<StorageRoom[]>("/api/storage-rooms")
+      setWarehouses(data)
     } catch (error) {
       console.error("Error fetching warehouses:", error)
     }
@@ -169,11 +160,8 @@ export default function InventoryPage() {
 
   async function fetchCategories() {
     try {
-      const res = await fetch("/api/categories")
-      if (res.ok) {
-        const data = await res.json()
-        setCategories(data)
-      }
+      const data = await apiGet<any[]>("/api/categories")
+      setCategories(data)
     } catch (error) {
       console.error("Error fetching categories:", error)
     }
@@ -206,26 +194,19 @@ export default function InventoryPage() {
     if (!selectedRestockItem || restockAmount <= 0 || !restockReason) return
 
     try {
-      const res = await fetch(`/api/items/${selectedRestockItem.id}/restock`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: restockAmount, reason: restockReason }),
+      await apiPost(`/api/items/${selectedRestockItem.id}/restock`, {
+        amount: restockAmount,
+        reason: restockReason
       })
-
-      if (!res.ok) {
-        const error = await res.json()
-        alert(`Error: ${error.error}`)
-        return
-      }
 
       setRestockDialogOpen(false)
       setSelectedRestockItem(null)
       setRestockReason("")
       fetchItems()
-      alert("Item restocked successfully!")
+      showSuccess("Item restocked successfully!")
     } catch (error) {
-      console.error("[v0] Error restocking item:", error)
-      alert("Failed to restock item")
+      console.error("[Inventory] Error restocking item:", error)
+      showError("Failed to restock item")
     }
   }
 
