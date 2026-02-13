@@ -10,6 +10,7 @@ import { Package, AlertTriangle, ShoppingCart, Users, PackageX, TrendingUp, Arro
 import { AnimatedNumber } from "@/components/ui/animated-number"
 import type { InventoryItem } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import { apiGet } from "@/lib/api-client"
 
 export default function OperationsDashboardPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -19,8 +20,7 @@ export default function OperationsDashboardPage() {
   const fetchData = async () => {
     try {
       setRefreshing(true)
-      const response = await fetch("/api/items")
-      const data = await response.json()
+      const data = await apiGet<InventoryItem[]>("/api/items")
       setItems(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error("Error fetching inventory:", error)

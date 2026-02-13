@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, BarChart3, TrendingUp, DollarSign, Package, Users, ShoppingCart } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { apiGet } from '@/lib/api-client';
 
 interface SalesData {
   totalRevenue: number;
@@ -42,11 +43,7 @@ export default function SalesAnalyticsPage() {
     try {
       setLoading(true);
       // Fetch ALL sales data without date filtering
-      const response = await fetch('/api/reports');
-      if (!response.ok) {
-        throw new Error('Failed to fetch sales data');
-      }
-      const data = await response.json();
+      const data = await apiGet<SalesData>('/api/reports');
       console.log('Sales Analytics Data:', data); // Debug log
       console.log('Total Orders:', data.totalOrders); // Debug log
       console.log('Total Revenue:', data.totalRevenue); // Debug log

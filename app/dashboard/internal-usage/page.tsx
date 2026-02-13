@@ -14,6 +14,7 @@ import { formatCurrency, formatNumber } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from "recharts"
 import { ChartTooltip } from "@/components/ui/chart-tooltip"
+import { apiGet } from "@/lib/api-client"
 
 export default function InternalUsagePage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -30,10 +31,7 @@ export default function InternalUsagePage() {
   async function fetchInternalUsage() {
     setLoading(true)
     try {
-      const res = await fetch("/api/internal-usage")
-      if (!res.ok) throw new Error("Failed to fetch internal usage data")
-      
-      const data = await res.json()
+      const data = await apiGet<{ transactions: Transaction[] }>("/api/internal-usage")
       console.log('[Internal Usage] Fetched transactions:', data.transactions)
       console.log('[Internal Usage] Transaction count:', data.transactions?.length || 0)
       

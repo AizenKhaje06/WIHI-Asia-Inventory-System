@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, ShoppingCart, Trash2, CheckCircle, Package } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import type { InventoryItem } from "@/lib/types"
+import { apiGet, apiPost } from "@/lib/api-client"
 
 interface CartItem {
   item: InventoryItem
@@ -49,14 +50,7 @@ export default function POSPage() {
 
   async function fetchItems() {
     try {
-      const res = await fetch("/api/items")
-      if (!res.ok) {
-        console.error("[POS] Failed to fetch items, status:", res.status)
-        setItems([])
-        return
-      }
-      const data = await res.json()
-      // Ensure data is an array
+      const data = await apiGet<InventoryItem[]>("/api/items")
       const itemsArray = Array.isArray(data) ? data : []
       setItems(itemsArray)
     } catch (error) {
@@ -121,15 +115,11 @@ export default function POSPage() {
         ? `${department} / ${salesChannel}`
         : department
 
-      await fetch("/api/sales", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: saleItems,
-          department: finalDepartment,
-          staffName,
-          notes,
-        }),
+      await apiPost("/api/sales", {
+        items: saleItems,
+        department: finalDepartment,
+        staffName,
+        notes,
       })
 
       // Generate dispatch ID

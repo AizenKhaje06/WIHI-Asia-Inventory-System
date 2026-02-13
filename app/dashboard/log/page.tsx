@@ -30,6 +30,7 @@ import {
 } from "lucide-react"
 import type { Log } from "@/lib/types"
 import { toast } from "sonner"
+import { apiGet } from "@/lib/api-client"
 
 const ITEMS_PER_PAGE = 50
 
@@ -58,11 +59,8 @@ export default function LogPage() {
     const fetchLogs = async () => {
       try {
         setLoading(true)
-        const response = await fetch('/api/logs')
-        if (response.ok) {
-          const data = await response.json()
-          setLogs(data)
-        }
+        const data = await apiGet<Log[]>('/api/logs')
+        setLogs(data)
       } catch (error) {
         console.error('Error fetching logs:', error)
         toast.error('Failed to load logs')
