@@ -17,7 +17,7 @@ import {
   Percent
 } from "lucide-react"
 import { formatCurrency, formatNumber } from "@/lib/utils"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts"
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts"
 
 interface DepartmentDetail {
   name: string
@@ -278,8 +278,22 @@ export default function SalesChannelDetailPage() {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={350}>
-            <LineChart data={data.cashFlow}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.3} vertical={false} />
+            <AreaChart data={data.cashFlow}>
+              <defs>
+                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
+                </linearGradient>
+                <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#EF4444" stopOpacity={0.05}/>
+                </linearGradient>
+                <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.05}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
               <XAxis 
                 dataKey="date" 
                 fontSize={11}
@@ -299,13 +313,38 @@ export default function SalesChannelDetailPage() {
                 contentStyle={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e2e8f0',
-                  borderRadius: '8px'
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                 }}
               />
-              <Line type="monotone" dataKey="revenue" stroke="#10B981" strokeWidth={3} name="Revenue" />
-              <Line type="monotone" dataKey="cost" stroke="#EF4444" strokeWidth={3} name="Cost" />
-              <Line type="monotone" dataKey="profit" stroke="#8B5CF6" strokeWidth={3} name="Profit" />
-            </LineChart>
+              <Area 
+                type="monotone" 
+                dataKey="revenue" 
+                stroke="#10B981" 
+                strokeWidth={2.5} 
+                name="Revenue" 
+                fill="url(#colorRevenue)"
+                dot={false}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="cost" 
+                stroke="#EF4444" 
+                strokeWidth={2.5} 
+                name="Cost" 
+                fill="url(#colorCost)"
+                dot={false}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="profit" 
+                stroke="#8B5CF6" 
+                strokeWidth={2.5} 
+                name="Profit" 
+                fill="url(#colorProfit)"
+                dot={false}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
