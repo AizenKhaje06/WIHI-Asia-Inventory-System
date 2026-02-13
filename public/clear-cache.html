@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clear Cache - StockSync</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .success {
+      color: #10b981;
+      margin-top: 20px;
+      padding: 10px;
+      background: #d1fae5;
+      border-radius: 4px;
+    }
+    .info {
+      color: #6b7280;
+      margin-top: 20px;
+      padding: 10px;
+      background: #f3f4f6;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧹 Clear Cache</h1>
+    <p>If you're seeing old content after updates, click the button below to clear all cached data.</p>
+    
+    <button onclick="clearAllCache()">Clear All Cache</button>
+    <button onclick="unregisterServiceWorker()">Unregister Service Worker</button>
+    <button onclick="clearAndReload()">Clear Cache & Reload</button>
+    
+    <div id="message"></div>
+    
+    <div class="info">
+      <strong>What this does:</strong>
+      <ul>
+        <li>Clears all cached files</li>
+        <li>Unregisters service worker</li>
+        <li>Forces fresh content on next load</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    async function clearAllCache() {
+      try {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+        showMessage('✅ All caches cleared successfully!');
+      } catch (error) {
+        showMessage('❌ Error clearing cache: ' + error.message);
+      }
+    }
+
+    async function unregisterServiceWorker() {
+      try {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map(reg => reg.unregister()));
+          showMessage('✅ Service worker unregistered successfully!');
+        } else {
+          showMessage('ℹ️ Service workers not supported in this browser');
+        }
+      } catch (error) {
+        showMessage('❌ Error unregistering service worker: ' + error.message);
+      }
+    }
+
+    async function clearAndReload() {
+      await clearAllCache();
+      await unregisterServiceWorker();
+      showMessage('✅ Cache cleared! Redirecting to home...');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
+    }
+
+    function showMessage(msg) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.className = 'success';
+      messageDiv.textContent = msg;
+    }
+  </script>
+</body>
+</html>

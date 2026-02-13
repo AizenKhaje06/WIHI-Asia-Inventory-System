@@ -1,7 +1,7 @@
 // Service Worker for Inventory Pro PWA
-const CACHE_NAME = 'inventory-pro-v13';
-const STATIC_CACHE = 'inventory-pro-static-v13';
-const DYNAMIC_CACHE = 'inventory-pro-dynamic-v13';
+const CACHE_NAME = 'inventory-pro-v14';
+const STATIC_CACHE = 'inventory-pro-static-v14';
+const DYNAMIC_CACHE = 'inventory-pro-dynamic-v14';
 
 // Files to cache immediately (only essential files that definitely exist)
 const STATIC_ASSETS = [
@@ -48,7 +48,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - cache-first strategy
+// Fetch event - network-first strategy for HTML, cache-first for assets
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests and external requests
   if (event.request.method !== 'GET' ||
@@ -56,36 +56,57 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip API routes for now (they might need fresh data)
+  // Skip API routes - always fetch fresh
   if (event.request.url.includes('/api/')) {
     return;
   }
 
+  // Network-first strategy for HTML pages (dashboard, etc.)
+  if (event.request.destination === 'document' || 
+      event.request.url.includes('/dashboard') ||
+      event.request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Clone and cache the fresh response
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(DYNAMIC_CACHE).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Network failed, fallback to cache
+          return caches.match(event.request).then((cachedResponse) => {
+            return cachedResponse || caches.match('/');
+          });
+        })
+    );
+    return;
+  }
+
+  // Cache-first strategy for static assets (images, fonts, etc.)
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Return cached version
         return cachedResponse;
       }
 
       // Fetch from network and cache
       return fetch(event.request).then((response) => {
-        // Don't cache non-successful responses
         if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
 
-        // Clone the response
         const responseToCache = response.clone();
-
-        // Cache the response
         caches.open(DYNAMIC_CACHE).then((cache) => {
           cache.put(event.request, responseToCache);
         });
 
         return response;
       }).catch(() => {
-        // Network failed, try to return a fallback
         if (event.request.destination === 'document') {
           return caches.match('/');
         }

@@ -135,6 +135,23 @@ export default function RootLayout({
                         navigator.serviceWorker.register('/service-worker.js')
                           .then(function(registration) {
                             console.log('SW registered: ', registration);
+                            
+                            // Check for updates every time the page loads
+                            registration.update();
+                            
+                            // Listen for new service worker
+                            registration.addEventListener('updatefound', () => {
+                              const newWorker = registration.installing;
+                              if (newWorker) {
+                                newWorker.addEventListener('statechange', () => {
+                                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New service worker available, reload to activate
+                                    console.log('New service worker available, reloading...');
+                                    window.location.reload();
+                                  }
+                                });
+                              }
+                            });
                           })
                           .catch(function(registrationError) {
                             console.log('SW registration failed: ', registrationError);
