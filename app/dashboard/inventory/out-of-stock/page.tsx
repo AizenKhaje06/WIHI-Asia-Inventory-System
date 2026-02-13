@@ -101,14 +101,6 @@ export default function OutOfStockPage() {
     }
   }
 
-    try {
-      await fetch(`/api/items/${id}`, { method: "DELETE" })
-      fetchItems()
-    } catch (error) {
-      console.error("Error deleting item:", error)
-    }
-  }
-
   function handleEdit(item: InventoryItem) {
     setSelectedItem(item)
     setEditDialogOpen(true)
