@@ -130,12 +130,24 @@ FOR SELECT
 TO anon, authenticated
 USING (true);
 
-CREATE POLICY "storage_rooms_modify_policy"
+CREATE POLICY "storage_rooms_insert_policy"
 ON storage_rooms
-FOR INSERT, UPDATE, DELETE
+FOR INSERT
+TO service_role
+WITH CHECK (true);
+
+CREATE POLICY "storage_rooms_update_policy"
+ON storage_rooms
+FOR UPDATE
 TO service_role
 USING (true)
 WITH CHECK (true);
+
+CREATE POLICY "storage_rooms_delete_policy"
+ON storage_rooms
+FOR DELETE
+TO service_role
+USING (true);
 
 -- ============================================
 -- CATEGORIES POLICIES
@@ -154,12 +166,24 @@ FOR SELECT
 TO anon, authenticated
 USING (true);
 
-CREATE POLICY "categories_modify_policy"
+CREATE POLICY "categories_insert_policy"
 ON categories
-FOR INSERT, UPDATE, DELETE
+FOR INSERT
+TO service_role
+WITH CHECK (true);
+
+CREATE POLICY "categories_update_policy"
+ON categories
+FOR UPDATE
 TO service_role
 USING (true)
 WITH CHECK (true);
+
+CREATE POLICY "categories_delete_policy"
+ON categories
+FOR DELETE
+TO service_role
+USING (true);
 
 -- ============================================
 -- USERS POLICIES (Most Restrictive)
