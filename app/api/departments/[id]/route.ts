@@ -58,6 +58,18 @@ export async function GET(
     // Group by date for cash flow chart
     const cashFlowMap = new Map<string, { date: string; revenue: number; cost: number; profit: number }>()
     
+    // Fill in all dates in the range with zero values first
+    if (startDate && endDate) {
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+      
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0]
+        cashFlowMap.set(dateStr, { date: dateStr, revenue: 0, cost: 0, profit: 0 })
+      }
+    }
+    
+    // Now add actual transaction data
     filteredTransactions.forEach(t => {
       const date = new Date(t.timestamp).toISOString().split('T')[0]
       
