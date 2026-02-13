@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Package, Loader2 } from "lucide-react"
 import type { StorageRoom } from "@/lib/types"
+import { apiGet, apiPost } from "@/lib/api-client"
 
 interface AddItemDialogProps {
   open: boolean
@@ -43,11 +44,8 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
   async function fetchStorageRooms() {
     try {
       setLoadingRooms(true)
-      const response = await fetch("/api/storage-rooms")
-      if (response.ok) {
-        const data = await response.json()
-        setStorageRooms(data)
-      }
+      const data = await apiGet<StorageRoom[]>("/api/storage-rooms")
+      setStorageRooms(data)
     } catch (error) {
       console.error("Error fetching storage rooms:", error)
     } finally {
@@ -58,11 +56,8 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
   async function fetchCategories() {
     try {
       setLoadingCategories(true)
-      const response = await fetch("/api/categories")
-      if (response.ok) {
-        const data = await response.json()
-        setCategories(data)
-      }
+      const data = await apiGet<Array<{id: string, name: string}>>("/api/categories")
+      setCategories(data)
     } catch (error) {
       console.error("Error fetching categories:", error)
     } finally {
@@ -75,12 +70,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
     setLoading(true)
 
     try {
-      await fetch("/api/items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      })
-
+      await apiPost("/api/items", formData)
       onSuccess()
       onOpenChange(false)
       setFormData({

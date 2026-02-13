@@ -13,6 +13,7 @@ import { Search, Pencil, Trash2, PackagePlus, XCircle, Package, DollarSign, Chec
 import type { InventoryItem } from "@/lib/types"
 import { cn, formatCurrency, formatNumber } from "@/lib/utils"
 import { EditItemDialog } from "@/components/edit-item-dialog"
+import { apiGet, apiPost, apiDelete } from "@/lib/api-client"
 
 export default function OutOfStockPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -78,13 +79,7 @@ export default function OutOfStockPage() {
 
   async function fetchItems() {
     try {
-      const res = await fetch("/api/items")
-      if (!res.ok) {
-        console.error("[Out of Stock] Failed to fetch items, status:", res.status)
-        setItems([])
-        return
-      }
-      const data = await res.json()
+      const data = await apiGet<InventoryItem[]>("/api/items")
       const itemsArray = Array.isArray(data) ? data : []
       setItems(itemsArray)
     } catch (error) {
@@ -97,6 +92,14 @@ export default function OutOfStockPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this item?")) return
+
+    try {
+      await apiDelete(`/api/items/${id}`)
+      fetchItems()
+    } catch (error) {
+      console.error("Error deleting item:", error)
+    }
+  }
 
     try {
       await fetch(`/api/items/${id}`, { method: "DELETE" })
@@ -123,17 +126,10 @@ export default function OutOfStockPage() {
     if (!selectedRestockItem || restockAmount <= 0 || !restockReason) return
 
     try {
-      const res = await fetch(`/api/items/${selectedRestockItem.id}/restock`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: restockAmount, reason: restockReason }),
+      await apiPost(`/api/items/${selectedRestockItem.id}/restock`, { 
+        amount: restockAmount, 
+        reason: restockReason 
       })
-
-      if (!res.ok) {
-        const error = await res.json()
-        alert(`Error: ${error.error}`)
-        return
-      }
 
       setRestockDialogOpen(false)
       setSelectedRestockItem(null)
