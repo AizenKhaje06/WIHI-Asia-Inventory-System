@@ -1,13 +1,16 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getTransactions } from "@/lib/supabase-db"
 import { getCachedData } from "@/lib/cache"
-import { withAuth } from "@/lib/api-helpers"
+import { requireAuth } from "@/lib/api-auth"
 
-export const GET = withAuth(async (
+export async function GET(
   request: NextRequest,
-  { user },
   context: { params: { id: string } }
-) => {
+) {
+  const authResult = requireAuth(request)
+  if (authResult instanceof NextResponse) return authResult
+  const { user } = authResult
+
   try {
     const departmentName = decodeURIComponent(context.params.id)
     const searchParams = request.nextUrl.searchParams
@@ -143,4 +146,4 @@ export const GET = withAuth(async (
     console.error("[Department Detail API] Error:", error)
     return NextResponse.json({ error: "Failed to fetch department details" }, { status: 500 })
   }
-})
+}

@@ -1,9 +1,16 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { updateInventoryItem, deleteInventoryItem, getInventoryItems, addLog } from "@/lib/supabase-db"
 import { invalidateCachePattern } from "@/lib/cache"
-import { withAuth, withAdmin } from "@/lib/api-helpers"
+import { requireAuth, requireAdmin } from "@/lib/api-auth"
 
-export const GET = withAuth(async (request, { user }, context: { params: Promise<{ id: string }> }) => {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const authResult = requireAuth(request)
+  if (authResult instanceof NextResponse) return authResult
+  const { user } = authResult
+
   try {
     const { id } = await context.params
     const items = await getInventoryItems()
@@ -18,9 +25,16 @@ export const GET = withAuth(async (request, { user }, context: { params: Promise
     console.error("[API] Error fetching item:", error)
     return NextResponse.json({ error: "Failed to fetch item" }, { status: 500 })
   }
-})
+}
 
-export const PUT = withAdmin(async (request, { user }, context: { params: Promise<{ id: string }> }) => {
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const authResult = requireAdmin(request)
+  if (authResult instanceof NextResponse) return authResult
+  const { user } = authResult
+
   try {
     const { id } = await context.params
     const body = await request.json()
@@ -47,9 +61,16 @@ export const PUT = withAdmin(async (request, { user }, context: { params: Promis
     console.error("[API] Error updating item:", error)
     return NextResponse.json({ error: "Failed to update item" }, { status: 500 })
   }
-})
+}
 
-export const DELETE = withAdmin(async (request, { user }, context: { params: Promise<{ id: string }> }) => {
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const authResult = requireAdmin(request)
+  if (authResult instanceof NextResponse) return authResult
+  const { user } = authResult
+
   try {
     const { id } = await context.params
     const items = await getInventoryItems()
@@ -74,4 +95,4 @@ export const DELETE = withAdmin(async (request, { user }, context: { params: Pro
     console.error("[API] Error deleting item:", error)
     return NextResponse.json({ error: "Failed to delete item" }, { status: 500 })
   }
-})
+}
