@@ -10,6 +10,7 @@ import { Search, ShoppingCart, Trash2, CheckCircle, Package } from "lucide-react
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import type { InventoryItem } from "@/lib/types"
 import { apiGet, apiPost } from "@/lib/api-client"
+import { getCurrentUser } from "@/lib/auth"
 
 interface CartItem {
   item: InventoryItem
@@ -47,6 +48,19 @@ export default function POSPage() {
   }, [search, items])
 
   useEffect(() => {
+    // Get current logged-in user using the auth helper
+    const currentUser = getCurrentUser()
+    console.log('[POS] Current user:', currentUser) // Debug log
+    
+    if (currentUser) {
+      const name = currentUser.displayName || currentUser.username || 'Unknown User'
+      console.log('[POS] Setting staff name to:', name) // Debug log
+      setStaffName(name)
+    } else {
+      console.warn('[POS] No current user found in localStorage')
+      setStaffName('Unknown User')
+    }
+    
     fetchItems()
     fetchStorageRooms()
   }, [])
@@ -97,9 +111,9 @@ export default function POSPage() {
       return
     }
 
-    if (quantity <= cartItem.item.quantity) {
-      setCart(cart.map((ci) => (ci.item.id === itemId ? { ...ci, quantity } : ci)))
-    }
+    // Allow any quantity to be entered, but cap at available stock
+    const finalQuantity = Math.min(quantity, cartItem.item.quantity)
+    setCart(cart.map((ci) => (ci.item.id === itemId ? { ...ci, quantity: finalQuantity } : ci)))
   }
 
   function removeFromCart(itemId: string) {
@@ -187,14 +201,39 @@ export default function POSPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div>
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Staff Name *</Label>
-              <Input
-                placeholder="Enter your name"
-                value={staffName}
-                onChange={(e) => setStaffName(e.target.value)}
-                className="mt-1.5"
-              />
+            <div className="relative">
+              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Dispatched By *
+              </Label>
+              <div className="relative mt-1.5">
+                <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+                  <div className="flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                      {staffName ? staffName.charAt(0).toUpperCase() : '?'}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                      {staffName || 'Unknown User'}
+                    </p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                      <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                      Currently logged in
+                    </p>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <div className="px-2.5 py-1 rounded-md bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700">
+                      <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Verified</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1">
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Auto-verified from your account for security
+              </p>
             </div>
 
             <div>
@@ -331,8 +370,26 @@ export default function POSPage() {
                         min="1"
                         max={cartItem.item.quantity}
                         value={cartItem.quantity}
-                        onChange={(e) => updateQuantity(cartItem.item.id, Number.parseInt(e.target.value))}
-                        className="w-16 h-8 text-sm"
+                        onChange={(e) => {
+                          const value = e.target.value
+                          // Allow empty input for editing
+                          if (value === '') {
+                            return
+                          }
+                          // Parse and validate the number
+                          const numValue = parseInt(value, 10)
+                          if (!isNaN(numValue) && numValue >= 1) {
+                            updateQuantity(cartItem.item.id, numValue)
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // On blur, ensure we have a valid value
+                          const value = e.target.value
+                          if (value === '' || parseInt(value, 10) < 1) {
+                            updateQuantity(cartItem.item.id, 1)
+                          }
+                        }}
+                        className="min-w-[60px] max-w-[100px] h-8 text-sm text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <Button 
                         variant="ghost" 

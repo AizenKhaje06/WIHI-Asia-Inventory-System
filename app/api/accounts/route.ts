@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAccounts, validateCredentials, updateAccount, updateUsername, addAccount } from "@/lib/supabase-db"
-import { isSupabaseConfigured } from "@/lib/supabase"
 import { withAdmin } from "@/lib/api-helpers"
 
 // GET - Get all accounts (admin only)
 export const GET = withAdmin(async (request, { user }) => {
   try {
-    if (!isSupabaseConfigured) {
-      return NextResponse.json({ 
-        error: "Database not configured. Please add Supabase environment variables." 
-      }, { status: 503 })
-    }
-
     const accounts = await getAccounts()
     
     // Remove passwords from response for security
@@ -35,13 +28,6 @@ export async function POST(request: NextRequest) {
   try {
     console.log("[Accounts API] POST called")
     
-    if (!isSupabaseConfigured) {
-      console.log("[Accounts API] Supabase not configured")
-      return NextResponse.json({ 
-        error: "Database not configured. Please add Supabase environment variables." 
-      }, { status: 503 })
-    }
-
     console.log("[Accounts API] Parsing request body")
     const body = await request.json()
     const { action, username, password, role, displayName } = body
@@ -106,26 +92,37 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT - Update account (admin only)
-export const PUT = withAdmin(async (request, { user }) => {
+// PUT - Update account (authenticated users can update their own, admins can update any)
+export async function PUT(request: NextRequest) {
   try {
-    if (!isSupabaseConfigured) {
-      return NextResponse.json({ 
-        error: "Database not configured. Please add Supabase environment variables." 
-      }, { status: 503 })
+    // Get current user from headers
+    const username = request.headers.get('x-user-username')
+    const role = request.headers.get('x-user-role')
+
+    if (!username) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const body = await request.json()
-    const { action, username, newUsername, password, displayName } = body
+    const { action, username: targetUsername, newUsername, password, displayName } = body
 
-    if (action === "updatePassword") {
-      await updateAccount(username, { password })
+    // Users can only update their own account unless they're admin
+    if (role !== 'admin' && username !== targetUsername) {
+      return NextResponse.json({ error: "Forbidden: You can only update your own account" }, { status: 403 })
+    }
+
+    if (action === 'updatePassword') {
+      await updateAccount(targetUsername, { password })
       return NextResponse.json({ success: true, message: "Password updated successfully" })
-    } else if (action === "updateDisplayName") {
-      await updateAccount(username, { displayName })
+    } else if (action === 'updateDisplayName') {
+      await updateAccount(targetUsername, { displayName })
       return NextResponse.json({ success: true, message: "Display name updated successfully" })
-    } else if (action === "updateUsername") {
-      await updateUsername(username, newUsername)
+    } else if (action === 'updateUsername') {
+      // Only admins can change usernames
+      if (role !== 'admin') {
+        return NextResponse.json({ error: "Forbidden: Only admins can change usernames" }, { status: 403 })
+      }
+      await updateUsername(targetUsername, newUsername)
       return NextResponse.json({ success: true, message: "Username updated successfully" })
     } else {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 })
@@ -134,4 +131,4 @@ export const PUT = withAdmin(async (request, { user }) => {
     console.error("[Accounts API] Error:", error)
     return NextResponse.json({ error: error.message || "Update failed" }, { status: 500 })
   }
-})
+}

@@ -149,16 +149,23 @@ export default function LogPage() {
     // Determine operation from details if needed
     let actualOperation = operation?.toLowerCase().replace(/\s+/g, '-') || 'other'
     
-    // Override based on details content for backward compatibility
-    const detailsLower = details?.toLowerCase() || ''
-    if (detailsLower.includes('demo/display') || detailsLower.includes('demo / display')) {
-      actualOperation = 'demo-display'
-    } else if (detailsLower.includes('internal use') || detailsLower.includes('internal-use')) {
-      actualOperation = 'internal-usage'
-    } else if (detailsLower.includes('warehouse') || detailsLower.includes('transferred')) {
-      actualOperation = 'warehouse'
-    } else if (detailsLower.includes('dispatched') && !detailsLower.includes('demo') && !detailsLower.includes('internal')) {
-      actualOperation = 'sale'
+    // Only override based on details if operation is unclear (like 'other' or missing)
+    // Don't override explicit operations like 'create', 'update', 'delete'
+    const explicitOperations = ['create', 'update', 'delete', 'restock']
+    const isExplicitOperation = explicitOperations.includes(actualOperation)
+    
+    if (!isExplicitOperation) {
+      // Override based on details content for backward compatibility
+      const detailsLower = details?.toLowerCase() || ''
+      if (detailsLower.includes('demo/display') || detailsLower.includes('demo / display')) {
+        actualOperation = 'demo-display'
+      } else if (detailsLower.includes('internal use') || detailsLower.includes('internal-use')) {
+        actualOperation = 'internal-usage'
+      } else if (detailsLower.includes('warehouse') || detailsLower.includes('transferred')) {
+        actualOperation = 'warehouse'
+      } else if (detailsLower.includes('dispatched') && !detailsLower.includes('demo') && !detailsLower.includes('internal')) {
+        actualOperation = 'sale'
+      }
     }
     
     const config = OPERATION_CONFIG[actualOperation as keyof typeof OPERATION_CONFIG] || OPERATION_CONFIG.other
@@ -372,6 +379,7 @@ export default function LogPage() {
                         <th className="pb-4 pr-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Date & Time</th>
                         <th className="pb-4 px-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Operation</th>
                         <th className="pb-4 px-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Item</th>
+                        <th className="pb-4 px-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Staff</th>
                         <th className="pb-4 pl-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Details</th>
                       </tr>
                     </thead>
@@ -393,6 +401,11 @@ export default function LogPage() {
                           <td className="py-4 px-6 text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
                             <div className="max-w-[200px] truncate" title={log.itemName || '-'}>
                               {log.itemName || '-'}
+                            </div>
+                          </td>
+                          <td className="py-4 px-6 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                            <div className="max-w-[150px] truncate" title={log.staffName || '-'}>
+                              {log.staffName || '-'}
                             </div>
                           </td>
                           <td className="py-4 pl-6 text-sm text-slate-600 dark:text-slate-400">

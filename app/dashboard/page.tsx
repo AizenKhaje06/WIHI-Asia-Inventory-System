@@ -958,7 +958,15 @@ export default function DashboardPage() {
                   <div key={index} className="flex items-center justify-between p-3 rounded-[5px] bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm truncate text-slate-900 dark:text-white">{tx.itemName}</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">{tx.quantity} units</div>
+                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        <span>{tx.quantity} units</span>
+                        {tx.staffName && (
+                          <>
+                            <span>•</span>
+                            <span className="truncate">by {tx.staffName}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                     <div className="text-sm font-semibold text-green-600 dark:text-green-400">
                       ₱{formatNumber(tx.totalRevenue)}

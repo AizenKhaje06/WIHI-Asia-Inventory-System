@@ -145,6 +145,7 @@ export interface Log {
   itemName?: string
   details: string
   timestamp: string
+  staffName?: string
 }
 
 export interface Restock {

@@ -217,6 +217,13 @@ export function formatTableCurrency(value: number): string {
 }
 
 /**
+ * Format currency value with peso sign (for logs and text)
+ */
+export function formatPeso(value: number): string {
+  return `₱${value.toFixed(2)}`
+}
+
+/**
  * Format date for table
  */
 export function formatTableDate(

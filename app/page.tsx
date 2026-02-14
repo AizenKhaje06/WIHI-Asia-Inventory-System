@@ -87,10 +87,18 @@ export default function EnterpriseLoginPage() {
               localStorage.removeItem("rememberedUsername")
             }
             
+            // Save individual fields (for backward compatibility)
             localStorage.setItem("isLoggedIn", "true")
             localStorage.setItem("username", data.account.username)
             localStorage.setItem("userRole", data.account.role)
             localStorage.setItem("displayName", data.account.displayName)
+            
+            // Save complete user object (for getCurrentUser function)
+            localStorage.setItem("currentUser", JSON.stringify({
+              username: data.account.username,
+              role: data.account.role,
+              displayName: data.account.displayName
+            }))
           } catch (error) {
             console.error('Error saving to localStorage:', error)
           }
