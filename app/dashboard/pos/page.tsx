@@ -23,6 +23,8 @@ export default function POSPage() {
   const [loading, setLoading] = useState(false)
   const [department, setDepartment] = useState('')
   const [salesChannel, setSalesChannel] = useState('') // For demo/internal use
+  const [destinationStorage, setDestinationStorage] = useState('') // For warehouse transfer
+  const [storageRooms, setStorageRooms] = useState<string[]>([])
   const [staffName, setStaffName] = useState('')
   const [notes, setNotes] = useState('')
   const [dispatchId, setDispatchId] = useState('')
@@ -46,6 +48,7 @@ export default function POSPage() {
 
   useEffect(() => {
     fetchItems()
+    fetchStorageRooms()
   }, [])
 
   async function fetchItems() {
@@ -56,6 +59,16 @@ export default function POSPage() {
     } catch (error) {
       console.error("[POS] Error fetching items:", error)
       setItems([])
+    }
+  }
+
+  async function fetchStorageRooms() {
+    try {
+      const data = await apiGet<any[]>('/api/storage-rooms')
+      const rooms = data.map(room => room.name)
+      setStorageRooms(rooms)
+    } catch (error) {
+      console.error('Error fetching storage rooms:', error)
     }
   }
 
@@ -103,6 +116,12 @@ export default function POSPage() {
       return
     }
 
+    // Check if warehouse transfer requires destination storage
+    if (department === 'Warehouse' && !destinationStorage) {
+      alert('Please select a destination storage room for warehouse transfer')
+      return
+    }
+
     setLoading(true)
     try {
       const saleItems = cart.map((cartItem) => ({
@@ -110,9 +129,11 @@ export default function POSPage() {
         quantity: cartItem.quantity,
       }))
 
-      // Combine department and sales channel if applicable
+      // Combine department and sales channel/storage room if applicable
       const finalDepartment = requiresSalesChannel && salesChannel 
         ? `${department} / ${salesChannel}`
+        : department === 'Warehouse' && destinationStorage
+        ? `${department} / ${destinationStorage}`
         : department
 
       await apiPost("/api/sales", {
@@ -133,6 +154,7 @@ export default function POSPage() {
       // Reset form fields
       setDepartment('')
       setSalesChannel('')
+      setDestinationStorage('')
       setStaffName('')
       setNotes('')
     } catch (error) {
@@ -183,6 +205,10 @@ export default function POSPage() {
                 if (!['Demo/Display', 'Internal Use'].includes(value)) {
                   setSalesChannel('')
                 }
+                // Reset destination storage when not warehouse
+                if (value !== 'Warehouse') {
+                  setDestinationStorage('')
+                }
               }}>
                 <SelectTrigger className="mt-1.5">
                   <SelectValue placeholder="Select destination" />
@@ -222,6 +248,30 @@ export default function POSPage() {
                 </Select>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   This will be saved as: <span className="font-semibold text-blue-600 dark:text-blue-400">{department} / {salesChannel || '...'}</span>
+                </p>
+              </div>
+            )}
+
+            {/* Conditional Warehouse Storage Room Dropdown */}
+            {department === 'Warehouse' && (
+              <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Destination Storage Room * <span className="text-xs text-slate-500">(Transfer to which storage?)</span>
+                </Label>
+                <Select value={destinationStorage} onValueChange={setDestinationStorage}>
+                  <SelectTrigger className="mt-1.5 border-indigo-300 dark:border-indigo-700">
+                    <SelectValue placeholder="Select destination storage" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {storageRooms.map((room) => (
+                      <SelectItem key={room} value={room}>
+                        📦 {room}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Items will be transferred to: <span className="font-semibold text-indigo-600 dark:text-indigo-400">{destinationStorage || '...'}</span>
                 </p>
               </div>
             )}

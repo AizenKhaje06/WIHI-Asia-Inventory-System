@@ -41,7 +41,10 @@ const OPERATION_CONFIG = {
   delete: { label: "Delete", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800", icon: Trash2 },
   restock: { label: "Restock", color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-800", icon: RefreshCw },
   sale: { label: "Sale", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800", icon: ShoppingCart },
-  default: { label: "Other", color: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-200 dark:border-gray-800", icon: FileText }
+  'internal-usage': { label: "Internal Usage", color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800", icon: Package },
+  'demo-display': { label: "Demo/Display", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800", icon: Activity },
+  warehouse: { label: "Warehouse", color: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800", icon: Database },
+  other: { label: "Sale", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800", icon: ShoppingCart }
 }
 
 export default function LogPage() {
@@ -89,7 +92,10 @@ export default function LogPage() {
 
     // Operation filter
     if (operationFilter !== "all") {
-      filtered = filtered.filter(log => log.operation?.toLowerCase() === operationFilter)
+      filtered = filtered.filter(log => {
+        const logOp = log.operation?.toLowerCase().replace(/\s+/g, '-')
+        return logOp === operationFilter
+      })
     }
 
     // Sort
@@ -139,9 +145,23 @@ export default function LogPage() {
   }
 
   // Get operation badge
-  const getOperationBadge = (operation: string) => {
-    const op = operation?.toLowerCase() || 'default'
-    const config = OPERATION_CONFIG[op as keyof typeof OPERATION_CONFIG] || OPERATION_CONFIG.default
+  const getOperationBadge = (operation: string, details: string) => {
+    // Determine operation from details if needed
+    let actualOperation = operation?.toLowerCase().replace(/\s+/g, '-') || 'other'
+    
+    // Override based on details content for backward compatibility
+    const detailsLower = details?.toLowerCase() || ''
+    if (detailsLower.includes('demo/display') || detailsLower.includes('demo / display')) {
+      actualOperation = 'demo-display'
+    } else if (detailsLower.includes('internal use') || detailsLower.includes('internal-use')) {
+      actualOperation = 'internal-usage'
+    } else if (detailsLower.includes('warehouse') || detailsLower.includes('transferred')) {
+      actualOperation = 'warehouse'
+    } else if (detailsLower.includes('dispatched') && !detailsLower.includes('demo') && !detailsLower.includes('internal')) {
+      actualOperation = 'sale'
+    }
+    
+    const config = OPERATION_CONFIG[actualOperation as keyof typeof OPERATION_CONFIG] || OPERATION_CONFIG.other
     const Icon = config.icon
     
     return (
@@ -288,6 +308,9 @@ export default function LogPage() {
               <SelectItem value="delete">Delete</SelectItem>
               <SelectItem value="restock">Restock</SelectItem>
               <SelectItem value="sale">Sale</SelectItem>
+              <SelectItem value="internal-usage">Internal Usage</SelectItem>
+              <SelectItem value="demo-display">Demo/Display</SelectItem>
+              <SelectItem value="warehouse">Warehouse</SelectItem>
             </SelectContent>
           </Select>
 
@@ -343,40 +366,44 @@ export default function LogPage() {
             <>
               <div className="overflow-x-auto -mx-6 px-6">
                 <div className="min-w-full inline-block align-middle">
-                  <Table className="min-w-[700px]">
-                    <TableHeader>
-                      <TableRow className="border-b border-slate-200 dark:border-slate-700">
-                        <TableHead className="text-slate-600 dark:text-slate-400 whitespace-nowrap">Date & Time</TableHead>
-                        <TableHead className="text-slate-600 dark:text-slate-400 whitespace-nowrap">Operation</TableHead>
-                        <TableHead className="text-slate-600 dark:text-slate-400 whitespace-nowrap">Item</TableHead>
-                        <TableHead className="text-slate-600 dark:text-slate-400 whitespace-nowrap">Details</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                  <table className="w-full min-w-[1000px]">
+                    <thead>
+                      <tr className="border-b-2 border-slate-200 dark:border-slate-700">
+                        <th className="pb-4 pr-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Date & Time</th>
+                        <th className="pb-4 px-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Operation</th>
+                        <th className="pb-4 px-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Item</th>
+                        <th className="pb-4 pl-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
                       {paginatedLogs.map((log) => (
-                        <TableRow 
+                        <tr 
                           key={log.id} 
                           className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200"
                         >
-                          <TableCell className="font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                          <td className="py-4 pr-6 text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4 text-slate-400" />
                               {format(new Date(log.timestamp), "MMM dd, yyyy HH:mm:ss")}
                             </div>
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {getOperationBadge(log.operation)}
-                          </TableCell>
-                          <TableCell className="text-slate-800 dark:text-slate-200 whitespace-nowrap max-w-[200px] truncate" title={log.itemName || '-'}>
-                            {log.itemName || '-'}
-                          </TableCell>
-                          <TableCell className="text-sm text-slate-600 dark:text-slate-400 max-w-[300px] truncate" title={log.details}>
-                            {log.details}
-                          </TableCell>
-                        </TableRow>
+                          </td>
+                          <td className="py-4 px-6 whitespace-nowrap">
+                            {getOperationBadge(log.operation, log.details)}
+                          </td>
+                          <td className="py-4 px-6 text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                            <div className="max-w-[200px] truncate" title={log.itemName || '-'}>
+                              {log.itemName || '-'}
+                            </div>
+                          </td>
+                          <td className="py-4 pl-6 text-sm text-slate-600 dark:text-slate-400">
+                            <div className="max-w-[500px]">
+                              {log.details}
+                            </div>
+                          </td>
+                        </tr>
                       ))}
-                    </TableBody>
-                  </Table>
+                    </tbody>
+                  </table>
                 </div>
               </div>
 

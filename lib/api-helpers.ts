@@ -19,17 +19,17 @@ import { requireAuth, requireAdmin, requireRole, type UserRole } from './api-aut
 export function withAuth(
   handler: (
     request: NextRequest,
-    context: { user: { username: string; role: UserRole; displayName: string } }
+    context: { user: { username: string; role: UserRole; displayName: string }, params?: any }
   ) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest) => {
+  return async (request: NextRequest, routeContext?: { params: any }) => {
     const authResult = requireAuth(request)
 
     if (authResult instanceof NextResponse) {
       return authResult
     }
 
-    return handler(request, authResult)
+    return handler(request, { ...authResult, params: routeContext?.params })
   }
 }
 
@@ -45,17 +45,17 @@ export function withAuth(
 export function withAdmin(
   handler: (
     request: NextRequest,
-    context: { user: { username: string; role: UserRole; displayName: string } }
+    context: { user: { username: string; role: UserRole; displayName: string }, params?: any }
   ) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest) => {
+  return async (request: NextRequest, routeContext?: { params: any }) => {
     const authResult = requireAdmin(request)
 
     if (authResult instanceof NextResponse) {
       return authResult
     }
 
-    return handler(request, authResult)
+    return handler(request, { ...authResult, params: routeContext?.params })
   }
 }
 

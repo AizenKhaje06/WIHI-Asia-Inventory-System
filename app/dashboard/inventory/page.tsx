@@ -18,7 +18,7 @@ import { formatNumber, formatCurrency } from "@/lib/utils"
 import { showSuccess, showError } from "@/lib/toast-utils"
 import type { StorageRoom } from "@/lib/types"
 import { getCurrentUser } from "@/lib/auth"
-import { apiGet, apiDelete, apiPost } from "@/lib/api-client"
+import { apiGet, apiDelete, apiPost, apiPut } from "@/lib/api-client"
 
 import { PremiumTableLoading } from "@/components/premium-loading"
 
@@ -219,19 +219,10 @@ export default function InventoryPage() {
 
     try {
       setSubmitting(true)
-      const response = await fetch("/api/storage-rooms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newWarehouse.trim() })
-      })
-
-      if (response.ok) {
-        showSuccess("Warehouse added successfully")
-        setNewWarehouse("")
-        fetchWarehouses()
-      } else {
-        showError("Failed to add warehouse")
-      }
+      await apiPost("/api/storage-rooms", { name: newWarehouse.trim() })
+      showSuccess("Warehouse added successfully")
+      setNewWarehouse("")
+      fetchWarehouses()
     } catch (error) {
       console.error("Error adding warehouse:", error)
       showError("Failed to add warehouse")
@@ -248,20 +239,11 @@ export default function InventoryPage() {
 
     try {
       setSubmitting(true)
-      const response = await fetch(`/api/storage-rooms/${editingWarehouse.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editWarehouseValue.trim() })
-      })
-
-      if (response.ok) {
-        showSuccess("Warehouse updated successfully")
-        setEditingWarehouse(null)
-        setEditWarehouseValue("")
-        fetchWarehouses()
-      } else {
-        showError("Failed to update warehouse")
-      }
+      await apiPut(`/api/storage-rooms/${editingWarehouse.id}`, { name: editWarehouseValue.trim() })
+      showSuccess("Warehouse updated successfully")
+      setEditingWarehouse(null)
+      setEditWarehouseValue("")
+      fetchWarehouses()
     } catch (error) {
       console.error("Error updating warehouse:", error)
       showError("Failed to update warehouse")
@@ -273,17 +255,10 @@ export default function InventoryPage() {
   async function handleDeleteWarehouse(id: string) {
     try {
       setSubmitting(true)
-      const response = await fetch(`/api/storage-rooms/${id}`, {
-        method: "DELETE"
-      })
-
-      if (response.ok) {
-        showSuccess("Warehouse deleted successfully")
-        setDeleteWarehouseId(null)
-        fetchWarehouses()
-      } else {
-        showError("Failed to delete warehouse")
-      }
+      await apiDelete(`/api/storage-rooms/${id}`)
+      showSuccess("Warehouse deleted successfully")
+      setDeleteWarehouseId(null)
+      fetchWarehouses()
     } catch (error) {
       console.error("Error deleting warehouse:", error)
       showError("Failed to delete warehouse")
@@ -301,19 +276,10 @@ export default function InventoryPage() {
 
     try {
       setSubmitting(true)
-      const response = await fetch("/api/categories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newCategory.trim() })
-      })
-
-      if (response.ok) {
-        showSuccess("Category added successfully")
-        setNewCategory("")
-        fetchCategories()
-      } else {
-        showError("Failed to add category")
-      }
+      const category = await apiPost("/api/categories", { name: newCategory.trim() })
+      showSuccess("Category added successfully")
+      setNewCategory("")
+      fetchCategories()
     } catch (error) {
       console.error("Error adding category:", error)
       showError("Failed to add category")
@@ -330,20 +296,11 @@ export default function InventoryPage() {
 
     try {
       setSubmitting(true)
-      const response = await fetch(`/api/categories/${editingCategory.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editCategoryValue.trim() })
-      })
-
-      if (response.ok) {
-        showSuccess("Category updated successfully")
-        setEditingCategory(null)
-        setEditCategoryValue("")
-        fetchCategories()
-      } else {
-        showError("Failed to update category")
-      }
+      await apiPut(`/api/categories/${editingCategory.id}`, { name: editCategoryValue.trim() })
+      showSuccess("Category updated successfully")
+      setEditingCategory(null)
+      setEditCategoryValue("")
+      fetchCategories()
     } catch (error) {
       console.error("Error updating category:", error)
       showError("Failed to update category")
@@ -355,17 +312,10 @@ export default function InventoryPage() {
   async function handleDeleteCategory(id: string) {
     try {
       setSubmitting(true)
-      const response = await fetch(`/api/categories/${id}`, {
-        method: "DELETE"
-      })
-
-      if (response.ok) {
-        showSuccess("Category deleted successfully")
-        setDeleteCategoryId(null)
-        fetchCategories()
-      } else {
-        showError("Failed to delete category")
-      }
+      await apiDelete(`/api/categories/${id}`)
+      showSuccess("Category deleted successfully")
+      setDeleteCategoryId(null)
+      fetchCategories()
     } catch (error) {
       console.error("Error deleting category:", error)
       showError("Failed to delete category")

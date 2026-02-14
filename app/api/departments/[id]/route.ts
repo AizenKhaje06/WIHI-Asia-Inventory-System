@@ -31,12 +31,16 @@ export async function GET(
     let filteredTransactions = allTransactions.filter(t => {
       if (!t.department) return false
       
-      // Match either the full department string or the sales channel part
-      const salesChannel = t.department.includes(' / ') 
-        ? t.department.split(' / ')[1] 
-        : t.department
+      // Extract base department to determine type
+      const baseDepartment = t.department.split(' / ')[0]
       
-      return salesChannel === departmentName
+      // Exclude non-sales transactions (demo, internal, warehouse)
+      if (['Demo/Display', 'Internal Use', 'Warehouse'].includes(baseDepartment)) {
+        return false
+      }
+      
+      // For sales, match the full department name directly
+      return t.department === departmentName
     })
     
     if (startDate) {

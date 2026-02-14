@@ -45,28 +45,41 @@ export const GET = withAuth(async (request, { user }) => {
       quantity: number
     }>()
 
+    console.log('[Departments API] Processing transactions:', filteredTransactions.length)
+
     filteredTransactions.forEach(transaction => {
       if (!transaction.department) return
 
+      console.log('[Departments API] Transaction department:', transaction.department)
+
       // Extract base department (before the " / " if it exists)
       const baseDepartment = transaction.department.split(' / ')[0]
-      const salesChannel = transaction.department.includes(' / ') 
-        ? transaction.department.split(' / ')[1] 
-        : transaction.department
+      
+      // Determine type based on base department
+      let type: 'sale' | 'demo' | 'internal' | 'transfer' = 'sale'
+      if (baseDepartment === 'Demo/Display') type = 'demo'
+      else if (baseDepartment === 'Internal Use') type = 'internal'
+      else if (baseDepartment === 'Warehouse') type = 'transfer'
 
-      // Use sales channel as the key for grouping
+      console.log('[Departments API] Base:', baseDepartment, 'Type:', type)
+
+      // For sales channels page, ONLY process actual sales (type === 'sale')
+      // Skip demo, internal, and warehouse transfers entirely
+      if (type !== 'sale') {
+        console.log('[Departments API] Skipping non-sale transaction')
+        return
+      }
+
+      // For sales, use the department name directly (no splitting needed)
+      const salesChannel = transaction.department
       const key = salesChannel
 
       if (!departmentMap.has(key)) {
-        // Determine type based on base department
-        let type: 'sale' | 'demo' | 'internal' | 'transfer' = 'sale'
-        if (baseDepartment === 'Demo/Display') type = 'demo'
-        else if (baseDepartment === 'Internal Use') type = 'internal'
-        else if (baseDepartment === 'Warehouse') type = 'transfer'
+        console.log('[Departments API] Creating new sales channel:', key)
 
         departmentMap.set(key, {
           name: key,
-          type,
+          type: 'sale',
           revenue: 0,
           cost: 0,
           profit: 0,
@@ -83,7 +96,9 @@ export const GET = withAuth(async (request, { user }) => {
       dept.quantity += transaction.quantity || 0
     })
 
-    // Convert to array and sort by revenue
+    console.log('[Departments API] Department map:', Array.from(departmentMap.entries()))
+
+    // Convert to array - already filtered to sales only
     const departments = Array.from(departmentMap.values())
       .sort((a, b) => b.revenue - a.revenue)
 

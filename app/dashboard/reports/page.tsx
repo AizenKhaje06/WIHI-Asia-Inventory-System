@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Filter, BarChart3, Package, FileText } from "lucide-react"
 import type { SalesReport } from "@/lib/types"
 import { toast } from "sonner"
-import { formatNumber } from "@/lib/utils"
+import { formatNumber, formatCurrency } from "@/lib/utils"
 import { apiGet } from "@/lib/api-client"
 
 export default function ReportsPage() {
@@ -140,32 +140,38 @@ export default function ReportsPage() {
             <CardContent>
               <div className="overflow-x-auto -mx-6 px-6">
                 <div className="min-w-full inline-block align-middle">
-                  <table className="w-full min-w-[700px]">
+                  <table className="w-full min-w-[900px]">
                     <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Date</th>
-                        <th className="pb-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Item</th>
-                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Qty</th>
-                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Revenue</th>
-                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Cost</th>
-                        <th className="pb-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Profit</th>
+                      <tr className="border-b-2 border-slate-200 dark:border-slate-700">
+                        <th className="pb-4 pr-8 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                        <th className="pb-4 px-8 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Item</th>
+                        <th className="pb-4 px-8 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Qty</th>
+                        <th className="pb-4 px-8 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Revenue</th>
+                        <th className="pb-4 px-8 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Cost</th>
+                        <th className="pb-4 pl-8 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Profit</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredTransactions.map((transaction) => (
                         <tr key={transaction.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
-                          <td className="py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                            {new Date(transaction.timestamp).toLocaleDateString()} {new Date(transaction.timestamp).toLocaleTimeString()}
+                          <td className="py-5 pr-8 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                            {new Date(transaction.timestamp).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })} {new Date(transaction.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
                           </td>
-                          <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap max-w-[200px] truncate" title={transaction.itemName}>
+                          <td className="py-5 px-8 text-sm font-medium text-slate-800 dark:text-slate-200 max-w-[250px] truncate" title={transaction.itemName}>
                             {transaction.itemName}
                           </td>
-                          <td className="py-4 text-right text-sm font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">{formatNumber(transaction.quantity)}</td>
-                          <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                            ₱{formatNumber(transaction.totalRevenue)}
+                          <td className="py-5 px-8 text-right text-sm font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap tabular-nums">
+                            {formatNumber(transaction.quantity)}
                           </td>
-                          <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">₱{formatNumber(transaction.totalCost)}</td>
-                          <td className="py-4 text-right text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">₱{formatNumber(transaction.profit)}</td>
+                          <td className="py-5 px-8 text-right text-sm font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap tabular-nums">
+                            {formatCurrency(transaction.totalRevenue)}
+                          </td>
+                          <td className="py-5 px-8 text-right text-sm font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap tabular-nums">
+                            {formatCurrency(transaction.totalCost)}
+                          </td>
+                          <td className="py-5 pl-8 text-right text-sm font-bold text-slate-900 dark:text-white whitespace-nowrap tabular-nums">
+                            {formatCurrency(transaction.profit)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

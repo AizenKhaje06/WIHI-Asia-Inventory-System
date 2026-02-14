@@ -81,6 +81,11 @@ export default function CustomersPage() {
       setCustomers(data)
     } catch (error) {
       console.error("Error fetching customers:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to fetch customers",
+        variant: "destructive"
+      })
     } finally {
       setLoading(false)
     }
@@ -1025,64 +1030,160 @@ export default function CustomersPage() {
 
       {/* Manual Adjustment Dialog */}
       <Dialog open={adjustDialogOpen} onOpenChange={setAdjustDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Adjust {adjustmentType === 'points' ? 'Loyalty Points' : adjustmentType === 'purchases' ? 'Total Purchases' : 'Total Spending'}
-            </DialogTitle>
+        <DialogContent className="max-w-xl">
+          <DialogHeader className="pb-4 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className={`p-3 rounded-xl ${
+                adjustmentType === 'points' 
+                  ? 'bg-purple-100 dark:bg-purple-900/30' 
+                  : adjustmentType === 'purchases'
+                  ? 'bg-blue-100 dark:bg-blue-900/30'
+                  : 'bg-green-100 dark:bg-green-900/30'
+              }`}>
+                {adjustmentType === 'points' && <Award className="h-6 w-6 text-purple-600 dark:text-purple-400" />}
+                {adjustmentType === 'purchases' && <ShoppingBag className="h-6 w-6 text-blue-600 dark:text-blue-400" />}
+                {adjustmentType === 'spending' && <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />}
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+                  {adjustmentType === 'points' ? 'Adjust Loyalty Points' : adjustmentType === 'purchases' ? 'Adjust Total Purchases' : 'Adjust Total Spending'}
+                </DialogTitle>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  {selectedCustomer?.name}
+                </p>
+              </div>
+            </div>
           </DialogHeader>
-          <form onSubmit={handleAdjustment} className="space-y-4">
-            <div>
-              <Label htmlFor="adjustment-value">
-                Amount {adjustmentType === 'spending' && '(₱)'}
+          
+          <form onSubmit={handleAdjustment} className="space-y-6 pt-4">
+            {/* Current Value Card */}
+            {selectedCustomer && (
+              <div className="p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                      Current Value
+                    </div>
+                    <div className="text-3xl font-bold text-slate-900 dark:text-white">
+                      {adjustmentType === 'points' && selectedCustomer.loyaltyPoints.toLocaleString()}
+                      {adjustmentType === 'purchases' && selectedCustomer.totalPurchases.toLocaleString()}
+                      {adjustmentType === 'spending' && formatCurrency(selectedCustomer.totalSpent)}
+                    </div>
+                  </div>
+                  {adjustmentValue && !isNaN(parseFloat(adjustmentValue)) && (
+                    <div className="text-right">
+                      <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                        New Value
+                      </div>
+                      <div className={`text-3xl font-bold ${
+                        parseFloat(adjustmentValue) >= 0 
+                          ? 'text-green-600 dark:text-green-400' 
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {adjustmentType === 'points' && Math.max(0, selectedCustomer.loyaltyPoints + parseFloat(adjustmentValue)).toLocaleString()}
+                        {adjustmentType === 'purchases' && Math.max(0, selectedCustomer.totalPurchases + parseFloat(adjustmentValue)).toLocaleString()}
+                        {adjustmentType === 'spending' && formatCurrency(Math.max(0, selectedCustomer.totalSpent + parseFloat(adjustmentValue)))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {adjustmentValue && !isNaN(parseFloat(adjustmentValue)) && (
+                  <div className={`flex items-center gap-2 text-sm font-medium ${
+                    parseFloat(adjustmentValue) >= 0 
+                      ? 'text-green-600 dark:text-green-400' 
+                      : 'text-red-600 dark:text-red-400'
+                  }`}>
+                    <TrendingUp className={`h-4 w-4 ${parseFloat(adjustmentValue) < 0 ? 'rotate-180' : ''}`} />
+                    <span>
+                      {parseFloat(adjustmentValue) >= 0 ? '+' : ''}{parseFloat(adjustmentValue).toLocaleString()}
+                      {adjustmentType === 'spending' && ' PHP'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Adjustment Amount Input */}
+            <div className="space-y-2">
+              <Label htmlFor="adjustment-value" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Adjustment Amount {adjustmentType === 'spending' && '(PHP)'}
               </Label>
-              <Input
-                id="adjustment-value"
-                type="number"
-                step={adjustmentType === 'spending' ? '0.01' : '1'}
-                required
-                value={adjustmentValue}
-                onChange={(e) => setAdjustmentValue(e.target.value)}
-                placeholder={`Enter ${adjustmentType === 'points' ? 'points' : adjustmentType === 'purchases' ? 'number of purchases' : 'amount'} to add or subtract`}
-              />
-              <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+              <div className="relative">
+                <Input
+                  id="adjustment-value"
+                  type="number"
+                  step={adjustmentType === 'spending' ? '0.01' : '1'}
+                  required
+                  value={adjustmentValue}
+                  onChange={(e) => setAdjustmentValue(e.target.value)}
+                  placeholder={`Enter ${adjustmentType === 'points' ? 'points' : adjustmentType === 'purchases' ? 'number of purchases' : 'amount'}`}
+                  className="h-12 text-base pl-4 pr-4 border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20"
+                />
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                 Use positive numbers to add, negative numbers to subtract
               </p>
             </div>
-            <div>
-              <Label htmlFor="adjustment-reason">Reason (Optional)</Label>
+
+            {/* Reason Input */}
+            <div className="space-y-2">
+              <Label htmlFor="adjustment-reason" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Reason <span className="text-slate-400 font-normal">(Optional)</span>
+              </Label>
               <Input
                 id="adjustment-reason"
                 value={adjustmentReason}
                 onChange={(e) => setAdjustmentReason(e.target.value)}
                 placeholder="e.g., Bonus points, Correction, Promotion"
+                className="h-12 text-base border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20"
               />
             </div>
-            {selectedCustomer && (
-              <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-[5px]">
-                <div className="text-sm text-slate-600 dark:text-slate-400 mb-1">Current Value</div>
-                <div className="text-lg font-bold text-slate-900 dark:text-white">
-                  {adjustmentType === 'points' && selectedCustomer.loyaltyPoints}
-                  {adjustmentType === 'purchases' && selectedCustomer.totalPurchases}
-                  {adjustmentType === 'spending' && formatCurrency(selectedCustomer.totalSpent)}
-                </div>
-                {adjustmentValue && !isNaN(parseFloat(adjustmentValue)) && (
-                  <>
-                    <div className="text-sm text-slate-600 dark:text-slate-400 mt-2">New Value</div>
-                    <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                      {adjustmentType === 'points' && Math.max(0, selectedCustomer.loyaltyPoints + parseFloat(adjustmentValue))}
-                      {adjustmentType === 'purchases' && Math.max(0, selectedCustomer.totalPurchases + parseFloat(adjustmentValue))}
-                      {adjustmentType === 'spending' && formatCurrency(Math.max(0, selectedCustomer.totalSpent + parseFloat(adjustmentValue)))}
+
+            {/* Tier Change Warning */}
+            {adjustmentType === 'spending' && adjustmentValue && !isNaN(parseFloat(adjustmentValue)) && selectedCustomer && (
+              (() => {
+                const newSpent = Math.max(0, selectedCustomer.totalSpent + parseFloat(adjustmentValue))
+                const newTier = newSpent >= 100000 ? 'platinum' : newSpent >= 50000 ? 'gold' : newSpent >= 20000 ? 'silver' : 'bronze'
+                const tierChanged = newTier !== selectedCustomer.tier
+                
+                return tierChanged ? (
+                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                        <Award className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-amber-900 dark:text-amber-200 mb-1">
+                          Tier Change Detected
+                        </div>
+                        <div className="text-sm text-amber-700 dark:text-amber-300">
+                          Customer tier will change from <span className="font-bold uppercase">{selectedCustomer.tier}</span> to <span className="font-bold uppercase">{newTier}</span>
+                        </div>
+                      </div>
                     </div>
-                  </>
-                )}
-              </div>
+                  </div>
+                ) : null
+              })()
             )}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setAdjustDialogOpen(false)}>
+
+            {/* Action Buttons */}
+            <DialogFooter className="gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setAdjustDialogOpen(false)}
+                className="h-11 px-6"
+              >
                 Cancel
               </Button>
-              <Button type="submit">Apply Adjustment</Button>
+              <Button 
+                type="submit"
+                className="h-11 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Apply Adjustment
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

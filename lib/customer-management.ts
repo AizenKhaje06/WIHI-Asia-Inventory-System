@@ -1,7 +1,5 @@
-import { google } from "googleapis"
+import { supabase } from "./supabase"
 import type { Customer } from "./types"
-
-const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 const formatTimestamp = (date: Date) => {
   const options: Intl.DateTimeFormatOptions = {
@@ -24,172 +22,90 @@ const formatTimestamp = (date: Date) => {
   return `${year}-${month}-${day} / ${hour12}:${minute} ${ampm}`
 }
 
-async function getCustomersSheetId(): Promise<number> {
-  const sheets = await getGoogleSheetsClient()
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID
-
-  const response = await sheets.spreadsheets.get({
-    spreadsheetId,
-  })
-
-  const customersSheet = response.data.sheets?.find(
-    sheet => sheet.properties?.title === 'Customers'
-  )
-
-  return customersSheet?.properties?.sheetId ?? 0
-}
-
-async function getGoogleSheetsClient() {
-  const auth = new google.auth.GoogleAuth({
-    credentials: {
-      client_email: process.env.GOOGLE_CLIENT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    },
-    scopes: SCOPES,
-  })
-
-  const sheets = google.sheets({ version: "v4", auth })
-  return sheets
-}
-
-async function initializeCustomersSheet() {
-  const sheets = await getGoogleSheetsClient()
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID
-
-  try {
-    await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: "Customers!A1:K1"
-    })
-  } catch (error) {
-    await sheets.spreadsheets.batchUpdate({
-      spreadsheetId,
-      requestBody: {
-        requests: [{
-          addSheet: {
-            properties: {
-              title: 'Customers',
-              gridProperties: {
-                rowCount: 1000,
-                columnCount: 11
-              }
-            }
-          }
-        }]
-      }
-    })
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: "Customers!A1:K1",
-      valueInputOption: "RAW",
-      requestBody: {
-        values: [["ID", "Name", "Email", "Phone", "Address", "Loyalty Points", "Total Purchases", "Total Spent", "Last Purchase", "Tier", "Created At"]]
-      }
-    })
-  }
-}
-
 export async function getCustomers(): Promise<Customer[]> {
-  await initializeCustomersSheet()
+  const { data, error } = await supabase
+    .from('customers')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-  const sheets = await getGoogleSheetsClient()
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+  if (error) {
+    console.error('[Supabase] Error fetching customers:', error)
+    throw new Error('Failed to fetch customers')
+  }
 
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "Customers!A2:K",
+  console.log('[Supabase] Raw customer data:', JSON.stringify(data, null, 2))
+
+  return (data || []).map(row => {
+    const mapped = {
+      id: row.id,
+      name: row.name,
+      email: row.email || "",
+      phone: row.phone || "",
+      address: row.address || "",
+      loyaltyPoints: Number(row.loyalty_points) || 0,
+      totalPurchases: Number(row.total_purchases) || 0,
+      totalSpent: Number(row.total_spent) || 0,
+      lastPurchase: row.last_purchase || "",
+      tier: (row.tier || "bronze") as 'bronze' | 'silver' | 'gold' | 'platinum',
+      createdAt: row.created_at || formatTimestamp(new Date()),
+    }
+    console.log('[Supabase] Mapped customer:', row.name, 'totalSpent:', row.total_spent, '->', mapped.totalSpent)
+    return mapped
   })
-
-  const rows = response.data.values || []
-  return rows.map((row) => ({
-    id: row[0] || "",
-    name: row[1] || "",
-    email: row[2] || "",
-    phone: row[3] || "",
-    address: row[4] || "",
-    loyaltyPoints: Number.parseInt(row[5] || "0") || 0,
-    totalPurchases: Number.parseInt(row[6] || "0") || 0,
-    totalSpent: Number.parseFloat(row[7] || "0") || 0,
-    lastPurchase: row[8] || "",
-    tier: (row[9] || "bronze") as 'bronze' | 'silver' | 'gold' | 'platinum',
-    createdAt: row[10] || formatTimestamp(new Date()),
-  }))
 }
 
 export async function addCustomer(customer: Omit<Customer, "id" | "createdAt">): Promise<Customer> {
-  const sheets = await getGoogleSheetsClient()
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID
-
   const id = `CUST-${Date.now()}`
   const createdAt = formatTimestamp(new Date())
 
-  const values = [
-    [
+  const { data, error } = await supabase
+    .from('customers')
+    .insert({
       id,
-      customer.name,
-      customer.email || "",
-      customer.phone || "",
-      customer.address || "",
-      customer.loyaltyPoints,
-      customer.totalPurchases,
-      customer.totalSpent,
-      customer.lastPurchase || "",
-      customer.tier || "bronze",
-      createdAt,
-    ],
-  ]
+      name: customer.name,
+      email: customer.email || null,
+      phone: customer.phone || null,
+      address: customer.address || null,
+      loyalty_points: customer.loyaltyPoints || 0,
+      total_purchases: customer.totalPurchases || 0,
+      total_spent: customer.totalSpent || 0,
+      last_purchase: customer.lastPurchase || null,
+      tier: customer.tier || "bronze",
+      created_at: createdAt,
+    })
+    .select()
+    .single()
 
-  await sheets.spreadsheets.values.append({
-    spreadsheetId,
-    range: "Customers!A:K",
-    valueInputOption: "USER_ENTERED",
-    requestBody: { values },
-  })
+  if (error) {
+    console.error('[Supabase] Error adding customer:', error)
+    throw new Error('Failed to add customer')
+  }
 
   return { ...customer, id, createdAt }
 }
 
 export async function updateCustomer(id: string, updates: Partial<Customer>): Promise<void> {
-  const sheets = await getGoogleSheetsClient()
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+  const updateData: any = {}
+  
+  if (updates.name !== undefined) updateData.name = updates.name
+  if (updates.email !== undefined) updateData.email = updates.email || null
+  if (updates.phone !== undefined) updateData.phone = updates.phone || null
+  if (updates.address !== undefined) updateData.address = updates.address || null
+  if (updates.loyaltyPoints !== undefined) updateData.loyalty_points = updates.loyaltyPoints
+  if (updates.totalPurchases !== undefined) updateData.total_purchases = updates.totalPurchases
+  if (updates.totalSpent !== undefined) updateData.total_spent = updates.totalSpent
+  if (updates.lastPurchase !== undefined) updateData.last_purchase = updates.lastPurchase || null
+  if (updates.tier !== undefined) updateData.tier = updates.tier
 
-  const customers = await getCustomers()
-  const index = customers.findIndex((customer) => customer.id === id)
+  const { error } = await supabase
+    .from('customers')
+    .update(updateData)
+    .eq('id', id)
 
-  if (index === -1) {
-    throw new Error("Customer not found")
+  if (error) {
+    console.error('[Supabase] Error updating customer:', error)
+    throw new Error('Failed to update customer')
   }
-
-  const customer = customers[index]
-  const rowNumber = index + 2
-
-  // Merge updates with existing customer data
-  const updatedCustomer = { ...customer, ...updates }
-
-  // Prepare the row data
-  const rowData = [
-    updatedCustomer.id,
-    updatedCustomer.name,
-    updatedCustomer.email || "",
-    updatedCustomer.phone || "",
-    updatedCustomer.address || "",
-    updatedCustomer.loyaltyPoints,
-    updatedCustomer.totalPurchases,
-    updatedCustomer.totalSpent,
-    updatedCustomer.lastPurchase || "",
-    updatedCustomer.tier || "bronze",
-    updatedCustomer.createdAt || "",
-  ]
-
-  // Update the entire row
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: `Customers!A${rowNumber}:K${rowNumber}`,
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: [rowData]
-    }
-  })
 }
 
 export async function calculateCustomerTier(totalSpent: number): Promise<'bronze' | 'silver' | 'gold' | 'platinum'> {
@@ -214,32 +130,13 @@ export async function addLoyaltyPoints(customerId: string, amount: number): Prom
 }
 
 export async function deleteCustomer(id: string): Promise<void> {
-  const sheets = await getGoogleSheetsClient()
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID
+  const { error } = await supabase
+    .from('customers')
+    .delete()
+    .eq('id', id)
 
-  const customers = await getCustomers()
-  const index = customers.findIndex((customer) => customer.id === id)
-
-  if (index === -1) {
-    throw new Error("Customer not found")
+  if (error) {
+    console.error('[Supabase] Error deleting customer:', error)
+    throw new Error('Failed to delete customer')
   }
-
-  const rowNumber = index + 2
-  const sheetId = await getCustomersSheetId()
-
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId,
-    requestBody: {
-      requests: [{
-        deleteDimension: {
-          range: {
-            sheetId,
-            dimension: "ROWS",
-            startIndex: rowNumber - 1,
-            endIndex: rowNumber
-          }
-        }
-      }]
-    }
-  })
 }

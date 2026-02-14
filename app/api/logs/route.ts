@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server'
-import { getLogs } from '@/lib/google-sheets'
+import { getLogs } from '@/lib/supabase-db'
+import { getCachedData } from '@/lib/cache'
+import { withAuth } from '@/lib/api-helpers'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export const GET = withAuth(async (request, { user }) => {
   try {
-    const logs = await getLogs()
+    const logs = await getCachedData(
+      'logs',
+      () => getLogs(),
+      1 * 60 * 1000 // 1 minute cache
+    )
     return NextResponse.json(logs)
   } catch (error) {
     console.error('Error fetching logs:', error)
@@ -14,4 +20,4 @@ export async function GET() {
       { status: 500 }
     )
   }
-}
+})

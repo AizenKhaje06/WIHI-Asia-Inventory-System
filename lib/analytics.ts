@@ -183,14 +183,22 @@ export function calculateInventoryTurnover(
         const daysSinceLastSale = Math.floor((now.getTime() - lastSaleDate.getTime()) / (24 * 60 * 60 * 1000))
         daysToSell = daysSinceLastSale
       }
-      // else: No sales history at all - daysToSell remains null
+      // else: No sales history at all - daysToSell remains null (NEW PRODUCT)
     }
 
     let status: 'fast-moving' | 'normal' | 'slow-moving' | 'dead-stock'
-    if (daysToSell === null || daysToSell >= 180) status = 'dead-stock'
-    else if (daysToSell < 30) status = 'fast-moving'
-    else if (daysToSell < 90) status = 'normal'
-    else status = 'slow-moving'
+    if (daysToSell === null) {
+      // New product with no sales history - mark as normal (not dead stock)
+      status = 'normal'
+    } else if (daysToSell >= 180) {
+      status = 'dead-stock'
+    } else if (daysToSell < 30) {
+      status = 'fast-moving'
+    } else if (daysToSell < 90) {
+      status = 'normal'
+    } else {
+      status = 'slow-moving'
+    }
 
     return {
       itemId: item.id,
