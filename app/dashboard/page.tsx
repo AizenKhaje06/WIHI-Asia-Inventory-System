@@ -7,32 +7,27 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { SetupRequiredAlert } from "@/components/setup-required-alert"
-import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart3, ShoppingCart, TrendingDown, Users, BarChart2, Activity, ArrowUpRight, ArrowDownRight, Percent, RefreshCw, Plus, FileText, AlertCircle, PackageX, PackageOpen, RotateCcw, FileDown } from "lucide-react"
+import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart2, ShoppingCart, Activity, ArrowUpRight, ArrowDownRight, Percent, Plus, FileText, AlertCircle, PackageX, PackageOpen, RotateCcw } from "lucide-react"
 import {
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   BarChart,
   Bar,
-  Area,
-  AreaChart,
 } from "recharts"
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
 import { AnimatedNumber } from "@/components/ui/animated-number"
 import { ChartTooltip } from "@/components/ui/chart-tooltip"
 import { GaugeChart } from "@/components/charts/gauge-chart"
+import { RevenueChart } from "@/components/dashboard/revenue-chart"
 import type { DashboardStats, InventoryItem } from "@/lib/types"
+import type { TimePeriod } from "@/components/dashboard/revenue-chart"
 import { formatNumber } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { PremiumDashboardLoading } from "@/components/premium-loading"
 import { apiGet } from "@/lib/api-client"
+import { formatChartData, calculatePeriodComparison } from "@/lib/dashboard-utils"
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -40,7 +35,7 @@ export default function DashboardPage() {
   const [outOfStockItems, setOutOfStockItems] = useState<InventoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [timePeriod, setTimePeriod] = useState<"ID" | "1W" | "1M">("ID")
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>("ID")
 
   const fetchData = async () => {
     try {
@@ -80,44 +75,14 @@ export default function DashboardPage() {
     return <PremiumDashboardLoading />
   }
 
-  // Calculate additional metrics
-  const netProfit = (stats?.totalRevenue || 0) - (stats?.totalCost || 0) - (stats?.returnValue || 0)
-  const lowStockCount = lowStockItems.length
-  const outOfStockCount = outOfStockItems.length
-
   if (loading) {
     return <PremiumDashboardLoading />
   }
 
-  // Format date based on timePeriod
-  const formattedSalesData = stats?.salesOverTime?.map(item => {
-    let displayDate = item.date
-    if (timePeriod === "ID") {
-      // Today: show hour only (e.g., "14:00")
-      displayDate = item.date.split(' ')[1] || item.date
-    } else if (timePeriod === "1W") {
-      // Week: format date string
-      try {
-        const datePart = item.date.split(' ')[0]
-        if (datePart && datePart.includes('-')) {
-          const dateObj = new Date(datePart)
-          if (!isNaN(dateObj.getTime())) {
-            displayDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          }
-        }
-      } catch (e) {
-        console.error('Date parsing error:', e, item.date)
-        displayDate = item.date // Fallback to original
-      }
-    } else if (timePeriod === "1M") {
-      // Month: date is already formatted as "Feb 1", "Feb 2", etc. from API
-      displayDate = item.date
-    }
-    return { ...item, date: displayDate }
-  }) || []
-
-  console.log('[Dashboard] Formatted sales data:', formattedSalesData)
-  console.log('[Dashboard] Time period:', timePeriod)
+  // Calculate additional metrics
+  const netProfit = (stats?.totalRevenue || 0) - (stats?.totalCost || 0) - (stats?.returnValue || 0)
+  const lowStockCount = lowStockItems.length
+  const outOfStockCount = outOfStockItems.length
 
   const stocksCountData = stats?.stocksCountByCategory?.map((cat) => ({
     name: cat.name,
@@ -485,160 +450,14 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Sales Chart - Modern Design */}
-      <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200 border-0 shadow-lg">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Revenue</CardTitle>
-            </div>
-            <Tabs value={timePeriod} onValueChange={(value) => setTimePeriod(value as any)}>
-              <TabsList className="bg-slate-100 dark:bg-slate-800">
-                <TabsTrigger value="ID" className="text-xs">Day</TabsTrigger>
-                <TabsTrigger value="1W" className="text-xs">Week</TabsTrigger>
-                <TabsTrigger value="1M" className="text-xs">Month</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-          
-          {/* Comparison Metrics */}
-          <div className="flex gap-8 mt-4">
-            <div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                {timePeriod === 'ID' ? 'Today' : timePeriod === '1W' ? 'This week' : 'This month'}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  ₱{formatNumber(
-                    formattedSalesData.reduce((sum, item) => sum + item.sales, 0)
-                  )}
-                </span>
-                {formattedSalesData.length > 0 && (() => {
-                  const currentTotal = formattedSalesData.reduce((sum, item) => sum + item.sales, 0)
-                  // Get previous period total based on tab
-                  let previousTotal = 0
-                  if (timePeriod === 'ID') {
-                    // Day tab: yesterday (full calendar day from API)
-                    previousTotal = stats?.yesterdaySales || 0
-                  } else if (timePeriod === '1W') {
-                    // Week tab: last week total from API
-                    previousTotal = stats?.lastWeekSales || 0
-                  } else if (timePeriod === '1M') {
-                    // Month tab: last month total from API
-                    previousTotal = stats?.lastMonthSales || 0
-                  }
-                  const change = previousTotal > 0 ? ((currentTotal - previousTotal) / previousTotal * 100) : 0
-                  return change !== 0 && (
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30">
-                      <ArrowUpRight className="h-3 w-3 text-green-600 dark:text-green-400" />
-                      <span className="text-xs font-medium text-green-600 dark:text-green-400">
-                        {change > 0 ? `+${change.toFixed(0)}` : change.toFixed(0)}%
-                      </span>
-                    </div>
-                  )
-                })()}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                {timePeriod === 'ID' ? 'Yesterday' : timePeriod === '1W' ? 'Last week' : 'Last month'}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-slate-400 dark:text-slate-500">
-                  ₱{formatNumber(
-                    (() => {
-                      if (timePeriod === 'ID') {
-                        // Day tab: yesterday (full calendar day from API)
-                        return stats?.yesterdaySales || 0
-                      } else if (timePeriod === '1W') {
-                        // Week tab: last week total from API
-                        return stats?.lastWeekSales || 0
-                      } else if (timePeriod === '1M') {
-                        // Month tab: last month total from API
-                        return stats?.lastMonthSales || 0
-                      }
-                      return 0
-                    })()
-                  )}
-                </span>
-              </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Previous period sales
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={320} className="min-h-[250px]">
-            <AreaChart data={formattedSalesData} margin={{ top: 10, bottom: 30, left: 10, right: 10 }}>
-              <defs>
-                <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#6366F1" stopOpacity={0.05}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" opacity={0.3} vertical={false} />
-              <XAxis 
-                dataKey="date" 
-                className="fill-slate-400 dark:fill-slate-500" 
-                fontSize={10}
-                tickLine={false}
-                axisLine={false}
-                interval={timePeriod === '1M' ? 5 : 0}
-                dy={10}
-              />
-              <YAxis 
-                className="fill-slate-400 dark:fill-slate-500" 
-                fontSize={10}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `₱${formatNumber(value)}`}
-                width={50}
-              />
-              <Tooltip 
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg p-3">
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{payload[0].payload.date}</p>
-                        <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                          ₱{formatNumber(Number(payload[0].value))}
-                        </p>
-                      </div>
-                    )
-                  }
-                  return null
-                }}
-                cursor={{ stroke: '#6366F1', strokeWidth: 1, strokeDasharray: '5 5' }}
-              />
-              {/* Current Period Line (Solid Blue with Area) */}
-              <Area 
-                type="monotone" 
-                dataKey="sales" 
-                stroke="#6366F1" 
-                strokeWidth={3} 
-                fill="url(#salesGradient)" 
-                dot={false}
-                activeDot={{ r: 6, fill: '#6366F1', stroke: '#fff', strokeWidth: 2 }}
-                animationDuration={1000}
-                animationEasing="ease-in-out"
-              />
-              {/* Purchase Costs Line (Dashed Orange) */}
-              <Area 
-                type="monotone" 
-                dataKey="purchases" 
-                stroke="#F97316" 
-                strokeWidth={2} 
-                strokeDasharray="5 5"
-                fill="transparent" 
-                dot={false}
-                animationDuration={1000}
-                animationEasing="ease-in-out"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      {/* Enhanced Revenue Chart - Enterprise Level */}
+      <RevenueChart
+        data={formatChartData(stats?.salesOverTime, timePeriod)}
+        timePeriod={timePeriod}
+        onPeriodChange={setTimePeriod}
+        comparison={calculatePeriodComparison(stats, timePeriod)}
+        loading={refreshing}
+      />
 
       {/* Performance Charts - 3 Horizontal Bar Charts */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-300">
