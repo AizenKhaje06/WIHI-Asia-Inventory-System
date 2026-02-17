@@ -376,10 +376,9 @@ export default function LogPage() {
                   <table className="w-full min-w-[1000px]">
                     <thead>
                       <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                        <th className="pb-4 pr-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Date & Time</th>
-                        <th className="pb-4 px-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Operation</th>
-                        <th className="pb-4 px-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Item</th>
-                        <th className="pb-4 px-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Staff</th>
+                        <th className="pb-4 pr-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap w-[180px]">Date & Time</th>
+                        <th className="pb-4 px-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap w-[140px]">Operation</th>
+                        <th className="pb-4 px-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap w-[220px]">Item</th>
                         <th className="pb-4 pl-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Details</th>
                       </tr>
                     </thead>
@@ -399,17 +398,12 @@ export default function LogPage() {
                             {getOperationBadge(log.operation, log.details)}
                           </td>
                           <td className="py-4 px-6 text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                            <div className="max-w-[200px] truncate" title={log.itemName || '-'}>
+                            <div className="max-w-[220px] truncate" title={log.itemName || '-'}>
                               {log.itemName || '-'}
                             </div>
                           </td>
-                          <td className="py-4 px-6 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                            <div className="max-w-[150px] truncate" title={log.staffName || '-'}>
-                              {log.staffName || '-'}
-                            </div>
-                          </td>
                           <td className="py-4 pl-6 text-sm text-slate-600 dark:text-slate-400">
-                            <div className="max-w-[500px]">
+                            <div className="max-w-[600px] leading-relaxed">
                               {log.details}
                             </div>
                           </td>

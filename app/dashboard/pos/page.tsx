@@ -165,11 +165,10 @@ export default function POSPage() {
       fetchItems()
       setSuccessModalOpen(true)
 
-      // Reset form fields
+      // Reset form fields (keep staffName as it's tied to logged-in user)
       setDepartment('')
       setSalesChannel('')
       setDestinationStorage('')
-      setStaffName('')
       setNotes('')
     } catch (error) {
       console.error("[v0] Error processing sale:", error)
