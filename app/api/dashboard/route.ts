@@ -351,16 +351,43 @@ export async function GET(request: Request) {
     const salesVelocity = itemsSoldToday
 
     // Calculate previous period sales for comparison
+    // Use local date (not UTC) to match user's timezone
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
-    const yesterdayEnd = new Date(today)
+    yesterday.setHours(0, 0, 0, 0) // Start of yesterday in local time
     
-    const yesterdaySales = transactions
-      .filter((t: Transaction) => {
-        const tDate = parseTimestamp(t.timestamp)
-        return t.type === "sale" && t.transactionType === "sale" && tDate >= yesterday && tDate < yesterdayEnd
-      })
-      .reduce((sum, t) => sum + t.totalRevenue, 0)
+    const yesterdayEnd = new Date(today)
+    yesterdayEnd.setHours(0, 0, 0, 0) // Start of today in local time
+    
+    console.log('[Dashboard API] Yesterday range (local):', {
+      start: yesterday.toISOString(),
+      end: yesterdayEnd.toISOString(),
+      startLocal: yesterday.toLocaleString(),
+      endLocal: yesterdayEnd.toLocaleString()
+    })
+    
+    const yesterdayTransactions = transactions.filter((t: Transaction) => {
+      const tDate = parseTimestamp(t.timestamp)
+      const matches = t.type === "sale" && t.transactionType === "sale" && tDate >= yesterday && tDate < yesterdayEnd
+      if (matches) {
+        console.log('[Dashboard API] Yesterday transaction:', {
+          itemName: t.itemName,
+          quantity: t.quantity,
+          revenue: t.totalRevenue,
+          timestamp: t.timestamp,
+          parsed: tDate.toISOString(),
+          parsedLocal: tDate.toLocaleString()
+        })
+      }
+      return matches
+    })
+    
+    const yesterdaySales = yesterdayTransactions.reduce((sum, t) => sum + t.totalRevenue, 0)
+    
+    console.log('[Dashboard API] Yesterday summary:', {
+      count: yesterdayTransactions.length,
+      total: yesterdaySales
+    })
 
     // Last week sales (7 days ago to 14 days ago)
     const lastWeekStart = new Date(today)
