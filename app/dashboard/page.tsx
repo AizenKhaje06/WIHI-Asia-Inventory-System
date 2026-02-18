@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils"
 import { PremiumDashboardLoading } from "@/components/premium-loading"
 import { apiGet } from "@/lib/api-client"
 import { formatChartData, calculatePeriodComparison } from "@/lib/dashboard-utils"
+import { getCurrentUser } from "@/lib/auth"
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -36,6 +37,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("ID")
+  const currentUser = getCurrentUser()
 
   const fetchData = async () => {
     try {
@@ -324,44 +326,51 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions & Critical Alerts - Phase 1 Redesign */}
-      <div className="grid gap-3 grid-cols-1 lg:grid-cols-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
-        {/* Quick Actions */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
-              <Activity className="h-4 w-4 text-blue-600" />
-              Quick Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-              <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
-                <Link href="/dashboard/inventory/create">
-                  <Plus className="h-3 w-3 mr-1.5" />
-                  Add Product
-                </Link>
-              </Button>
-              <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
-                <Link href="/dashboard/pos">
-                  <ShoppingCart className="h-3 w-3 mr-1.5" />
-                  New Sale
-                </Link>
-              </Button>
-              <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
-                <Link href="/dashboard/inventory/low-stock">
-                  <Package className="h-3 w-3 mr-1.5" />
-                  Restock
-                </Link>
-              </Button>
-              <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
-                <Link href="/dashboard/reports">
-                  <FileText className="h-3 w-3 mr-1.5" />
-                  Reports
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className={cn(
+        "grid gap-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150",
+        // Admin sees both Quick Actions and Alerts (2 columns)
+        // Non-admin sees only Alerts (1 column, full width)
+        currentUser?.role === 'admin' ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"
+      )}>
+        {/* Quick Actions - Admin Only */}
+        {currentUser?.role === 'admin' && (
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+                <Activity className="h-4 w-4 text-blue-600" />
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
+                  <Link href="/dashboard/inventory/create">
+                    <Plus className="h-3 w-3 mr-1.5" />
+                    Add Product
+                  </Link>
+                </Button>
+                <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
+                  <Link href="/dashboard/pos">
+                    <ShoppingCart className="h-3 w-3 mr-1.5" />
+                    New Sale
+                  </Link>
+                </Button>
+                <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
+                  <Link href="/dashboard/inventory/low-stock">
+                    <Package className="h-3 w-3 mr-1.5" />
+                    Restock
+                  </Link>
+                </Button>
+                <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
+                  <Link href="/dashboard/reports">
+                    <FileText className="h-3 w-3 mr-1.5" />
+                    Reports
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Critical Alerts - Redesigned Compact */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">

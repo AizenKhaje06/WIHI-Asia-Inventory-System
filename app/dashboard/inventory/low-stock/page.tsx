@@ -14,6 +14,7 @@ import type { InventoryItem } from "@/lib/types"
 import { cn, formatCurrency, formatNumber } from "@/lib/utils"
 import { EditItemDialog } from "@/components/edit-item-dialog"
 import { apiGet, apiPost, apiDelete } from "@/lib/api-client"
+import { getCurrentUser } from "@/lib/auth"
 
 export default function LowStockPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -390,17 +391,30 @@ export default function LowStockPage() {
           ) : (
             <div className="overflow-x-auto -mx-6 px-6">
               <div className="min-w-full inline-block align-middle">
-                <table className="w-full min-w-[1000px]">
+                <table className="w-full table-fixed">
+                  <colgroup>
+                    <col style={{ width: '28%' }} /> {/* Product */}
+                    <col style={{ width: '18%' }} /> {/* Category */}
+                    <col style={{ width: '14%' }} /> {/* Urgency */}
+                    <col style={{ width: '10%' }} /> {/* Current */}
+                    <col style={{ width: '10%' }} /> {/* Reorder At */}
+                    <col style={{ width: '10%' }} /> {/* Cost */}
+                    <col style={{ width: getCurrentUser()?.role === 'admin' ? '10%' : '10%' }} /> {/* Price */}
+                    {getCurrentUser()?.role === 'admin' && <col style={{ width: '10%' }} />} {/* Actions */}
+                  </colgroup>
                   <thead>
                     <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                      <th className="pb-3 pr-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[250px]">Product</th>
-                      <th className="pb-3 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[150px]">Category</th>
-                      <th className="pb-3 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[120px]">Urgency</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Current</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Reorder At</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Cost</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Price</th>
-                      <th className="pb-3 pl-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[120px]">Actions</th>
+                      <th className="pb-3 pr-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                      <th className="pb-3 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                      <th className="pb-3 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Urgency</th>
+                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Current</th>
+                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Reorder At</th>
+                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Cost</th>
+                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price</th>
+                      {/* Actions column - Admin only */}
+                      {getCurrentUser()?.role === 'admin' && (
+                        <th className="pb-3 pl-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -495,57 +509,59 @@ export default function LowStockPage() {
                           </td>
 
                           <td className="py-4 pl-3">
-                            <TooltipProvider>
-                              <div className="flex justify-center gap-1">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleRestock(item)}
-                                      className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200 h-8 w-8 p-0"
-                                    >
-                                      <PackagePlus className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Restock</p>
-                                  </TooltipContent>
-                                </Tooltip>
+                            {getCurrentUser()?.role === 'admin' && (
+                              <TooltipProvider>
+                                <div className="flex justify-center gap-1">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleRestock(item)}
+                                        className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                      >
+                                        <PackagePlus className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Restock</p>
+                                    </TooltipContent>
+                                  </Tooltip>
 
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleEdit(item)}
-                                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200 h-8 w-8 p-0"
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Edit</p>
-                                  </TooltipContent>
-                                </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleEdit(item)}
+                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Edit</p>
+                                    </TooltipContent>
+                                  </Tooltip>
 
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDelete(item.id)}
-                                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 h-8 w-8 p-0"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Delete</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDelete(item.id)}
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Delete</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </TooltipProvider>
+                            )}
                           </td>
                         </tr>
                       )

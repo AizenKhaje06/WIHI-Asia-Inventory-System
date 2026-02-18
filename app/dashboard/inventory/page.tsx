@@ -552,18 +552,32 @@ export default function InventoryPage() {
           ) : (
             <div className="overflow-x-auto -mx-6 px-6">
               <div className="min-w-full inline-block align-middle">
-                <table className="w-full min-w-[1200px]">
+                <table className="w-full table-fixed">
+                  <colgroup>
+                    <col style={{ width: '25%' }} /> {/* Product */}
+                    <col style={{ width: '15%' }} /> {/* Category */}
+                    <col style={{ width: '12%' }} /> {/* Stock Status */}
+                    <col style={{ width: '10%' }} /> {/* Stock */}
+                    <col style={{ width: '12%' }} /> {/* Storage Room */}
+                    <col style={{ width: '10%' }} /> {/* Cost */}
+                    <col style={{ width: '10%' }} /> {/* Price */}
+                    <col style={{ width: getCurrentUser()?.role === 'admin' ? '6%' : '6%' }} /> {/* Margin */}
+                    {getCurrentUser()?.role === 'admin' && <col style={{ width: '10%' }} />} {/* Actions */}
+                  </colgroup>
                   <thead>
                     <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                      <th className="pb-3 pr-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[280px]">Product</th>
-                      <th className="pb-3 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[180px]">Category</th>
-                      <th className="pb-3 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[140px]">Stock Status</th>
-                      <th className="pb-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[120px]">Stock</th>
-                      <th className="pb-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[140px]">Storage Room</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Cost</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Price</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[100px]">Margin</th>
-                      <th className="pb-3 pl-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[120px]">Actions</th>
+                      <th className="pb-3 pr-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                      <th className="pb-3 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                      <th className="pb-3 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock Status</th>
+                      <th className="pb-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock</th>
+                      <th className="pb-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Storage Room</th>
+                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Cost</th>
+                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price</th>
+                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Margin</th>
+                      {/* Actions column - Admin only */}
+                      {getCurrentUser()?.role === 'admin' && (
+                        <th className="pb-3 pl-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
