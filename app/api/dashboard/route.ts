@@ -74,37 +74,85 @@ export async function GET(request: Request) {
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const recentSales = transactions.filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && parseTimestamp(t.timestamp) >= today).length
+    const todayEnd = new Date()
+    todayEnd.setHours(23, 59, 59, 999)
+    
+    console.log('[Dashboard API] Today range:', {
+      start: today.toISOString(),
+      end: todayEnd.toISOString(),
+      startLocal: today.toLocaleString(),
+      endLocal: todayEnd.toLocaleString()
+    })
+    
+    const recentSales = transactions.filter((t: Transaction) => {
+      const tDate = parseTimestamp(t.timestamp)
+      return t.type === "sale" && t.transactionType === "sale" && tDate >= today && tDate <= todayEnd
+    }).length
 
     // Items sold today (quantity)
     const itemsSoldToday = transactions
-      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && parseTimestamp(t.timestamp) >= today)
+      .filter((t: Transaction) => {
+        const tDate = parseTimestamp(t.timestamp)
+        return t.type === "sale" && t.transactionType === "sale" && tDate >= today && tDate <= todayEnd
+      })
       .reduce((sum, t) => sum + t.quantity, 0)
     
     // Revenue today
-    const revenueToday = transactions
-      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && parseTimestamp(t.timestamp) >= today)
-      .reduce((sum, t) => sum + t.totalRevenue, 0)
+    const todayTransactions = transactions.filter((t: Transaction) => {
+      const tDate = parseTimestamp(t.timestamp)
+      const matches = t.type === "sale" && t.transactionType === "sale" && tDate >= today && tDate <= todayEnd
+      if (matches) {
+        console.log('[Dashboard API] Today transaction:', {
+          itemName: t.itemName,
+          quantity: t.quantity,
+          revenue: t.totalRevenue,
+          timestamp: t.timestamp,
+          parsed: tDate.toISOString(),
+          parsedLocal: tDate.toLocaleString()
+        })
+      }
+      return matches
+    })
+    
+    const revenueToday = todayTransactions.reduce((sum, t) => sum + t.totalRevenue, 0)
+    
+    console.log('[Dashboard API] Today summary:', {
+      count: todayTransactions.length,
+      total: revenueToday
+    })
 
     // Sales over time based on period
     let salesOverTime: { date: string; purchases: number; sales: number }[] = []
 
     if (period === 'ID') {
-      // Today: Last 24 hours, hourly data points
+      // Today: Hourly data points for today only (00:00 to 23:00 local time)
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+      const todayEnd = new Date()
+      todayEnd.setHours(23, 59, 59, 999)
+      
       salesOverTime = Array.from({ length: 24 }, (_, i) => {
-        const hour = new Date()
-        hour.setHours(hour.getHours() - i, 0, 0, 0)
-        const hourStr = hour.toISOString().split('T')[0] + ' ' + hour.getHours().toString().padStart(2, '0') + ':00'
+        // Create hour boundaries in local time
+        const hourStart = new Date(todayStart)
+        hourStart.setHours(i, 0, 0, 0)
+        const hourEnd = new Date(todayStart)
+        hourEnd.setHours(i, 59, 59, 999)
+        
+        // Format hour in local time (e.g., "14:00" for 2 PM)
+        const hourStr = i.toString().padStart(2, '0') + ':00'
+        
         const sales = transactions.filter((t: Transaction) => {
           const tDate = parseTimestamp(t.timestamp)
-          return t.type === "sale" && t.transactionType === "sale" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
+          return t.type === "sale" && t.transactionType === "sale" && tDate >= hourStart && tDate <= hourEnd
         }).reduce((sum, t) => sum + t.totalRevenue, 0)
+        
         const purchases = transactions.filter((t: Transaction) => {
           const tDate = parseTimestamp(t.timestamp)
-          return t.type === "restock" && tDate >= hour && tDate < new Date(hour.getTime() + 3600000)
+          return t.type === "restock" && tDate >= hourStart && tDate <= hourEnd
         }).reduce((sum, t) => sum + t.totalCost, 0)
+        
         return { date: hourStr, purchases, sales }
-      }).reverse()
+      })
     } else if (period === '1W') {
       // Last 7 days, daily data points (including today)
       const today = new Date()
