@@ -384,10 +384,10 @@ export default function CustomersPage() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-6">
       {/* Page Header */}
       <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold gradient-text mb-2">
+        <h1 className="text-3xl font-bold gradient-text mb-2">
           Customer Management
         </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
+        <p className="text-slate-600 dark:text-slate-400 text-sm">
           Build lasting relationships with your customers
         </p>
       </div>
@@ -499,7 +499,7 @@ export default function CustomersPage() {
 
       {/* Filters */}
       <Card className="mb-4 border-0 shadow-md bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           <div className="space-y-4">
             <div>
               <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Search</Label>
@@ -612,30 +612,29 @@ export default function CustomersPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto -mx-6 px-6">
-                <div className="min-w-full inline-block align-middle">
-                  <table className="w-full min-w-[900px]">
-                    <thead>
-                      <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Name</th>
-                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Contact</th>
-                        <th className="pb-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Tier</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Points</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Purchases</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Spent</th>
-                        {isAdmin && (
-                          <th className="pb-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actions</th>
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody>
+              <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-800/50">
+                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Name</th>
+                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Contact</th>
+                      <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Tier</th>
+                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Points</th>
+                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Purchases</th>
+                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Spent</th>
+                      {isAdmin && (
+                        <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {paginatedCustomers.map((customer) => (
-                        <tr key={customer.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
-                          <td className="py-4">
-                            <div className="font-medium text-slate-800 dark:text-slate-200">{customer.name}</div>
+                        <tr key={customer.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="py-2.5 px-3">
+                            <div className="text-xs font-medium text-slate-800 dark:text-slate-200">{customer.name}</div>
                           </td>
-                          <td className="py-4">
-                            <div className="flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
+                          <td className="py-2.5 px-3">
+                            <div className="flex flex-col gap-1 text-xs text-slate-600 dark:text-slate-400">
                               {customer.email && (
                                 <div className="flex items-center gap-1">
                                   <Mail className="h-3 w-3" />
@@ -650,22 +649,22 @@ export default function CustomersPage() {
                               )}
                             </div>
                           </td>
-                          <td className="py-4 text-center">
-                            <Badge className={`${getTierColor(customer.tier || 'bronze')} border`}>
+                          <td className="py-2.5 px-3 text-center">
+                            <Badge className={`${getTierColor(customer.tier || 'bronze')} border text-[10px] px-1.5 py-0.5`}>
                               {(customer.tier || 'bronze').toUpperCase()}
                             </Badge>
                           </td>
-                          <td className="py-4 text-right font-medium text-slate-800 dark:text-slate-200">
+                          <td className="py-2.5 px-3 text-right text-xs font-medium text-slate-800 dark:text-slate-200 tabular-nums">
                             {customer.loyaltyPoints}
                           </td>
-                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">
+                          <td className="py-2.5 px-3 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums">
                             {customer.totalPurchases}
                           </td>
-                          <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">
+                          <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
                             {formatCurrency(customer.totalSpent)}
                           </td>
                           {isAdmin && (
-                            <td className="py-4">
+                            <td className="py-2.5 px-3">
                               <div className="flex items-center justify-center gap-1">
                                 <TooltipProvider>
                                   <Tooltip>
@@ -674,9 +673,9 @@ export default function CustomersPage() {
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => openDetailsDialog(customer)}
-                                        className="h-8 w-8 p-0"
+                                        className="h-7 w-7 p-0"
                                       >
-                                        <Eye className="h-4 w-4" />
+                                        <Eye className="h-3.5 w-3.5" />
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>View Details</TooltipContent>
@@ -689,9 +688,9 @@ export default function CustomersPage() {
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => openEditDialog(customer)}
-                                        className="h-8 w-8 p-0"
+                                        className="h-7 w-7 p-0"
                                       >
-                                        <Edit className="h-4 w-4" />
+                                        <Edit className="h-3.5 w-3.5" />
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>Edit Customer</TooltipContent>
@@ -704,9 +703,9 @@ export default function CustomersPage() {
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => openDeleteDialog(customer)}
-                                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                                       >
-                                        <Trash2 className="h-4 w-4" />
+                                        <Trash2 className="h-3.5 w-3.5" />
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>Delete Customer</TooltipContent>
@@ -720,7 +719,6 @@ export default function CustomersPage() {
                     </tbody>
                   </table>
                 </div>
-              </div>
 
               {/* Pagination */}
               {totalPages > 1 && (

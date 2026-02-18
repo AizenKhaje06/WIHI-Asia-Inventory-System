@@ -371,47 +371,45 @@ export default function LogPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto -mx-6 px-6">
-                <div className="min-w-full inline-block align-middle">
-                  <table className="w-full min-w-[1000px]">
-                    <thead>
-                      <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                        <th className="pb-4 pr-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap w-[180px]">Date & Time</th>
-                        <th className="pb-4 px-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap w-[140px]">Operation</th>
-                        <th className="pb-4 px-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap w-[220px]">Item</th>
-                        <th className="pb-4 pl-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Details</th>
+              <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-800/50">
+                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[180px]">Date & Time</th>
+                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[140px]">Operation</th>
+                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[220px]">Item</th>
+                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {paginatedLogs.map((log) => (
+                      <tr 
+                        key={log.id} 
+                        className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                      >
+                        <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="h-3.5 w-3.5 text-slate-400" />
+                            {format(new Date(log.timestamp), "MMM dd, yyyy HH:mm:ss")}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 whitespace-nowrap">
+                          {getOperationBadge(log.operation, log.details)}
+                        </td>
+                        <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                          <div className="max-w-[220px] truncate" title={log.itemName || '-'}>
+                            {log.itemName || '-'}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
+                          <div className="max-w-[600px] leading-relaxed">
+                            {log.details}
+                          </div>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedLogs.map((log) => (
-                        <tr 
-                          key={log.id} 
-                          className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200"
-                        >
-                          <td className="py-4 pr-6 text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4 text-slate-400" />
-                              {format(new Date(log.timestamp), "MMM dd, yyyy HH:mm:ss")}
-                            </div>
-                          </td>
-                          <td className="py-4 px-6 whitespace-nowrap">
-                            {getOperationBadge(log.operation, log.details)}
-                          </td>
-                          <td className="py-4 px-6 text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                            <div className="max-w-[220px] truncate" title={log.itemName || '-'}>
-                              {log.itemName || '-'}
-                            </div>
-                          </td>
-                          <td className="py-4 pl-6 text-sm text-slate-600 dark:text-slate-400">
-                            <div className="max-w-[600px] leading-relaxed">
-                              {log.details}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
               {/* Pagination */}

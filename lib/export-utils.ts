@@ -151,7 +151,7 @@ export async function exportToExcel(options: ExportOptions): Promise<void> {
     data.forEach(row => {
       const values = columns.map(col => {
         const value = row[col.key]
-        return col.format ? col.format(value) : value
+        return col.format ? col.format(value, row) : value
       })
       excelData.push(values)
     })
@@ -191,8 +191,8 @@ export async function exportToExcel(options: ExportOptions): Promise<void> {
 export async function exportToPDF(options: ExportOptions): Promise<void> {
   try {
     // Dynamic import to avoid bundling if not used
-    const { default: jsPDF } = await import('jspdf')
-    await import('jspdf-autotable')
+    const jsPDF = (await import('jspdf')).default
+    const autoTable = (await import('jspdf-autotable')).default
 
     const { 
       filename, 
@@ -211,7 +211,7 @@ export async function exportToPDF(options: ExportOptions): Promise<void> {
       orientation,
       unit: 'mm',
       format: 'a4'
-    })
+    }) as any
 
     let yPosition = 20
 
@@ -247,7 +247,7 @@ export async function exportToPDF(options: ExportOptions): Promise<void> {
       doc.text('Applied Filters:', 14, yPosition)
       yPosition += 5
       doc.setFont('helvetica', 'normal')
-      includeFilters.forEach(filter => {
+      includeFilters.forEach((filter: any) => {
         doc.text(`${filter.label}: ${filter.value}`, 14, yPosition)
         yPosition += 5
       })
@@ -261,7 +261,7 @@ export async function exportToPDF(options: ExportOptions): Promise<void> {
       doc.text('Summary:', 14, yPosition)
       yPosition += 5
       doc.setFont('helvetica', 'normal')
-      summary.forEach(item => {
+      summary.forEach((item: any) => {
         doc.text(`${item.label}: ${item.value}`, 14, yPosition)
         yPosition += 5
       })
@@ -273,12 +273,12 @@ export async function exportToPDF(options: ExportOptions): Promise<void> {
     const tableData = data.map(row => 
       columns.map(col => {
         const value = row[col.key]
-        return col.format ? col.format(value) : String(value ?? '')
+        return col.format ? col.format(value, row) : String(value ?? '')
       })
     )
 
-    // Add table
-    ;(doc as any).autoTable({
+    // Add table using autoTable
+    autoTable(doc, {
       head: [tableHeaders],
       body: tableData,
       startY: yPosition,
@@ -290,21 +290,15 @@ export async function exportToPDF(options: ExportOptions): Promise<void> {
         halign: 'left'
       },
       styles: {
-        fontSize: 9,
-        cellPadding: 3
+        fontSize: 8,
+        cellPadding: 2
       },
       alternateRowStyles: {
         fillColor: [248, 250, 252] // Light gray
       },
-      columnStyles: columns.reduce((acc, col, index) => {
-        if (col.width) {
-          acc[index] = { cellWidth: col.width }
-        }
-        return acc
-      }, {} as any),
       didDrawPage: (data: any) => {
         // Footer
-        const pageCount = (doc as any).internal.getNumberOfPages()
+        const pageCount = doc.internal.getNumberOfPages()
         const pageSize = doc.internal.pageSize
         const pageHeight = pageSize.height || pageSize.getHeight()
         
@@ -312,11 +306,11 @@ export async function exportToPDF(options: ExportOptions): Promise<void> {
         doc.setFont('helvetica', 'normal')
         doc.text(
           `Page ${data.pageNumber} of ${pageCount}`,
-          data.settings.margin.left,
+          14,
           pageHeight - 10
         )
         doc.text(
-          `Total Records: ${data.length}`,
+          `Total Records: ${tableData.length}`,
           pageSize.width - 50,
           pageHeight - 10
         )
@@ -327,8 +321,7 @@ export async function exportToPDF(options: ExportOptions): Promise<void> {
     doc.save(`${filename}-${formatDateForFilename()}.pdf`)
   } catch (error) {
     console.error('PDF export failed:', error)
-    // Fallback to CSV
-    exportToCSV(options)
+    throw error
   }
 }
 

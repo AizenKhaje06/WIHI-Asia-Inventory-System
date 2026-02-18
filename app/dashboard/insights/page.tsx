@@ -247,8 +247,8 @@ export default function InsightsPage() {
       {/* Header with Actions */}
       <div className="flex items-center justify-between mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <div>
-          <h1 className="text-4xl font-bold gradient-text">Business Insights</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-base mt-2">
+          <h1 className="text-3xl font-bold gradient-text">Business Insights</h1>
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">
             AI-powered analytics and strategic recommendations for data-driven decisions
           </p>
         </div>
@@ -533,29 +533,29 @@ export default function InsightsPage() {
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto -mx-6 px-6">
-                <div className="min-w-full inline-block align-middle">
-                  <table className="w-full min-w-[800px]">
-                    <thead>
-                      <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                        <th className="pb-3 pr-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                        <th className="pb-3 px-6 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                        <th className="pb-3 px-6 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Revenue %</th>
-                        <th className="pb-3 pl-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Recommendation</th>
+                <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                  <table className="w-full min-w-[800px] text-sm">
+                    <thead className="bg-slate-50 dark:bg-slate-800/50">
+                      <tr className="border-b border-slate-200 dark:border-slate-700">
+                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                        <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Revenue %</th>
+                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Recommendation</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {filteredAbcAnalysis.slice(0, 20).map((item) => (
-                        <tr key={item.itemId} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
-                          <td className="py-4 pr-6 text-sm font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
-                          <td className="py-4 px-6 text-center">
-                            <Badge className={`${getCategoryColor(item.category)} border`}>
+                        <tr key={item.itemId} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
+                          <td className="py-2.5 px-3 text-center">
+                            <Badge className={`${getCategoryColor(item.category)} border text-[10px] px-1.5 py-0.5`}>
                               {item.category}
                             </Badge>
                           </td>
-                          <td className="py-4 px-6 text-right font-semibold text-slate-800 dark:text-slate-200">
+                          <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
                             {item.revenueContribution.toFixed(2)}%
                           </td>
-                          <td className="py-4 pl-6 text-sm text-slate-600 dark:text-slate-400">
+                          <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
                             {item.recommendation}
                           </td>
                         </tr>

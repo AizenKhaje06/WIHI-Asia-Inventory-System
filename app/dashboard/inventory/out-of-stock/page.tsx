@@ -178,17 +178,17 @@ export default function OutOfStockPage() {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-6">
       {/* Page Header */}
-      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold gradient-text mb-2">
+      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+        <h1 className="text-3xl font-bold gradient-text mb-2">
           Out of Stock Items
         </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
+        <p className="text-slate-600 dark:text-slate-400 text-sm">
           Items that are completely out of stock and need immediate restocking
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3 mb-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      <div className="grid gap-4 md:grid-cols-3 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
@@ -233,8 +233,8 @@ export default function OutOfStockPage() {
       </div>
 
       {/* Filters */}
-      <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
-        <CardContent className="p-4">
+      <Card className="mb-4 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
+        <CardContent className="p-3">
           <div className="space-y-3">
             {/* Row 1: Search + Export Button */}
             <div className="flex gap-2">
@@ -252,7 +252,7 @@ export default function OutOfStockPage() {
             {/* Row 2: Filters Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2">
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -262,7 +262,7 @@ export default function OutOfStockPage() {
               </Select>
 
               <Select value={priceFilter} onValueChange={setPriceFilter}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder="Price" />
                 </SelectTrigger>
                 <SelectContent>
@@ -274,7 +274,7 @@ export default function OutOfStockPage() {
               </Select>
 
               <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder="Room" />
                 </SelectTrigger>
                 <SelectContent>
@@ -288,7 +288,7 @@ export default function OutOfStockPage() {
               </Select>
 
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-8 text-xs">
                   <ArrowUpDown className="h-3 w-3 mr-1" />
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
@@ -352,47 +352,45 @@ export default function OutOfStockPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto -mx-6 px-6">
-              <div className="min-w-full inline-block align-middle">
-                <table className="w-full table-fixed">
-                  <colgroup>
-                    <col style={{ width: '35%' }} /> {/* Product */}
-                    <col style={{ width: '25%' }} /> {/* Category */}
-                    <col style={{ width: '13%' }} /> {/* Reorder At */}
-                    <col style={{ width: '13%' }} /> {/* Cost */}
-                    <col style={{ width: getCurrentUser()?.role === 'admin' ? '14%' : '14%' }} /> {/* Price */}
-                    {getCurrentUser()?.role === 'admin' && <col style={{ width: '10%' }} />} {/* Actions */}
-                  </colgroup>
-                  <thead>
-                    <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                      <th className="pb-3 pr-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                      <th className="pb-3 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Reorder At</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Cost</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price</th>
-                      {/* Actions column - Admin only */}
-                      {getCurrentUser()?.role === 'admin' && (
-                        <th className="pb-3 pl-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actions</th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
+            <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+              <table className="w-full text-sm">
+                <colgroup>
+                  <col style={{ width: '30%' }} />
+                  <col style={{ width: '22%' }} />
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: getCurrentUser()?.role === 'admin' ? '12%' : '24%' }} />
+                  {getCurrentUser()?.role === 'admin' && <col style={{ width: '12%' }} />}
+                </colgroup>
+                <thead className="bg-slate-50 dark:bg-slate-800/50">
+                  <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                    <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                    <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Reorder At</th>
+                    <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Cost</th>
+                    <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price</th>
+                    {getCurrentUser()?.role === 'admin' && (
+                      <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {filteredItems.map((item) => (
-                      <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200">
-                        <td className="py-4 pr-4">
+                      <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <td className="py-2.5 px-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-[5px] flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/30">
-                              <Package className="h-5 w-5 text-red-600 dark:text-red-400" />
+                            <div className="w-8 h-8 rounded-[5px] flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/30">
+                              <Package className="h-4 w-4 text-red-600 dark:text-red-400" />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate" title={item.name}>
+                              <p className="text-xs font-semibold text-slate-900 dark:text-white truncate" title={item.name}>
                                 {item.name}
                               </p>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 text-xs">
+                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 text-[10px] px-1.5 py-0.5">
                                   OUT OF STOCK
                                 </Badge>
-                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400">
                                   Room: {item.storageRoom || 'N/A'}
                                 </span>
                               </div>
@@ -400,31 +398,31 @@ export default function OutOfStockPage() {
                           </div>
                         </td>
 
-                        <td className="py-4 px-3">
-                          <span className="text-sm text-slate-600 dark:text-slate-400 block truncate" title={item.category}>
+                        <td className="py-2.5 px-3">
+                          <span className="text-xs text-slate-600 dark:text-slate-400 block truncate" title={item.category}>
                             {item.category}
                           </span>
                         </td>
 
-                        <td className="py-4 px-3 text-right">
-                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                        <td className="py-2.5 px-3 text-right">
+                          <span className="text-xs font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap tabular-nums">
                             {formatNumber(item.reorderLevel)}
                           </span>
                         </td>
 
-                        <td className="py-4 px-3 text-right">
-                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                        <td className="py-2.5 px-3 text-right">
+                          <span className="text-xs font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap tabular-nums">
                             {formatCurrency(item.costPrice)}
                           </span>
                         </td>
 
-                        <td className="py-4 px-3 text-right">
-                          <span className="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                        <td className="py-2.5 px-3 text-right">
+                          <span className="text-xs font-semibold text-slate-900 dark:text-white whitespace-nowrap tabular-nums">
                             {formatCurrency(item.sellingPrice)}
                           </span>
                         </td>
 
-                        <td className="py-4 pl-3">
+                        <td className="py-2.5 px-3">
                           {getCurrentUser()?.role === 'admin' && (
                             <TooltipProvider>
                               <div className="flex justify-center gap-1">
@@ -434,9 +432,9 @@ export default function OutOfStockPage() {
                                       variant="ghost"
                                       size="sm"
                                       onClick={() => handleRestock(item)}
-                                      className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                      className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200 h-7 w-7 p-0"
                                     >
-                                      <PackagePlus className="h-4 w-4" />
+                                      <PackagePlus className="h-3.5 w-3.5" />
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>
@@ -450,9 +448,9 @@ export default function OutOfStockPage() {
                                       variant="ghost"
                                       size="sm"
                                       onClick={() => handleEdit(item)}
-                                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200 h-7 w-7 p-0"
                                     >
-                                      <Pencil className="h-4 w-4" />
+                                      <Pencil className="h-3.5 w-3.5" />
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>
@@ -466,9 +464,9 @@ export default function OutOfStockPage() {
                                       variant="ghost"
                                       size="sm"
                                       onClick={() => handleDelete(item.id)}
-                                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 h-7 w-7 p-0"
                                     >
-                                      <Trash2 className="h-4 w-4" />
+                                      <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>
@@ -484,7 +482,6 @@ export default function OutOfStockPage() {
                   </tbody>
                 </table>
               </div>
-            </div>
           )}
         </CardContent>
       </Card>

@@ -350,40 +350,40 @@ export default function InventoryPage() {
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-6">
-      {/* Page Header */}
-      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+      {/* Page Header - Compact */}
+      <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold gradient-text mb-2">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
               Inventory Management
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-base">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Comprehensive product inventory control and management
             </p>
           </div>
           
-          {/* Action Buttons - Admin only */}
+          {/* Action Buttons - Admin only - Compact */}
           {getCurrentUser()?.role === 'admin' && (
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <Button
                 onClick={() => setAddDialogOpen(true)}
-                className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                className="h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
               >
-                <Plus className="h-5 w-5 mr-2" />
+                <Plus className="h-4 w-4 mr-2" />
                 Add Product
               </Button>
               <Button
                 onClick={() => setCategoryDialogOpen(true)}
-                className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                className="h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
               >
-                <Tag className="h-5 w-5 mr-2" />
+                <Tag className="h-4 w-4 mr-2" />
                 Categories
               </Button>
               <Button
                 onClick={() => setWarehouseDialogOpen(true)}
-                className="h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                className="h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
               >
-                <Warehouse className="h-5 w-5 mr-2" />
+                <Warehouse className="h-4 w-4 mr-2" />
                 Storage
               </Button>
             </div>
@@ -391,10 +391,10 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
-        <CardContent className="p-4">
+      <Card className="mb-4 border-slate-200 dark:border-slate-800">
+        <CardContent className="p-3">
           {/* Compact Filter Layout */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             {/* Row 1: Search Only */}
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -403,7 +403,7 @@ export default function InventoryPage() {
                   placeholder="Search products..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10 h-10 border-slate-200 dark:border-slate-700"
+                  className="pl-10 h-9 text-sm border-slate-200 dark:border-slate-700"
                 />
               </div>
             </div>
@@ -411,7 +411,7 @@ export default function InventoryPage() {
             {/* Row 2: Filters Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -421,7 +421,7 @@ export default function InventoryPage() {
               </Select>
 
               <Select value={priceFilter} onValueChange={setPriceFilter}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder="Price" />
                 </SelectTrigger>
                 <SelectContent>
@@ -433,7 +433,7 @@ export default function InventoryPage() {
               </Select>
 
               <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder="Storage" />
                 </SelectTrigger>
                 <SelectContent>
@@ -447,7 +447,7 @@ export default function InventoryPage() {
               </Select>
 
               <Select value={stockStatusFilter} onValueChange={setStockStatusFilter}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -459,7 +459,7 @@ export default function InventoryPage() {
               </Select>
 
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-8 text-xs">
                   <ArrowUpDown className="h-3 w-3 mr-1" />
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
@@ -504,26 +504,24 @@ export default function InventoryPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
-        <CardHeader className="pb-4">
+      <Card className="border-slate-200 dark:border-slate-800">
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-              <div className="p-2 rounded-[5px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
-                <Package className="h-5 w-5" />
-              </div>
+            <CardTitle className="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
+              <Package className="h-4 w-4 text-blue-600" />
               Product Inventory ({filteredItems.length} items)
             </CardTitle>
             
-            {/* Quick Stats */}
-            <div className="flex gap-4">
+            {/* Quick Stats - Compact */}
+            <div className="flex gap-4 text-xs">
               <div className="text-right">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Total Value</p>
+                <p className="text-slate-500 dark:text-slate-400">Total Value</p>
                 <p className="text-sm font-bold text-slate-900 dark:text-white">
                   {formatCurrency(Array.isArray(filteredItems) ? filteredItems.reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0) : 0)}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Avg Price</p>
+                <p className="text-slate-500 dark:text-slate-400">Avg Price</p>
                 <p className="text-sm font-bold text-slate-900 dark:text-white">
                   {formatCurrency(Array.isArray(filteredItems) && filteredItems.length > 0 ? filteredItems.reduce((sum, item) => sum + item.sellingPrice, 0) / filteredItems.length : 0)}
                 </p>
@@ -550,37 +548,36 @@ export default function InventoryPage() {
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto -mx-6 px-6">
+            <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
               <div className="min-w-full inline-block align-middle">
-                <table className="w-full table-fixed">
+                <table className="w-full table-fixed text-sm">
                   <colgroup>
-                    <col style={{ width: '25%' }} /> {/* Product */}
-                    <col style={{ width: '15%' }} /> {/* Category */}
-                    <col style={{ width: '12%' }} /> {/* Stock Status */}
-                    <col style={{ width: '10%' }} /> {/* Stock */}
-                    <col style={{ width: '12%' }} /> {/* Storage Room */}
-                    <col style={{ width: '10%' }} /> {/* Cost */}
-                    <col style={{ width: '10%' }} /> {/* Price */}
-                    <col style={{ width: getCurrentUser()?.role === 'admin' ? '6%' : '6%' }} /> {/* Margin */}
-                    {getCurrentUser()?.role === 'admin' && <col style={{ width: '10%' }} />} {/* Actions */}
+                    <col style={{ width: '22%' }} />
+                    <col style={{ width: '14%' }} />
+                    <col style={{ width: '10%' }} />
+                    <col style={{ width: '9%' }} />
+                    <col style={{ width: '9%' }} />
+                    <col style={{ width: '9%' }} />
+                    <col style={{ width: '9%' }} />
+                    <col style={{ width: getCurrentUser()?.role === 'admin' ? '6%' : '18%' }} />
+                    {getCurrentUser()?.role === 'admin' && <col style={{ width: '12%' }} />}
                   </colgroup>
-                  <thead>
-                    <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                      <th className="pb-3 pr-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                      <th className="pb-3 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                      <th className="pb-3 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock Status</th>
-                      <th className="pb-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock</th>
-                      <th className="pb-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Storage Room</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Cost</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price</th>
-                      <th className="pb-3 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Margin</th>
-                      {/* Actions column - Admin only */}
+                  <thead className="bg-slate-50 dark:bg-slate-800/50">
+                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                      <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock</th>
+                      <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Storage</th>
+                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Cost</th>
+                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price</th>
+                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Margin</th>
                       {getCurrentUser()?.role === 'admin' && (
-                        <th className="pb-3 pl-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                        <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                       )}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {filteredItems.map((item) => {
                       const profitMargin = item.sellingPrice > 0 ? ((item.sellingPrice - item.costPrice) / item.sellingPrice * 100) : 0
                       const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
@@ -588,61 +585,59 @@ export default function InventoryPage() {
                       const stockPercentage = Math.min((item.quantity / (item.reorderLevel * 2)) * 100, 100)
                       
                       return (
-                        <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200">
-                          {/* Product Name */}
-                          <td className="py-4 pr-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-[5px] bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center flex-shrink-0">
-                                <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                          {/* Product Name - Compact */}
+                          <td className="py-2.5 px-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate" title={item.name}>
+                                <p className="text-xs font-semibold text-slate-900 dark:text-white truncate" title={item.name}>
                                   {item.name}
                                 </p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                  SKU: {item.id.slice(0, 8)}
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                                  {item.id.slice(0, 8)}
                                 </p>
                               </div>
                             </div>
                           </td>
 
                           {/* Category */}
-                          <td className="py-4 px-3">
-                            <span className="text-sm text-slate-600 dark:text-slate-400 block truncate" title={item.category}>
+                          <td className="py-2.5 px-3">
+                            <span className="text-xs text-slate-600 dark:text-slate-400 block truncate" title={item.category}>
                               {item.category}
                             </span>
                           </td>
 
-                          {/* Stock Status */}
-                          <td className="py-4 px-3">
+                          {/* Stock Status - Compact */}
+                          <td className="py-2.5 px-3">
                             <div className="flex justify-center">
                               {isOutOfStock ? (
-                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 whitespace-nowrap">
-                                  <AlertCircle className="h-3 w-3 mr-1" />
-                                  Out of Stock
+                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 text-[10px] px-1.5 py-0.5">
+                                  Out
                                 </Badge>
                               ) : isLowStock ? (
-                                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800 whitespace-nowrap">
-                                  <AlertCircle className="h-3 w-3 mr-1" />
-                                  Low Stock
+                                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800 text-[10px] px-1.5 py-0.5">
+                                  Low
                                 </Badge>
                               ) : (
-                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800 whitespace-nowrap">
-                                  In Stock
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800 text-[10px] px-1.5 py-0.5">
+                                  OK
                                 </Badge>
                               )}
                             </div>
                           </td>
 
-                          {/* Stock with Progress */}
-                          <td className="py-4 px-4">
-                            <div className="flex flex-col items-end gap-1.5">
-                              <span className="text-sm font-bold text-slate-900 dark:text-white">
+                          {/* Stock with Progress - Compact */}
+                          <td className="py-2.5 px-3">
+                            <div className="flex flex-col items-end gap-1">
+                              <span className="text-xs font-bold text-slate-900 dark:text-white tabular-nums">
                                 {formatNumber(item.quantity)}
                               </span>
-                              <div className="w-full max-w-[80px] h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div className="w-full max-w-[60px] h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                 <div 
-                                  className={`h-full transition-all duration-300 ${
+                                  className={`h-full transition-all ${
                                     isOutOfStock ? 'bg-red-500' :
                                     isLowStock ? 'bg-amber-500' : 
                                     'bg-green-500'
@@ -653,54 +648,52 @@ export default function InventoryPage() {
                             </div>
                           </td>
 
-                          {/* Storage Room */}
-                          <td className="py-4 px-4">
+                          {/* Storage Room - Compact */}
+                          <td className="py-2.5 px-3">
                             <div className="flex justify-center">
-                              <Badge variant="outline" className="font-mono whitespace-nowrap">
-                                <Warehouse className="h-3 w-3 mr-1" />
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">
                                 {item.storageRoom || 'N/A'}
                               </Badge>
                             </div>
                           </td>
 
                           {/* Cost */}
-                          <td className="py-4 px-3 text-right">
-                            <span className="text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                          <td className="py-2.5 px-3 text-right">
+                            <span className="text-xs font-medium text-slate-800 dark:text-slate-200 tabular-nums">
                               {formatCurrency(item.costPrice)}
                             </span>
                           </td>
 
                           {/* Price */}
-                          <td className="py-4 px-3 text-right">
-                            <span className="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                          <td className="py-2.5 px-3 text-right">
+                            <span className="text-xs font-semibold text-slate-900 dark:text-white tabular-nums">
                               {formatCurrency(item.sellingPrice)}
                             </span>
                           </td>
 
-                          {/* Profit Margin */}
-                          <td className="py-4 px-3">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <TrendingUp className={`h-3.5 w-3.5 flex-shrink-0 ${profitMargin >= 30 ? 'text-green-600' : profitMargin >= 15 ? 'text-amber-600' : 'text-red-600'}`} />
-                              <span className={`text-sm font-bold whitespace-nowrap ${profitMargin >= 30 ? 'text-green-600' : profitMargin >= 15 ? 'text-amber-600' : 'text-red-600'}`}>
+                          {/* Profit Margin - Compact */}
+                          <td className="py-2.5 px-3">
+                            <div className="flex items-center justify-end gap-1">
+                              <span className={`text-xs font-bold tabular-nums ${profitMargin >= 30 ? 'text-green-600' : profitMargin >= 15 ? 'text-amber-600' : 'text-red-600'}`}>
                                 {profitMargin.toFixed(1)}%
                               </span>
                             </div>
                           </td>
 
-                          {/* Actions - Admin only */}
-                          <td className="py-4 pl-3">
+                          {/* Actions - Admin only - Compact */}
+                          <td className="py-2.5 px-3">
                             {getCurrentUser()?.role === 'admin' && (
                               <TooltipProvider>
-                                <div className="flex justify-center gap-1">
+                                <div className="flex justify-center gap-0.5">
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => handleRestock(item)}
-                                        className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                        className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 h-7 w-7 p-0"
                                       >
-                                        <PackagePlus className="h-4 w-4" />
+                                        <PackagePlus className="h-3.5 w-3.5" />
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -714,9 +707,9 @@ export default function InventoryPage() {
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => handleEdit(item)}
-                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-7 w-7 p-0"
                                       >
-                                        <Pencil className="h-4 w-4" />
+                                        <Pencil className="h-3.5 w-3.5" />
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -730,9 +723,9 @@ export default function InventoryPage() {
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => handleDelete(item.id)}
-                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 h-8 w-8 p-0"
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 h-7 w-7 p-0"
                                       >
-                                        <Trash2 className="h-4 w-4" />
+                                        <Trash2 className="h-3.5 w-3.5" />
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>

@@ -292,8 +292,8 @@ export default function InternalUsagePage() {
       {/* Page Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-4xl font-bold gradient-text mb-2">Internal Usage Tracking</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-base">
+          <h1 className="text-3xl font-bold gradient-text mb-2">Internal Usage Tracking</h1>
+          <p className="text-slate-600 dark:text-slate-400 text-sm">
             Track items used for Demo/Display and Internal Company Use
           </p>
         </div>
@@ -773,19 +773,19 @@ export default function InternalUsagePage() {
               {usageByDepartment.length > 0 ? (
                 <div className="space-y-6">
                   {/* Department Usage Table */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
+                  <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 dark:bg-slate-800/50">
                         <tr className="border-b border-slate-200 dark:border-slate-700">
-                          <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Sales Channel / Department</th>
-                          <th className="text-right py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Demo Qty</th>
-                          <th className="text-right py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Internal Qty</th>
-                          <th className="text-right py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Total Qty</th>
-                          <th className="text-right py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Total Amount</th>
-                          <th className="text-right py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">% of Total</th>
+                          <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Sales Channel / Department</th>
+                          <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Demo Qty</th>
+                          <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Internal Qty</th>
+                          <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Qty</th>
+                          <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Amount</th>
+                          <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">% of Total</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {usageByDepartment.map((dept, index) => {
                           const totalQty = dept.demo + dept.internal
                           const totalValue = dept.demoValue + dept.internalValue
@@ -795,24 +795,24 @@ export default function InternalUsagePage() {
                           return (
                             <tr 
                               key={index}
-                              className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                              className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
                             >
-                              <td className="py-3 px-4 text-sm font-medium text-slate-900 dark:text-white">
+                              <td className="py-2.5 px-3 text-xs font-medium text-slate-900 dark:text-white">
                                 {dept.department}
                               </td>
-                              <td className="py-3 px-4 text-sm text-right text-purple-600 dark:text-purple-400">
+                              <td className="py-2.5 px-3 text-xs text-right text-purple-600 dark:text-purple-400 tabular-nums">
                                 {formatNumber(dept.demo)}
                               </td>
-                              <td className="py-3 px-4 text-sm text-right text-blue-600 dark:text-blue-400">
+                              <td className="py-2.5 px-3 text-xs text-right text-blue-600 dark:text-blue-400 tabular-nums">
                                 {formatNumber(dept.internal)}
                               </td>
-                              <td className="py-3 px-4 text-sm text-right font-semibold text-slate-900 dark:text-white">
+                              <td className="py-2.5 px-3 text-xs text-right font-semibold text-slate-900 dark:text-white tabular-nums">
                                 {formatNumber(totalQty)}
                               </td>
-                              <td className="py-3 px-4 text-sm text-right font-semibold text-green-600 dark:text-green-400">
+                              <td className="py-2.5 px-3 text-xs text-right font-semibold text-green-600 dark:text-green-400 tabular-nums">
                                 {formatCurrency(totalValue)}
                               </td>
-                              <td className="py-3 px-4 text-sm text-right text-slate-600 dark:text-slate-400">
+                              <td className="py-2.5 px-3 text-xs text-right text-slate-600 dark:text-slate-400 tabular-nums">
                                 {percentage.toFixed(1)}%
                               </td>
                             </tr>
@@ -952,38 +952,38 @@ export default function InternalUsagePage() {
             </CardHeader>
             <CardContent>
               {costByItem.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
+                <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 dark:bg-slate-800/50">
                       <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Item</th>
-                        <th className="text-right py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Demo Cost</th>
-                        <th className="text-right py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Internal Cost</th>
-                        <th className="text-right py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Total Cost</th>
-                        <th className="text-right py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">% of Total</th>
+                        <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Item</th>
+                        <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Demo Cost</th>
+                        <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Internal Cost</th>
+                        <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Cost</th>
+                        <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">% of Total</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {costByItem.map((item, index) => {
                         const percentage = costAnalysis.totalCost > 0 ? (item.totalValue / costAnalysis.totalCost) * 100 : 0
                         return (
                           <tr 
                             key={index}
-                            className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
                           >
-                            <td className="py-3 px-4 text-sm font-medium text-slate-900 dark:text-white">
+                            <td className="py-2.5 px-3 text-xs font-medium text-slate-900 dark:text-white">
                               {item.name}
                             </td>
-                            <td className="py-3 px-4 text-sm text-right text-purple-600 dark:text-purple-400">
+                            <td className="py-2.5 px-3 text-xs text-right text-purple-600 dark:text-purple-400 tabular-nums">
                               {formatCurrency(item.demoValue)}
                             </td>
-                            <td className="py-3 px-4 text-sm text-right text-blue-600 dark:text-blue-400">
+                            <td className="py-2.5 px-3 text-xs text-right text-blue-600 dark:text-blue-400 tabular-nums">
                               {formatCurrency(item.internalValue)}
                             </td>
-                            <td className="py-3 px-4 text-sm text-right font-semibold text-slate-900 dark:text-white">
+                            <td className="py-2.5 px-3 text-xs text-right font-semibold text-slate-900 dark:text-white tabular-nums">
                               {formatCurrency(item.totalValue)}
                             </td>
-                            <td className="py-3 px-4 text-sm text-right text-slate-600 dark:text-slate-400">
+                            <td className="py-2.5 px-3 text-xs text-right text-slate-600 dark:text-slate-400 tabular-nums">
                               {percentage.toFixed(1)}%
                             </td>
                           </tr>
@@ -1014,36 +1014,36 @@ export default function InternalUsagePage() {
         </CardHeader>
         <CardContent>
           {filteredTransactions.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
+            <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-800/50">
                   <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Date</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Type</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Item</th>
-                    <th className="text-right py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Quantity</th>
-                    <th className="text-right py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Value</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Department</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Staff</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-400">Notes</th>
+                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Type</th>
+                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Item</th>
+                    <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Quantity</th>
+                    <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
+                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Department</th>
+                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Staff</th>
+                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Notes</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredTransactions.map((transaction, index) => (
                     <tr 
                       key={index}
-                      className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
                     >
-                      <td className="py-3 px-4 text-sm text-slate-900 dark:text-white">
+                      <td className="py-2.5 px-3 text-xs text-slate-900 dark:text-white">
                         {new Date(transaction.timestamp).toLocaleDateString('en-US', { 
                           month: 'short', 
                           day: 'numeric',
                           year: 'numeric'
                         })}
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-2.5 px-3">
                         <Badge className={cn(
-                          "border-0",
+                          "border-0 text-[10px] px-1.5 py-0.5",
                           transaction.transactionType === "demo" 
                             ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
                             : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
@@ -1061,22 +1061,22 @@ export default function InternalUsagePage() {
                           )}
                         </Badge>
                       </td>
-                      <td className="py-3 px-4 text-sm font-medium text-slate-900 dark:text-white">
+                      <td className="py-2.5 px-3 text-xs font-medium text-slate-900 dark:text-white">
                         {transaction.itemName}
                       </td>
-                      <td className="py-3 px-4 text-sm text-right text-slate-900 dark:text-white">
+                      <td className="py-2.5 px-3 text-xs text-right text-slate-900 dark:text-white tabular-nums">
                         {formatNumber(transaction.quantity)}
                       </td>
-                      <td className="py-3 px-4 text-sm text-right font-semibold text-slate-900 dark:text-white">
+                      <td className="py-2.5 px-3 text-xs text-right font-semibold text-slate-900 dark:text-white tabular-nums">
                         {formatCurrency(transaction.totalCost)}
                       </td>
-                      <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400">
+                      <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
                         {transaction.department || "-"}
                       </td>
-                      <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400">
+                      <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
                         {transaction.staffName || "-"}
                       </td>
-                      <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400">
+                      <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
                         {transaction.notes || "-"}
                       </td>
                     </tr>
