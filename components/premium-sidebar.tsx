@@ -209,7 +209,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         className={cn(
           "fixed z-50 flex flex-col",
           reducedMotion ? "" : "transition-all duration-300",
-          collapsed ? "w-16" : "w-52", // Reduced from w-20/w-64 to w-16/w-52 (20% smaller)
+          collapsed ? "w-16" : "w-64", // Standard sidebar width (64px collapsed, 256px expanded)
           isMobile && !mobileOpen && "-translate-x-full",
           isMobile && mobileOpen && "translate-x-0",
           // Desktop: clean edge with subtle border
@@ -239,10 +239,10 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                   />
                 </div>
                 <div className="flex flex-col justify-center min-w-0 flex-1">
-                  <h1 className="text-[10px] font-semibold text-slate-900 dark:text-white truncate">
+                  <h1 className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                     StockSync
                   </h1>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                     Advanced Inventory System
                   </p>
                 </div>
@@ -327,7 +327,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             <div key={section.section} className={cn("mb-5", sectionIdx === 0 && "mt-0")}>
               {!collapsed && (
                 <div className="px-2 mb-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {section.section}
                   </p>
                 </div>
@@ -354,13 +354,13 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                       role="listitem"
                     >
                       <item.icon
-                        className="h-[14px] w-[14px] flex-shrink-0"
+                        className="h-4 w-4 flex-shrink-0"
                         strokeWidth={2}
                         aria-hidden="true"
                       />
                       {!collapsed && (
                         <>
-                          <span className="text-xs font-medium flex-1">
+                          <span className="text-sm font-medium flex-1">
                             {item.name}
                           </span>
                           {item.badge !== undefined && (
@@ -422,12 +422,12 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             aria-label="Logout from application"
           >
             <LogOut
-              className="h-[14px] w-[14px] flex-shrink-0"
+              className="h-4 w-4 flex-shrink-0"
               strokeWidth={2}
               aria-hidden="true"
             />
             {!collapsed && (
-              <span className="text-xs font-medium">
+              <span className="text-sm font-medium">
                 Logout
               </span>
             )}

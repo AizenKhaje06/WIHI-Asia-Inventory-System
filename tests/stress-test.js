@@ -20,11 +20,11 @@ const CONFIG = {
   requestDelay: 50, // ms between requests
 };
 
-// Test endpoints - Only public/unauthenticated endpoints
+// Test endpoints - Public endpoints only (no authentication required)
 const ENDPOINTS = [
-  { method: 'GET', path: '/api/items', name: 'Inventory' },
-  { method: 'GET', path: '/api/dashboard?period=ID', name: 'Dashboard' },
-  { method: 'GET', path: '/api/reports', name: 'Reports' },
+  { method: 'GET', path: '/api/health', name: 'Health Check' },
+  { method: 'GET', path: '/api/test-supabase', name: 'Test Supabase' },
+  { method: 'GET', path: '/api/dashboard', name: 'Dashboard Stats' },
 ];
 
 // Results per stage

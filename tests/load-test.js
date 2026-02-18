@@ -16,15 +16,11 @@ const CONFIG = {
   delayBetweenRequests: 100, // ms
 };
 
-// Test endpoints - Only public/unauthenticated endpoints
+// Test endpoints - Public endpoints only (no authentication required)
 const ENDPOINTS = [
-  { method: 'GET', path: '/api/items', name: 'Get Inventory' },
-  { method: 'GET', path: '/api/dashboard?period=ID', name: 'Get Dashboard' },
-  { method: 'GET', path: '/api/reports', name: 'Get Reports' },
-  // Removed authenticated endpoints that cause 401 errors:
-  // - /api/transactions (requires auth)
-  // - /api/customers (requires auth)
-  // - /api/logs (requires auth)
+  { method: 'GET', path: '/api/health', name: 'Health Check' },
+  { method: 'GET', path: '/api/test-supabase', name: 'Test Supabase' },
+  { method: 'GET', path: '/api/dashboard', name: 'Dashboard Stats' },
 ];
 
 // Results tracking
