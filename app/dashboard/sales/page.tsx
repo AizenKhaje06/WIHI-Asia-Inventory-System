@@ -304,18 +304,45 @@ export default function SalesAnalyticsPage() {
                 const day = i + 1;
                 const dayData = salesData.dailySales?.find(d => {
                   const date = new Date(d.date);
-                  return date.getDate() === day && date.getMonth() === currentMonth.getMonth() && date.getFullYear() === currentMonth.getFullYear();
+                  const matches = date.getDate() === day && date.getMonth() === currentMonth.getMonth() && date.getFullYear() === currentMonth.getFullYear();
+                  
+                  // Debug logging for Feb 16
+                  if (day === 16 && currentMonth.getMonth() === 1 && currentMonth.getFullYear() === 2026) {
+                    console.log('Feb 16 Debug:', {
+                      day,
+                      currentMonth: currentMonth.getMonth(),
+                      currentYear: currentMonth.getFullYear(),
+                      dateString: d.date,
+                      parsedDate: date,
+                      parsedDay: date.getDate(),
+                      parsedMonth: date.getMonth(),
+                      parsedYear: date.getFullYear(),
+                      matches,
+                      revenue: d.revenue
+                    });
+                  }
+                  
+                  return matches;
                 });
 
                 return (
                   <div
                     key={day}
-                    className="aspect-square border rounded-[5px] p-2 flex flex-col items-center justify-center hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="aspect-square border rounded-[5px] p-2 flex flex-col items-center justify-center hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                   >
-                    <div className="text-sm font-medium">{day}</div>
-                    {dayData && (
-                      <div className="text-xs text-green-600 font-medium">
-                        {formatCurrency(dayData.revenue)}
+                    <div className="text-sm font-medium text-slate-900 dark:text-white">{day}</div>
+                    {dayData ? (
+                      <>
+                        <div className="text-xs text-green-600 dark:text-green-400 font-medium">
+                          {formatCurrency(dayData.revenue)}
+                        </div>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                          Sale
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-[10px] text-slate-400 dark:text-slate-600">
+                        No sales
                       </div>
                     )}
                   </div>

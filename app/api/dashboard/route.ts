@@ -350,6 +350,44 @@ export async function GET(request: Request) {
     // Sales velocity (items sold per day)
     const salesVelocity = itemsSoldToday
 
+    // Calculate previous period sales for comparison
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayEnd = new Date(today)
+    
+    const yesterdaySales = transactions
+      .filter((t: Transaction) => {
+        const tDate = parseTimestamp(t.timestamp)
+        return t.type === "sale" && t.transactionType === "sale" && tDate >= yesterday && tDate < yesterdayEnd
+      })
+      .reduce((sum, t) => sum + t.totalRevenue, 0)
+
+    // Last week sales (7 days ago to 14 days ago)
+    const lastWeekStart = new Date(today)
+    lastWeekStart.setDate(lastWeekStart.getDate() - 14)
+    const lastWeekEnd = new Date(today)
+    lastWeekEnd.setDate(lastWeekEnd.getDate() - 7)
+    
+    const lastWeekSales = transactions
+      .filter((t: Transaction) => {
+        const tDate = parseTimestamp(t.timestamp)
+        return t.type === "sale" && t.transactionType === "sale" && tDate >= lastWeekStart && tDate < lastWeekEnd
+      })
+      .reduce((sum, t) => sum + t.totalRevenue, 0)
+
+    // Last month sales (previous calendar month)
+    const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+    lastMonthStart.setHours(0, 0, 0, 0)
+    const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 1)
+    lastMonthEnd.setHours(0, 0, 0, 0)
+    
+    const lastMonthSales = transactions
+      .filter((t: Transaction) => {
+        const tDate = parseTimestamp(t.timestamp)
+        return t.type === "sale" && t.transactionType === "sale" && tDate >= lastMonthStart && tDate < lastMonthEnd
+      })
+      .reduce((sum, t) => sum + t.totalRevenue, 0)
+
     const stats: DashboardStats = {
       totalItems,
       lowStockItems,
@@ -383,6 +421,9 @@ export async function GET(request: Request) {
       inventoryHealthScore,
       insights,
       salesVelocity,
+      yesterdaySales,
+      lastWeekSales,
+      lastMonthSales,
     }
 
     return NextResponse.json(stats)
