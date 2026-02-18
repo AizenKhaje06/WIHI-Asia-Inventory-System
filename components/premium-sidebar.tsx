@@ -334,7 +334,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                 </div>
               )}
               {collapsed && sectionIdx > 0 && (
-                <div className="h-px my-2 mx-1 bg-slate-200 dark:bg-slate-800" />
+                <div className="h-px my-2.5 xl:my-3 mx-2 bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-700" />
               )}
               <div className="space-y-0.5 xl:space-y-1" role="list">
                 {section.items.map((item) => {
@@ -345,20 +345,41 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                       href={item.href}
                       onClick={handleNavClick}
                       className={cn(
-                        "flex items-center gap-1.5 xl:gap-2 px-1.5 xl:px-2 py-1.5 xl:py-2 rounded-lg group relative",
-                        reducedMotion ? "" : "transition-colors duration-200",
+                        "flex items-center rounded-lg group relative overflow-hidden",
+                        reducedMotion ? "" : "transition-all duration-200",
+                        // Collapsed state: centered icon with better spacing
+                        collapsed ? "justify-center py-2.5 xl:py-3 mx-auto" : "gap-1.5 xl:gap-2 px-1.5 xl:px-2 py-1.5 xl:py-2",
+                        // Active state with gradient and shadow
                         isActive 
-                          ? "bg-blue-500 text-white" 
-                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30" 
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white",
+                        // Hover effects for collapsed state
+                        collapsed && !isActive && "hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-50 dark:hover:from-slate-800 dark:hover:to-slate-800/50",
+                        // Scale effect on hover (collapsed only)
+                        collapsed && !reducedMotion && "hover:scale-105"
                       )}
                       aria-current={isActive ? "page" : undefined}
                       role="listitem"
                     >
-                      <item.icon
-                        className="h-[13px] w-[13px] xl:h-[14px] xl:w-[14px] flex-shrink-0"
-                        strokeWidth={2}
-                        aria-hidden="true"
-                      />
+                      {/* Icon with better sizing in collapsed state */}
+                      <div className={cn(
+                        "flex items-center justify-center flex-shrink-0",
+                        collapsed ? "w-5 h-5 xl:w-6 xl:h-6" : ""
+                      )}>
+                        <item.icon
+                          className={cn(
+                            "flex-shrink-0",
+                            collapsed 
+                              ? "h-[16px] w-[16px] xl:h-[18px] xl:w-[18px]" 
+                              : "h-[13px] w-[13px] xl:h-[14px] xl:w-[14px]",
+                            // Icon animation on hover
+                            !reducedMotion && collapsed && "group-hover:scale-110 transition-transform duration-200"
+                          )}
+                          strokeWidth={isActive ? 2.5 : 2}
+                          aria-hidden="true"
+                        />
+                      </div>
+                      
                       {!collapsed && (
                         <>
                           <span className="text-[10px] xl:text-xs font-medium flex-1">
@@ -378,24 +399,53 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                           )}
                         </>
                       )}
+                      
+                      {/* Enhanced badge for collapsed state */}
                       {collapsed && item.badge !== undefined && (
-                        <div className="absolute -top-1 -right-1 w-3.5 h-3.5 xl:w-4 xl:h-4 rounded-full bg-red-500 flex items-center justify-center text-white text-[9px] xl:text-[10px] font-bold">
+                        <div className={cn(
+                          "absolute -top-0.5 -right-0.5 xl:-top-1 xl:-right-1",
+                          "min-w-[14px] h-[14px] xl:min-w-[16px] xl:h-[16px]",
+                          "rounded-full flex items-center justify-center",
+                          "text-white text-[8px] xl:text-[9px] font-bold",
+                          "shadow-lg",
+                          "border-2 border-white dark:border-slate-900",
+                          item.badgeVariant === 'destructive' 
+                            ? "bg-gradient-to-br from-red-500 to-red-600" 
+                            : item.badgeVariant === 'warning'
+                            ? "bg-gradient-to-br from-amber-500 to-amber-600"
+                            : "bg-gradient-to-br from-blue-500 to-blue-600",
+                          !reducedMotion && "animate-pulse"
+                        )}>
                           {item.badge > 9 ? '9+' : item.badge}
                         </div>
+                      )}
+                      
+                      {/* Active indicator bar for collapsed state */}
+                      {collapsed && isActive && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
                       )}
                     </Link>
                   )
 
                   return collapsed ? (
                     <TooltipProvider key={item.name}>
-                      <Tooltip delayDuration={0}>
+                      <Tooltip delayDuration={100}>
                         <TooltipTrigger asChild>
                           {NavLink}
                         </TooltipTrigger>
-                        <TooltipContent side="right" className="font-medium">
-                          <p>{item.name}</p>
+                        <TooltipContent 
+                          side="right" 
+                          className={cn(
+                            "font-medium shadow-xl border-slate-200 dark:border-slate-700",
+                            "bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm"
+                          )}
+                          sideOffset={12}
+                        >
+                          <p className="font-semibold">{item.name}</p>
                           {item.badge !== undefined && (
-                            <p className="text-xs text-slate-500 mt-1">{item.badge} items</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                              {item.badge} {item.badgeVariant === 'warning' ? 'low stock' : item.badgeVariant === 'destructive' ? 'out of stock' : 'items'}
+                            </p>
                           )}
                         </TooltipContent>
                       </Tooltip>
@@ -409,30 +459,73 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
 
         {/* Logout */}
         <div className="p-2.5 xl:p-3 border-t flex-shrink-0 border-slate-200/60 dark:border-slate-800/60">
-          <button
-            onClick={() => {
-              clearCurrentUser()
-              window.location.href = "/"
-            }}
-            className={cn(
-              "flex items-center gap-1.5 xl:gap-2 px-1.5 xl:px-2 py-1.5 xl:py-2 rounded-lg w-full",
-              reducedMotion ? "" : "transition-colors duration-200",
-              "text-slate-600 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-            )}
-            title={collapsed ? "Logout" : undefined}
-            aria-label="Logout from application"
-          >
-            <LogOut
-              className="h-[13px] w-[13px] xl:h-[14px] xl:w-[14px] flex-shrink-0"
-              strokeWidth={2}
-              aria-hidden="true"
-            />
-            {!collapsed && (
+          {collapsed ? (
+            <TooltipProvider>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      clearCurrentUser()
+                      window.location.href = "/"
+                    }}
+                    className={cn(
+                      "flex items-center justify-center rounded-lg w-full group relative overflow-hidden",
+                      "py-2.5 xl:py-3",
+                      reducedMotion ? "" : "transition-all duration-200",
+                      "text-slate-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-600",
+                      "dark:text-slate-400 dark:hover:bg-gradient-to-r dark:hover:from-red-900/20 dark:hover:to-red-900/30 dark:hover:text-red-400",
+                      !reducedMotion && "hover:scale-105"
+                    )}
+                    aria-label="Logout from application"
+                  >
+                    <div className="flex items-center justify-center w-5 h-5 xl:w-6 xl:h-6">
+                      <LogOut
+                        className={cn(
+                          "h-[16px] w-[16px] xl:h-[18px] xl:w-[18px] flex-shrink-0",
+                          !reducedMotion && "group-hover:scale-110 transition-transform duration-200"
+                        )}
+                        strokeWidth={2}
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent 
+                  side="right" 
+                  className={cn(
+                    "font-medium shadow-xl border-slate-200 dark:border-slate-700",
+                    "bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm"
+                  )}
+                  sideOffset={12}
+                >
+                  <p className="font-semibold text-red-600 dark:text-red-400">Logout</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Sign out of your account</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <button
+              onClick={() => {
+                clearCurrentUser()
+                window.location.href = "/"
+              }}
+              className={cn(
+                "flex items-center gap-1.5 xl:gap-2 px-1.5 xl:px-2 py-1.5 xl:py-2 rounded-lg w-full",
+                reducedMotion ? "" : "transition-colors duration-200",
+                "text-slate-600 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+              )}
+              aria-label="Logout from application"
+            >
+              <LogOut
+                className="h-[13px] w-[13px] xl:h-[14px] xl:w-[14px] flex-shrink-0"
+                strokeWidth={2}
+                aria-hidden="true"
+              />
               <span className="text-[10px] xl:text-xs font-medium">
                 Logout
               </span>
-            )}
-          </button>
+            </button>
+          )}
         </div>
       </aside>
     </>
