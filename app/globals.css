@@ -14,10 +14,10 @@
   --gradient-purple: #9333EA;
   --gradient-pink: #EC4899;
   
-  /* Neon Green Accent - Adaptive for contrast */
-  --accent-neon: #7CB305;        /* Light mode - darker for contrast (4.52:1) */
-  --accent-neon-hover: #5B8A00;
-  --accent-neon-glow: rgba(124, 179, 5, 0.2);
+  /* Neon Green Accent - Use for buttons and active states */
+  --accent-neon: #BFFF00;
+  --accent-neon-hover: #9FFF00;
+  --accent-neon-glow: rgba(191, 255, 0, 0.2);
   
   /* Primary - Deep Professional Blue */
   --primary-50: #eff6ff;
@@ -117,11 +117,6 @@
 
 /* === DARK MODE THEME === */
 .dark {
-  /* Neon Green Accent - Bright for dark mode (17.65:1 contrast) */
-  --accent-neon: #BFFF00;
-  --accent-neon-hover: #9FFF00;
-  --accent-neon-glow: rgba(191, 255, 0, 0.2);
-  
   /* Backgrounds - Pure black base like modern dashboards */
   --background: #000000;
   --background-secondary: #0a0a0a;
