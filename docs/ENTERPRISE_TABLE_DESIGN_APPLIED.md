@@ -45,13 +45,13 @@ Applied compact, data-dense enterprise table design across all dashboard pages f
 1. **app/dashboard/reports/page.tsx** - Executive Reports ✅
 2. **app/dashboard/inventory/page.tsx** - Main Inventory ✅
 3. **app/dashboard/log/page.tsx** - Activity Log ✅
-4. **app/dashboard/inventory/low-stock/page.tsx** - Low Stock Items ✅ (Fixed: Missing closing div)
-5. **app/dashboard/inventory/out-of-stock/page.tsx** - Out of Stock Items ✅ (Fixed: Hydration error in colgroup)
+4. **app/dashboard/inventory/low-stock/page.tsx** - Low Stock Items ✅
+5. **app/dashboard/inventory/out-of-stock/page.tsx** - Out of Stock Items ✅
 6. **app/dashboard/customers/page.tsx** - Customer Management ✅
 7. **app/dashboard/internal-usage/page.tsx** - Internal Usage (3 tables) ✅
+8. **app/dashboard/insights/page.tsx** - Business Insights (8 tables) ✅
 
-### 📋 In Progress
-8. **app/dashboard/insights/page.tsx** - Business Insights (8 tables - 1/8 complete)
+**Total: 8/8 pages (100%) - All enterprise table design applied!** 🎉
 
 ## Implementation Checklist
 
@@ -222,13 +222,38 @@ Maintain sufficient contrast and touch targets.
 **Cause:** JSX comments creating whitespace + column widths not optimized
 **Fix:** 
 - Removed all comments from `<colgroup>` to fix hydration error
-- Adjusted column widths: Product (24%), Category (14%), Status (11%), Stock (9%), Storage (11%), Cost (9%), Price (9%), Margin (5%), Actions (8%)
+- Adjusted column widths: Product (22%), Category (14%), Status (10%), Stock (9%), Storage (9%), Cost (9%), Price (9%), Margin (6%), Actions (12%)
 - Total: 100% with better spacing distribution
 **Status:** ✅ Fixed - No hydration error, Actions column has proper spacing
 
+### Business Insights Page - All 8 Tables Updated
+**Tables Updated:**
+1. ABC Analysis (already had enterprise design)
+2. Inventory Turnover
+3. Sales Forecast
+4. Profit Margin by Category
+5. Fast Moving Items
+6. Slow Moving Items
+7. Dead Stock Analysis
+8. Return Analytics (if applicable)
+
+**Changes Applied:**
+- Removed `min-w-[XXXpx]` from all tables
+- Changed `border-b-2` to `border-b` in headers
+- Changed `pb-3` to `py-2.5` for consistent padding
+- Changed `py-4` to `py-2.5` in table rows
+- Changed `text-sm` to `text-xs` for data density
+- Added `bg-slate-50 dark:bg-slate-800/50` to headers
+- Changed `border-b` rows to `divide-y divide-slate-100 dark:divide-slate-800`
+- Added `tabular-nums` to all numeric columns
+- Made badges compact: `text-[10px] px-1.5 py-0.5`
+- Removed `-mx-6 px-6` wrapper divs
+
+**Status:** ✅ Complete - All 8 tables now have consistent enterprise design
+
 ---
 
-**Status:** In Progress  
+**Status:** ✅ COMPLETE!  
 **Last Updated:** February 19, 2026  
-**Pages Completed:** 7/8 (88%)  
-**All Completed Pages:** Working without errors ✅
+**Pages Completed:** 8/8 (100%) 🎉  
+**All Pages:** Working without errors ✅

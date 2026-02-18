@@ -532,9 +532,8 @@ export default function InsightsPage() {
               <CardTitle className="text-slate-900 dark:text-white">Detailed ABC Analysis</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto -mx-6 px-6">
-                <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-                  <table className="w-full min-w-[800px] text-sm">
+              <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                <table className="w-full text-sm">
                     <thead className="bg-slate-50 dark:bg-slate-800/50">
                       <tr className="border-b border-slate-200 dark:border-slate-700">
                         <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
@@ -563,7 +562,6 @@ export default function InsightsPage() {
                     </tbody>
                   </table>
                 </div>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -696,30 +694,29 @@ export default function InsightsPage() {
               <CardTitle className="text-slate-900 dark:text-white">Inventory Turnover Details</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto -mx-6 px-6">
-                <div className="min-w-full inline-block align-middle">
-                  <table className="w-full min-w-[800px]">
-                    <thead>
-                      <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Turnover Ratio</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
-                        <th className="pb-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTurnover.slice(0, 20).map((item) => (
-                        <tr key={item.itemId} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
-                          <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
-                          <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{item.turnoverRatio}</td>
-                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">
+              <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-800/50">
+                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Turnover Ratio</th>
+                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
+                      <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredTurnover.slice(0, 20).map((item) => (
+                      <tr key={item.itemId} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
+                        <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{item.turnoverRatio}</td>
+                        <td className="py-2.5 px-3 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums">
                             {item.daysToSell !== null && item.daysToSell !== undefined 
                               ? `${item.daysToSell} days` 
                               : <span className="text-slate-500 dark:text-slate-500">No Sales</span>
                             }
                           </td>
-                          <td className="py-4 text-center">
-                            <Badge className={`${getStatusColor(item.status)} border`}>
+                          <td className="py-2.5 px-3 text-center">
+                            <Badge className={`${getStatusColor(item.status)} border text-[10px] px-1.5 py-0.5`}>
                               {item.status.replace('-', ' ').toUpperCase()}
                             </Badge>
                           </td>
@@ -728,8 +725,7 @@ export default function InsightsPage() {
                     </tbody>
                   </table>
                 </div>
-              </div>
-            </CardContent>
+              </CardContent>
           </Card>
         </TabsContent>
 
@@ -822,30 +818,30 @@ export default function InsightsPage() {
                 </div>
               ) : (
                 <div className="overflow-x-auto -mx-6 px-6">
-                  <div className="min-w-full inline-block align-middle">
-                    <table className="w-full min-w-[900px]">
-                      <thead>
-                        <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                          <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                          <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Predicted Demand</th>
-                          <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Recommended Reorder</th>
-                          <th className="pb-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Trend</th>
-                          <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Confidence</th>
+                <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 dark:bg-slate-800/50">
+                      <tr className="border-b border-slate-200 dark:border-slate-700">
+                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Predicted Demand</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Recommended Reorder</th>
+                        <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Trend</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Confidence</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {filteredForecasts.slice(0, 20).map((item) => (
+                        <tr key={item.itemId} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
+                          <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{item.predictedDemand}</td>
+                          <td className="py-2.5 px-3 text-right text-xs font-bold text-blue-600 tabular-nums">{item.recommendedReorderQty}</td>
+                          <td className="py-2.5 px-3 text-center">{getTrendIcon(item.trend)}</td>
+                          <td className="py-2.5 px-3 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums">{item.confidence}%</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {filteredForecasts.slice(0, 20).map((item) => (
-                          <tr key={item.itemId} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
-                            <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
-                            <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{item.predictedDemand}</td>
-                            <td className="py-4 text-right font-bold text-blue-600">{item.recommendedReorderQty}</td>
-                            <td className="py-4 text-center">{getTrendIcon(item.trend)}</td>
-                            <td className="py-4 text-right text-slate-600 dark:text-slate-400">{item.confidence}%</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 </div>
               )}
             </CardContent>
@@ -939,23 +935,23 @@ export default function InsightsPage() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto -mx-6 px-6">
-                  <div className="min-w-full inline-block align-middle">
-                    <table className="w-full min-w-[800px]">
-                      <thead>
-                        <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                          <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                          <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Revenue</th>
-                          <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Profit</th>
-                          <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Margin %</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredProfitMargin.map((item, index) => (
-                          <tr key={index} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
-                            <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.category}</td>
-                            <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(item.revenue)}</td>
-                            <td className="py-4 text-right font-bold text-green-600">{formatCurrency(item.profit)}</td>
-                            <td className="py-4 text-right font-bold text-slate-800 dark:text-slate-200">{item.margin.toFixed(2)}%</td>
+                <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 dark:bg-slate-800/50">
+                      <tr className="border-b border-slate-200 dark:border-slate-700">
+                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Revenue</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Profit</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Margin %</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {filteredProfitMargin.map((item, index) => (
+                        <tr key={index} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.category}</td>
+                          <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{formatCurrency(item.revenue)}</td>
+                          <td className="py-2.5 px-3 text-right text-xs font-bold text-green-600 tabular-nums">{formatCurrency(item.profit)}</td>
+                          <td className="py-2.5 px-3 text-right text-xs font-bold text-slate-800 dark:text-slate-200 tabular-nums">{item.margin.toFixed(2)}%</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1032,18 +1028,18 @@ export default function InsightsPage() {
             <CardContent>
               <div className="overflow-x-auto -mx-6 px-6">
                 <div className="min-w-full inline-block align-middle">
-                  <table className="w-full min-w-[800px]">
-                    <thead>
-                      <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">SKU</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Turnover Ratio</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price</th>
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 dark:bg-slate-800/50">
+                      <tr className="border-b border-slate-200 dark:border-slate-700">
+                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">SKU</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Turnover Ratio</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {fastMoving
                         .filter(item => item.name.toLowerCase().includes(fastMovingSearch.toLowerCase()))
                         .sort((a, b) => {
@@ -1054,18 +1050,18 @@ export default function InsightsPage() {
                           return 0
                         })
                         .map((item) => (
-                        <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-green-50 dark:hover:bg-green-950/10 transition-colors duration-200">
-                          <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
-                          <td className="py-4 text-sm text-slate-600 dark:text-slate-400">{item.sku}</td>
-                          <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{item.quantity}</td>
-                          <td className="py-4 text-right font-bold text-green-600 dark:text-green-400">{item.turnoverRatio.toFixed(2)}</td>
-                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">
+                        <tr key={item.id} className="hover:bg-green-50 dark:hover:bg-green-950/10 transition-colors">
+                          <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
+                          <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">{item.sku}</td>
+                          <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{item.quantity}</td>
+                          <td className="py-2.5 px-3 text-right text-xs font-bold text-green-600 dark:text-green-400 tabular-nums">{item.turnoverRatio.toFixed(2)}</td>
+                          <td className="py-2.5 px-3 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums">
                             {item.daysToSell !== null && item.daysToSell !== undefined 
                               ? `${item.daysToSell} days` 
                               : <span className="text-slate-500 dark:text-slate-500">No Sales</span>
                             }
                           </td>
-                          <td className="py-4 text-right text-slate-800 dark:text-slate-200">{formatCurrency(item.sellingPrice || item.costPrice || 0)}</td>
+                          <td className="py-2.5 px-3 text-right text-xs text-slate-800 dark:text-slate-200 tabular-nums">{formatCurrency(item.sellingPrice || item.costPrice || 0)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1146,18 +1142,18 @@ export default function InsightsPage() {
             <CardContent>
               <div className="overflow-x-auto -mx-6 px-6">
                 <div className="min-w-full inline-block align-middle">
-                  <table className="w-full min-w-[800px]">
-                    <thead>
-                      <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                        <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">SKU</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Turnover Ratio</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
-                        <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 dark:bg-slate-800/50">
+                      <tr className="border-b border-slate-200 dark:border-slate-700">
+                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">SKU</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Turnover Ratio</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {slowMoving
                         .filter(item => item.name.toLowerCase().includes(slowMovingSearch.toLowerCase()))
                         .sort((a, b) => {
@@ -1168,18 +1164,18 @@ export default function InsightsPage() {
                           return 0
                         })
                         .map((item) => (
-                        <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-amber-50 dark:hover:bg-amber-950/10 transition-colors duration-200">
-                          <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
-                          <td className="py-4 text-sm text-slate-600 dark:text-slate-400">{item.sku}</td>
-                          <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{item.quantity}</td>
-                          <td className="py-4 text-right font-bold text-amber-600 dark:text-amber-400">{item.turnoverRatio.toFixed(2)}</td>
-                          <td className="py-4 text-right text-slate-600 dark:text-slate-400">
+                        <tr key={item.id} className="hover:bg-amber-50 dark:hover:bg-amber-950/10 transition-colors">
+                          <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
+                          <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">{item.sku}</td>
+                          <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{item.quantity}</td>
+                          <td className="py-2.5 px-3 text-right text-xs font-bold text-amber-600 dark:text-amber-400 tabular-nums">{item.turnoverRatio.toFixed(2)}</td>
+                          <td className="py-2.5 px-3 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums">
                             {item.daysToSell !== null && item.daysToSell !== undefined 
                               ? `${item.daysToSell} days` 
                               : <span className="text-slate-500 dark:text-slate-500">No Sales</span>
                             }
                           </td>
-                          <td className="py-4 text-right text-slate-800 dark:text-slate-200">{formatCurrency((item.sellingPrice || item.costPrice || 0) * item.quantity)}</td>
+                          <td className="py-2.5 px-3 text-right text-xs text-slate-800 dark:text-slate-200 tabular-nums">{formatCurrency((item.sellingPrice || item.costPrice || 0) * item.quantity)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1286,39 +1282,39 @@ export default function InsightsPage() {
               ) : (
                 <div className="overflow-x-auto -mx-6 px-6">
                   <div className="min-w-full inline-block align-middle">
-                    <table className="w-full min-w-[900px]">
-                      <thead>
-                        <tr className="border-b-2 border-slate-200 dark:border-slate-700">
-                          <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                          <th className="pb-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                          <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Quantity</th>
-                          <th className="pb-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
-                          <th className="pb-3 pr-6 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
-                          <th className="pb-3 pl-6 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Action</th>
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 dark:bg-slate-800/50">
+                      <tr className="border-b border-slate-200 dark:border-slate-700">
+                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Quantity</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
+                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
+                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {filteredDeadStock.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
+                          <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">{item.category}</td>
+                          <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{item.quantity}</td>
+                          <td className="py-2.5 px-3 text-right text-xs font-bold text-red-600 tabular-nums">
+                            {item.daysToSell !== null && item.daysToSell !== undefined 
+                              ? `${item.daysToSell} days` 
+                              : <span className="text-red-700 dark:text-red-400">No Sales</span>
+                            }
+                          </td>
+                          <td className="py-2.5 px-3 text-right text-xs font-bold text-red-600 tabular-nums">{formatCurrency(item.quantity * item.costPrice)}</td>
+                          <td className="py-2.5 px-3">
+                            <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 border text-[10px] px-1.5 py-0.5">
+                              Slow Moving (180+ days)
+                            </Badge>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {filteredDeadStock.map((item) => (
-                          <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
-                            <td className="py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
-                            <td className="py-4 text-sm text-slate-600 dark:text-slate-400">{item.category}</td>
-                            <td className="py-4 text-right font-semibold text-slate-800 dark:text-slate-200">{item.quantity}</td>
-                            <td className="py-4 text-right font-bold text-red-600">
-                              {item.daysToSell !== null && item.daysToSell !== undefined 
-                                ? `${item.daysToSell} days` 
-                                : <span className="text-red-700 dark:text-red-400">No Sales</span>
-                              }
-                            </td>
-                            <td className="py-4 pr-6 text-right font-bold text-red-600">{formatCurrency(item.quantity * item.costPrice)}</td>
-                            <td className="py-4 pl-6">
-                              <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 border">
-                                Slow Moving (180+ days)
-                              </Badge>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                      ))}
+                    </tbody>
+                  </table>
                   </div>
                 </div>
               )}

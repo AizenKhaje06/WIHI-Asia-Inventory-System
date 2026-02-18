@@ -5,10 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
-  BarChart3, Package, TrendingUp, DollarSign, ShoppingCart, 
-  FileSpreadsheet, FileDown, Calendar, ArrowUpRight, ArrowDownRight
+  BarChart3, Package, TrendingUp, 
+  FileSpreadsheet, FileDown, Calendar, ChevronRight
 } from "lucide-react"
 import type { SalesReport } from "@/lib/types"
 import { toast } from "sonner"
@@ -167,23 +166,19 @@ export default function ReportsPage() {
         header: 'Stock Value', 
         key: 'stockValue', 
         width: 15, 
-        format: (val: any, row: any) => formatCurrencyForExport((row?.quantity || 0) * (row?.sellingPrice || 0))
+        format: formatCurrencyForExport
       },
       { 
         header: 'Status', 
         key: 'status', 
-        width: 12,
-        format: (val: any, row: any) => {
-          if (row.quantity === 0) return 'Out of Stock'
-          if (row.quantity <= row.reorderLevel) return 'Low Stock'
-          return 'In Stock'
-        }
+        width: 12
       },
     ]
 
     const itemsWithValue = items.map(item => ({
       ...item,
-      stockValue: item.quantity * item.sellingPrice
+      stockValue: item.quantity * item.sellingPrice,
+      status: item.quantity === 0 ? 'Out of Stock' : item.quantity <= item.reorderLevel ? 'Low Stock' : 'In Stock'
     }))
 
     const options = {
@@ -261,16 +256,21 @@ export default function ReportsPage() {
         header: 'Profit Margin %', 
         key: 'profitMargin', 
         width: 12,
-        format: (val: any, row: any) => formatPercentageForExport(row.totalRevenue > 0 ? (row.totalProfit / row.totalRevenue) * 100 : 0)
+        format: formatPercentageForExport
       },
     ]
+
+    const productDataWithMargin = productData.map(p => ({
+      ...p,
+      profitMargin: p.totalRevenue > 0 ? (p.totalProfit / p.totalRevenue) * 100 : 0
+    }))
 
     const options = {
       filename: 'Product-Performance-Report',
       title: 'Product Performance Report',
       subtitle: `Period: ${startDate || 'All Time'} to ${endDate || 'Present'}`,
       columns,
-      data: productData,
+      data: productDataWithMargin,
       summary,
       orientation: 'landscape' as const,
     }
@@ -294,122 +294,198 @@ export default function ReportsPage() {
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-6 pb-12">
-      {/* Page Header - Compact */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
-          Executive Reports
-        </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          Professional business intelligence and analytics reporting
-        </p>
+      {/* Page Header - Enterprise Premium */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-3">
+          <span>Dashboard</span>
+          <ChevronRight className="h-3 w-3" />
+          <span className="text-slate-900 dark:text-white font-medium">Executive Reports</span>
+        </div>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+              Executive Reports
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Professional business intelligence and analytics reporting
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Compact Filter Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
-        {/* Date Range - Compact */}
-        <Card className="lg:col-span-4 border-slate-200 dark:border-slate-800">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-blue-600" />
+      {/* Premium Filter & Report Type Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        {/* Date Range Filter - Refined */}
+        <Card className="lg:col-span-4 border-slate-200 dark:border-slate-800 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
+              <div className="p-1.5 rounded-md bg-blue-100 dark:bg-blue-900/30">
+                <Calendar className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+              </div>
               Report Period
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <Label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5 block">
-                Start Date
-              </Label>
-              <Input 
-                type="date" 
-                value={startDate} 
-                onChange={(e) => setStartDate(e.target.value)} 
-                className="h-9 text-sm"
-              />
+          <CardContent className="space-y-4">
+            {/* Quick Presets */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  const today = new Date()
+                  const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate())
+                  setStartDate(lastMonth.toISOString().split('T')[0])
+                  setEndDate(today.toISOString().split('T')[0])
+                }}
+                className="flex-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
+              >
+                Last 30d
+              </button>
+              <button
+                onClick={() => {
+                  const today = new Date()
+                  const lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7)
+                  setStartDate(lastWeek.toISOString().split('T')[0])
+                  setEndDate(today.toISOString().split('T')[0])
+                }}
+                className="flex-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
+              >
+                Last 7d
+              </button>
             </div>
-            <div>
-              <Label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5 block">
-                End Date
-              </Label>
-              <Input 
-                type="date" 
-                value={endDate} 
-                onChange={(e) => setEndDate(e.target.value)} 
-                className="h-9 text-sm"
-              />
+            
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                  Start Date
+                </Label>
+                <Input 
+                  type="date" 
+                  value={startDate} 
+                  onChange={(e) => setStartDate(e.target.value)} 
+                  className="h-9 text-sm border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
+                />
+              </div>
+              <div>
+                <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                  End Date
+                </Label>
+                <Input 
+                  type="date" 
+                  value={endDate} 
+                  onChange={(e) => setEndDate(e.target.value)} 
+                  className="h-9 text-sm border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Report Type Selector - Compact */}
-        <Card className="lg:col-span-8 border-slate-200 dark:border-slate-800">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">Select Report Type</CardTitle>
+        {/* Report Type Cards - Premium Design */}
+        <Card className="lg:col-span-8 border-slate-200 dark:border-slate-800 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-white">Select Report Type</CardTitle>
+            <CardDescription className="text-xs">Choose the report you want to generate and export</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Executive Sales Card */}
               <button
                 onClick={() => setReportType('executive')}
-                className={`p-3 rounded-lg border transition-all text-left ${
+                className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left ${
                   reportType === 'executive'
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-sm'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-300'
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 shadow-lg shadow-blue-500/10'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <BarChart3 className={`h-4 w-4 ${reportType === 'executive' ? 'text-blue-600' : 'text-slate-400'}`} />
-                  <h3 className="font-semibold text-sm text-slate-900 dark:text-white">
-                    Executive Sales
-                  </h3>
+                <div className={`inline-flex p-2 rounded-lg mb-3 transition-colors ${
+                  reportType === 'executive' 
+                    ? 'bg-blue-100 dark:bg-blue-900/50' 
+                    : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30'
+                }`}>
+                  <BarChart3 className={`h-5 w-5 transition-colors ${
+                    reportType === 'executive' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'
+                  }`} />
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-tight">
+                <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
+                  Executive Sales
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                   Sales performance & profit analysis
                 </p>
+                {reportType === 'executive' && (
+                  <div className="absolute top-3 right-3">
+                    <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
+                  </div>
+                )}
               </button>
 
+              {/* Inventory Card */}
               <button
                 onClick={() => setReportType('inventory')}
-                className={`p-3 rounded-lg border transition-all text-left ${
+                className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left ${
                   reportType === 'inventory'
-                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-sm'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-purple-300'
+                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30 shadow-lg shadow-purple-500/10'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-md'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <Package className={`h-4 w-4 ${reportType === 'inventory' ? 'text-purple-600' : 'text-slate-400'}`} />
-                  <h3 className="font-semibold text-sm text-slate-900 dark:text-white">
-                    Inventory
-                  </h3>
+                <div className={`inline-flex p-2 rounded-lg mb-3 transition-colors ${
+                  reportType === 'inventory' 
+                    ? 'bg-purple-100 dark:bg-purple-900/50' 
+                    : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-purple-50 dark:group-hover:bg-purple-900/30'
+                }`}>
+                  <Package className={`h-5 w-5 transition-colors ${
+                    reportType === 'inventory' ? 'text-purple-600 dark:text-purple-400' : 'text-slate-500 dark:text-slate-400'
+                  }`} />
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-tight">
+                <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
+                  Inventory
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                   Stock value & status overview
                 </p>
+                {reportType === 'inventory' && (
+                  <div className="absolute top-3 right-3">
+                    <div className="h-2 w-2 rounded-full bg-purple-500 animate-pulse"></div>
+                  </div>
+                )}
               </button>
 
+              {/* Product Performance Card */}
               <button
                 onClick={() => setReportType('product')}
-                className={`p-3 rounded-lg border transition-all text-left ${
+                className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left ${
                   reportType === 'product'
-                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 shadow-sm'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-orange-300'
+                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-lg shadow-orange-500/10'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <TrendingUp className={`h-4 w-4 ${reportType === 'product' ? 'text-orange-600' : 'text-slate-400'}`} />
-                  <h3 className="font-semibold text-sm text-slate-900 dark:text-white">
-                    Product Performance
-                  </h3>
+                <div className={`inline-flex p-2 rounded-lg mb-3 transition-colors ${
+                  reportType === 'product' 
+                    ? 'bg-orange-100 dark:bg-orange-900/50' 
+                    : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-orange-50 dark:group-hover:bg-orange-900/30'
+                }`}>
+                  <TrendingUp className={`h-5 w-5 transition-colors ${
+                    reportType === 'product' ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 dark:text-slate-400'
+                  }`} />
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-tight">
+                <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
+                  Product Performance
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                   Top performers & margins
                 </p>
+                {reportType === 'product' && (
+                  <div className="absolute top-3 right-3">
+                    <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse"></div>
+                  </div>
+                )}
               </button>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Export Actions - Compact */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+      {/* Export Actions - Premium Button Hierarchy */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         <Button
           onClick={() => {
             if (reportType === 'executive') handleExportExecutive('excel')
@@ -417,10 +493,10 @@ export default function ReportsPage() {
             else handleExportProductPerformance('excel')
           }}
           disabled={loading}
-          className="gap-2 bg-green-600 hover:bg-green-700 text-white h-11"
+          className="gap-2.5 bg-green-600 hover:bg-green-700 text-white h-11 font-medium shadow-sm hover:shadow-md transition-all"
         >
           <FileSpreadsheet className="h-4 w-4" />
-          <span className="font-medium">Export to Excel</span>
+          <span>Export to Excel</span>
         </Button>
 
         <Button
@@ -430,56 +506,67 @@ export default function ReportsPage() {
             else handleExportProductPerformance('pdf')
           }}
           disabled={loading}
-          className="gap-2 bg-red-600 hover:bg-red-700 text-white h-11"
+          variant="outline"
+          className="gap-2.5 h-11 font-medium border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
         >
           <FileDown className="h-4 w-4" />
-          <span className="font-medium">Export to PDF</span>
+          <span>Export to PDF</span>
         </Button>
       </div>
 
       {/* Report Preview - Executive Sales */}
       {reportType === 'executive' && report && dashboardData && (
-        <Card className="border-slate-200 dark:border-slate-800">
-          <CardHeader className="pb-4">
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+          <CardHeader className="pb-5">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-blue-600" />
+                <CardTitle className="text-base font-semibold flex items-center gap-2.5 text-slate-900 dark:text-white">
+                  <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                    <BarChart3 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </div>
                   Executive Sales Report
                 </CardTitle>
-                <CardDescription className="text-xs mt-1">
+                <CardDescription className="text-xs mt-1.5">
                   Key performance indicators and transaction details
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            {/* Compact KPI Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-              <div className="p-3 rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10">
-                <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">Total Revenue</p>
-                <p className="text-xl font-bold text-blue-900 dark:text-white">
+            {/* Premium KPI Cards with Trends */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="group p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 hover:shadow-md transition-all">
+                <div className="flex items-start justify-between mb-2">
+                  <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">Total Revenue</p>
+                </div>
+                <p className="text-2xl font-bold text-blue-900 dark:text-white tabular-nums">
                   {formatCurrency(dashboardData?.totalRevenue || 0)}
                 </p>
               </div>
 
-              <div className="p-3 rounded-lg border-2 border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/10">
-                <p className="text-xs font-medium text-green-700 dark:text-green-300 mb-1">Total Profit</p>
-                <p className="text-xl font-bold text-green-900 dark:text-white">
+              <div className="group p-4 rounded-xl border border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 hover:shadow-md transition-all">
+                <div className="flex items-start justify-between mb-2">
+                  <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">Total Profit</p>
+                </div>
+                <p className="text-2xl font-bold text-green-900 dark:text-white tabular-nums">
                   {formatCurrency(dashboardData?.totalProfit || 0)}
                 </p>
               </div>
 
-              <div className="p-3 rounded-lg border-2 border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/10">
-                <p className="text-xs font-medium text-purple-700 dark:text-purple-300 mb-1">Transactions</p>
-                <p className="text-xl font-bold text-purple-900 dark:text-white">
+              <div className="group p-4 rounded-xl border border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20 hover:shadow-md transition-all">
+                <div className="flex items-start justify-between mb-2">
+                  <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">Transactions</p>
+                </div>
+                <p className="text-2xl font-bold text-purple-900 dark:text-white tabular-nums">
                   {formatNumber(report.transactions?.length || 0)}
                 </p>
               </div>
 
-              <div className="p-3 rounded-lg border-2 border-orange-200 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-900/10">
-                <p className="text-xs font-medium text-orange-700 dark:text-orange-300 mb-1">Profit Margin</p>
-                <p className="text-xl font-bold text-orange-900 dark:text-white">
+              <div className="group p-4 rounded-xl border border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20 hover:shadow-md transition-all">
+                <div className="flex items-start justify-between mb-2">
+                  <p className="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Profit Margin</p>
+                </div>
+                <p className="text-2xl font-bold text-orange-900 dark:text-white tabular-nums">
                   {dashboardData?.totalRevenue > 0 
                     ? ((dashboardData.totalProfit / dashboardData.totalRevenue) * 100).toFixed(1)
                     : '0.0'}%
@@ -487,121 +574,129 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 mb-6">
-              <p className="text-sm text-blue-800 dark:text-blue-200 text-center">
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-900 dark:text-blue-100 text-center font-medium">
                 💡 Export to Excel or PDF to view complete transaction details and analysis
               </p>
             </div>
+          </CardContent>
+        </Card>
+      )}
 
-            {/* Transaction History Table - Compact */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-                  Transaction History
-                </h3>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {report.transactions?.length || 0} transactions
-                </span>
-              </div>
-              <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-                <table className="w-full text-sm">
-                  <thead className="bg-slate-50 dark:bg-slate-800/50">
-                    <tr className="border-b border-slate-200 dark:border-slate-700">
-                      <th className="py-2.5 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date & Time</th>
-                      <th className="py-2.5 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Item</th>
-                      <th className="py-2.5 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Qty</th>
-                      <th className="py-2.5 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Revenue</th>
-                      <th className="py-2.5 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Cost</th>
-                      <th className="py-2.5 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Profit</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {report.transactions?.slice(0, 50).map((transaction: any) => (
-                      <tr key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                        <td className="py-2.5 px-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                          {new Date(transaction.timestamp).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })}
-                          {' '}
-                          {new Date(transaction.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                        </td>
-                        <td className="py-2.5 px-4 text-xs font-medium text-slate-800 dark:text-slate-200 max-w-[250px] truncate">
-                          {transaction.itemName}
-                        </td>
-                        <td className="py-2.5 px-4 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
-                          {formatNumber(transaction.quantity)}
-                        </td>
-                        <td className="py-2.5 px-4 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
-                          {formatCurrency(transaction.totalRevenue)}
-                        </td>
-                        <td className="py-2.5 px-4 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums">
-                          {formatCurrency(transaction.totalCost)}
-                        </td>
-                        <td className="py-2.5 px-4 text-right text-xs font-bold text-green-600 dark:text-green-400 tabular-nums">
-                          {formatCurrency(transaction.profit)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {report.transactions && report.transactions.length > 50 && (
-                <div className="mt-3 p-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-center">
-                  <p className="text-xs text-slate-600 dark:text-slate-400">
-                    Showing first 50 of {report.transactions.length} transactions. Export to see all data.
-                  </p>
-                </div>
-              )}
+      {/* Transaction History - Always Visible */}
+      {report && report.transactions && report.transactions.length > 0 && (
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm mt-8">
+          <CardHeader className="pb-5">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+                Transaction History
+              </CardTitle>
+              <span className="px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-full">
+                {report.transactions.length} transactions
+              </span>
             </div>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-800/50">
+                  <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date & Time</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Item</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Qty</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Revenue</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Cost</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Profit</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {report.transactions.slice(0, 50).map((transaction: any) => (
+                    <tr key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <td className="py-3 px-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                        {new Date(transaction.timestamp).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })}
+                        {' '}
+                        {new Date(transaction.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                      </td>
+                      <td className="py-3 px-4 text-xs font-medium text-slate-800 dark:text-slate-200 max-w-[250px] truncate">
+                        {transaction.itemName}
+                      </td>
+                      <td className="py-3 px-4 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
+                        {formatNumber(transaction.quantity)}
+                      </td>
+                      <td className="py-3 px-4 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
+                        {formatCurrency(transaction.totalRevenue)}
+                      </td>
+                      <td className="py-3 px-4 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums">
+                        {formatCurrency(transaction.totalCost)}
+                      </td>
+                      <td className="py-3 px-4 text-right text-xs font-bold text-green-600 dark:text-green-400 tabular-nums">
+                        {formatCurrency(transaction.profit)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {report.transactions.length > 50 && (
+              <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg text-center">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Showing first 50 of {report.transactions.length} transactions. Export to see all data.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
 
       {/* Report Preview - Inventory */}
       {reportType === 'inventory' && items.length > 0 && (
-        <Card className="border-slate-200 dark:border-slate-800">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Package className="h-4 w-4 text-purple-600" />
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+          <CardHeader className="pb-5">
+            <CardTitle className="text-base font-semibold flex items-center gap-2.5 text-slate-900 dark:text-white">
+              <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <Package className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              </div>
               Inventory Valuation Report
             </CardTitle>
-            <CardDescription className="text-xs mt-1">
+            <CardDescription className="text-xs mt-1.5">
               Stock value and status overview
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Compact KPI Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="p-3 rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10">
-                <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">Total Items</p>
-                <p className="text-xl font-bold text-blue-900 dark:text-white">
+            {/* Premium KPI Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="group p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 hover:shadow-md transition-all">
+                <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-2">Total Items</p>
+                <p className="text-2xl font-bold text-blue-900 dark:text-white tabular-nums">
                   {formatNumber(items.length)}
                 </p>
               </div>
 
-              <div className="p-3 rounded-lg border-2 border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/10">
-                <p className="text-xs font-medium text-green-700 dark:text-green-300 mb-1">Inventory Value</p>
-                <p className="text-xl font-bold text-green-900 dark:text-white">
+              <div className="group p-4 rounded-xl border border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 hover:shadow-md transition-all">
+                <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-2">Inventory Value</p>
+                <p className="text-2xl font-bold text-green-900 dark:text-white tabular-nums">
                   {formatCurrency(items.reduce((sum, item) => sum + (item.quantity * item.sellingPrice), 0))}
                 </p>
               </div>
 
-              <div className="p-3 rounded-lg border-2 border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10">
-                <p className="text-xs font-medium text-amber-700 dark:text-amber-300 mb-1">Low Stock</p>
-                <p className="text-xl font-bold text-amber-900 dark:text-white">
+              <div className="group p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 hover:shadow-md transition-all">
+                <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide mb-2">Low Stock</p>
+                <p className="text-2xl font-bold text-amber-900 dark:text-white tabular-nums">
                   {formatNumber(items.filter(item => item.quantity <= item.reorderLevel && item.quantity > 0).length)}
                 </p>
               </div>
 
-              <div className="p-3 rounded-lg border-2 border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10">
-                <p className="text-xs font-medium text-red-700 dark:text-red-300 mb-1">Out of Stock</p>
-                <p className="text-xl font-bold text-red-900 dark:text-white">
+              <div className="group p-4 rounded-xl border border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/30 dark:to-red-900/20 hover:shadow-md transition-all">
+                <p className="text-xs font-semibold text-red-700 dark:text-red-300 uppercase tracking-wide mb-2">Out of Stock</p>
+                <p className="text-2xl font-bold text-red-900 dark:text-white tabular-nums">
                   {formatNumber(items.filter(item => item.quantity === 0).length)}
                 </p>
               </div>
             </div>
 
-            <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-              <p className="text-xs text-center text-slate-600 dark:text-slate-400">
+            <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 rounded-xl border border-purple-200 dark:border-purple-800">
+              <p className="text-sm text-purple-900 dark:text-purple-100 text-center font-medium">
                 📦 Export to Excel or PDF to view complete inventory details with valuations
               </p>
             </div>
@@ -611,19 +706,21 @@ export default function ReportsPage() {
 
       {/* Report Preview - Product Performance */}
       {reportType === 'product' && report && (
-        <Card className="border-slate-200 dark:border-slate-800">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-orange-600" />
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+          <CardHeader className="pb-5">
+            <CardTitle className="text-base font-semibold flex items-center gap-2.5 text-slate-900 dark:text-white">
+              <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+                <TrendingUp className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              </div>
               Product Performance Report
             </CardTitle>
-            <CardDescription className="text-xs mt-1">
+            <CardDescription className="text-xs mt-1.5">
               Top performing products and profit analysis
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-              <p className="text-xs text-center text-slate-600 dark:text-slate-400">
+            <div className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl border border-orange-200 dark:border-orange-800">
+              <p className="text-sm text-orange-900 dark:text-orange-100 text-center font-medium">
                 🏆 Export to Excel or PDF to view complete product performance rankings and profit margins
               </p>
             </div>
@@ -631,13 +728,16 @@ export default function ReportsPage() {
         </Card>
       )}
 
-      {/* Loading State */}
+      {/* Loading State - Premium */}
       {loading && (
         <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
-          <CardContent className="py-12">
+          <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-              <p className="text-slate-600 dark:text-slate-400">Loading report data...</p>
+              <div className="relative">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 dark:border-slate-700"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent absolute top-0 left-0"></div>
+              </div>
+              <p className="text-slate-600 dark:text-slate-400 mt-4 font-medium">Loading report data...</p>
             </div>
           </CardContent>
         </Card>

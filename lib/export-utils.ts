@@ -10,7 +10,7 @@ interface ExportColumn {
   header: string
   key: string
   width?: number
-  format?: (value: any) => string
+  format?: (value: any, row?: any) => string
 }
 
 interface ExportOptions {
