@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { InventoryItem, StorageRoom } from "@/lib/types"
 import { apiGet, apiPut } from "@/lib/api-client"
+import { getCurrentUser } from "@/lib/auth"
 
 interface EditItemDialogProps {
   open: boolean
@@ -24,6 +25,9 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
   const [categories, setCategories] = useState<Array<{id: string, name: string}>>([])
   const [loadingRooms, setLoadingRooms] = useState(true)
   const [loadingCategories, setLoadingCategories] = useState(true)
+  const currentUser = getCurrentUser()
+  const isAdmin = currentUser?.role === 'admin'
+  
   const [formData, setFormData] = useState({
     name: item.name,
     category: item.category,
@@ -142,17 +146,27 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
             
             <div className="space-y-2">
               <Label htmlFor="edit-quantity" className="text-slate-700 dark:text-slate-300 font-medium">
-                Quantity (Read-only)
+                Quantity {!isAdmin && "(Read-only)"}
               </Label>
               <Input
                 id="edit-quantity"
                 type="number"
                 required
                 value={formData.quantity}
-                readOnly
-                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white cursor-not-allowed"
+                onChange={isAdmin ? (e) => setFormData({ ...formData, quantity: Number.parseInt(e.target.value) }) : undefined}
+                readOnly={!isAdmin}
+                className={`rounded-[5px] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white ${
+                  isAdmin 
+                    ? "bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20" 
+                    : "bg-slate-100 dark:bg-slate-800 cursor-not-allowed"
+                }`}
               />
-              <p className="text-xs text-slate-500 dark:text-slate-400">Use Restock to change quantity</p>
+              {!isAdmin && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">Use Restock to change quantity</p>
+              )}
+              {isAdmin && (
+                <p className="text-xs text-orange-600 dark:text-orange-400">⚠️ Admin: Direct quantity edit enabled</p>
+              )}
             </div>
             
             <div className="space-y-2">
