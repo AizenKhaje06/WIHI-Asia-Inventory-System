@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { DateRangePicker } from "@/components/ui/date-range-picker"
 import { 
   BarChart3, Package, TrendingUp, 
-  FileSpreadsheet, FileDown, Calendar, ChevronRight
+  FileSpreadsheet, FileDown, ChevronRight
 } from "lucide-react"
 import type { SalesReport } from "@/lib/types"
 import { toast } from "sonner"
@@ -24,12 +23,13 @@ import {
 
 export default function ReportsPage() {
   const [report, setReport] = useState<SalesReport | null>(null)
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
+  const [startDate, setStartDate] = useState<Date | null>(null)
+  const [endDate, setEndDate] = useState<Date | null>(null)
   const [reportType, setReportType] = useState("executive")
   const [loading, setLoading] = useState(false)
   const [dashboardData, setDashboardData] = useState<any>(null)
   const [items, setItems] = useState<any[]>([])
+  const [activePreset, setActivePreset] = useState<string | null>(null)
 
   useEffect(() => {
     loadAllData()
@@ -51,8 +51,8 @@ export default function ReportsPage() {
   async function loadReportData() {
     try {
       const params = new URLSearchParams()
-      if (startDate) params.append("startDate", startDate)
-      if (endDate) params.append("endDate", endDate)
+      if (startDate) params.append("startDate", startDate.toISOString().split('T')[0])
+      if (endDate) params.append("endDate", endDate.toISOString().split('T')[0])
 
       const data = await apiGet<SalesReport>(`/api/reports?${params}`)
       setReport(data)
@@ -87,8 +87,8 @@ export default function ReportsPage() {
     }
 
     const filters = []
-    if (startDate) filters.push({ label: 'Start Date', value: startDate })
-    if (endDate) filters.push({ label: 'End Date', value: endDate })
+    if (startDate) filters.push({ label: 'Start Date', value: startDate.toLocaleDateString() })
+    if (endDate) filters.push({ label: 'End Date', value: endDate.toLocaleDateString() })
 
     const summary = [
       { label: 'Total Revenue', value: formatCurrencyForExport(dashboardData.totalRevenue || 0) },
@@ -110,7 +110,7 @@ export default function ReportsPage() {
     const options = {
       filename: 'Executive-Sales-Report',
       title: 'Executive Sales Report',
-      subtitle: `Period: ${startDate || 'All Time'} to ${endDate || 'Present'}`,
+      subtitle: `Period: ${startDate ? startDate.toLocaleDateString() : 'All Time'} to ${endDate ? endDate.toLocaleDateString() : 'Present'}`,
       columns,
       data: report.transactions || [],
       summary,
@@ -268,7 +268,7 @@ export default function ReportsPage() {
     const options = {
       filename: 'Product-Performance-Report',
       title: 'Product Performance Report',
-      subtitle: `Period: ${startDate || 'All Time'} to ${endDate || 'Present'}`,
+      subtitle: `Period: ${startDate ? startDate.toLocaleDateString() : 'All Time'} to ${endDate ? endDate.toLocaleDateString() : 'Present'}`,
       columns,
       data: productDataWithMargin,
       summary,
@@ -315,65 +315,101 @@ export default function ReportsPage() {
 
       {/* Premium Filter & Report Type Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-        {/* Date Range Filter - Refined */}
+        {/* Date Range Filter - Modern Calendar Picker */}
         <Card className="lg:col-span-4 border-slate-200 dark:border-slate-800 shadow-sm">
           <CardHeader className="pb-4">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
-              <div className="p-1.5 rounded-md bg-blue-100 dark:bg-blue-900/30">
-                <Calendar className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-              </div>
+            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-white">
               Report Period
             </CardTitle>
+            <CardDescription className="text-xs">Select date range for your report</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Quick Presets */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  const today = new Date()
-                  const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate())
-                  setStartDate(lastMonth.toISOString().split('T')[0])
-                  setEndDate(today.toISOString().split('T')[0])
-                }}
-                className="flex-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
-              >
-                Last 30d
-              </button>
-              <button
-                onClick={() => {
-                  const today = new Date()
-                  const lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7)
-                  setStartDate(lastWeek.toISOString().split('T')[0])
-                  setEndDate(today.toISOString().split('T')[0])
-                }}
-                className="flex-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
-              >
-                Last 7d
-              </button>
-            </div>
+            {/* Date Range Picker */}
+            <DateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onDateChange={(start, end) => {
+                setStartDate(start)
+                setEndDate(end)
+                setActivePreset(null) // Clear preset when manually selecting dates
+              }}
+              className="w-full h-11"
+            />
             
-            <div className="space-y-3">
-              <div>
-                <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">
-                  Start Date
-                </Label>
-                <Input 
-                  type="date" 
-                  value={startDate} 
-                  onChange={(e) => setStartDate(e.target.value)} 
-                  className="h-9 text-sm border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
-                />
-              </div>
-              <div>
-                <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">
-                  End Date
-                </Label>
-                <Input 
-                  type="date" 
-                  value={endDate} 
-                  onChange={(e) => setEndDate(e.target.value)} 
-                  className="h-9 text-sm border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
-                />
+            {/* Quick Presets - Enhanced */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">Quick select:</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    const today = new Date()
+                    today.setHours(23, 59, 59, 999)
+                    const lastWeek = new Date(today)
+                    lastWeek.setDate(today.getDate() - 7)
+                    lastWeek.setHours(0, 0, 0, 0)
+                    setStartDate(lastWeek)
+                    setEndDate(today)
+                    setActivePreset('last7')
+                  }}
+                  className={`px-3 py-2.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                    activePreset === 'last7'
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105'
+                      : 'text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
+                  }`}
+                >
+                  Last 7 days
+                </button>
+                <button
+                  onClick={() => {
+                    const today = new Date()
+                    today.setHours(23, 59, 59, 999)
+                    const lastMonth = new Date(today)
+                    lastMonth.setDate(today.getDate() - 30)
+                    lastMonth.setHours(0, 0, 0, 0)
+                    setStartDate(lastMonth)
+                    setEndDate(today)
+                    setActivePreset('last30')
+                  }}
+                  className={`px-3 py-2.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                    activePreset === 'last30'
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105'
+                      : 'text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
+                  }`}
+                >
+                  Last 30 days
+                </button>
+                <button
+                  onClick={() => {
+                    const today = new Date()
+                    today.setHours(23, 59, 59, 999)
+                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+                    startOfMonth.setHours(0, 0, 0, 0)
+                    setStartDate(startOfMonth)
+                    setEndDate(today)
+                    setActivePreset('thisMonth')
+                  }}
+                  className={`px-3 py-2.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                    activePreset === 'thisMonth'
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105'
+                      : 'text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
+                  }`}
+                >
+                  This month
+                </button>
+                <button
+                  onClick={() => {
+                    setStartDate(null)
+                    setEndDate(null)
+                    setActivePreset(null)
+                  }}
+                  className={`px-3 py-2.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                    activePreset === null && !startDate && !endDate
+                      ? 'bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white shadow-md scale-105'
+                      : 'text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
+                  }`}
+                >
+                  Clear
+                </button>
               </div>
             </div>
           </CardContent>
@@ -515,7 +551,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Report Preview - Executive Sales */}
-      {reportType === 'executive' && report && dashboardData && (
+      {reportType === 'executive' && !loading && (
         <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
           <CardHeader className="pb-5">
             <div className="flex items-center justify-between">
@@ -533,58 +569,70 @@ export default function ReportsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Premium KPI Cards with Trends */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="group p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 hover:shadow-md transition-all">
-                <div className="flex items-start justify-between mb-2">
-                  <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">Total Revenue</p>
-                </div>
-                <p className="text-2xl font-bold text-blue-900 dark:text-white tabular-nums">
-                  {formatCurrency(dashboardData?.totalRevenue || 0)}
-                </p>
-              </div>
+            {report && dashboardData ? (
+              <>
+                {/* Premium KPI Cards with Trends */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <div className="group p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 hover:shadow-md transition-all">
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">Total Revenue</p>
+                    </div>
+                    <p className="text-2xl font-bold text-blue-900 dark:text-white tabular-nums">
+                      {formatCurrency(dashboardData?.totalRevenue || 0)}
+                    </p>
+                  </div>
 
-              <div className="group p-4 rounded-xl border border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 hover:shadow-md transition-all">
-                <div className="flex items-start justify-between mb-2">
-                  <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">Total Profit</p>
-                </div>
-                <p className="text-2xl font-bold text-green-900 dark:text-white tabular-nums">
-                  {formatCurrency(dashboardData?.totalProfit || 0)}
-                </p>
-              </div>
+                  <div className="group p-4 rounded-xl border border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 hover:shadow-md transition-all">
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">Total Profit</p>
+                    </div>
+                    <p className="text-2xl font-bold text-green-900 dark:text-white tabular-nums">
+                      {formatCurrency(dashboardData?.totalProfit || 0)}
+                    </p>
+                  </div>
 
-              <div className="group p-4 rounded-xl border border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20 hover:shadow-md transition-all">
-                <div className="flex items-start justify-between mb-2">
-                  <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">Transactions</p>
-                </div>
-                <p className="text-2xl font-bold text-purple-900 dark:text-white tabular-nums">
-                  {formatNumber(report.transactions?.length || 0)}
-                </p>
-              </div>
+                  <div className="group p-4 rounded-xl border border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20 hover:shadow-md transition-all">
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">Transactions</p>
+                    </div>
+                    <p className="text-2xl font-bold text-purple-900 dark:text-white tabular-nums">
+                      {formatNumber(report.transactions?.length || 0)}
+                    </p>
+                  </div>
 
-              <div className="group p-4 rounded-xl border border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20 hover:shadow-md transition-all">
-                <div className="flex items-start justify-between mb-2">
-                  <p className="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Profit Margin</p>
+                  <div className="group p-4 rounded-xl border border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20 hover:shadow-md transition-all">
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Profit Margin</p>
+                    </div>
+                    <p className="text-2xl font-bold text-orange-900 dark:text-white tabular-nums">
+                      {dashboardData?.totalRevenue > 0 
+                        ? ((dashboardData.totalProfit / dashboardData.totalRevenue) * 100).toFixed(1)
+                        : '0.0'}%
+                    </p>
+                  </div>
                 </div>
-                <p className="text-2xl font-bold text-orange-900 dark:text-white tabular-nums">
-                  {dashboardData?.totalRevenue > 0 
-                    ? ((dashboardData.totalProfit / dashboardData.totalRevenue) * 100).toFixed(1)
-                    : '0.0'}%
-                </p>
-              </div>
-            </div>
 
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800">
-              <p className="text-sm text-blue-900 dark:text-blue-100 text-center font-medium">
-                💡 Export to Excel or PDF to view complete transaction details and analysis
-              </p>
-            </div>
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800">
+                  <p className="text-sm text-blue-900 dark:text-blue-100 text-center font-medium">
+                    💡 Export to Excel or PDF to view complete transaction details and analysis
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="p-8 text-center">
+                <div className="inline-flex p-3 rounded-full bg-slate-100 dark:bg-slate-800 mb-3">
+                  <BarChart3 className="h-6 w-6 text-slate-400" />
+                </div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No sales data available</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Select a date range with sales data to view this report</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
 
       {/* Transaction History - Always Visible */}
-      {report && report.transactions && report.transactions.length > 0 && (
+      {!loading && report && report.transactions && report.transactions.length > 0 && (
         <Card className="border-slate-200 dark:border-slate-800 shadow-sm mt-8">
           <CardHeader className="pb-5">
             <div className="flex items-center justify-between">
@@ -650,7 +698,7 @@ export default function ReportsPage() {
       )}
 
       {/* Report Preview - Inventory */}
-      {reportType === 'inventory' && items.length > 0 && (
+      {reportType === 'inventory' && !loading && (
         <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
           <CardHeader className="pb-5">
             <CardTitle className="text-base font-semibold flex items-center gap-2.5 text-slate-900 dark:text-white">
@@ -664,48 +712,60 @@ export default function ReportsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Premium KPI Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="group p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 hover:shadow-md transition-all">
-                <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-2">Total Items</p>
-                <p className="text-2xl font-bold text-blue-900 dark:text-white tabular-nums">
-                  {formatNumber(items.length)}
-                </p>
-              </div>
+            {items && items.length > 0 ? (
+              <>
+                {/* Premium KPI Cards */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <div className="group p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 hover:shadow-md transition-all">
+                    <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-2">Total Items</p>
+                    <p className="text-2xl font-bold text-blue-900 dark:text-white tabular-nums">
+                      {formatNumber(items.length)}
+                    </p>
+                  </div>
 
-              <div className="group p-4 rounded-xl border border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 hover:shadow-md transition-all">
-                <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-2">Inventory Value</p>
-                <p className="text-2xl font-bold text-green-900 dark:text-white tabular-nums">
-                  {formatCurrency(items.reduce((sum, item) => sum + (item.quantity * item.sellingPrice), 0))}
-                </p>
-              </div>
+                  <div className="group p-4 rounded-xl border border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 hover:shadow-md transition-all">
+                    <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-2">Inventory Value</p>
+                    <p className="text-2xl font-bold text-green-900 dark:text-white tabular-nums">
+                      {formatCurrency(items.reduce((sum, item) => sum + (item.quantity * item.sellingPrice), 0))}
+                    </p>
+                  </div>
 
-              <div className="group p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 hover:shadow-md transition-all">
-                <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide mb-2">Low Stock</p>
-                <p className="text-2xl font-bold text-amber-900 dark:text-white tabular-nums">
-                  {formatNumber(items.filter(item => item.quantity <= item.reorderLevel && item.quantity > 0).length)}
-                </p>
-              </div>
+                  <div className="group p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 hover:shadow-md transition-all">
+                    <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide mb-2">Low Stock</p>
+                    <p className="text-2xl font-bold text-amber-900 dark:text-white tabular-nums">
+                      {formatNumber(items.filter(item => item.quantity <= item.reorderLevel && item.quantity > 0).length)}
+                    </p>
+                  </div>
 
-              <div className="group p-4 rounded-xl border border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/30 dark:to-red-900/20 hover:shadow-md transition-all">
-                <p className="text-xs font-semibold text-red-700 dark:text-red-300 uppercase tracking-wide mb-2">Out of Stock</p>
-                <p className="text-2xl font-bold text-red-900 dark:text-white tabular-nums">
-                  {formatNumber(items.filter(item => item.quantity === 0).length)}
-                </p>
-              </div>
-            </div>
+                  <div className="group p-4 rounded-xl border border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/30 dark:to-red-900/20 hover:shadow-md transition-all">
+                    <p className="text-xs font-semibold text-red-700 dark:text-red-300 uppercase tracking-wide mb-2">Out of Stock</p>
+                    <p className="text-2xl font-bold text-red-900 dark:text-white tabular-nums">
+                      {formatNumber(items.filter(item => item.quantity === 0).length)}
+                    </p>
+                  </div>
+                </div>
 
-            <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 rounded-xl border border-purple-200 dark:border-purple-800">
-              <p className="text-sm text-purple-900 dark:text-purple-100 text-center font-medium">
-                📦 Export to Excel or PDF to view complete inventory details with valuations
-              </p>
-            </div>
+                <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 rounded-xl border border-purple-200 dark:border-purple-800">
+                  <p className="text-sm text-purple-900 dark:text-purple-100 text-center font-medium">
+                    📦 Export to Excel or PDF to view complete inventory details with valuations
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="p-8 text-center">
+                <div className="inline-flex p-3 rounded-full bg-slate-100 dark:bg-slate-800 mb-3">
+                  <Package className="h-6 w-6 text-slate-400" />
+                </div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No inventory data available</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Add items to your inventory to view this report</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
 
       {/* Report Preview - Product Performance */}
-      {reportType === 'product' && report && (
+      {reportType === 'product' && !loading && (
         <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
           <CardHeader className="pb-5">
             <CardTitle className="text-base font-semibold flex items-center gap-2.5 text-slate-900 dark:text-white">
@@ -719,11 +779,81 @@ export default function ReportsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl border border-orange-200 dark:border-orange-800">
-              <p className="text-sm text-orange-900 dark:text-orange-100 text-center font-medium">
-                🏆 Export to Excel or PDF to view complete product performance rankings and profit margins
-              </p>
-            </div>
+            {report && report.transactions && report.transactions.length > 0 ? (
+              (() => {
+                // Calculate product performance metrics
+                const productMap = new Map()
+                report.transactions.forEach(t => {
+                  if (!productMap.has(t.itemName)) {
+                    productMap.set(t.itemName, {
+                      totalQuantity: 0,
+                      totalRevenue: 0,
+                      totalProfit: 0,
+                    })
+                  }
+                  const product = productMap.get(t.itemName)
+                  product.totalQuantity += t.quantity
+                  product.totalRevenue += t.totalRevenue
+                  product.totalProfit += t.profit
+                })
+                
+                const productData = Array.from(productMap.values())
+                const totalProducts = productData.length
+                const totalRevenue = productData.reduce((sum, p) => sum + p.totalRevenue, 0)
+                const totalProfit = productData.reduce((sum, p) => sum + p.totalProfit, 0)
+                const totalUnits = productData.reduce((sum, p) => sum + p.totalQuantity, 0)
+                const avgProfitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
+                
+                return (
+                  <>
+                    {/* Premium KPI Cards */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                      <div className="group p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 hover:shadow-md transition-all">
+                        <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-2">Products Sold</p>
+                        <p className="text-2xl font-bold text-blue-900 dark:text-white tabular-nums">
+                          {formatNumber(totalProducts)}
+                        </p>
+                      </div>
+
+                      <div className="group p-4 rounded-xl border border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 hover:shadow-md transition-all">
+                        <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-2">Total Revenue</p>
+                        <p className="text-2xl font-bold text-green-900 dark:text-white tabular-nums">
+                          {formatCurrency(totalRevenue)}
+                        </p>
+                      </div>
+
+                      <div className="group p-4 rounded-xl border border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20 hover:shadow-md transition-all">
+                        <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide mb-2">Units Sold</p>
+                        <p className="text-2xl font-bold text-purple-900 dark:text-white tabular-nums">
+                          {formatNumber(totalUnits)}
+                        </p>
+                      </div>
+
+                      <div className="group p-4 rounded-xl border border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20 hover:shadow-md transition-all">
+                        <p className="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide mb-2">Avg Margin</p>
+                        <p className="text-2xl font-bold text-orange-900 dark:text-white tabular-nums">
+                          {avgProfitMargin.toFixed(1)}%
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl border border-orange-200 dark:border-orange-800">
+                      <p className="text-sm text-orange-900 dark:text-orange-100 text-center font-medium">
+                        🏆 Export to Excel or PDF to view complete product performance rankings and profit margins
+                      </p>
+                    </div>
+                  </>
+                )
+              })()
+            ) : (
+              <div className="p-8 text-center">
+                <div className="inline-flex p-3 rounded-full bg-slate-100 dark:bg-slate-800 mb-3">
+                  <TrendingUp className="h-6 w-6 text-slate-400" />
+                </div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No transaction data available</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Select a date range with sales data to view product performance</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
