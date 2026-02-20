@@ -88,7 +88,7 @@ export function CommandPalette() {
           >
             <LayoutDashboard className="mr-2 h-4 w-4" />
             <span>Dashboard</span>
-            <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium text-muted-foreground opacity-100">
               <span className="text-xs">⌘</span>D
             </kbd>
           </CommandItem>
@@ -97,7 +97,7 @@ export function CommandPalette() {
           >
             <Package className="mr-2 h-4 w-4" />
             <span>Inventory</span>
-            <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium text-muted-foreground opacity-100">
               <span className="text-xs">⌘</span>I
             </kbd>
           </CommandItem>
@@ -106,7 +106,7 @@ export function CommandPalette() {
           >
             <ShoppingCart className="mr-2 h-4 w-4" />
             <span>Point of Sale</span>
-            <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium text-muted-foreground opacity-100">
               <span className="text-xs">⌘</span>P
             </kbd>
           </CommandItem>

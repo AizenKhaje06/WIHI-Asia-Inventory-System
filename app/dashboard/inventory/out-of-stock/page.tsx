@@ -387,10 +387,10 @@ export default function OutOfStockPage() {
                                 {item.name}
                               </p>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 text-[10px] px-1.5 py-0.5">
+                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 text-xs px-1.5 py-0.5">
                                   OUT OF STOCK
                                 </Badge>
-                                <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                                <span className="text-xs text-slate-500 dark:text-slate-400">
                                   Room: {item.storageRoom || 'N/A'}
                                 </span>
                               </div>

@@ -59,8 +59,8 @@
   --background-tertiary: #f1f3f5;
   --background-card: #ffffff;
   --foreground: #1a1d1f;
-  --foreground-secondary: #6c757d;
-  --foreground-tertiary: #adb5bd;
+  --foreground-secondary: #495057; /* Changed from #6c757d for better contrast (4.5:1) */
+  --foreground-tertiary: #6c757d; /* Changed from #adb5bd for better contrast (4.5:1) */
   
   /* === BORDERS & SHADOWS (Light Mode) === */
   --border: #e9ecef;
@@ -704,7 +704,7 @@ h6 { font-size: 1rem; }        /* 16px */
 }
 
 .input-premium::placeholder {
-  color: var(--foreground-tertiary);
+  color: #6c757d; /* Improved contrast from var(--foreground-tertiary) */
 }
 
 .input-premium:disabled {

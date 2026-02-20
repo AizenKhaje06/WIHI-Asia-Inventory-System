@@ -547,7 +547,7 @@ export default function InsightsPage() {
                         <tr key={item.itemId} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                           <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
                           <td className="py-2.5 px-3 text-center">
-                            <Badge className={`${getCategoryColor(item.category)} border text-[10px] px-1.5 py-0.5`}>
+                            <Badge className={`${getCategoryColor(item.category)} border text-xs px-1.5 py-0.5`}>
                               {item.category}
                             </Badge>
                           </td>
@@ -716,7 +716,7 @@ export default function InsightsPage() {
                             }
                           </td>
                           <td className="py-2.5 px-3 text-center">
-                            <Badge className={`${getStatusColor(item.status)} border text-[10px] px-1.5 py-0.5`}>
+                            <Badge className={`${getStatusColor(item.status)} border text-xs px-1.5 py-0.5`}>
                               {item.status.replace('-', ' ').toUpperCase()}
                             </Badge>
                           </td>
@@ -1307,7 +1307,7 @@ export default function InsightsPage() {
                           </td>
                           <td className="py-2.5 px-3 text-right text-xs font-bold text-red-600 tabular-nums">{formatCurrency(item.quantity * item.costPrice)}</td>
                           <td className="py-2.5 px-3">
-                            <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 border text-[10px] px-1.5 py-0.5">
+                            <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 border text-xs px-1.5 py-0.5">
                               Slow Moving (180+ days)
                             </Badge>
                           </td>

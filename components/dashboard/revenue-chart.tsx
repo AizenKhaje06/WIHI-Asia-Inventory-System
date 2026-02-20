@@ -11,11 +11,12 @@
  * - Enhanced tooltips with net profit calculation
  * - Smooth animations and loading states
  * - Dark mode compatible
+ * - Mobile-responsive with adaptive date labels
  * 
  * @component
  */
 
-import { useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -230,6 +231,19 @@ export function RevenueChart({
   loading = false
 }: RevenueChartProps) {
   
+  // Detect mobile screen size
+  const [isMobile, setIsMobile] = useState(false)
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+  
   // Memoize formatted data to prevent unnecessary recalculations
   const chartData = useMemo(() => data, [data])
 
@@ -245,12 +259,27 @@ export function RevenueChart({
     chartData.reduce((sum, item) => sum + item.sales, 0),
     [chartData]
   )
+  
+  // Calculate interval for X-axis based on screen size and period
+  const getXAxisInterval = () => {
+    if (isMobile) {
+      // Mobile: Show fewer labels to prevent crowding
+      if (timePeriod === '1M') return 6  // Show ~5 labels for month (every 6th day)
+      if (timePeriod === '1W') return 1  // Show every other day (3-4 labels)
+      return 2  // Day view: Show every 3rd hour (8 labels instead of 24)
+    } else {
+      // Desktop: Show more labels for better detail
+      if (timePeriod === '1M') return 4  // Show ~7 labels for month
+      if (timePeriod === '1W') return 0  // Show all days
+      return 0  // Show all hours for day view
+    }
+  }
 
   return (
     <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200 border-0 shadow-lg">
       <CardHeader className="pb-4">
         {/* Header Row */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
               <TrendingUp className="h-5 w-5" />
@@ -267,23 +296,23 @@ export function RevenueChart({
 
           {/* Time Period Tabs */}
           <Tabs value={timePeriod} onValueChange={(value) => onPeriodChange(value as TimePeriod)}>
-            <TabsList className="bg-slate-100 dark:bg-slate-800">
-              <TabsTrigger value="ID" className="text-xs">Day</TabsTrigger>
-              <TabsTrigger value="1W" className="text-xs">Week</TabsTrigger>
-              <TabsTrigger value="1M" className="text-xs">Month</TabsTrigger>
+            <TabsList className="bg-slate-100 dark:bg-slate-800 w-full sm:w-auto">
+              <TabsTrigger value="ID" className="text-xs flex-1 sm:flex-none">Day</TabsTrigger>
+              <TabsTrigger value="1W" className="text-xs flex-1 sm:flex-none">Week</TabsTrigger>
+              <TabsTrigger value="1M" className="text-xs flex-1 sm:flex-none">Month</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
         
         {/* Comparison Metrics */}
-        <div className="flex gap-8 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
           {/* Current Period */}
-          <div>
+          <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3 sm:p-4">
             <div className="text-xs text-slate-500 dark:text-slate-400 mb-1 font-medium">
               {labels.current}
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {formatCurrency(comparison.current)}
               </span>
               {comparison.previous > 0 && comparison.changePercent !== 0 && (
@@ -307,12 +336,12 @@ export function RevenueChart({
           </div>
 
           {/* Previous Period */}
-          <div>
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 sm:p-4">
             <div className="text-xs text-slate-500 dark:text-slate-400 mb-1 font-medium">
               {labels.previous}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-slate-400 dark:text-slate-500">
+              <span className="text-xl sm:text-2xl font-bold text-slate-400 dark:text-slate-500">
                 {formatCurrency(comparison.previous)}
               </span>
             </div>
@@ -322,13 +351,18 @@ export function RevenueChart({
           </div>
 
           {/* Change Amount */}
-          <div className="ml-auto">
+          <div className={cn(
+            "rounded-lg p-3 sm:p-4",
+            comparison.change >= 0 
+              ? "bg-green-50 dark:bg-green-900/10" 
+              : "bg-red-50 dark:bg-red-900/10"
+          )}>
             <div className="text-xs text-slate-500 dark:text-slate-400 mb-1 font-medium">
               Change
             </div>
             <div className="flex items-center gap-2">
               <span className={cn(
-                "text-2xl font-bold",
+                "text-xl sm:text-2xl font-bold",
                 comparison.change >= 0 
                   ? "text-green-600 dark:text-green-400" 
                   : "text-red-600 dark:text-red-400"
@@ -341,7 +375,7 @@ export function RevenueChart({
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-6 mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2">
             <div className="w-8 h-1 rounded-full bg-gradient-to-r from-blue-500 to-blue-600" />
             <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">Sales Revenue</span>
@@ -350,7 +384,7 @@ export function RevenueChart({
             <div className="w-8 h-0.5 bg-orange-500" style={{ borderTop: '2px dashed' }} />
             <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">Restock Costs</span>
           </div>
-          <div className="ml-auto text-xs text-slate-500 dark:text-slate-400">
+          <div className="sm:ml-auto text-xs text-slate-500 dark:text-slate-400">
             <span className="font-medium">Note:</span> Restock costs shown when items are restocked
           </div>
         </div>
@@ -383,7 +417,10 @@ export function RevenueChart({
           <ResponsiveContainer width="100%" height={CHART_CONFIG.height}>
             <AreaChart 
               data={chartData} 
-              margin={CHART_CONFIG.margins}
+              margin={isMobile 
+                ? { top: 10, bottom: 55, left: 0, right: 5 }  // Extra bottom space for angled labels
+                : CHART_CONFIG.margins
+              }
             >
               {/* Gradient Definitions */}
               <defs>
@@ -405,21 +442,25 @@ export function RevenueChart({
               <XAxis 
                 dataKey="date" 
                 className="fill-slate-400 dark:fill-slate-500" 
-                fontSize={10}
+                fontSize={isMobile ? 9 : 10}
                 tickLine={false}
                 axisLine={false}
-                interval={timePeriod === '1M' ? 5 : 0}
-                dy={10}
+                interval={getXAxisInterval()}
+                angle={isMobile ? -45 : 0}
+                textAnchor={isMobile ? "end" : "middle"}
+                height={isMobile ? 65 : 30}
+                dy={isMobile ? 3 : 10}
+                dx={isMobile ? -5 : 0}
               />
 
               {/* Y Axis */}
               <YAxis 
                 className="fill-slate-400 dark:fill-slate-500" 
-                fontSize={10}
+                fontSize={isMobile ? 9 : 10}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={formatYAxis}
-                width={50}
+                width={isMobile ? 45 : 50}
               />
 
               {/* Custom Tooltip */}

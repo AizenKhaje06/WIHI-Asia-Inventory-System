@@ -443,7 +443,7 @@ export default function LowStockPage() {
                                 <p className="text-xs font-semibold text-slate-900 dark:text-white truncate" title={item.name}>
                                   {item.name}
                                 </p>
-                                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
                                   Room: {item.storageRoom || 'N/A'}
                                 </p>
                               </div>
@@ -459,12 +459,12 @@ export default function LowStockPage() {
                           <td className="py-2.5 px-3">
                             <div className="flex justify-center">
                               {urgency === "critical" ? (
-                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 whitespace-nowrap text-[10px] px-1.5 py-0.5">
+                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 whitespace-nowrap text-xs px-1.5 py-0.5">
                                   <AlertTriangle className="h-3 w-3 mr-1" />
                                   Critical
                                 </Badge>
                               ) : (
-                                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800 whitespace-nowrap text-[10px] px-1.5 py-0.5">
+                                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800 whitespace-nowrap text-xs px-1.5 py-0.5">
                                   <AlertTriangle className="h-3 w-3 mr-1" />
                                   Low Stock
                                 </Badge>

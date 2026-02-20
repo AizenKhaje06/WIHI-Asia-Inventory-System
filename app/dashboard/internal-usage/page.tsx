@@ -1043,7 +1043,7 @@ export default function InternalUsagePage() {
                       </td>
                       <td className="py-2.5 px-3">
                         <Badge className={cn(
-                          "border-0 text-[10px] px-1.5 py-0.5",
+                          "border-0 text-xs px-1.5 py-0.5",
                           transaction.transactionType === "demo" 
                             ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
                             : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"

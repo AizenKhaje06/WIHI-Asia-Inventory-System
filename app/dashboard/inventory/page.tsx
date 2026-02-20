@@ -596,7 +596,7 @@ export default function InventoryPage() {
                                 <p className="text-xs font-semibold text-slate-900 dark:text-white truncate" title={item.name}>
                                   {item.name}
                                 </p>
-                                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
                                   {item.id.slice(0, 8)}
                                 </p>
                               </div>
@@ -614,15 +614,15 @@ export default function InventoryPage() {
                           <td className="py-2.5 px-3">
                             <div className="flex justify-center">
                               {isOutOfStock ? (
-                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 text-[10px] px-1.5 py-0.5">
+                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 text-xs px-1.5 py-0.5">
                                   Out
                                 </Badge>
                               ) : isLowStock ? (
-                                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800 text-[10px] px-1.5 py-0.5">
+                                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800 text-xs px-1.5 py-0.5">
                                   Low
                                 </Badge>
                               ) : (
-                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800 text-[10px] px-1.5 py-0.5">
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800 text-xs px-1.5 py-0.5">
                                   OK
                                 </Badge>
                               )}
@@ -651,7 +651,7 @@ export default function InventoryPage() {
                           {/* Storage Room - Compact */}
                           <td className="py-2.5 px-3">
                             <div className="flex justify-center">
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">
+                              <Badge variant="outline" className="text-xs px-1.5 py-0.5">
                                 {item.storageRoom || 'N/A'}
                               </Badge>
                             </div>

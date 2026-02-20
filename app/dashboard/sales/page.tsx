@@ -336,12 +336,12 @@ export default function SalesAnalyticsPage() {
                         <div className="text-xs text-green-600 dark:text-green-400 font-medium">
                           {formatCurrency(dayData.revenue)}
                         </div>
-                        <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
                           Sale
                         </div>
                       </>
                     ) : (
-                      <div className="text-[10px] text-slate-400 dark:text-slate-600">
+                      <div className="text-xs text-slate-400 dark:text-slate-600">
                         No sales
                       </div>
                     )}

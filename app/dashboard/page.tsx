@@ -128,7 +128,7 @@ export default function DashboardPage() {
             {stats?.revenueToday !== undefined && stats.revenueToday > 0 && (
               <div className="flex items-center gap-0.5">
                 <ArrowUpRight className="h-2.5 w-2.5 text-green-600 dark:text-green-400" />
-                <span className="text-[10px] text-green-600 dark:text-green-400 font-medium">
+                <span className="text-xs text-green-600 dark:text-green-400 font-medium">
                   ₱{formatNumber(stats.revenueToday)} today
                 </span>
               </div>
@@ -151,7 +151,7 @@ export default function DashboardPage() {
             {stats?.returnValue !== undefined && stats.returnValue > 0 && (
               <div className="flex items-center gap-0.5">
                 <ArrowDownRight className="h-2.5 w-2.5 text-red-600 dark:text-red-400" />
-                <span className="text-[10px] text-red-600 dark:text-red-400 font-medium">
+                <span className="text-xs text-red-600 dark:text-red-400 font-medium">
                   ₱{formatNumber(stats.returnValue)} returns
                 </span>
               </div>
@@ -173,7 +173,7 @@ export default function DashboardPage() {
             <div className="text-xs text-slate-600 dark:text-slate-400 mb-1.5">Total Sold</div>
             {stats?.totalSales !== undefined && (
               <div className="flex items-center gap-0.5">
-                <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400">
+                <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
                   All-time quantity sold
                 </span>
               </div>
@@ -196,7 +196,7 @@ export default function DashboardPage() {
             {stats?.itemsSoldToday !== undefined && stats.itemsSoldToday > 0 && (
               <div className="flex items-center gap-0.5">
                 <Package className="h-2.5 w-2.5 text-orange-600 dark:text-orange-400" />
-                <span className="text-[10px] text-orange-600 dark:text-orange-400 font-medium">
+                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
                   {stats.recentSales} transactions
                 </span>
               </div>
@@ -219,7 +219,7 @@ export default function DashboardPage() {
             {stats?.profitMargin !== undefined && (
               <div className="flex items-center gap-0.5">
                 <span className={cn(
-                  "text-[10px] font-medium",
+                  "text-xs font-medium",
                   (stats.profitMargin || 0) >= 30 ? "text-green-600 dark:text-green-400" :
                   (stats.profitMargin || 0) >= 15 ? "text-amber-600 dark:text-amber-400" :
                   "text-red-600 dark:text-red-400"
@@ -247,7 +247,7 @@ export default function DashboardPage() {
             {stats?.totalItems !== undefined && (
               <div className="flex items-center gap-0.5">
                 <Package className="h-2.5 w-2.5 text-indigo-600 dark:text-indigo-400" />
-                <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium">
+                <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
                   {stats.totalItems} items in stock
                 </span>
               </div>
@@ -310,10 +310,10 @@ export default function DashboardPage() {
                 <div className="text-xs font-medium text-orange-700 dark:text-orange-300 mb-1.5">Return Rate</div>
                 {stats?.damagedReturnRate !== undefined && stats?.supplierReturnRate !== undefined && (
                   <div className="space-y-0.5">
-                    <div className="text-[10px] text-orange-600 dark:text-orange-400">
+                    <div className="text-xs text-orange-600 dark:text-orange-400">
                       • Damaged: {stats.damagedReturnRate.toFixed(1)}%
                     </div>
-                    <div className="text-[10px] text-orange-600 dark:text-orange-400">
+                    <div className="text-xs text-orange-600 dark:text-orange-400">
                       • Supplier: {stats.supplierReturnRate.toFixed(1)}%
                     </div>
                   </div>
@@ -379,7 +379,7 @@ export default function DashboardPage() {
               <AlertCircle className="h-4 w-4 text-red-600" />
               Inventory Alerts
               {(outOfStockCount + lowStockCount) > 0 && (
-                <Badge variant="destructive" className="ml-auto text-[10px] px-1.5 py-0">
+                <Badge variant="destructive" className="ml-auto text-xs px-1.5 py-0">
                   {outOfStockCount + lowStockCount}
                 </Badge>
               )}
@@ -396,7 +396,7 @@ export default function DashboardPage() {
                         <div className="text-xl font-bold text-red-600 dark:text-red-400">
                           {outOfStockCount}
                         </div>
-                        <div className="text-[10px] text-red-600 dark:text-red-400 font-medium">
+                        <div className="text-xs text-red-600 dark:text-red-400 font-medium">
                           Out of Stock
                         </div>
                       </div>
@@ -406,7 +406,7 @@ export default function DashboardPage() {
                       <Button 
                         size="sm" 
                         variant="link" 
-                        className="text-red-600 dark:text-red-400 h-auto p-0 text-[10px] font-medium" 
+                        className="text-red-600 dark:text-red-400 h-auto p-0 text-xs font-medium" 
                         asChild
                       >
                         <Link href="/dashboard/inventory/out-of-stock">
@@ -425,7 +425,7 @@ export default function DashboardPage() {
                         <div className="text-xl font-bold text-amber-600 dark:text-amber-400">
                           {lowStockCount}
                         </div>
-                        <div className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                        <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">
                           Low Stock
                         </div>
                       </div>
@@ -435,7 +435,7 @@ export default function DashboardPage() {
                       <Button 
                         size="sm" 
                         variant="link" 
-                        className="text-amber-600 dark:text-amber-400 h-auto p-0 text-[10px] font-medium" 
+                        className="text-amber-600 dark:text-amber-400 h-auto p-0 text-xs font-medium" 
                         asChild
                       >
                         <Link href="/dashboard/inventory/low-stock">
@@ -452,7 +452,7 @@ export default function DashboardPage() {
                   <Package className="h-5 w-5 text-green-600 dark:text-green-400" />
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">All inventory levels are healthy</p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-500 mt-0.5">No immediate action required</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">No immediate action required</p>
               </div>
             )}
           </CardContent>

@@ -240,10 +240,10 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                   />
                 </div>
                 <div className="flex flex-col justify-center min-w-0 flex-1">
-                  <h1 className="text-[9px] xl:text-[10px] font-semibold text-slate-900 dark:text-white truncate">
+                  <h1 className="text-xs xl:text-sm font-semibold text-slate-900 dark:text-white truncate">
                     StockSync
                   </h1>
-                  <p className="text-[9px] xl:text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                  <p className="text-xs xl:text-sm text-slate-500 dark:text-slate-400 truncate">
                     Advanced Inventory System
                   </p>
                 </div>
@@ -286,8 +286,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             </div>
             {!collapsed && currentUser && (
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] xl:text-xs font-medium text-slate-900 dark:text-white truncate">{currentUser.displayName}</p>
-                <p className="text-[9px] xl:text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                <p className="text-xs xl:text-sm font-medium text-slate-900 dark:text-white truncate">{currentUser.displayName}</p>
+                <p className="text-xs xl:text-sm text-slate-500 dark:text-slate-400 truncate">
                   {ROLES[currentUser.role]?.name || currentUser.role}
                 </p>
               </div>
@@ -328,7 +328,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             <div key={section.section} className={cn("mb-4 xl:mb-5", sectionIdx === 0 && "mt-0")}>
               {!collapsed && (
                 <div className="px-1.5 xl:px-2 mb-1">
-                  <p className="text-[9px] xl:text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <p className="text-xs xl:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {section.section}
                   </p>
                 </div>
@@ -382,14 +382,14 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                       
                       {!collapsed && (
                         <>
-                          <span className="text-[10px] xl:text-xs font-medium flex-1">
+                          <span className="text-xs xl:text-sm font-medium flex-1">
                             {item.name}
                           </span>
                           {item.badge !== undefined && (
                             <Badge 
                               variant={item.badgeVariant === 'destructive' ? 'destructive' : item.badgeVariant === 'warning' ? 'default' : 'default'}
                               className={cn(
-                                "ml-auto text-[9px] xl:text-[10px] px-1 xl:px-1.5 py-0",
+                                "ml-auto text-xs xl:text-sm px-1 xl:px-1.5 py-0",
                                 item.badgeVariant === 'warning' && "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400",
                                 isActive && "bg-white/20 text-white"
                               )}
@@ -404,9 +404,9 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                       {collapsed && item.badge !== undefined && (
                         <div className={cn(
                           "absolute -top-0.5 -right-0.5 xl:-top-1 xl:-right-1",
-                          "min-w-[14px] h-[14px] xl:min-w-[16px] xl:h-[16px]",
+                          "min-w-[16px] h-[16px] xl:min-w-[18px] xl:h-[18px]",
                           "rounded-full flex items-center justify-center",
-                          "text-white text-[8px] xl:text-[9px] font-bold",
+                          "text-white text-xs xl:text-sm font-bold",
                           "shadow-lg",
                           "border-2 border-white dark:border-slate-900",
                           item.badgeVariant === 'destructive' 
@@ -521,7 +521,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                 strokeWidth={2}
                 aria-hidden="true"
               />
-              <span className="text-[10px] xl:text-xs font-medium">
+              <span className="text-xs xl:text-sm font-medium">
                 Logout
               </span>
             </button>

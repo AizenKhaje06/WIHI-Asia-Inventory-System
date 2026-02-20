@@ -650,7 +650,7 @@ export default function CustomersPage() {
                             </div>
                           </td>
                           <td className="py-2.5 px-3 text-center">
-                            <Badge className={`${getTierColor(customer.tier || 'bronze')} border text-[10px] px-1.5 py-0.5`}>
+                            <Badge className={`${getTierColor(customer.tier || 'bronze')} border text-xs px-1.5 py-0.5`}>
                               {(customer.tier || 'bronze').toUpperCase()}
                             </Badge>
                           </td>
