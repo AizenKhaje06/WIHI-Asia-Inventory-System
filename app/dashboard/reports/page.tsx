@@ -118,7 +118,7 @@ export default function ReportsPage() {
       orientation: 'landscape' as const,
     }
 
-    toast.loading(`Generating ${format.toUpperCase()} report...`)
+    const toastId = toast.loading(`Generating ${format.toUpperCase()} report...`)
     
     try {
       if (format === 'excel') {
@@ -126,11 +126,9 @@ export default function ReportsPage() {
       } else {
         await exportToPDF(options)
       }
-      toast.dismiss()
-      toast.success(`${format.toUpperCase()} report downloaded successfully!`)
+      toast.success(`${format.toUpperCase()} report downloaded successfully!`, { id: toastId })
     } catch (error) {
-      toast.dismiss()
-      toast.error(`Failed to export ${format.toUpperCase()} report`)
+      toast.error(`Failed to export ${format.toUpperCase()} report`, { id: toastId })
       console.error(error)
     }
   }
@@ -191,7 +189,7 @@ export default function ReportsPage() {
       orientation: 'landscape' as const,
     }
 
-    toast.loading(`Generating ${format.toUpperCase()} report...`)
+    const toastId = toast.loading(`Generating ${format.toUpperCase()} report...`)
     
     try {
       if (format === 'excel') {
@@ -199,11 +197,9 @@ export default function ReportsPage() {
       } else {
         await exportToPDF(options)
       }
-      toast.dismiss()
-      toast.success(`${format.toUpperCase()} report downloaded successfully!`)
+      toast.success(`${format.toUpperCase()} report downloaded successfully!`, { id: toastId })
     } catch (error) {
-      toast.dismiss()
-      toast.error(`Failed to export ${format.toUpperCase()} report`)
+      toast.error(`Failed to export ${format.toUpperCase()} report`, { id: toastId })
       console.error(error)
     }
   }
@@ -275,7 +271,7 @@ export default function ReportsPage() {
       orientation: 'landscape' as const,
     }
 
-    toast.loading(`Generating ${format.toUpperCase()} report...`)
+    const toastId = toast.loading(`Generating ${format.toUpperCase()} report...`)
     
     try {
       if (format === 'excel') {
@@ -283,11 +279,9 @@ export default function ReportsPage() {
       } else {
         await exportToPDF(options)
       }
-      toast.dismiss()
-      toast.success(`${format.toUpperCase()} report downloaded successfully!`)
+      toast.success(`${format.toUpperCase()} report downloaded successfully!`, { id: toastId })
     } catch (error) {
-      toast.dismiss()
-      toast.error(`Failed to export ${format.toUpperCase()} report`)
+      toast.error(`Failed to export ${format.toUpperCase()} report`, { id: toastId })
       console.error(error)
     }
   }

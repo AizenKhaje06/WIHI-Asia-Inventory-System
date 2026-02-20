@@ -254,26 +254,34 @@ export async function exportToPDF(options: ExportOptions): Promise<void> {
       yPosition += 3
     }
 
+    // Replace ₱ with empty string (remove currency) in summary values for PDF
+    const pdfSummary = summary?.map(item => ({
+      ...item,
+      value: typeof item.value === 'string' ? item.value.replace(/₱/g, '') : item.value
+    }))
+
     // Add summary
-    if (summary && summary.length > 0) {
+    if (pdfSummary && pdfSummary.length > 0) {
       doc.setFontSize(10)
       doc.setFont('helvetica', 'bold')
       doc.text('Summary:', 14, yPosition)
       yPosition += 5
       doc.setFont('helvetica', 'normal')
-      summary.forEach((item: any) => {
+      pdfSummary.forEach((item: any) => {
         doc.text(`${item.label}: ${item.value}`, 14, yPosition)
         yPosition += 5
       })
       yPosition += 3
     }
 
-    // Prepare table data
+    // Prepare table data - Remove ₱ symbol for PDF
     const tableHeaders = columns.map(col => col.header)
     const tableData = data.map(row => 
       columns.map(col => {
         const value = row[col.key]
-        return col.format ? col.format(value, row) : String(value ?? '')
+        const formatted = col.format ? col.format(value, row) : String(value ?? '')
+        // Remove ₱ symbol for PDF
+        return typeof formatted === 'string' ? formatted.replace(/₱/g, '') : formatted
       })
     )
 
@@ -350,9 +358,18 @@ function formatDateForFilename(): string {
 
 /**
  * Format currency for export
+ * Uses ₱ symbol for display
  */
 export function formatCurrencyForExport(value: number): string {
   return `₱${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+/**
+ * Format currency for PDF export
+ * Uses "P" prefix since jsPDF's default font doesn't support ₱ symbol well
+ */
+export function formatCurrencyForPDF(value: number): string {
+  return `P ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 /**
