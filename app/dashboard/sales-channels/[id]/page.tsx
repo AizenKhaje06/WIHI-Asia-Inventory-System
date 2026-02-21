@@ -204,7 +204,7 @@ export default function SalesChannelDetailPage() {
       {/* Date Filter */}
       <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900">
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             <div>
               <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
                 Start Date
@@ -213,7 +213,7 @@ export default function SalesChannelDetailPage() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="border-slate-200 dark:border-slate-700"
+                className="border-slate-200 dark:border-slate-700 w-full"
               />
             </div>
             <div>
@@ -224,7 +224,7 @@ export default function SalesChannelDetailPage() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="border-slate-200 dark:border-slate-700"
+                className="border-slate-200 dark:border-slate-700 w-full"
               />
             </div>
             <div className="flex items-end">
@@ -329,9 +329,9 @@ export default function SalesChannelDetailPage() {
 
       {/* Cash Flow Chart */}
       <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">
+        <CardHeader className="pb-3 px-4 md:px-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <CardTitle className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
               Cash Flow Over Time
             </CardTitle>
             <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
@@ -339,7 +339,7 @@ export default function SalesChannelDetailPage() {
                 variant={chartPeriod === 'day' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setChartPeriod('day')}
-                className={`h-8 px-3 text-xs ${
+                className={`h-7 px-2.5 text-xs ${
                   chartPeriod === 'day' 
                     ? 'bg-white dark:bg-slate-700 shadow-sm' 
                     : 'hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -351,7 +351,7 @@ export default function SalesChannelDetailPage() {
                 variant={chartPeriod === 'week' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setChartPeriod('week')}
-                className={`h-8 px-3 text-xs ${
+                className={`h-7 px-2.5 text-xs ${
                   chartPeriod === 'week' 
                     ? 'bg-white dark:bg-slate-700 shadow-sm' 
                     : 'hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -363,7 +363,7 @@ export default function SalesChannelDetailPage() {
                 variant={chartPeriod === 'month' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setChartPeriod('month')}
-                className={`h-8 px-3 text-xs ${
+                className={`h-7 px-2.5 text-xs ${
                   chartPeriod === 'month' 
                     ? 'bg-white dark:bg-slate-700 shadow-sm' 
                     : 'hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -374,151 +374,170 @@ export default function SalesChannelDetailPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={350}>
-            <AreaChart data={chartData}>
-              <defs>
-                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
-                </linearGradient>
-                <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#EF4444" stopOpacity={0.05}/>
-                </linearGradient>
-                <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.05}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
-              <XAxis 
-                dataKey="date" 
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={formatXAxisDate}
-              />
-              <YAxis 
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
-              />
-              <Tooltip 
-                formatter={(value: number) => formatCurrency(value)}
-                labelFormatter={(date) => {
-                  const d = new Date(date)
-                  if (chartPeriod === 'day') {
-                    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                  } else if (chartPeriod === 'week') {
-                    return `Week of ${d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
-                  } else {
-                    return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-                  }
-                }}
-                contentStyle={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                }}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke="#10B981" 
-                strokeWidth={2.5} 
-                name="Revenue" 
-                fill="url(#colorRevenue)"
-                dot={false}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="cost" 
-                stroke="#EF4444" 
-                strokeWidth={2.5} 
-                name="Cost" 
-                fill="url(#colorCost)"
-                dot={false}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="profit" 
-                stroke="#8B5CF6" 
-                strokeWidth={2.5} 
-                name="Profit" 
-                fill="url(#colorProfit)"
-                dot={false}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+        <CardContent className="px-2 md:px-6">
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-[300px]">
+              <ResponsiveContainer width="100%" height={350}>
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
+                    </linearGradient>
+                    <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0.05}/>
+                    </linearGradient>
+                    <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.05}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
+                  <XAxis 
+                    dataKey="date" 
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={formatXAxisDate}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis 
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip 
+                    formatter={(value: number) => formatCurrency(value)}
+                    labelFormatter={(date) => {
+                      const d = new Date(date)
+                      if (chartPeriod === 'day') {
+                        return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                      } else if (chartPeriod === 'week') {
+                        return `Week of ${d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+                      } else {
+                        return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                      }
+                    }}
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      fontSize: '12px'
+                    }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    stroke="#10B981" 
+                    strokeWidth={2} 
+                    name="Revenue" 
+                    fill="url(#colorRevenue)"
+                    dot={false}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="cost" 
+                    stroke="#EF4444" 
+                    strokeWidth={2} 
+                    name="Cost" 
+                    fill="url(#colorCost)"
+                    dot={false}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="profit" 
+                    stroke="#8B5CF6" 
+                    strokeWidth={2} 
+                    name="Profit" 
+                    fill="url(#colorProfit)"
+                    dot={false}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          {/* Mobile Scroll Hint */}
+          <div className="md:hidden text-center mt-2">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              ← Swipe to view full chart →
+            </p>
+          </div>
         </CardContent>
       </Card>
 
       {/* Top Products & Recent Transactions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6">
         {/* Top Products */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">
+          <CardHeader className="pb-3 px-4 md:px-6">
+            <CardTitle className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
               Top Products
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data.topProducts} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" opacity={0.3} horizontal={false} />
-                <XAxis 
-                  type="number"
-                  fontSize={11}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
-                />
-                <YAxis 
-                  type="category"
-                  dataKey="name" 
-                  fontSize={11}
-                  tickLine={false}
-                  axisLine={false}
-                  width={120}
-                />
-                <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), 'Revenue']}
-                  contentStyle={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Bar dataKey="revenue" fill="#3B82F6" radius={[0, 8, 8, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent className="px-2 md:px-6">
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[300px]">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={data.topProducts} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} horizontal={false} />
+                    <XAxis 
+                      type="number"
+                      fontSize={10}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                    />
+                    <YAxis 
+                      type="category"
+                      dataKey="name" 
+                      fontSize={10}
+                      tickLine={false}
+                      axisLine={false}
+                      width={100}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        fontSize: '12px'
+                      }}
+                    />
+                    <Bar dataKey="revenue" fill="#3B82F6" radius={[0, 8, 8, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Recent Transactions */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">
+          <CardHeader className="pb-3 px-4 md:px-6">
+            <CardTitle className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
               Recent Transactions
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3 max-h-[300px] overflow-y-auto">
+          <CardContent className="px-4 md:px-6">
+            <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
               {data.recentTransactions.length > 0 ? (
                 data.recentTransactions.map((transaction) => (
                   <div
                     key={transaction.id}
-                    className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
+                    className="p-2.5 md:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">
+                    <div className="flex items-start justify-between mb-1.5">
+                      <div className="flex-1 min-w-0 pr-2">
+                        <p className="font-semibold text-xs md:text-sm text-slate-900 dark:text-white break-words">
                           {transaction.itemName}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                           {new Date(transaction.timestamp).toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric',
@@ -527,16 +546,16 @@ export default function SalesChannelDetailPage() {
                           })}
                         </p>
                       </div>
-                      <p className="text-sm font-bold text-green-600 dark:text-green-400">
+                      <p className="text-xs md:text-sm font-bold text-green-600 dark:text-green-400 whitespace-nowrap">
                         {formatCurrency(transaction.revenue)}
                       </p>
                     </div>
-                    <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center justify-between text-[10px] md:text-xs">
                       <span className="text-slate-600 dark:text-slate-400">
                         Qty: {transaction.quantity}
                       </span>
                       {transaction.staffName && (
-                        <span className="text-slate-600 dark:text-slate-400">
+                        <span className="text-slate-600 dark:text-slate-400 truncate max-w-[120px]">
                           Staff: {transaction.staffName}
                         </span>
                       )}

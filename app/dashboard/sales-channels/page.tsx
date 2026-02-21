@@ -135,7 +135,7 @@ export default function SalesChannelsPage() {
       {/* Date Filter */}
       <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900">
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             <div>
               <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
                 Start Date
@@ -144,7 +144,7 @@ export default function SalesChannelsPage() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="border-slate-200 dark:border-slate-700"
+                className="border-slate-200 dark:border-slate-700 w-full"
               />
             </div>
             <div>
@@ -155,7 +155,7 @@ export default function SalesChannelsPage() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="border-slate-200 dark:border-slate-700"
+                className="border-slate-200 dark:border-slate-700 w-full"
               />
             </div>
             <div className="flex items-end">
@@ -243,77 +243,102 @@ export default function SalesChannelsPage() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6">
         {/* Revenue by Channel Bar Chart */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-              <div className="p-2 rounded-[5px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
-                <BarChart3 className="h-5 w-5" />
+          <CardHeader className="pb-3 px-4 md:px-6">
+            <CardTitle className="flex items-center gap-2 md:gap-3 text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
+              <div className="p-1.5 md:p-2 rounded-[5px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+                <BarChart3 className="h-4 w-4 md:h-5 md:w-5" />
               </div>
-              Revenue by Channel
+              <span className="text-base md:text-xl">Revenue by Channel</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.3} vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  fontSize={11}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis 
-                  fontSize={11}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), 'Revenue']}
-                  contentStyle={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Bar dataKey="revenue" fill="#3B82F6" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent className="px-2 md:px-6">
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[300px]">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} vertical={false} />
+                    <XAxis 
+                      dataKey="name" 
+                      fontSize={10}
+                      tickLine={false}
+                      axisLine={false}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis 
+                      fontSize={10}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        fontSize: '12px'
+                      }}
+                    />
+                    <Bar dataKey="revenue" fill="#3B82F6" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Revenue Distribution Pie Chart */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-              <div className="p-2 rounded-[5px] bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
-                <Store className="h-5 w-5" />
+          <CardHeader className="pb-3 px-4 md:px-6">
+            <CardTitle className="flex items-center gap-2 md:gap-3 text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
+              <div className="p-1.5 md:p-2 rounded-[5px] bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
+                <Store className="h-4 w-4 md:h-5 md:w-5" />
               </div>
-              Revenue Distribution
+              <span className="text-base md:text-xl">Revenue Distribution</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="revenue"
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: number) => formatCurrency(value)} />
-              </PieChart>
-            </ResponsiveContainer>
+          <CardContent className="px-2 md:px-6">
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[300px]">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => {
+                        // Shorten label on mobile
+                        const shortName = name.length > 15 ? name.substring(0, 12) + '...' : name
+                        return `${shortName}: ${(percent * 100).toFixed(0)}%`
+                      }}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="revenue"
+                      style={{ fontSize: '11px' }}
+                    >
+                      {chartData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => formatCurrency(value)}
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        fontSize: '12px'
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

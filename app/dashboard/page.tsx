@@ -882,7 +882,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Inventory Health Score - NEW */}
+        {/* Inventory Health Score - Meter Style */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
@@ -891,67 +891,86 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center">
-              <div className="relative inline-flex items-center justify-center w-32 h-32 mb-4">
-                <svg className="w-32 h-32 transform -rotate-90">
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="56"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="none"
-                    className="text-slate-200 dark:text-slate-700"
-                  />
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="56"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 56}`}
-                    strokeDashoffset={`${2 * Math.PI * 56 * (1 - (stats?.inventoryHealthScore || 0) / 100)}`}
-                    className={cn(
-                      "transition-all duration-1000",
-                      (stats?.inventoryHealthScore || 0) >= 80 ? "text-green-500" :
-                      (stats?.inventoryHealthScore || 0) >= 60 ? "text-amber-500" :
-                      "text-red-500"
-                    )}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-slate-900 dark:text-white">
+            <div className="space-y-4">
+              {/* Health Score Meter */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Health Score</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-slate-900 dark:text-white">
                       {stats?.inventoryHealthScore || 0}
-                    </div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400">/ 100</div>
+                    </span>
+                    <span className="text-sm text-slate-500 dark:text-slate-400">/ 100</span>
                   </div>
                 </div>
-              </div>
-              <div className={cn(
-                "text-sm font-semibold",
-                (stats?.inventoryHealthScore || 0) >= 80 ? "text-green-600 dark:text-green-400" :
-                (stats?.inventoryHealthScore || 0) >= 60 ? "text-amber-600 dark:text-amber-400" :
-                "text-red-600 dark:text-red-400"
-              )}>
-                {(stats?.inventoryHealthScore || 0) >= 80 ? "Excellent Health" :
-                 (stats?.inventoryHealthScore || 0) >= 60 ? "Good Health" :
-                 (stats?.inventoryHealthScore || 0) >= 40 ? "Fair Health" : "Needs Attention"}
-              </div>
-              <div className="mt-4 space-y-1 text-xs text-slate-600 dark:text-slate-400">
-                <div className="flex justify-between">
-                  <span>Stock Levels:</span>
-                  <span className="font-medium">{Math.round(((stats?.totalItems || 0) - (stats?.outOfStockCount || 0)) / (stats?.totalItems || 1) * 100)}%</span>
+                
+                {/* Progress Bar */}
+                <div className="relative h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-1000 ease-out",
+                      (stats?.inventoryHealthScore || 0) >= 80 ? "bg-gradient-to-r from-green-500 to-green-600" :
+                      (stats?.inventoryHealthScore || 0) >= 60 ? "bg-gradient-to-r from-amber-500 to-amber-600" :
+                      "bg-gradient-to-r from-red-500 to-red-600"
+                    )}
+                    style={{ width: `${stats?.inventoryHealthScore || 0}%` }}
+                  />
                 </div>
-                <div className="flex justify-between">
-                  <span>Return Rate:</span>
-                  <span className="font-medium">{(stats?.returnRate || 0).toFixed(1)}%</span>
+
+                {/* Status Label */}
+                <div className="flex items-center justify-center">
+                  <span className={cn(
+                    "text-xs font-semibold px-3 py-1 rounded-full",
+                    (stats?.inventoryHealthScore || 0) >= 80 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                    (stats?.inventoryHealthScore || 0) >= 60 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
+                    "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                  )}>
+                    {(stats?.inventoryHealthScore || 0) >= 80 ? "Excellent Health" :
+                     (stats?.inventoryHealthScore || 0) >= 60 ? "Good Health" :
+                     (stats?.inventoryHealthScore || 0) >= 40 ? "Fair Health" : "Needs Attention"}
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Low Stock:</span>
-                  <span className="font-medium">{lowStockCount} items</span>
+              </div>
+
+              {/* Metrics Grid - Mobile Optimized */}
+              <div className="space-y-2.5 pt-2">
+                {/* Stock Levels */}
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/50 dark:bg-slate-800/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-blue-100 dark:bg-blue-900/30">
+                      <Package className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Stock Levels</span>
+                  </div>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">
+                    {Math.round(((stats?.totalItems || 0) - (stats?.outOfStockCount || 0)) / (stats?.totalItems || 1) * 100)}%
+                  </span>
+                </div>
+
+                {/* Return Rate */}
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/50 dark:bg-slate-800/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-amber-100 dark:bg-amber-900/30">
+                      <TrendingUp className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Return Rate</span>
+                  </div>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">
+                    {(stats?.returnRate || 0).toFixed(1)}%
+                  </span>
+                </div>
+
+                {/* Low Stock */}
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/50 dark:bg-slate-800/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded bg-red-100 dark:bg-red-900/30">
+                      <AlertTriangle className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Low Stock Items</span>
+                  </div>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">
+                    {lowStockCount}
+                  </span>
                 </div>
               </div>
             </div>

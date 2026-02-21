@@ -2286,3 +2286,146 @@ pre code {
     0 0 20px rgba(96, 165, 250, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
+
+/* ============================================
+   SCROLLBAR HIDE UTILITY
+   ============================================ */
+
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* ============================================
+   ENTERPRISE TAB NAVIGATION SYSTEM
+   ============================================ */
+
+/* Container with gradient fade indicators */
+.enterprise-tab-container {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Tab list with optimized scrolling */
+.enterprise-tabs-list {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.enterprise-tabs-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* Individual tab styling */
+.enterprise-tab {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px; /* WCAG touch target size */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Active tab underline animation */
+.enterprise-tab[data-state="active"]::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: currentColor;
+  animation: slideInUnderline 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInUnderline {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* Hover state for non-active tabs */
+.enterprise-tab:not([data-state="active"]):hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dark .enterprise-tab:not([data-state="active"]):hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Focus visible for keyboard navigation */
+.enterprise-tab:focus-visible {
+  outline: 2px solid var(--primary-500);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.dark .enterprise-tab:focus-visible {
+  outline-color: rgba(96, 165, 250, 0.8);
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.2);
+}
+
+/* Smooth scroll for keyboard navigation */
+.enterprise-tabs-list:focus-within {
+  scroll-behavior: smooth;
+}
+
+/* Prevent text selection during swipe */
+.enterprise-tabs-list * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Performance optimization */
+.enterprise-tab-container,
+.enterprise-tabs-list,
+.enterprise-tab {
+  will-change: auto;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .enterprise-tabs-list {
+    scroll-behavior: auto;
+    scroll-snap-type: none;
+  }
+  
+  .enterprise-tab[data-state="active"]::after {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .enterprise-tab[data-state="active"] {
+    border-bottom-width: 3px;
+  }
+  
+  .enterprise-tab:focus-visible {
+    outline-width: 3px;
+  }
+}

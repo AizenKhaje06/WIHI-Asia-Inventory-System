@@ -10,7 +10,7 @@ import {
 } from "lucide-react"
 import type { SalesReport } from "@/lib/types"
 import { toast } from "sonner"
-import { formatNumber, formatCurrency } from "@/lib/utils"
+import { formatNumber, formatCurrency, cn } from "@/lib/utils"
 import { apiGet } from "@/lib/api-client"
 import { 
   exportToExcel, 
@@ -30,6 +30,7 @@ export default function ReportsPage() {
   const [dashboardData, setDashboardData] = useState<any>(null)
   const [items, setItems] = useState<any[]>([])
   const [activePreset, setActivePreset] = useState<string | null>(null)
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
 
   useEffect(() => {
     loadAllData()
@@ -625,75 +626,9 @@ export default function ReportsPage() {
         </Card>
       )}
 
-      {/* Transaction History - Always Visible */}
-      {!loading && report && report.transactions && report.transactions.length > 0 && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm mt-8">
-          <CardHeader className="pb-5">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
-                Transaction History
-              </CardTitle>
-              <span className="px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-full">
-                {report.transactions.length} transactions
-              </span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 dark:bg-slate-800/50">
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date & Time</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Item</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Qty</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Revenue</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Cost</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Profit</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {report.transactions.slice(0, 50).map((transaction: any) => (
-                    <tr key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3 px-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                        {new Date(transaction.timestamp).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })}
-                        {' '}
-                        {new Date(transaction.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                      </td>
-                      <td className="py-3 px-4 text-xs font-medium text-slate-800 dark:text-slate-200 max-w-[250px] truncate">
-                        {transaction.itemName}
-                      </td>
-                      <td className="py-3 px-4 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
-                        {formatNumber(transaction.quantity)}
-                      </td>
-                      <td className="py-3 px-4 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
-                        {formatCurrency(transaction.totalRevenue)}
-                      </td>
-                      <td className="py-3 px-4 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums">
-                        {formatCurrency(transaction.totalCost)}
-                      </td>
-                      <td className="py-3 px-4 text-right text-xs font-bold text-green-600 dark:text-green-400 tabular-nums">
-                        {formatCurrency(transaction.profit)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {report.transactions.length > 50 && (
-              <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg text-center">
-                <p className="text-xs text-slate-600 dark:text-slate-400">
-                  Showing first 50 of {report.transactions.length} transactions. Export to see all data.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
       {/* Report Preview - Inventory */}
       {reportType === 'inventory' && !loading && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm mb-8">
           <CardHeader className="pb-5">
             <CardTitle className="text-base font-semibold flex items-center gap-2.5 text-slate-900 dark:text-white">
               <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30">
@@ -760,7 +695,7 @@ export default function ReportsPage() {
 
       {/* Report Preview - Product Performance */}
       {reportType === 'product' && !loading && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm mb-8">
           <CardHeader className="pb-5">
             <CardTitle className="text-base font-semibold flex items-center gap-2.5 text-slate-900 dark:text-white">
               <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-900/30">
@@ -846,6 +781,105 @@ export default function ReportsPage() {
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No transaction data available</p>
                 <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Select a date range with sales data to view product performance</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Transaction History - All Reports */}
+      {!loading && report && report.transactions && report.transactions.length > 0 && (
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+          <CardHeader className="pb-5">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+                Transaction History
+              </CardTitle>
+              <span className="px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-full">
+                {report.transactions.length} transactions
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Mobile Scroll Hint */}
+            <div className="md:hidden mb-2 text-center">
+              <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1">
+                <span>←</span>
+                <span>Swipe to see all columns • Tap row to highlight</span>
+                <span>→</span>
+              </p>
+            </div>
+
+            <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+              <table className="w-full text-sm min-w-[800px]">
+                <thead className="bg-slate-50 dark:bg-slate-800/50">
+                  <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[130px]">Date & Time</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[200px]">Item</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[60px]">Qty</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Revenue</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Cost</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Profit</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {report.transactions.slice(0, 50).map((transaction: any) => (
+                    <tr 
+                      key={transaction.id} 
+                      onClick={() => setSelectedRowId(selectedRowId === transaction.id ? null : transaction.id)}
+                      className={cn(
+                        "transition-all duration-200 cursor-pointer",
+                        selectedRowId === transaction.id
+                          ? "bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-500 dark:ring-blue-400 ring-inset"
+                          : "hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                      )}
+                    >
+                      <td className="py-3 px-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                        {new Date(transaction.timestamp).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })}
+                        {' '}
+                        {new Date(transaction.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                      </td>
+                      <td className={cn(
+                        "py-3 px-4 text-xs font-medium whitespace-nowrap",
+                        selectedRowId === transaction.id
+                          ? "text-blue-900 dark:text-blue-100"
+                          : "text-slate-800 dark:text-slate-200"
+                      )}>
+                        {transaction.itemName}
+                      </td>
+                      <td className={cn(
+                        "py-3 px-4 text-right text-xs font-semibold tabular-nums whitespace-nowrap",
+                        selectedRowId === transaction.id
+                          ? "text-blue-900 dark:text-blue-100"
+                          : "text-slate-800 dark:text-slate-200"
+                      )}>
+                        {formatNumber(transaction.quantity)}
+                      </td>
+                      <td className={cn(
+                        "py-3 px-4 text-right text-xs font-semibold tabular-nums whitespace-nowrap",
+                        selectedRowId === transaction.id
+                          ? "text-blue-900 dark:text-blue-100"
+                          : "text-slate-800 dark:text-slate-200"
+                      )}>
+                        {formatCurrency(transaction.totalRevenue)}
+                      </td>
+                      <td className="py-3 px-4 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums whitespace-nowrap">
+                        {formatCurrency(transaction.totalCost)}
+                      </td>
+                      <td className="py-3 px-4 text-right text-xs font-bold text-green-600 dark:text-green-400 tabular-nums whitespace-nowrap">
+                        {formatCurrency(transaction.profit)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {report.transactions.length > 50 && (
+              <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg text-center">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Showing first 50 of {report.transactions.length} transactions. Export to see all data.
+                </p>
               </div>
             )}
           </CardContent>

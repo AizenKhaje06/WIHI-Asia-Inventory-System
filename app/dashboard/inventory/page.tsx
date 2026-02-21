@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import type { InventoryItem } from "@/lib/types"
 import { AddItemDialog } from "@/components/add-item-dialog"
 import { EditItemDialog } from "@/components/edit-item-dialog"
-import { formatNumber, formatCurrency } from "@/lib/utils"
+import { formatNumber, formatCurrency, cn } from "@/lib/utils"
 import { showSuccess, showError } from "@/lib/toast-utils"
 import type { StorageRoom } from "@/lib/types"
 import { getCurrentUser } from "@/lib/auth"
@@ -56,6 +56,72 @@ export default function InventoryPage() {
   const [editWarehouseValue, setEditWarehouseValue] = useState("")
   const [submitting, setSubmitting] = useState(false)
   const [deleteWarehouseId, setDeleteWarehouseId] = useState<string | null>(null)
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+  
+  // Resizable columns state
+  const [columnWidths, setColumnWidths] = useState({
+    product: 220,
+    category: 180,
+    status: 90,
+    stock: 100,
+    storage: 120,
+    cost: 100,
+    price: 100,
+    margin: 90,
+    actions: 140
+  })
+  const [resizing, setResizing] = useState<string | null>(null)
+  const [startX, setStartX] = useState(0)
+  const [startWidth, setStartWidth] = useState(0)
+  
+  // Delete confirmation modal state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState<{id: string, name: string} | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  // Handle column resize
+  const handleMouseDown = (e: React.MouseEvent, column: string) => {
+    setResizing(column)
+    setStartX(e.clientX)
+    setStartWidth(columnWidths[column as keyof typeof columnWidths])
+    e.preventDefault()
+  }
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!resizing) return
+      
+      const diff = e.clientX - startX
+      const newWidth = Math.max(80, startWidth + diff) // Minimum 80px
+      
+      setColumnWidths(prev => ({
+        ...prev,
+        [resizing]: newWidth
+      }))
+    }
+
+    const handleMouseUp = () => {
+      setResizing(null)
+    }
+
+    if (resizing) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [resizing, startX, startWidth])
 
   useEffect(() => {
     fetchItems()
@@ -168,14 +234,21 @@ export default function InventoryPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this item?")) return
-
     try {
       await fetch(`/api/items/${id}`, { method: "DELETE" })
       fetchItems()
+      setDeleteDialogOpen(false)
+      setItemToDelete(null)
+      showSuccess("Product deleted successfully")
     } catch (error) {
       console.error("[v0] Error deleting item:", error)
+      showError("Failed to delete product")
     }
+  }
+  
+  function openDeleteDialog(id: string, name: string) {
+    setItemToDelete({ id, name })
+    setDeleteDialogOpen(true)
   }
 
   function handleEdit(item: InventoryItem) {
@@ -349,69 +422,64 @@ export default function InventoryPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-6">
-      {/* Page Header - Compact */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
-              Inventory Management
-            </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Comprehensive product inventory control and management
-            </p>
-          </div>
-          
-          {/* Action Buttons - Admin only - Compact */}
-          {getCurrentUser()?.role === 'admin' && (
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setAddDialogOpen(true)}
-                className="h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Product
-              </Button>
-              <Button
-                onClick={() => setCategoryDialogOpen(true)}
-                className="h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
-              >
-                <Tag className="h-4 w-4 mr-2" />
-                Categories
-              </Button>
-              <Button
-                onClick={() => setWarehouseDialogOpen(true)}
-                className="h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
-              >
-                <Warehouse className="h-4 w-4 mr-2" />
-                Storage
-              </Button>
-            </div>
-          )}
-        </div>
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-4 pb-6 px-0 md:pt-6 md:px-0">
+      {/* Page Header - Mobile Optimized */}
+      <div className="mb-5 px-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1">
+          Inventory Management
+        </h1>
+        <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400">
+          Comprehensive product inventory control and management
+        </p>
       </div>
 
-      <Card className="mb-4 border-slate-200 dark:border-slate-800">
-        <CardContent className="p-3">
+      {/* Action Buttons - Mobile Optimized */}
+      {getCurrentUser()?.role === 'admin' && (
+        <div className="mb-4 px-4 flex flex-wrap gap-2">
+          <Button
+            onClick={() => setAddDialogOpen(true)}
+            className="flex-1 min-w-[140px] h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Product
+          </Button>
+          <Button
+            onClick={() => setCategoryDialogOpen(true)}
+            className="flex-1 min-w-[120px] h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg"
+          >
+            <Tag className="h-4 w-4 mr-2" />
+            Categories
+          </Button>
+          <Button
+            onClick={() => setWarehouseDialogOpen(true)}
+            className="flex-1 min-w-[110px] h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg"
+          >
+            <Warehouse className="h-4 w-4 mr-2" />
+            Storage
+          </Button>
+        </div>
+      )}
+
+      <div className="px-4">
+      <Card className="mb-4 border-slate-200 dark:border-slate-800 shadow-sm">
+        <CardContent className="p-4">
           {/* Compact Filter Layout */}
-          <div className="space-y-2">
-            {/* Row 1: Search Only */}
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input
-                  placeholder="Search products..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10 h-9 text-sm border-slate-200 dark:border-slate-700"
-                />
-              </div>
+          <div className="space-y-3">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-11 h-12 text-sm border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-800 transition-colors"
+              />
             </div>
 
-            {/* Row 2: Filters Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            {/* Filters Grid - 2 columns on mobile, 5 columns on desktop */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5">
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -421,7 +489,7 @@ export default function InventoryPage() {
               </Select>
 
               <Select value={priceFilter} onValueChange={setPriceFilter}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                   <SelectValue placeholder="Price" />
                 </SelectTrigger>
                 <SelectContent>
@@ -433,7 +501,7 @@ export default function InventoryPage() {
               </Select>
 
               <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                   <SelectValue placeholder="Storage" />
                 </SelectTrigger>
                 <SelectContent>
@@ -447,7 +515,7 @@ export default function InventoryPage() {
               </Select>
 
               <Select value={stockStatusFilter} onValueChange={setStockStatusFilter}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -459,9 +527,11 @@ export default function InventoryPage() {
               </Select>
 
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="h-8 text-xs">
-                  <ArrowUpDown className="h-3 w-3 mr-1" />
-                  <SelectValue placeholder="Sort" />
+                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpDown className="h-4 w-4 text-slate-500" />
+                    <SelectValue placeholder="Sort by" />
+                  </div>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="name-asc">Name (A-Z)</SelectItem>
@@ -474,129 +544,215 @@ export default function InventoryPage() {
               </Select>
             </div>
 
-            {/* Row 3: Active Filters + Results */}
-            <div className="flex items-center justify-between text-xs">
+            {/* Active Filters + Results - Enhanced */}
+            <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
               <div className="flex items-center gap-2">
                 {activeFiltersCount > 0 ? (
                   <>
-                    <span className="text-slate-600 dark:text-slate-400">
-                      {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''}
-                    </span>
+                    <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-xs px-2.5 py-1 font-medium">
+                      {activeFiltersCount} active
+                    </Badge>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={clearAllFilters}
-                      className="h-6 px-2 text-xs text-blue-600 hover:text-blue-700"
+                      className="h-8 px-3 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg font-medium"
                     >
-                      <X className="h-3 w-3 mr-1" />
-                      Clear
+                      <X className="h-3.5 w-3.5 mr-1" />
+                      Clear all
                     </Button>
                   </>
                 ) : (
-                  <span className="text-slate-500 dark:text-slate-500">No filters applied</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-500 font-medium">No filters</span>
                 )}
               </div>
-              <span className="text-slate-600 dark:text-slate-400">
-                <span className="font-semibold text-slate-900 dark:text-white">{filteredItems.length}</span> of {items.length}
-              </span>
+              <div className="text-xs text-slate-600 dark:text-slate-400">
+                <span className="font-bold text-slate-900 dark:text-white">{filteredItems.length}</span>
+                <span className="mx-1 text-slate-400">of</span>
+                <span className="font-semibold">{items.length}</span>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
+      </div>
 
-      <Card className="border-slate-200 dark:border-slate-800">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
-              <Package className="h-4 w-4 text-blue-600" />
-              Product Inventory ({filteredItems.length} items)
-            </CardTitle>
+      <Card className="border-slate-200 dark:border-slate-800 shadow-lg rounded-none md:rounded-lg md:mx-4 overflow-hidden">
+        <CardHeader className="pb-5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+          <div className="flex flex-col gap-4 px-4 md:px-6">
+            {/* Title Row */}
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-3 text-xl md:text-2xl font-bold text-slate-900 dark:text-white">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
+                  <Package className="h-6 w-6 text-white" />
+                </div>
+                <span>Product Inventory</span>
+              </CardTitle>
+              <Badge className="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 dark:from-slate-800 dark:to-slate-700 dark:text-slate-300 border-0 text-sm px-3 py-1.5 font-bold shadow-sm">
+                {filteredItems.length} items
+              </Badge>
+            </div>
             
-            {/* Quick Stats - Compact */}
-            <div className="flex gap-4 text-xs">
-              <div className="text-right">
-                <p className="text-slate-500 dark:text-slate-400">Total Value</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-100 dark:border-green-800">
+                <p className="text-xs font-semibold text-green-600 dark:text-green-400 mb-1 uppercase tracking-wide">Total Value</p>
+                <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
                   {formatCurrency(Array.isArray(filteredItems) ? filteredItems.reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0) : 0)}
                 </p>
               </div>
-              <div className="text-right">
-                <p className="text-slate-500 dark:text-slate-400">Avg Price</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-100 dark:border-purple-800">
+                <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1 uppercase tracking-wide">Avg Price</p>
+                <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
                   {formatCurrency(Array.isArray(filteredItems) && filteredItems.length > 0 ? filteredItems.reduce((sum, item) => sum + item.sellingPrice, 0) / filteredItems.length : 0)}
                 </p>
               </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {!Array.isArray(filteredItems) || filteredItems.length === 0 ? (
-            <div className="text-center py-16">
-              <Package className="h-16 w-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+            <div className="text-center py-16 px-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
+                <Package className="h-8 w-8 text-slate-400 dark:text-slate-500" />
+              </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No products found</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
                 {search || categoryFilter !== "all" || priceFilter !== "all" || stockRoomFilter !== "all" || stockStatusFilter !== "all"
                   ? "Try adjusting your filters or search terms"
                   : "Get started by adding your first product"}
               </p>
               <Button
                 onClick={() => setAddDialogOpen(true)}
-                className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg"
               >
                 <Plus className="h-4 w-4" />
                 Add Your First Product
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-              <div className="min-w-full inline-block align-middle">
-                <table className="w-full table-fixed text-sm">
-                  <colgroup>
-                    <col style={{ width: '22%' }} />
-                    <col style={{ width: '14%' }} />
-                    <col style={{ width: '10%' }} />
-                    <col style={{ width: '9%' }} />
-                    <col style={{ width: '9%' }} />
-                    <col style={{ width: '9%' }} />
-                    <col style={{ width: '9%' }} />
-                    <col style={{ width: getCurrentUser()?.role === 'admin' ? '6%' : '18%' }} />
-                    {getCurrentUser()?.role === 'admin' && <col style={{ width: '12%' }} />}
-                  </colgroup>
-                  <thead className="bg-slate-50 dark:bg-slate-800/50">
+            <>
+              {/* Mobile Scroll Hint - Enhanced */}
+              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
+                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
+                  <span className="text-blue-500">←</span>
+                  <span>Swipe to see all columns • Tap row to highlight</span>
+                  <span className="text-blue-500">→</span>
+                </p>
+              </div>
+
+              {/* Desktop Resize Hint */}
+              <div className="hidden md:block px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
+                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
+                  <span>💡</span>
+                  <span>Drag column borders to resize • Expand Product column to see full names</span>
+                </p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm" style={{ minWidth: Object.values(columnWidths).reduce((a, b) => a + b, 0) }}>
+                  <thead className="bg-slate-50 dark:bg-slate-800/50 sticky top-0 z-10">
                     <tr className="border-b border-slate-200 dark:border-slate-700">
-                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                      <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock</th>
-                      <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Storage</th>
-                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Cost</th>
-                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price</th>
-                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Margin</th>
+                      <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.product }}>
+                        Product
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          onMouseDown={(e) => handleMouseDown(e, 'product')}
+                        />
+                      </th>
+                      <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.category }}>
+                        Category
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          onMouseDown={(e) => handleMouseDown(e, 'category')}
+                        />
+                      </th>
+                      <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.status }}>
+                        Status
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          onMouseDown={(e) => handleMouseDown(e, 'status')}
+                        />
+                      </th>
+                      <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.stock }}>
+                        Stock
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          onMouseDown={(e) => handleMouseDown(e, 'stock')}
+                        />
+                      </th>
+                      <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.storage }}>
+                        Storage
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          onMouseDown={(e) => handleMouseDown(e, 'storage')}
+                        />
+                      </th>
+                      <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.cost }}>
+                        Cost
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          onMouseDown={(e) => handleMouseDown(e, 'cost')}
+                        />
+                      </th>
+                      <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.price }}>
+                        Price
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          onMouseDown={(e) => handleMouseDown(e, 'price')}
+                        />
+                      </th>
+                      <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.margin }}>
+                        Margin
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          onMouseDown={(e) => handleMouseDown(e, 'margin')}
+                        />
+                      </th>
                       {getCurrentUser()?.role === 'admin' && (
-                        <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                        <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider" style={{ width: columnWidths.actions }}>
+                          Actions
+                        </th>
                       )}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     {filteredItems.map((item) => {
                       const profitMargin = item.sellingPrice > 0 ? ((item.sellingPrice - item.costPrice) / item.sellingPrice * 100) : 0
                       const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
                       const isOutOfStock = item.quantity === 0
                       const stockPercentage = Math.min((item.quantity / (item.reorderLevel * 2)) * 100, 100)
+                      const isSelected = selectedRowId === item.id
                       
                       return (
-                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                          {/* Product Name - Compact */}
-                          <td className="py-2.5 px-3">
+                        <tr 
+                          key={item.id} 
+                          onClick={() => setSelectedRowId(isSelected ? null : item.id)}
+                          className={
+                            isSelected
+                              ? "transition-all duration-200 cursor-pointer bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-500 dark:ring-blue-400 ring-inset"
+                              : "transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                          }
+                        >
+                          {/* Product Name */}
+                          <td className="py-3 px-4" style={{ width: columnWidths.product }}>
                             <div className="flex items-center gap-2">
                               <div className="w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
                                 <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs font-semibold text-slate-900 dark:text-white truncate" title={item.name}>
+                                <p 
+                                  className={cn(
+                                    "text-xs font-semibold break-words",
+                                    isSelected 
+                                      ? "text-blue-900 dark:text-blue-100" 
+                                      : "text-slate-900 dark:text-white"
+                                  )}
+                                  title={item.name}
+                                >
                                   {item.name}
                                 </p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                                   {item.id.slice(0, 8)}
                                 </p>
                               </div>
@@ -604,14 +760,22 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Category */}
-                          <td className="py-2.5 px-3">
-                            <span className="text-xs text-slate-600 dark:text-slate-400 block truncate" title={item.category}>
+                          <td className="py-3 px-4" style={{ width: columnWidths.category }}>
+                            <span 
+                              className={cn(
+                                "text-xs block break-words",
+                                isSelected 
+                                  ? "text-blue-900 dark:text-blue-100 font-medium" 
+                                  : "text-slate-600 dark:text-slate-400"
+                              )}
+                              title={item.category}
+                            >
                               {item.category}
                             </span>
                           </td>
 
-                          {/* Stock Status - Compact */}
-                          <td className="py-2.5 px-3">
+                          {/* Stock Status */}
+                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.status }}>
                             <div className="flex justify-center">
                               {isOutOfStock ? (
                                 <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 text-xs px-1.5 py-0.5">
@@ -629,10 +793,14 @@ export default function InventoryPage() {
                             </div>
                           </td>
 
-                          {/* Stock with Progress - Compact */}
-                          <td className="py-2.5 px-3">
+                          {/* Stock with Progress */}
+                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.stock }}>
                             <div className="flex flex-col items-end gap-1">
-                              <span className="text-xs font-bold text-slate-900 dark:text-white tabular-nums">
+                              <span className={
+                                isSelected 
+                                  ? "text-xs font-bold tabular-nums text-blue-900 dark:text-blue-100" 
+                                  : "text-xs font-bold tabular-nums text-slate-900 dark:text-white"
+                              }>
                                 {formatNumber(item.quantity)}
                               </span>
                               <div className="w-full max-w-[60px] h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -648,8 +816,8 @@ export default function InventoryPage() {
                             </div>
                           </td>
 
-                          {/* Storage Room - Compact */}
-                          <td className="py-2.5 px-3">
+                          {/* Storage Room */}
+                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.storage }}>
                             <div className="flex justify-center">
                               <Badge variant="outline" className="text-xs px-1.5 py-0.5">
                                 {item.storageRoom || 'N/A'}
@@ -658,21 +826,25 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Cost */}
-                          <td className="py-2.5 px-3 text-right">
+                          <td className="py-3 px-4 text-right whitespace-nowrap" style={{ width: columnWidths.cost }}>
                             <span className="text-xs font-medium text-slate-800 dark:text-slate-200 tabular-nums">
                               {formatCurrency(item.costPrice)}
                             </span>
                           </td>
 
                           {/* Price */}
-                          <td className="py-2.5 px-3 text-right">
-                            <span className="text-xs font-semibold text-slate-900 dark:text-white tabular-nums">
+                          <td className="py-3 px-4 text-right whitespace-nowrap" style={{ width: columnWidths.price }}>
+                            <span className={
+                              isSelected 
+                                ? "text-xs font-semibold tabular-nums text-blue-900 dark:text-blue-100" 
+                                : "text-xs font-semibold tabular-nums text-slate-900 dark:text-white"
+                            }>
                               {formatCurrency(item.sellingPrice)}
                             </span>
                           </td>
 
-                          {/* Profit Margin - Compact */}
-                          <td className="py-2.5 px-3">
+                          {/* Profit Margin */}
+                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.margin }}>
                             <div className="flex items-center justify-end gap-1">
                               <span className={`text-xs font-bold tabular-nums ${profitMargin >= 30 ? 'text-green-600' : profitMargin >= 15 ? 'text-amber-600' : 'text-red-600'}`}>
                                 {profitMargin.toFixed(1)}%
@@ -680,8 +852,8 @@ export default function InventoryPage() {
                             </div>
                           </td>
 
-                          {/* Actions - Admin only - Compact */}
-                          <td className="py-2.5 px-3">
+                          {/* Actions - Admin only */}
+                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.actions }}>
                             {getCurrentUser()?.role === 'admin' && (
                               <TooltipProvider>
                                 <div className="flex justify-center gap-0.5">
@@ -690,10 +862,13 @@ export default function InventoryPage() {
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => handleRestock(item)}
-                                        className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 h-7 w-7 p-0"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          handleRestock(item)
+                                        }}
+                                        className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 h-9 w-9 p-0"
                                       >
-                                        <PackagePlus className="h-3.5 w-3.5" />
+                                        <PackagePlus className="h-4 w-4" />
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -706,10 +881,13 @@ export default function InventoryPage() {
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => handleEdit(item)}
-                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-7 w-7 p-0"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          handleEdit(item)
+                                        }}
+                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-9 w-9 p-0"
                                       >
-                                        <Pencil className="h-3.5 w-3.5" />
+                                        <Pencil className="h-4 w-4" />
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -722,10 +900,13 @@ export default function InventoryPage() {
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => handleDelete(item.id)}
-                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 h-7 w-7 p-0"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          openDeleteDialog(item.id, item.name)
+                                        }}
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 h-9 w-9 p-0"
                                       >
-                                        <Trash2 className="h-3.5 w-3.5" />
+                                        <Trash2 className="h-4 w-4" />
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -742,7 +923,7 @@ export default function InventoryPage() {
                   </tbody>
                 </table>
               </div>
-            </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -1132,6 +1313,50 @@ export default function InventoryPage() {
               )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Enterprise-Grade Delete Product Confirmation Modal */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-md">
+          <DialogHeader className="space-y-4">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-red-100 dark:bg-red-900/30">
+              <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+            </div>
+            <DialogTitle className="text-center text-xl font-bold text-slate-900 dark:text-white">
+              Delete Product
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-center text-slate-600 dark:text-slate-400 space-y-3 py-4">
+            <div className="font-medium">Are you sure you want to delete this product?</div>
+            {itemToDelete && (
+              <div className="text-sm bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg font-mono">
+                {itemToDelete.name}
+              </div>
+            )}
+            <div className="text-xs text-red-600 dark:text-red-400 font-medium">
+              ⚠️ This action cannot be undone
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false)
+                setItemToDelete(null)
+              }}
+              className="w-40 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => itemToDelete && handleDelete(itemToDelete.id)}
+              className="w-40 bg-red-600 hover:bg-red-700 text-white shadow-lg"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Product
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

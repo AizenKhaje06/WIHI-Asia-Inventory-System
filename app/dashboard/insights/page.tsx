@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -54,9 +54,35 @@ export default function InsightsPage() {
   
   const [slowMovingSearch, setSlowMovingSearch] = useState("")
   const [slowMovingSortBy, setSlowMovingSortBy] = useState("days-desc")
+  
+  // Tab scroll state for gradient indicators
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+  const tabsRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     fetchAnalytics()
+  }, [])
+  
+  // Detect scroll overflow for gradient indicators
+  useEffect(() => {
+    const checkScroll = () => {
+      if (!tabsRef.current) return
+      const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current
+      setCanScrollLeft(scrollLeft > 0)
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
+    }
+    
+    const tabsElement = tabsRef.current
+    if (tabsElement) {
+      checkScroll()
+      tabsElement.addEventListener('scroll', checkScroll, { passive: true })
+      window.addEventListener('resize', checkScroll)
+      return () => {
+        tabsElement.removeEventListener('scroll', checkScroll)
+        window.removeEventListener('resize', checkScroll)
+      }
+    }
   }, [])
 
   async function fetchAnalytics() {
@@ -337,59 +363,119 @@ export default function InsightsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
-        <TabsList className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 p-0 h-auto rounded-none w-full justify-start overflow-x-auto">
-          <TabsTrigger 
-            value="abc"
-            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
+        <div className="relative enterprise-tab-container">
+          {/* Left Gradient Fade Indicator */}
+          <div 
+            className={`absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white dark:from-slate-900 to-transparent pointer-events-none z-10 transition-opacity duration-300 ${
+              canScrollLeft ? 'opacity-100' : 'opacity-0'
+            }`}
+            aria-hidden="true"
+          />
+          
+          {/* Right Gradient Fade Indicator */}
+          <div 
+            className={`absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 transition-opacity duration-300 ${
+              canScrollRight ? 'opacity-100' : 'opacity-0'
+            }`}
+            aria-hidden="true"
+          />
+          
+          <TabsList 
+            ref={tabsRef}
+            role="tablist"
+            aria-label="Business insights navigation"
+            className="enterprise-tabs-list bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 p-0 h-auto rounded-none w-full justify-start overflow-x-auto scrollbar-hide scroll-smooth"
+            style={{
+              scrollSnapType: 'x mandatory',
+              WebkitOverflowScrolling: 'touch',
+              touchAction: 'pan-x',
+            }}
           >
-            ABC Analysis
-          </TabsTrigger>
-          <TabsTrigger 
-            value="turnover"
-            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
-          >
-            Turnover
-          </TabsTrigger>
-          <TabsTrigger 
-            value="forecast"
-            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
-          >
-            Forecast
-          </TabsTrigger>
-          <TabsTrigger 
-            value="profit"
-            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
-          >
-            Profit
-          </TabsTrigger>
-          <TabsTrigger 
-            value="fast-moving"
-            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-green-600 dark:data-[state=active]:border-green-400 data-[state=active]:text-green-600 dark:data-[state=active]:text-green-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
-          >
-            Fast Moving
-          </TabsTrigger>
-          <TabsTrigger 
-            value="slow-moving"
-            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 dark:data-[state=active]:border-amber-400 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
-          >
-            Slow Moving
-          </TabsTrigger>
-          <TabsTrigger 
-            value="deadstock"
-            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 dark:data-[state=active]:border-red-400 data-[state=active]:text-red-600 dark:data-[state=active]:text-red-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
-          >
-            Dead Stock
-          </TabsTrigger>
-          <TabsTrigger 
-            value="returns"
-            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 dark:data-[state=active]:border-purple-400 data-[state=active]:text-purple-600 dark:data-[state=active]:text-purple-400 rounded-none px-8 py-4 font-medium text-sm whitespace-nowrap"
-          >
-            Returns
-          </TabsTrigger>
-        </TabsList>
+            <TabsTrigger 
+              value="abc"
+              role="tab"
+              aria-selected={activeTab === 'abc'}
+              aria-controls="abc-panel"
+              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              style={{ scrollSnapAlign: 'start' }}
+            >
+              ABC Analysis
+            </TabsTrigger>
+            <TabsTrigger 
+              value="turnover"
+              role="tab"
+              aria-selected={activeTab === 'turnover'}
+              aria-controls="turnover-panel"
+              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              style={{ scrollSnapAlign: 'start' }}
+            >
+              Turnover
+            </TabsTrigger>
+            <TabsTrigger 
+              value="forecast"
+              role="tab"
+              aria-selected={activeTab === 'forecast'}
+              aria-controls="forecast-panel"
+              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              style={{ scrollSnapAlign: 'start' }}
+            >
+              Forecast
+            </TabsTrigger>
+            <TabsTrigger 
+              value="profit"
+              role="tab"
+              aria-selected={activeTab === 'profit'}
+              aria-controls="profit-panel"
+              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              style={{ scrollSnapAlign: 'start' }}
+            >
+              Profit
+            </TabsTrigger>
+            <TabsTrigger 
+              value="fast-moving"
+              role="tab"
+              aria-selected={activeTab === 'fast-moving'}
+              aria-controls="fast-moving-panel"
+              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-green-600 dark:data-[state=active]:border-green-400 data-[state=active]:text-green-600 dark:data-[state=active]:text-green-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              style={{ scrollSnapAlign: 'start' }}
+            >
+              Fast Moving
+            </TabsTrigger>
+            <TabsTrigger 
+              value="slow-moving"
+              role="tab"
+              aria-selected={activeTab === 'slow-moving'}
+              aria-controls="slow-moving-panel"
+              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 dark:data-[state=active]:border-amber-400 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              style={{ scrollSnapAlign: 'start' }}
+            >
+              Slow Moving
+            </TabsTrigger>
+            <TabsTrigger 
+              value="deadstock"
+              role="tab"
+              aria-selected={activeTab === 'deadstock'}
+              aria-controls="deadstock-panel"
+              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 dark:data-[state=active]:border-red-400 data-[state=active]:text-red-600 dark:data-[state=active]:text-red-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              style={{ scrollSnapAlign: 'start' }}
+            >
+              Dead Stock
+            </TabsTrigger>
+            <TabsTrigger 
+              value="returns"
+              role="tab"
+              aria-selected={activeTab === 'returns'}
+              aria-controls="returns-panel"
+              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 dark:data-[state=active]:border-purple-400 data-[state=active]:text-purple-600 dark:data-[state=active]:text-purple-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              style={{ scrollSnapAlign: 'start' }}
+            >
+              Returns
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* ABC Analysis */}
-        <TabsContent value="abc" className="space-y-4 mt-4">
+        <TabsContent value="abc" id="abc-panel" role="tabpanel" aria-labelledby="abc-tab" className="space-y-4 mt-4">
           <div className="grid gap-4 md:grid-cols-2">
             <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
               <CardHeader className="pb-4">

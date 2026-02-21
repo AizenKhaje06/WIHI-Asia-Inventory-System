@@ -375,10 +375,41 @@ export default function InternalUsagePage() {
         </Card>
       </div>
 
-      {/* Filters */}
+      {/* Filters - Enterprise Grade */}
       <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
         <CardContent className="p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Filter Header with Count */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <Search className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Filters</h3>
+              {(searchTerm || filterType !== "all" || dateFilter !== "all") && (
+                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0 text-xs">
+                  {[searchTerm, filterType !== "all", dateFilter !== "all"].filter(Boolean).length} active
+                </Badge>
+              )}
+            </div>
+            {(searchTerm || filterType !== "all" || dateFilter !== "all") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm("")
+                  setFilterType("all")
+                  setDateFilter("all")
+                }}
+                className="h-8 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              >
+                Clear all
+              </Button>
+            )}
+          </div>
+
+          {/* Filter Inputs */}
+          <div className="space-y-3 mb-3">
+            {/* Search - Full Width */}
             <div>
               <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Search</Label>
               <div className="relative">
@@ -391,33 +422,100 @@ export default function InternalUsagePage() {
                 />
               </div>
             </div>
-            <div>
-              <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Type</Label>
-              <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="demo">Demo/Display Only</SelectItem>
-                  <SelectItem value="internal">Internal Use Only</SelectItem>
-                </SelectContent>
-              </Select>
+            
+            {/* Type + Date Range - Side by Side */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Type</Label>
+                <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="demo">Demo/Display</SelectItem>
+                    <SelectItem value="internal">Internal Use</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Date Range</Label>
+                <Select value={dateFilter} onValueChange={(value: any) => setDateFilter(value)}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="week">Last 7 Days</SelectItem>
+                    <SelectItem value="month">Last 30 Days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Date Range</Label>
-              <Select value={dateFilter} onValueChange={(value: any) => setDateFilter(value)}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">Last 7 Days</SelectItem>
-                  <SelectItem value="month">Last 30 Days</SelectItem>
-                </SelectContent>
-              </Select>
+          </div>
+
+          {/* Active Filter Chips */}
+          {(searchTerm || filterType !== "all" || dateFilter !== "all") && (
+            <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              {searchTerm && (
+                <Badge 
+                  variant="secondary" 
+                  className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-0 text-xs pl-2 pr-1 py-1 flex items-center gap-1.5"
+                >
+                  <span className="max-w-[150px] truncate">Search: {searchTerm}</span>
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="hover:bg-slate-200 dark:hover:bg-slate-700 rounded p-0.5 transition-colors"
+                  >
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </Badge>
+              )}
+              {filterType !== "all" && (
+                <Badge 
+                  variant="secondary" 
+                  className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-0 text-xs pl-2 pr-1 py-1 flex items-center gap-1.5"
+                >
+                  <span>Type: {filterType === "demo" ? "Demo/Display" : "Internal Use"}</span>
+                  <button
+                    onClick={() => setFilterType("all")}
+                    className="hover:bg-purple-200 dark:hover:bg-purple-800 rounded p-0.5 transition-colors"
+                  >
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </Badge>
+              )}
+              {dateFilter !== "all" && (
+                <Badge 
+                  variant="secondary" 
+                  className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0 text-xs pl-2 pr-1 py-1 flex items-center gap-1.5"
+                >
+                  <span>
+                    Date: {dateFilter === "today" ? "Today" : dateFilter === "week" ? "Last 7 Days" : "Last 30 Days"}
+                  </span>
+                  <button
+                    onClick={() => setDateFilter("all")}
+                    className="hover:bg-blue-200 dark:hover:bg-blue-800 rounded p-0.5 transition-colors"
+                  >
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </Badge>
+              )}
             </div>
+          )}
+
+          {/* Results Count */}
+          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Showing <span className="font-semibold text-slate-900 dark:text-white">{filteredTransactions.length}</span> of <span className="font-semibold text-slate-900 dark:text-white">{transactions.length}</span> transactions
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -450,36 +548,38 @@ export default function InternalUsagePage() {
 
       {/* Tabs for different views */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-700 dark:text-slate-300 shadow-sm gap-2">
-          <TabsTrigger 
-            value="overview" 
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-blue-600 dark:data-[state=active]:to-blue-500"
-          >
-            <PieChart className="h-4 w-4 mr-2.5" />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger 
-            value="department" 
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-purple-600 dark:data-[state=active]:to-purple-500"
-          >
-            <BarChart3 className="h-4 w-4 mr-2.5" />
-            Sales Channels
-          </TabsTrigger>
-          <TabsTrigger 
-            value="cost" 
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-green-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-green-600 dark:data-[state=active]:to-green-500"
-          >
-            <TrendingUp className="h-4 w-4 mr-2.5" />
-            Cost Analysis
-          </TabsTrigger>
-          <TabsTrigger 
-            value="history" 
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-amber-600 dark:data-[state=active]:to-amber-500"
-          >
-            <Calendar className="h-4 w-4 mr-2.5" />
-            Transaction History
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto overflow-y-visible pb-2">
+          <TabsList className="inline-flex h-12 items-center justify-start md:justify-center rounded-xl bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-700 dark:text-slate-300 shadow-sm gap-2 w-full md:w-auto min-w-max">
+            <TabsTrigger 
+              value="overview" 
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 md:px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-blue-600 dark:data-[state=active]:to-blue-500 flex-shrink-0"
+            >
+              <PieChart className="h-4 w-4 md:mr-2.5" />
+              <span className="hidden md:inline">Overview</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="department" 
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 md:px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-purple-600 dark:data-[state=active]:to-purple-500 flex-shrink-0"
+            >
+              <BarChart3 className="h-4 w-4 md:mr-2.5" />
+              <span className="hidden md:inline">Sales Channels</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="cost" 
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 md:px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-green-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-green-600 dark:data-[state=active]:to-green-500 flex-shrink-0"
+            >
+              <TrendingUp className="h-4 w-4 md:mr-2.5" />
+              <span className="hidden md:inline">Cost Analysis</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="history" 
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 md:px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-amber-600 dark:data-[state=active]:to-amber-500 flex-shrink-0"
+            >
+              <Calendar className="h-4 w-4 md:mr-2.5" />
+              <span className="hidden md:inline">Transaction History</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
@@ -497,25 +597,35 @@ export default function InternalUsagePage() {
           </CardHeader>
           <CardContent>
             {pieData.some(d => d.value > 0) ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <RechartsPieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </RechartsPieChart>
-              </ResponsiveContainer>
+              <>
+                <ResponsiveContainer width="100%" height={280}>
+                  <RechartsPieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      formatter={(value, entry: any) => {
+                        const item = pieData.find(d => d.name === value)
+                        return `${value}: ${item?.value || 0} (${((item?.value || 0) / pieData.reduce((sum, d) => sum + d.value, 0) * 100).toFixed(0)}%)`
+                      }}
+                    />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              </>
             ) : (
               <div className="text-center py-12">
                 <PieChart className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
@@ -1014,76 +1124,159 @@ export default function InternalUsagePage() {
         </CardHeader>
         <CardContent>
           {filteredTransactions.length > 0 ? (
-            <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 dark:bg-slate-800/50">
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Type</th>
-                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Item</th>
-                    <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Quantity</th>
-                    <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
-                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Department</th>
-                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Staff</th>
-                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Notes</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredTransactions.map((transaction, index) => (
-                    <tr 
-                      key={index}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
-                    >
-                      <td className="py-2.5 px-3 text-xs text-slate-900 dark:text-white">
-                        {new Date(transaction.timestamp).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <Badge className={cn(
-                          "border-0 text-xs px-1.5 py-0.5",
-                          transaction.transactionType === "demo" 
-                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                            : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                        )}>
-                          {transaction.transactionType === "demo" ? (
-                            <>
-                              <Monitor className="h-3 w-3 mr-1" />
-                              Demo
-                            </>
-                          ) : (
-                            <>
-                              <Users className="h-3 w-3 mr-1" />
-                              Internal
-                            </>
-                          )}
-                        </Badge>
-                      </td>
-                      <td className="py-2.5 px-3 text-xs font-medium text-slate-900 dark:text-white">
-                        {transaction.itemName}
-                      </td>
-                      <td className="py-2.5 px-3 text-xs text-right text-slate-900 dark:text-white tabular-nums">
-                        {formatNumber(transaction.quantity)}
-                      </td>
-                      <td className="py-2.5 px-3 text-xs text-right font-semibold text-slate-900 dark:text-white tabular-nums">
-                        {formatCurrency(transaction.totalCost)}
-                      </td>
-                      <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
-                        {transaction.department || "-"}
-                      </td>
-                      <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
-                        {transaction.staffName || "-"}
-                      </td>
-                      <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
-                        {transaction.notes || "-"}
-                      </td>
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-800/50">
+                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Type</th>
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Item</th>
+                      <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Quantity</th>
+                      <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Department</th>
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Staff</th>
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Notes</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredTransactions.map((transaction, index) => (
+                      <tr 
+                        key={index}
+                        className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                      >
+                        <td className="py-2.5 px-3 text-xs text-slate-900 dark:text-white whitespace-nowrap">
+                          {new Date(transaction.timestamp).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <Badge className={cn(
+                            "border-0 text-xs px-1.5 py-0.5",
+                            transaction.transactionType === "demo" 
+                              ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                              : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                          )}>
+                            {transaction.transactionType === "demo" ? (
+                              <>
+                                <Monitor className="h-3 w-3 mr-1" />
+                                Demo
+                              </>
+                            ) : (
+                              <>
+                                <Users className="h-3 w-3 mr-1" />
+                                Internal
+                              </>
+                            )}
+                          </Badge>
+                        </td>
+                        <td className="py-2.5 px-3 text-xs font-medium text-slate-900 dark:text-white">
+                          {transaction.itemName}
+                        </td>
+                        <td className="py-2.5 px-3 text-xs text-right text-slate-900 dark:text-white tabular-nums">
+                          {formatNumber(transaction.quantity)}
+                        </td>
+                        <td className="py-2.5 px-3 text-xs text-right font-semibold text-slate-900 dark:text-white tabular-nums">
+                          {formatCurrency(transaction.totalCost)}
+                        </td>
+                        <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
+                          {transaction.department || "-"}
+                        </td>
+                        <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
+                          {transaction.staffName || "-"}
+                        </td>
+                        <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400 max-w-[150px] truncate">
+                          {transaction.notes || "-"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3">
+                {filteredTransactions.map((transaction, index) => (
+                  <div 
+                    key={index}
+                    className="border border-slate-200 dark:border-slate-700 rounded-lg p-4 bg-white dark:bg-slate-900 hover:shadow-md transition-shadow"
+                  >
+                    {/* Header Row */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge className={cn(
+                            "border-0 text-xs px-2 py-0.5",
+                            transaction.transactionType === "demo" 
+                              ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                              : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                          )}>
+                            {transaction.transactionType === "demo" ? (
+                              <>
+                                <Monitor className="h-3 w-3 mr-1" />
+                                Demo
+                              </>
+                            ) : (
+                              <>
+                                <Users className="h-3 w-3 mr-1" />
+                                Internal
+                              </>
+                            )}
+                          </Badge>
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                            {new Date(transaction.timestamp).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {transaction.itemName}
+                        </h3>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-slate-900 dark:text-white">
+                          {formatCurrency(transaction.totalCost)}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Qty: {formatNumber(transaction.quantity)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Details Grid */}
+                    <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                      <div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Department</div>
+                        <div className="text-xs font-medium text-slate-900 dark:text-white truncate">
+                          {transaction.department || "-"}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Staff</div>
+                        <div className="text-xs font-medium text-slate-900 dark:text-white truncate">
+                          {transaction.staffName || "-"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Notes (if exists) */}
+                    {transaction.notes && transaction.notes !== "-" && (
+                      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Notes</div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400 break-words">
+                          {transaction.notes}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
           ) : (
             <div className="text-center py-12">
               <Package className="h-16 w-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />

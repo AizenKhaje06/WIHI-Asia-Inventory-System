@@ -204,7 +204,7 @@ export default function EnterpriseLoginPage() {
 
             {/* Cost Analytics with Pie Chart */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Today Transaction</h3>
                 <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-200 dark:border-slate-700 space-y-2">
                   <div className="flex justify-between text-xs">
@@ -225,7 +225,7 @@ export default function EnterpriseLoginPage() {
                   </div>
                 </div>
               </div>
-              <div>
+              <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Cost Analytics</h3>
                 <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-200 dark:border-slate-700">
                   <div className="relative w-24 h-24 mx-auto mb-2">
