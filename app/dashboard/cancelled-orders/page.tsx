@@ -1,0 +1,719 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { format } from 'date-fns'
+import { 
+  Search, Download, AlertCircle, User, Phone, MapPin, TrendingUp, XCircle, Mail, ChevronRight, RefreshCw, BarChart3
+} from 'lucide-react'
+import { Transaction } from '@/lib/types'
+import { toast } from 'sonner'
+
+export default function CancelledOrdersPage() {
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedReason, setSelectedReason] = useState<string>('all')
+  const [selectedStaff, setSelectedStaff] = useState<string>('all')
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+
+  useEffect(() => {
+    fetchCancelledOrders()
+  }, [])
+
+  useEffect(() => {
+    filterTransactions()
+  }, [searchTerm, selectedReason, selectedStaff, transactions])
+
+  const fetchCancelledOrders = async () => {
+    try {
+      const response = await fetch('/api/reports')
+      const data = await response.json()
+      const allTransactions = Array.isArray(data) ? data : (data.transactions || [])
+      const cancelled = allTransactions.filter((t: Transaction) => t.status === 'cancelled')
+      setTransactions(cancelled)
+      setFilteredTransactions(cancelled)
+    } catch (error) {
+      console.error('Error fetching cancelled orders:', error)
+      toast.error('Failed to load cancelled orders')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filterTransactions = () => {
+    let filtered = [...transactions]
+    if (searchTerm) {
+      filtered = filtered.filter(t => 
+        t.itemName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.id?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+    if (selectedReason !== 'all') {
+      filtered = filtered.filter(t => t.cancellationReason === selectedReason)
+    }
+    if (selectedStaff !== 'all') {
+      filtered = filtered.filter(t => t.cancelledBy === selectedStaff)
+    }
+    setFilteredTransactions(filtered)
+  }
+
+  const exportToCSV = () => {
+    const headers = ['Transaction ID', 'Date', 'Item', 'Customer', 'Phone', 'Email', 'Amount', 'Reason', 'Cancelled By']
+    const rows = filteredTransactions.map(t => [
+      t.id, format(new Date(t.cancelledAt || t.timestamp), 'yyyy-MM-dd HH:mm'), t.itemName,
+      t.customerName || 'N/A', t.customerPhone || 'N/A', t.customerEmail || 'N/A',
+      `₱${t.totalRevenue?.toFixed(2)}`, t.cancellationReason || 'N/A', t.cancelledBy || 'N/A'
+    ])
+    const csv = [headers, ...rows].map(row => row.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `cancelled-orders-${format(new Date(), 'yyyy-MM-dd')}.csv`
+    a.click()
+    toast.success('Exported successfully')
+  }
+
+  const clearFilters = () => {
+    setSearchTerm('')
+    setSelectedReason('all')
+    setSelectedStaff('all')
+    toast.success('Filters cleared')
+  }
+
+  const totalCancelled = filteredTransactions.length
+  const totalValue = filteredTransactions.reduce((sum, t) => sum + (t.totalRevenue || 0), 0)
+  const uniqueReasons = Array.from(new Set(transactions.map(t => t.cancellationReason).filter(Boolean)))
+  const uniqueStaff = Array.from(new Set(transactions.map(t => t.cancelledBy).filter(Boolean)))
+  const reasonStats = uniqueReasons.map(reason => ({
+    reason, count: transactions.filter(t => t.cancellationReason === reason).length
+  })).sort((a, b) => b.count - a.count)
+
+  if (loading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <div className="text-center">
+          <div className="relative inline-block">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-200 dark:border-slate-700"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-600 border-t-transparent absolute top-0 left-0"></div>
+          </div>
+          <p className="mt-6 text-slate-600 dark:text-slate-400 font-medium">Loading cancelled orders...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 md:p-6">
+      <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-6">
+        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+          <span>Dashboard</span>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-slate-900 dark:text-white font-medium">Cancelled Orders</span>
+        </div>
+
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Cancelled Orders
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-1">
+              Enterprise-grade tracking and analysis
+            </p>
+          </div>
+          <Button onClick={fetchCancelledOrders} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+
+        <div className="grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-4">
+          <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">Total</CardTitle>
+              <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <XCircle className="h-4 w-4 md:h-5 md:w-5 text-red-600 dark:text-red-400" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{totalCancelled}</div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                {((totalCancelled / (transactions.length || 1)) * 100).toFixed(1)}% rate
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">Lost</CardTitle>
+              <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-amber-600 dark:text-amber-400" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white">₱{(totalValue/1000).toFixed(1)}k</div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Revenue impact</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">Top</CardTitle>
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <AlertCircle className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{reasonStats[0]?.count || 0}</div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">{reasonStats[0]?.reason || 'N/A'}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">Avg</CardTitle>
+              <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-green-600 dark:text-green-400" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white">
+                ₱{(totalValue / (totalCancelled || 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Per order</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
+          <CardHeader>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <CardTitle className="text-lg">Filters</CardTitle>
+                <CardDescription>Refine your search</CardDescription>
+              </div>
+              <Button onClick={clearFilters} variant="ghost" size="sm">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Clear
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-5">
+              <div className="relative md:col-span-2">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-10" />
+              </div>
+              <Select value={selectedReason} onValueChange={setSelectedReason}>
+                <SelectTrigger className="h-10"><SelectValue placeholder="All Reasons" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Reasons</SelectItem>
+                  {uniqueReasons.map(reason => <SelectItem key={reason} value={reason!}>{reason}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={selectedStaff} onValueChange={setSelectedStaff}>
+                <SelectTrigger className="h-10"><SelectValue placeholder="All Staff" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Staff</SelectItem>
+                  {uniqueStaff.map(staff => <SelectItem key={staff} value={staff!}>{staff}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Button onClick={exportToCSV} variant="default" className="h-10">
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-4 md:gap-6 lg:grid-cols-3">
+          <Card className="lg:col-span-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg">Transactions ({filteredTransactions.length})</CardTitle>
+              <CardDescription>All cancelled orders</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {filteredTransactions.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-12">
+                  <XCircle className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+                  <p className="text-slate-500 dark:text-slate-400">No cancelled orders found</p>
+                </div>
+              ) : (
+                <>
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div className="max-h-[600px] overflow-y-auto">
+                      <Table>
+                        <TableHeader className="bg-slate-50 dark:bg-slate-900 sticky top-0">
+                          <TableRow>
+                            <TableHead className="font-semibold">Transaction</TableHead>
+                            <TableHead className="font-semibold">Customer</TableHead>
+                            <TableHead className="font-semibold">Amount</TableHead>
+                            <TableHead className="font-semibold">Reason</TableHead>
+                            <TableHead className="font-semibold">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredTransactions.map((transaction) => (
+                            <TableRow key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium text-slate-900 dark:text-white">{transaction.itemName}</p>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">{transaction.id}</p>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    {format(new Date(transaction.cancelledAt || transaction.timestamp), 'MMM dd, yyyy HH:mm')}
+                                  </p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium text-slate-900 dark:text-white">{transaction.customerName || 'Walk-in'}</p>
+                                  {transaction.customerPhone && (
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">{transaction.customerPhone}</p>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <span className="font-semibold text-slate-900 dark:text-white">
+                                  ₱{transaction.totalRevenue?.toFixed(2)}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="text-xs">
+                                  {transaction.cancellationReason || 'N/A'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button variant="ghost" size="sm" onClick={() => setSelectedTransaction(transaction)}>
+                                      View Details
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                                    <DialogHeader className="border-b pb-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 -m-6 mb-0 p-6">
+                                      <div className="flex items-start gap-4">
+                                        <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                                          <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                                        </div>
+                                        <div className="flex-1">
+                                          <DialogTitle className="text-2xl font-bold">Cancelled Order Details</DialogTitle>
+                                          <DialogDescription className="mt-1">
+                                            Complete transaction and customer information
+                                          </DialogDescription>
+                                        </div>
+                                      </div>
+                                    </DialogHeader>
+                                    {selectedTransaction && (
+                                      <div className="space-y-6 py-6">
+                                        {/* Transaction Summary Card */}
+                                        <div className="p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                                          <div className="flex items-start justify-between mb-4">
+                                            <div>
+                                              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{selectedTransaction.itemName}</h3>
+                                              <p className="text-sm text-slate-500 dark:text-slate-400 font-mono mt-1">{selectedTransaction.id}</p>
+                                            </div>
+                                            <Badge variant="destructive" className="text-sm px-3 py-1">
+                                              Cancelled
+                                            </Badge>
+                                          </div>
+                                          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                                            <div>
+                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Quantity</p>
+                                              <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{selectedTransaction.quantity}</p>
+                                            </div>
+                                            <div>
+                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Amount</p>
+                                              <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">₱{selectedTransaction.totalRevenue?.toFixed(2)}</p>
+                                            </div>
+                                            <div>
+                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Date</p>
+                                              <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">
+                                                {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'MMM dd, yyyy')}
+                                              </p>
+                                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                                {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'HH:mm')}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* Customer Information Section */}
+                                        <div className="space-y-4">
+                                          <div className="flex items-center gap-3 pb-3 border-b">
+                                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                              <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                            </div>
+                                            <h4 className="text-lg font-bold text-slate-900 dark:text-white">Customer Information</h4>
+                                          </div>
+                                          <div className="grid grid-cols-2 gap-4">
+                                            <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Full Name</p>
+                                              <p className="font-semibold text-slate-900 dark:text-white">{selectedTransaction.customerName || 'Walk-in Customer'}</p>
+                                            </div>
+                                            <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Contact Number</p>
+                                              <p className="font-semibold text-slate-900 dark:text-white flex items-center">
+                                                <Phone className="mr-2 h-4 w-4 text-slate-400" />
+                                                {selectedTransaction.customerPhone || 'N/A'}
+                                              </p>
+                                            </div>
+                                            {selectedTransaction.customerEmail && (
+                                              <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Email Address</p>
+                                                <p className="font-semibold text-slate-900 dark:text-white flex items-center text-sm">
+                                                  <Mail className="mr-2 h-4 w-4 text-slate-400" />
+                                                  {selectedTransaction.customerEmail}
+                                                </p>
+                                              </div>
+                                            )}
+                                            {selectedTransaction.customerAddress && (
+                                              <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 col-span-2">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Address</p>
+                                                <p className="font-semibold text-slate-900 dark:text-white flex items-start text-sm">
+                                                  <MapPin className="mr-2 h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                                                  {selectedTransaction.customerAddress}
+                                                </p>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        {/* Order Details Section */}
+                                        <div className="space-y-4">
+                                          <div className="flex items-center gap-3 pb-3 border-b">
+                                            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                                              <BarChart3 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                                            </div>
+                                            <h4 className="text-lg font-bold text-slate-900 dark:text-white">Order Details</h4>
+                                          </div>
+                                          <div className="grid grid-cols-2 gap-4">
+                                            <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 col-span-2">
+                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Product</p>
+                                              <p className="text-lg font-bold text-slate-900 dark:text-white">{selectedTransaction.itemName}</p>
+                                            </div>
+                                            <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Quantity</p>
+                                              <p className="text-2xl font-bold text-slate-900 dark:text-white">{selectedTransaction.quantity}</p>
+                                            </div>
+                                            <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Unit Price</p>
+                                              <p className="text-2xl font-bold text-slate-900 dark:text-white">₱{selectedTransaction.sellingPrice?.toFixed(2)}</p>
+                                            </div>
+                                            <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-lg border-2 border-amber-200 dark:border-amber-800 col-span-2">
+                                              <p className="text-xs text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-2 font-semibold">Total Amount</p>
+                                              <p className="text-3xl font-bold text-amber-900 dark:text-amber-300">₱{selectedTransaction.totalRevenue?.toFixed(2)}</p>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* Cancellation Information Section */}
+                                        <div className="space-y-4">
+                                          <div className="flex items-center gap-3 pb-3 border-b">
+                                            <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                                              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                                            </div>
+                                            <h4 className="text-lg font-bold text-slate-900 dark:text-white">Cancellation Information</h4>
+                                          </div>
+                                          <div className="space-y-4">
+                                            <div className="p-4 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-200 dark:border-red-800">
+                                              <p className="text-xs text-red-700 dark:text-red-400 uppercase tracking-wide mb-2 font-semibold">Reason</p>
+                                              <Badge variant="destructive" className="text-base px-4 py-2">
+                                                {selectedTransaction.cancellationReason || 'N/A'}
+                                              </Badge>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                              <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Cancelled By</p>
+                                                <p className="font-semibold text-slate-900 dark:text-white">{selectedTransaction.cancelledBy || 'N/A'}</p>
+                                              </div>
+                                              <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Cancelled At</p>
+                                                <p className="font-semibold text-slate-900 dark:text-white text-sm">
+                                                  {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'PPpp')}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            {selectedTransaction.notes && (
+                                              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Additional Notes</p>
+                                                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{selectedTransaction.notes}</p>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </DialogContent>
+                                </Dialog>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="md:hidden space-y-3">
+                    {filteredTransactions.map((transaction) => (
+                      <div key={transaction.id} className="border-b last:border-0 pb-3 last:pb-0">
+                        <Dialog>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-slate-900 dark:text-white truncate">{transaction.itemName}</h3>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1">{transaction.id}</p>
+                              <div className="flex items-center gap-3 mt-2">
+                                <span className="text-sm font-medium">{transaction.customerName || 'Walk-in'}</span>
+                                <span className="text-sm font-bold">₱{transaction.totalRevenue?.toFixed(2)}</span>
+                              </div>
+                              <Badge variant="outline" className="text-xs mt-2">{transaction.cancellationReason || 'N/A'}</Badge>
+                            </div>
+                            <DialogTrigger asChild>
+                              <Button variant="ghost" size="sm" onClick={() => setSelectedTransaction(transaction)}>View</Button>
+                            </DialogTrigger>
+                          </div>
+                        <DialogContent className="max-w-[95vw] md:max-w-3xl max-h-[90vh] overflow-y-auto">
+                          <DialogHeader className="border-b pb-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 -m-6 mb-0 p-6">
+                            <div className="flex items-start gap-3">
+                              <div className="p-2.5 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                                <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                              </div>
+                              <div className="flex-1">
+                                <DialogTitle className="text-xl font-bold">Cancelled Order Details</DialogTitle>
+                                <DialogDescription className="mt-1 text-sm">
+                                  Complete transaction and customer information
+                                </DialogDescription>
+                              </div>
+                            </div>
+                          </DialogHeader>
+                          {selectedTransaction && (
+                            <div className="space-y-5 py-5">
+                              {/* Transaction Summary Card */}
+                              <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <div className="flex items-start justify-between mb-3">
+                                  <div>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">{selectedTransaction.itemName}</h3>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1">{selectedTransaction.id}</p>
+                                  </div>
+                                  <Badge variant="destructive" className="text-xs px-2.5 py-1">
+                                    Cancelled
+                                  </Badge>
+                                </div>
+                                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                                  <div>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Qty</p>
+                                    <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{selectedTransaction.quantity}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Amount</p>
+                                    <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">₱{selectedTransaction.totalRevenue?.toFixed(2)}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Date</p>
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">
+                                      {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'MMM dd')}
+                                    </p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                                      {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'HH:mm')}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Customer Information Section */}
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-2.5 pb-2.5 border-b">
+                                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                    <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                  </div>
+                                  <h4 className="text-base font-bold text-slate-900 dark:text-white">Customer Information</h4>
+                                </div>
+                                <div className="space-y-2.5">
+                                  <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Full Name</p>
+                                    <p className="font-semibold text-slate-900 dark:text-white">{selectedTransaction.customerName || 'Walk-in Customer'}</p>
+                                  </div>
+                                  <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Contact Number</p>
+                                    <p className="font-semibold text-slate-900 dark:text-white flex items-center">
+                                      <Phone className="mr-2 h-3.5 w-3.5 text-slate-400" />
+                                      {selectedTransaction.customerPhone || 'N/A'}
+                                    </p>
+                                  </div>
+                                  {selectedTransaction.customerEmail && (
+                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Email Address</p>
+                                      <p className="font-semibold text-slate-900 dark:text-white flex items-center text-sm break-all">
+                                        <Mail className="mr-2 h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                                        {selectedTransaction.customerEmail}
+                                      </p>
+                                    </div>
+                                  )}
+                                  {selectedTransaction.customerAddress && (
+                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Address</p>
+                                      <p className="font-semibold text-slate-900 dark:text-white flex items-start text-sm">
+                                        <MapPin className="mr-2 h-3.5 w-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
+                                        {selectedTransaction.customerAddress}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Order Details Section */}
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-2.5 pb-2.5 border-b">
+                                  <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                                    <BarChart3 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                  </div>
+                                  <h4 className="text-base font-bold text-slate-900 dark:text-white">Order Details</h4>
+                                </div>
+                                <div className="space-y-2.5">
+                                  <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Product</p>
+                                    <p className="text-base font-bold text-slate-900 dark:text-white">{selectedTransaction.itemName}</p>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2.5">
+                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Quantity</p>
+                                      <p className="text-xl font-bold text-slate-900 dark:text-white">{selectedTransaction.quantity}</p>
+                                    </div>
+                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Unit Price</p>
+                                      <p className="text-xl font-bold text-slate-900 dark:text-white">₱{selectedTransaction.sellingPrice?.toFixed(2)}</p>
+                                    </div>
+                                  </div>
+                                  <div className="p-3 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-lg border-2 border-amber-200 dark:border-amber-800">
+                                    <p className="text-xs text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-1.5 font-semibold">Total Amount</p>
+                                    <p className="text-2xl font-bold text-amber-900 dark:text-amber-300">₱{selectedTransaction.totalRevenue?.toFixed(2)}</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Cancellation Information Section */}
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-2.5 pb-2.5 border-b">
+                                  <div className="p-1.5 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                                    <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                  </div>
+                                  <h4 className="text-base font-bold text-slate-900 dark:text-white">Cancellation Information</h4>
+                                </div>
+                                <div className="space-y-2.5">
+                                  <div className="p-3 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-200 dark:border-red-800">
+                                    <p className="text-xs text-red-700 dark:text-red-400 uppercase tracking-wide mb-2 font-semibold">Reason</p>
+                                    <Badge variant="destructive" className="text-sm px-3 py-1.5">
+                                      {selectedTransaction.cancellationReason || 'N/A'}
+                                    </Badge>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2.5">
+                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Cancelled By</p>
+                                      <p className="font-semibold text-slate-900 dark:text-white text-sm">{selectedTransaction.cancelledBy || 'N/A'}</p>
+                                    </div>
+                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Cancelled At</p>
+                                      <p className="font-semibold text-slate-900 dark:text-white text-xs">
+                                        {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'MMM dd, yyyy')}
+                                      </p>
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                        {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'HH:mm')}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  {selectedTransaction.notes && (
+                                    <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Additional Notes</p>
+                                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{selectedTransaction.notes}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            </CardContent>
+          </Card>
+
+          <div className="space-y-4 md:space-y-6">
+            <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg">Top Reasons</CardTitle>
+                <CardDescription>Most common</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {reasonStats.slice(0, 5).map((stat, index) => (
+                    <div key={stat.reason} className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-bold shadow-lg flex-shrink-0">
+                          {index + 1}
+                        </div>
+                        <span className="text-sm font-medium truncate">{stat.reason}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 flex-shrink-0">
+                        <Badge variant="secondary" className="text-xs">{stat.count}</Badge>
+                        <span className="text-xs text-slate-500 w-10 text-right">{((stat.count / totalCancelled) * 100).toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 dark:border-slate-700 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg">Insights</CardTitle>
+                <CardDescription>Key observations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3">
+                    <div className="flex items-start space-x-2">
+                      <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm">Rate</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                          {((totalCancelled / (transactions.length || 1)) * 100).toFixed(1)}% cancelled
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {reasonStats[0] && (
+                    <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3">
+                      <div className="flex items-start space-x-2">
+                        <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm">Top Issue</p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                            "{reasonStats[0].reason}" - {reasonStats[0].count} cases
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -8,6 +8,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser, hasPermission, type UserRole } from './auth'
 
+// Re-export UserRole for use in API helpers
+export type { UserRole }
+
 export interface AuthenticatedRequest extends NextRequest {
   user?: {
     username: string

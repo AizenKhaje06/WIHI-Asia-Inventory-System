@@ -1,6 +1,6 @@
 /**
- * Server-side caching utility for Google Sheets API calls
- * Reduces API calls by 90% and improves response times
+ * Server-side caching utility for database calls
+ * Reduces database queries and improves response times
  */
 
 interface CacheEntry<T> {

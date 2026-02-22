@@ -10,12 +10,17 @@ export const GET = withAuth(async (request, { user }) => {
     const searchParams = request.nextUrl.searchParams
     const search = searchParams.get("search")
 
-    // Use caching for inventory items (2 minute TTL)
-    const items = await getCachedData(
-      'inventory-items',
-      () => getInventoryItems(),
-      2 * 60 * 1000 // 2 minutes
-    )
+    let items
+    try {
+      items = await getCachedData(
+        'inventory-items',
+        () => getInventoryItems(),
+        2 * 60 * 1000 // 2 minutes
+      )
+    } catch (dbError) {
+      console.error("[API] Database error fetching items (returning empty list):", dbError)
+      return NextResponse.json([])
+    }
 
     if (search) {
       const searchLower = search.toLowerCase()

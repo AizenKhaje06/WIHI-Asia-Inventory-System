@@ -1,6 +1,6 @@
 # Inventory Pro - Professional Inventory Management System
 
-A full-stack inventory management system built with Next.js, TypeScript, and Google Sheets integration.
+A full-stack inventory management system built with Next.js, TypeScript, and Supabase.
 
 ## Features
 
@@ -8,63 +8,36 @@ A full-stack inventory management system built with Next.js, TypeScript, and Goo
 - **Inventory Management** - Add, edit, and delete inventory items
 - **Point of Sale** - Process sales with cart functionality
 - **Sales Reports** - View COGS, profit margins, and sales analytics
-- **Google Sheets Integration** - All data stored in Google Sheets
+- **Transaction Cancellation** - Cancel transactions with automatic inventory restoration
+- **Supabase Database** - All data stored in Supabase PostgreSQL database
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14, React, TypeScript
+- **Frontend**: Next.js 15, React 19, TypeScript
 - **Styling**: Tailwind CSS v4
-- **Database**: Google Sheets API
+- **Database**: Supabase (PostgreSQL)
 - **Deployment**: Vercel
 
 ## Setup Instructions
 
-### 1. Google Cloud Setup
+### 1. Supabase Setup
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+1. Go to [Supabase](https://app.supabase.com/)
 2. Create a new project
-3. Enable the Google Sheets API
-4. Create a service account:
-   - Go to IAM & Admin > Service Accounts
-   - Click "Create Service Account"
-   - Download the JSON credentials file
+3. Run the database migrations from the `supabase/migrations` folder in your Supabase SQL Editor
+4. Get your project credentials from Settings > API
 
-### 2. Google Sheets Setup
+### 3. Environment Variables
 
-1. Create a new Google Sheets document
-2. Create four sheets named exactly:
-   - **Inventory** with columns: `ID | Name | Category | Quantity | Total COGS | Cost Price | Selling Price | Reorder Level | Storage Room | Last Updated`
-   - **Transactions** with columns: `ID | Item ID | Item Name | Quantity | Cost Price | Selling Price | Total Cost | Profit | Timestamp | Department`
-   - **Logs** with columns: `ID | Operation | Item ID | Item Name | Details | Timestamp`
-   - **Restock** with columns: `ID | Item ID | Item Name | Quantity Added | Cost Price | Total Cost | Timestamp | Reason`
-3. Share the sheet with your Google account (the one you'll use for OAuth)
-
-### 3. OAuth 2.0 Setup
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create/select a project
-3. Enable **Google Sheets API**
-4. Go to **Credentials** > **Create Credentials** > **OAuth 2.0 Client IDs**
-5. Set application type to **Web application**
-6. Add authorized redirect URIs: `http://localhost:3000` (for development) and your production URL
-7. Download the client configuration JSON
-
-### 4. Get Refresh Token
-
-You'll need to obtain a refresh token. You can use a tool like [google-oauth2-refresh-token](https://github.com/googleapis/google-auth-library-nodejs#oauth2) or create a simple script to get it.
-
-### 5. Environment Variables
-
-Add these to your `.env.local`:
+Copy `.env.example` to `.env.local` and add your Supabase credentials:
 
 \`\`\`env
-GOOGLE_SHEET_ID=your_sheet_id_here
-GOOGLE_CLIENT_ID=your_oauth_client_id
-GOOGLE_CLIENT_SECRET=your_oauth_client_secret
-GOOGLE_REFRESH_TOKEN=your_refresh_token
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 \`\`\`
 
-**Note**: The `GOOGLE_SHEET_ID` is found in your Google Sheets URL: `https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit`
+**Note**: Get your Supabase credentials from: https://app.supabase.com/project/_/settings/api
 
 ### 4. Deploy to Vercel
 

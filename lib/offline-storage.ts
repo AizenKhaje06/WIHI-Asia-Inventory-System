@@ -242,7 +242,8 @@ class OfflineStorage {
       const transaction = this.db!.transaction(['syncQueue'], 'readwrite')
       const store = transaction.objectStore('syncQueue')
       const index = store.index('synced')
-      const request = index.openCursor(true)
+      // Use IDBKeyRange to query for synced items (synced = true)
+      const request = index.openCursor(IDBKeyRange.only(true))
 
       request.onsuccess = (event) => {
         const cursor = (event.target as IDBRequest).result

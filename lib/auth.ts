@@ -33,6 +33,7 @@ export const ROLE_PERMISSIONS = {
     '/dashboard/sales-channels/**',
     '/dashboard/customers',
     '/dashboard/reports',
+    '/dashboard/cancelled-orders',
     '/dashboard/insights',
     '/dashboard/inventory/**',
     '/dashboard/pos',

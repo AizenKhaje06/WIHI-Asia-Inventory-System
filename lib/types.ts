@@ -33,10 +33,18 @@ export interface Transaction {
   department?: string
   customerId?: string
   customerName?: string
+  customerPhone?: string // NEW: Customer contact number
+  customerEmail?: string // NEW: Customer email
+  customerAddress?: string // NEW: Customer address
   discount?: number
   discountAmount?: number
   staffName?: string
   notes?: string
+  // Transaction status tracking
+  status?: "completed" | "cancelled" | "returned" | "pending"
+  cancellationReason?: string
+  cancelledBy?: string
+  cancelledAt?: string
 }
 
 export interface Customer {
@@ -136,6 +144,11 @@ export interface DashboardStats {
   yesterdaySales?: number
   lastWeekSales?: number
   lastMonthSales?: number
+  // Cancelled orders tracking
+  totalCancelledOrders?: number
+  cancelledOrdersValue?: number
+  cancellationRate?: number
+  topCancellationReasons?: { reason: string; count: number }[]
 }
 
 export interface Log {
@@ -146,6 +159,12 @@ export interface Log {
   details: string
   timestamp: string
   staffName?: string
+  quantity?: number // NEW: Quantity for inventory restoration
+  // Transaction status tracking
+  status?: "completed" | "cancelled" | "returned" | "pending"
+  cancellationReason?: string
+  cancelledBy?: string
+  cancelledAt?: string
 }
 
 export interface Restock {

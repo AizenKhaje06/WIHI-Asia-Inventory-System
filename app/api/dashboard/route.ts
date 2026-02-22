@@ -4,14 +4,15 @@ import { getInventoryItems, getTransactions, getRestocks } from "@/lib/supabase-
 import { getCachedData } from "@/lib/cache"
 import type { DashboardStats, Transaction, InventoryItem } from "@/lib/types"
 
-// Helper function to parse timestamp - handle both ISO and Google Sheets format
+// Helper function to parse timestamp - handle ISO format from Supabase
+// Also supports legacy format for backward compatibility with old data
 function parseTimestamp(timestamp: string): Date {
   // Try ISO format first (from Supabase): "2026-02-02T18:32:00"
   if (timestamp.includes('T')) {
     return new Date(timestamp)
   }
   
-  // Fall back to Google Sheets format: "YYYY-MM-DD / H:MM AM/PM"
+  // Fall back to legacy format: "YYYY-MM-DD / H:MM AM/PM" (for old data)
   const parts = timestamp.split(' / ')
   if (parts.length !== 2) {
     // If neither format matches, try direct Date parsing
@@ -42,31 +43,80 @@ function parseTimestamp(timestamp: string): Date {
   return new Date(year, month - 1, day, hours, minutes)
 }
 
+// Empty dashboard stats when database is unavailable (so the page still loads)
+function emptyDashboardStats(): DashboardStats {
+  return {
+    totalItems: 0,
+    lowStockItems: 0,
+    totalValue: 0,
+    recentSales: 0,
+    totalRevenue: 0,
+    totalCost: 0,
+    totalProfit: 0,
+    profitMargin: 0,
+    salesOverTime: [],
+    topProducts: [],
+    recentTransactions: [],
+    topCategories: [],
+    totalCategories: 0,
+    totalProducts: 0,
+    stockPercentageByCategory: [],
+    stocksCountByCategory: [],
+    stocksCountByStorageRoom: [],
+    totalSales: 0,
+    returnRate: 0,
+    damagedReturnRate: 0,
+    supplierReturnRate: 0,
+    totalReturns: 0,
+    returnValue: 0,
+    itemsSoldToday: 0,
+    revenueToday: 0,
+    supplierReturns: [],
+    recentRestocks: [],
+    averageOrderValue: 0,
+    outOfStockCount: 0,
+    inventoryHealthScore: 100,
+    insights: [],
+    salesVelocity: 0,
+    yesterdaySales: 0,
+    lastWeekSales: 0,
+    lastMonthSales: 0,
+    totalCancelledOrders: 0,
+    cancelledOrdersValue: 0,
+    cancellationRate: 0,
+    topCancellationReasons: [],
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || 'ID'
 
-    // Cache dashboard data with period-specific keys (1 minute TTL for real-time feel)
-    const cacheKey = `dashboard-${period}`
-    
-    const items = await getCachedData(
-      'inventory-items',
-      () => getInventoryItems(),
-      60000 // 1 minute
-    )
-    
-    const transactions = await getCachedData(
-      'transactions',
-      () => getTransactions(),
-      60000 // 1 minute
-    )
-    
-    const restockHistory = await getCachedData(
-      'restocks',
-      () => getRestocks(),
-      60000 // 1 minute
-    )
+    let items: InventoryItem[] = []
+    let transactions: Transaction[] = []
+    let restockHistory: any[] = []
+
+    try {
+      items = await getCachedData(
+        'inventory-items',
+        () => getInventoryItems(),
+        60000 // 1 minute
+      )
+      transactions = await getCachedData(
+        'transactions',
+        () => getTransactions(),
+        60000 // 1 minute
+      )
+      restockHistory = await getCachedData(
+        'restocks',
+        () => getRestocks(),
+        60000 // 1 minute
+      )
+    } catch (dbError) {
+      console.error("[Dashboard API] Database error (returning empty stats):", dbError)
+      return NextResponse.json(emptyDashboardStats())
+    }
 
     const totalItems = items.length
     const lowStockItems = items.filter((item: InventoryItem) => item.quantity <= item.reorderLevel).length
@@ -86,21 +136,21 @@ export async function GET(request: Request) {
     
     const recentSales = transactions.filter((t: Transaction) => {
       const tDate = parseTimestamp(t.timestamp)
-      return t.type === "sale" && t.transactionType === "sale" && tDate >= today && tDate <= todayEnd
+      return t.type === "sale" && t.transactionType === "sale" && t.status !== "cancelled" && tDate >= today && tDate <= todayEnd
     }).length
 
-    // Items sold today (quantity)
+    // Items sold today (quantity, excluding cancelled)
     const itemsSoldToday = transactions
       .filter((t: Transaction) => {
         const tDate = parseTimestamp(t.timestamp)
-        return t.type === "sale" && t.transactionType === "sale" && tDate >= today && tDate <= todayEnd
+        return t.type === "sale" && t.transactionType === "sale" && t.status !== "cancelled" && tDate >= today && tDate <= todayEnd
       })
       .reduce((sum, t) => sum + t.quantity, 0)
     
-    // Revenue today
+    // Revenue today (excluding cancelled)
     const todayTransactions = transactions.filter((t: Transaction) => {
       const tDate = parseTimestamp(t.timestamp)
-      const matches = t.type === "sale" && t.transactionType === "sale" && tDate >= today && tDate <= todayEnd
+      const matches = t.type === "sale" && t.transactionType === "sale" && t.status !== "cancelled" && tDate >= today && tDate <= todayEnd
       if (matches) {
         console.log('[Dashboard API] Today transaction:', {
           itemName: t.itemName,
@@ -168,7 +218,7 @@ export async function GET(request: Request) {
         
         const sales = transactions.filter((t: Transaction) => {
           const tDate = parseTimestamp(t.timestamp)
-          return t.type === "sale" && t.transactionType === "sale" && tDate >= day && tDate < nextDay
+          return t.type === "sale" && t.transactionType === "sale" && t.status !== "cancelled" && tDate >= day && tDate < nextDay
         }).reduce((sum, t) => sum + t.totalRevenue, 0)
         
         const purchases = transactions.filter((t: Transaction) => {
@@ -195,7 +245,7 @@ export async function GET(request: Request) {
         
         const sales = transactions.filter((t: Transaction) => {
           const tDate = parseTimestamp(t.timestamp)
-          return t.type === "sale" && t.transactionType === "sale" && tDate >= day && tDate < nextDay
+          return t.type === "sale" && t.transactionType === "sale" && t.status !== "cancelled" && tDate >= day && tDate < nextDay
         }).reduce((sum, t) => sum + t.totalRevenue, 0)
         
         const purchases = transactions.filter((t: Transaction) => {
@@ -206,6 +256,13 @@ export async function GET(request: Request) {
         return { date: dayStr, purchases, sales }
       })
     }
+
+    // IMPORTANT: Exclude cancelled orders from revenue calculations (define this first!)
+    const completedTransactions = transactions.filter((t: Transaction) => 
+      t.type === "sale" && 
+      t.transactionType === "sale" && 
+      t.status !== "cancelled"
+    )
 
     // Top products (top 4 by sales count) with revenue
     const productSales = transactions
@@ -227,16 +284,15 @@ export async function GET(request: Request) {
         revenue: data.revenue
       }))
 
-    // Recent transactions (last 5 sales)
-    const recentTransactions = transactions
-      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale")
+    // Recent transactions (last 5 sales, excluding cancelled)
+    const recentTransactions = completedTransactions
       .sort((a: Transaction, b: Transaction) => parseTimestamp(b.timestamp).getTime() - parseTimestamp(a.timestamp).getTime())
       .slice(0, 5)
 
-    // Top categories (top 3 by sales)
+    // Top categories (top 3 by sales, excluding cancelled)
     const categorySales = items.reduce((acc: { [key: string]: number }, item: InventoryItem) => {
-      const sales = transactions
-        .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale" && t.itemName === item.name)
+      const sales = completedTransactions
+        .filter((t: Transaction) => t.itemName === item.name)
         .reduce((sum, t) => sum + t.quantity, 0)
       acc[item.category] = (acc[item.category] || 0) + sales
       return acc
@@ -250,16 +306,43 @@ export async function GET(request: Request) {
     const totalCategories = new Set(items.map((item: InventoryItem) => item.category)).size
     const totalProducts = totalItems
 
-    // Calculate financial metrics (only actual sales, not demo/internal)
-    const totalRevenue = transactions
-      .filter((t: Transaction) => t.type === "sale" && t.transactionType === "sale")
-      .reduce((sum, t) => sum + t.totalRevenue, 0)
+    // Calculate financial metrics (only actual sales, not demo/internal, excluding cancelled)
+    const totalRevenue = completedTransactions.reduce((sum, t) => sum + t.totalRevenue, 0)
 
     const totalCost = transactions.reduce((sum, t) => sum + t.totalCost, 0)
 
     const totalProfit = totalRevenue - totalCost
 
     const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
+
+    // Cancelled orders metrics
+    const cancelledTransactions = transactions.filter((t: Transaction) => 
+      t.type === "sale" && 
+      t.transactionType === "sale" && 
+      t.status === "cancelled"
+    ) || []
+
+    const totalCancelledOrders = cancelledTransactions.length || 0
+    const cancelledOrdersValue = cancelledTransactions.reduce((sum, t) => sum + (t.totalRevenue || 0), 0)
+
+    const totalOrders = transactions.filter((t: Transaction) => 
+      t.type === "sale" && 
+      t.transactionType === "sale"
+    ).length || 0
+
+    const cancellationRate = totalOrders > 0 ? (totalCancelledOrders / totalOrders) * 100 : 0
+
+    // Top cancellation reasons
+    const cancellationReasons = cancelledTransactions.reduce((acc: { [key: string]: number }, t: Transaction) => {
+      const reason = t.cancellationReason || 'unknown'
+      acc[reason] = (acc[reason] || 0) + 1
+      return acc
+    }, {})
+
+    const topCancellationReasons = Object.entries(cancellationReasons)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .slice(0, 5)
+      .map(([reason, count]) => ({ reason, count: count as number })) || []
 
     // Stock percentage by category (percentage of total stock value)
     const stockValueByCategory = items.reduce((acc: { [key: string]: number }, item: InventoryItem) => {
@@ -329,8 +412,7 @@ export async function GET(request: Request) {
     // Use overall return rate: total returns / total sales
     const returns = restockHistory.filter(r => r.reason === 'damaged-return' || r.reason === 'supplier-return')
     const totalReturns = returns.reduce((sum, r) => sum + r.quantity, 0)
-    const totalSales = transactions
-      .filter((t: Transaction) => t.type === 'sale' && t.transactionType === 'sale')
+    const totalSales = completedTransactions
       .reduce((sum, t) => sum + t.quantity, 0)
     const returnRate = totalSales > 0 ? (totalReturns / totalSales) * 100 : 0
     
@@ -416,7 +498,7 @@ export async function GET(request: Request) {
     
     const yesterdayTransactions = transactions.filter((t: Transaction) => {
       const tDate = parseTimestamp(t.timestamp)
-      const matches = t.type === "sale" && t.transactionType === "sale" && tDate >= yesterday && tDate < yesterdayEnd
+      const matches = t.type === "sale" && t.transactionType === "sale" && t.status !== "cancelled" && tDate >= yesterday && tDate < yesterdayEnd
       if (matches) {
         console.log('[Dashboard API] Yesterday transaction:', {
           itemName: t.itemName,
@@ -446,7 +528,7 @@ export async function GET(request: Request) {
     const lastWeekSales = transactions
       .filter((t: Transaction) => {
         const tDate = parseTimestamp(t.timestamp)
-        return t.type === "sale" && t.transactionType === "sale" && tDate >= lastWeekStart && tDate < lastWeekEnd
+        return t.type === "sale" && t.transactionType === "sale" && t.status !== "cancelled" && tDate >= lastWeekStart && tDate < lastWeekEnd
       })
       .reduce((sum, t) => sum + t.totalRevenue, 0)
 
@@ -459,7 +541,7 @@ export async function GET(request: Request) {
     const lastMonthSales = transactions
       .filter((t: Transaction) => {
         const tDate = parseTimestamp(t.timestamp)
-        return t.type === "sale" && t.transactionType === "sale" && tDate >= lastMonthStart && tDate < lastMonthEnd
+        return t.type === "sale" && t.transactionType === "sale" && t.status !== "cancelled" && tDate >= lastMonthStart && tDate < lastMonthEnd
       })
       .reduce((sum, t) => sum + t.totalRevenue, 0)
 
@@ -499,11 +581,26 @@ export async function GET(request: Request) {
       yesterdaySales,
       lastWeekSales,
       lastMonthSales,
+      // Cancelled orders tracking
+      totalCancelledOrders,
+      cancelledOrdersValue,
+      cancellationRate,
+      topCancellationReasons,
     }
 
     return NextResponse.json(stats)
   } catch (error) {
     console.error("[Dashboard API] Error:", error)
-    return NextResponse.json({ error: "Failed to fetch dashboard stats" }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
+    console.error("[Dashboard API] Error details:", {
+      message: errorMessage,
+      stack: errorStack,
+      name: error instanceof Error ? error.name : undefined
+    })
+    return NextResponse.json({ 
+      error: "Failed to fetch dashboard stats",
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+    }, { status: 500 })
   }
 }

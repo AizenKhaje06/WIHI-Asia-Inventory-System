@@ -3,15 +3,23 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { DateRangePicker } from "@/components/ui/date-range-picker"
 import { 
   BarChart3, Package, TrendingUp, 
-  FileSpreadsheet, FileDown, ChevronRight
+  FileSpreadsheet, FileDown, ChevronRight, CheckCircle2, XCircle, RotateCcw, Clock, AlertCircle, User
 } from "lucide-react"
 import type { SalesReport } from "@/lib/types"
 import { toast } from "sonner"
 import { formatNumber, formatCurrency, cn } from "@/lib/utils"
 import { apiGet } from "@/lib/api-client"
+import { getCurrentUser } from "@/lib/auth"
 import { 
   exportToExcel, 
   exportToPDF,
@@ -20,6 +28,33 @@ import {
   formatNumberForExport,
   formatPercentageForExport
 } from "@/lib/export-utils"
+
+// Helper function for status badges
+function getStatusBadge(status: string = 'completed') {
+  const styles = {
+    completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    returned: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    pending: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  }
+  
+  const icons = {
+    completed: CheckCircle2,
+    cancelled: XCircle,
+    returned: RotateCcw,
+    pending: Clock,
+  }
+  
+  const Icon = icons[status as keyof typeof icons] || CheckCircle2
+  const style = styles[status as keyof typeof styles] || styles.completed
+  
+  return (
+    <Badge className={cn("text-[10px] px-1.5 py-0.5 font-medium", style)}>
+      <Icon className="h-2.5 w-2.5 mr-1" />
+      {status.charAt(0).toUpperCase() + status.slice(1)}
+    </Badge>
+  )
+}
 
 export default function ReportsPage() {
   const [report, setReport] = useState<SalesReport | null>(null)
@@ -31,10 +66,25 @@ export default function ReportsPage() {
   const [items, setItems] = useState<any[]>([])
   const [activePreset, setActivePreset] = useState<string | null>(null)
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string>("all") // NEW: Status filter
+  
+  // Cancel transaction dialog state
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
+  const [cancelReason, setCancelReason] = useState("")
+  const [cancelNotes, setCancelNotes] = useState("")
+  const [cancelling, setCancelling] = useState(false)
+  // Customer information for cancelled orders
+  const [customerName, setCustomerName] = useState("")
+  const [customerPhone, setCustomerPhone] = useState("")
+  const [customerEmail, setCustomerEmail] = useState("")
+  const [customerAddress, setCustomerAddress] = useState("")
+  
+  const currentUser = getCurrentUser()
 
   useEffect(() => {
     loadAllData()
-  }, [startDate, endDate])
+  }, [startDate, endDate, statusFilter]) // Add statusFilter dependency
 
   async function loadAllData() {
     setLoading(true)
@@ -54,8 +104,21 @@ export default function ReportsPage() {
       const params = new URLSearchParams()
       if (startDate) params.append("startDate", startDate.toISOString().split('T')[0])
       if (endDate) params.append("endDate", endDate.toISOString().split('T')[0])
+      if (statusFilter && statusFilter !== "all") params.append("status", statusFilter) // Add status filter
+      // Add timestamp to bypass cache
+      params.append("_t", Date.now().toString())
 
       const data = await apiGet<SalesReport>(`/api/reports?${params}`)
+      
+      // DEBUG: Log first 3 transactions to see if status field exists
+      console.log('[Reports] Total transactions:', data.transactions?.length)
+      console.log('[Reports] First 3 transactions:', data.transactions?.slice(0, 3).map(t => ({
+        id: t.id,
+        itemName: t.itemName,
+        status: t.status,
+        timestamp: t.timestamp
+      })))
+      
       setReport(data)
     } catch (error) {
       console.error("[Reports] Error fetching report:", error)
@@ -77,6 +140,103 @@ export default function ReportsPage() {
       setItems(data)
     } catch (error) {
       console.error("[Reports] Error fetching items:", error)
+    }
+  }
+
+  // Cancel Transaction Handler
+  function openCancelDialog(transaction: any) {
+    setSelectedTransaction(transaction)
+    setCancelReason("")
+    setCancelNotes("")
+    setCustomerName(transaction.customerName || "")
+    setCustomerPhone("")
+    setCustomerEmail("")
+    setCustomerAddress("")
+    setShowCancelDialog(true)
+  }
+
+  async function handleCancelTransaction() {
+    if (!selectedTransaction || !cancelReason) {
+      toast.error("Please select a cancellation reason")
+      return
+    }
+
+    if (!customerName || !customerPhone) {
+      toast.error("Please provide customer name and phone number")
+      return
+    }
+
+    setCancelling(true)
+    try {
+      // Add auth headers
+      const headers = new Headers({
+        'Content-Type': 'application/json'
+      })
+      
+      // Add authentication headers from localStorage
+      const username = localStorage.getItem('username')
+      const role = localStorage.getItem('userRole')
+      const displayName = localStorage.getItem('displayName')
+      
+      if (username) headers.set('x-user-username', username)
+      if (role) headers.set('x-user-role', role)
+      if (displayName) headers.set('x-user-display-name', displayName)
+
+      console.log('[Reports] Cancelling transaction:', {
+        logId: selectedTransaction.id,
+        reason: cancelReason,
+        hasAuth: !!username
+      })
+
+      const response = await fetch('/api/logs/cancel', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          transactionId: selectedTransaction.id,
+          reason: cancelReason,
+          notes: cancelNotes,
+          staffName: currentUser?.displayName || 'Admin',
+          customerName,
+          customerPhone,
+          customerEmail,
+          customerAddress
+        })
+      })
+
+      console.log('[Reports] Response status:', response.status)
+      console.log('[Reports] Response headers:', Object.fromEntries(response.headers.entries()))
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        // Try to get response text for debugging
+        const text = await response.text()
+        console.error('[Reports] Non-JSON response:', text.substring(0, 500))
+        throw new Error(`Server returned non-JSON response (${response.status}). Check console for details.`)
+      }
+
+      const data = await response.json()
+      console.log('[Reports] Response data:', data)
+
+      if (response.ok) {
+        toast.success(`Transaction cancelled successfully. Restored ${data.restoredQuantity} items to inventory.`)
+        setShowCancelDialog(false)
+        setSelectedTransaction(null)
+        setCancelReason("")
+        setCancelNotes("")
+        
+        // Refresh data without full page reload
+        // Add cache-busting timestamp to force fresh data
+        await loadAllData()
+      } else {
+        toast.error(data.error || 'Failed to cancel transaction')
+      }
+    } catch (error) {
+      console.error('[Reports] Error cancelling transaction:', error)
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred while cancelling the transaction'
+      toast.error(errorMessage)
+    } finally {
+      setCancelling(false)
     }
   }
 
@@ -410,8 +570,70 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
 
-        {/* Report Type Cards - Premium Design */}
+        {/* Status Filter - NEW */}
         <Card className="lg:col-span-8 border-slate-200 dark:border-slate-800 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-white">
+              Transaction Status
+            </CardTitle>
+            <CardDescription className="text-xs">Filter transactions by their status</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full h-11">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <div className="flex items-center gap-2">
+                    <span>All Transactions</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="completed">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                    <span>Completed</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="cancelled">
+                  <div className="flex items-center gap-2">
+                    <XCircle className="h-3.5 w-3.5 text-red-600" />
+                    <span>Cancelled</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="returned">
+                  <div className="flex items-center gap-2">
+                    <RotateCcw className="h-3.5 w-3.5 text-amber-600" />
+                    <span>Returned</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="pending">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Pending</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {/* Status Info */}
+            <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                {statusFilter === "all" && "Showing all transactions. Revenue excludes cancelled orders."}
+                {statusFilter === "completed" && "Showing only completed transactions."}
+                {statusFilter === "cancelled" && "Showing only cancelled transactions for analysis."}
+                {statusFilter === "returned" && "Showing only returned transactions."}
+                {statusFilter === "pending" && "Showing only pending transactions."}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Report Type Selection */}
+      <div className="mb-8">
+        {/* Report Type Cards - Premium Design */}
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="text-sm font-semibold text-slate-900 dark:text-white">Select Report Type</CardTitle>
             <CardDescription className="text-xs">Choose the report you want to generate and export</CardDescription>
@@ -816,10 +1038,12 @@ export default function ReportsPage() {
                   <tr className="border-b border-slate-200 dark:border-slate-700">
                     <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[130px]">Date & Time</th>
                     <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[200px]">Item</th>
+                    <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[90px]">Status</th>
                     <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[60px]">Qty</th>
                     <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Revenue</th>
                     <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Cost</th>
                     <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Profit</th>
+                    <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[80px]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -847,6 +1071,9 @@ export default function ReportsPage() {
                       )}>
                         {transaction.itemName}
                       </td>
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        {getStatusBadge(transaction.status || 'completed')}
+                      </td>
                       <td className={cn(
                         "py-3 px-4 text-right text-xs font-semibold tabular-nums whitespace-nowrap",
                         selectedRowId === transaction.id
@@ -868,6 +1095,25 @@ export default function ReportsPage() {
                       </td>
                       <td className="py-3 px-4 text-right text-xs font-bold text-green-600 dark:text-green-400 tabular-nums whitespace-nowrap">
                         {formatCurrency(transaction.profit)}
+                      </td>
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        {(!transaction.status || transaction.status === 'completed') && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              openCancelDialog(transaction)
+                            }}
+                            className="h-7 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                          >
+                            <XCircle className="h-3.5 w-3.5 mr-1" />
+                            Cancel
+                          </Button>
+                        )}
+                        {transaction.status === 'cancelled' && (
+                          <span className="text-xs text-slate-400 dark:text-slate-500">-</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -900,6 +1146,223 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Cancel Transaction Dialog - Enterprise Grade */}
+      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="space-y-3 pb-4 border-b">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20">
+                <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="flex-1">
+                <DialogTitle className="text-xl font-semibold">Cancel Transaction</DialogTitle>
+                <DialogDescription className="text-sm mt-1">
+                  Complete the form below to process the cancellation. All fields marked with * are required.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          
+          {selectedTransaction && (
+            <div className="space-y-6 py-4">
+              {/* Transaction Summary Card */}
+              <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h4 className="font-semibold text-base text-slate-900 dark:text-white">
+                      {selectedTransaction.itemName}
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Transaction ID: {selectedTransaction.id}
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {selectedTransaction.department || 'N/A'}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-3 gap-4 pt-3 border-t border-slate-200 dark:border-slate-700">
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Quantity</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">
+                      {selectedTransaction.quantity} units
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Revenue</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">
+                      {formatCurrency(selectedTransaction.totalRevenue)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Date</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">
+                      {new Date(selectedTransaction.timestamp).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Information Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-2">
+                  <div className="p-1.5 rounded bg-blue-50 dark:bg-blue-900/20">
+                    <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h4 className="font-semibold text-sm text-slate-900 dark:text-white">
+                    Customer Information
+                  </h4>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Customer Name */}
+                  <div className="space-y-2 col-span-2">
+                    <Label htmlFor="customer-name" className="text-sm font-medium flex items-center gap-1">
+                      Full Name <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="customer-name"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      placeholder="Juan Dela Cruz"
+                      className="h-10"
+                      required
+                    />
+                  </div>
+
+                  {/* Customer Phone */}
+                  <div className="space-y-2">
+                    <Label htmlFor="customer-phone" className="text-sm font-medium flex items-center gap-1">
+                      Contact Number <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="customer-phone"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="09123456789"
+                      className="h-10"
+                      required
+                    />
+                  </div>
+
+                  {/* Customer Email */}
+                  <div className="space-y-2">
+                    <Label htmlFor="customer-email" className="text-sm font-medium">
+                      Email Address
+                    </Label>
+                    <Input
+                      id="customer-email"
+                      type="email"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      placeholder="customer@example.com"
+                      className="h-10"
+                    />
+                  </div>
+
+                  {/* Customer Address */}
+                  <div className="space-y-2 col-span-2">
+                    <Label htmlFor="customer-address" className="text-sm font-medium">
+                      Complete Address
+                    </Label>
+                    <Textarea
+                      id="customer-address"
+                      value={customerAddress}
+                      onChange={(e) => setCustomerAddress(e.target.value)}
+                      placeholder="Street, Barangay, City, Province"
+                      className="min-h-[70px] resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Cancellation Details Section */}
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center gap-2 pb-2">
+                  <div className="p-1.5 rounded bg-amber-50 dark:bg-amber-900/20">
+                    <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <h4 className="font-semibold text-sm text-slate-900 dark:text-white">
+                    Cancellation Details
+                  </h4>
+                </div>
+
+                {/* Cancellation Reason */}
+                <div className="space-y-2">
+                  <Label htmlFor="cancel-reason" className="text-sm font-medium flex items-center gap-1">
+                    Reason for Cancellation <span className="text-red-500">*</span>
+                  </Label>
+                  <Select value={cancelReason} onValueChange={setCancelReason}>
+                    <SelectTrigger id="cancel-reason" className="h-10">
+                      <SelectValue placeholder="Select a reason" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="customer_request">Customer Request</SelectItem>
+                      <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                      <SelectItem value="payment_failed">Payment Failed</SelectItem>
+                      <SelectItem value="duplicate_order">Duplicate Order</SelectItem>
+                      <SelectItem value="pricing_error">Pricing Error</SelectItem>
+                      <SelectItem value="quality_issue">Quality Issue</SelectItem>
+                      <SelectItem value="delivery_issue">Delivery Issue</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Additional Notes */}
+                <div className="space-y-2">
+                  <Label htmlFor="cancel-notes" className="text-sm font-medium">
+                    Additional Notes
+                  </Label>
+                  <Textarea
+                    id="cancel-notes"
+                    value={cancelNotes}
+                    onChange={(e) => setCancelNotes(e.target.value)}
+                    placeholder="Provide additional context or details about this cancellation..."
+                    className="min-h-[90px] resize-none"
+                  />
+                </div>
+              </div>
+
+              {/* Impact Alert */}
+              <Alert className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+                <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-sm text-blue-800 dark:text-blue-200">
+                  <span className="font-semibold">Inventory Impact:</span> This will restore{' '}
+                  <span className="font-bold">{selectedTransaction.quantity} units</span> of{' '}
+                  <span className="font-semibold">{selectedTransaction.itemName}</span> back to inventory.
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+          
+          <DialogFooter className="gap-2 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setShowCancelDialog(false)}
+              disabled={cancelling}
+              className="min-w-[120px]"
+            >
+              Keep Transaction
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelTransaction}
+              disabled={!cancelReason || !customerName || !customerPhone || cancelling}
+              className="min-w-[120px]"
+            >
+              {cancelling ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                  Processing...
+                </>
+              ) : (
+                "Confirm Cancellation"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

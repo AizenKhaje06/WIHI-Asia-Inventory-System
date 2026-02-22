@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Transactions API</title>
+</head>
+<body>
+    <h1>Test Transactions API</h1>
+    <button onclick="testAPI()">Test API</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testAPI() {
+            try {
+                // Add auth headers
+                const headers = new Headers({
+                    'Content-Type': 'application/json'
+                })
+                
+                const username = localStorage.getItem('username')
+                const role = localStorage.getItem('userRole')
+                const displayName = localStorage.getItem('displayName')
+                
+                if (username) headers.set('x-user-username', username)
+                if (role) headers.set('x-user-role', role)
+                if (displayName) headers.set('x-user-display-name', displayName)
+
+                const response = await fetch('/api/reports?_t=' + Date.now(), {
+                    headers
+                })
+                
+                const data = await response.json()
+                
+                // Show first 3 transactions
+                const result = {
+                    totalTransactions: data.transactions?.length || 0,
+                    first3Transactions: data.transactions?.slice(0, 3).map(t => ({
+                        id: t.id,
+                        itemName: t.itemName,
+                        status: t.status,
+                        timestamp: t.timestamp
+                    }))
+                }
+                
+                document.getElementById('result').textContent = JSON.stringify(result, null, 2)
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error: ' + error.message
+            }
+        }
+    </script>
+</body>
+</html>

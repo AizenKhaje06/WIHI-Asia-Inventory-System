@@ -4,14 +4,15 @@ import { getTransactions } from "@/lib/supabase-db"
 import { getCachedData } from "@/lib/cache"
 import type { SalesReport, DailySales, MonthlySales } from "@/lib/types"
 
-// Helper function to parse timestamp - handle both ISO and Google Sheets format
+// Helper function to parse timestamp - handle ISO format from Supabase
+// Also supports legacy format for backward compatibility with old data
 function parseTimestamp(timestamp: string): Date {
   // Try ISO format first (from Supabase): "2026-02-02T18:32:00"
   if (timestamp.includes('T')) {
     return new Date(timestamp)
   }
   
-  // Fall back to Google Sheets format: "YYYY-MM-DD / H:MM AM/PM"
+  // Fall back to legacy format: "YYYY-MM-DD / H:MM AM/PM" (for old data)
   const parts = timestamp.split(' / ')
   if (parts.length !== 2) {
     // If neither format matches, try direct Date parsing
@@ -42,6 +43,21 @@ function parseTimestamp(timestamp: string): Date {
   return new Date(year, month - 1, day, hours, minutes)
 }
 
+function emptySalesReport(): SalesReport {
+  return {
+    totalRevenue: 0,
+    totalCost: 0,
+    totalProfit: 0,
+    profitMargin: 0,
+    itemsSold: 0,
+    totalOrders: 0,
+    transactions: [],
+    dailySales: [],
+    monthlySales: [],
+    salesOverTime: [],
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -50,12 +66,17 @@ export async function GET(request: NextRequest) {
     const period = searchParams.get("period")
     const view = searchParams.get("view")
 
-    // Use caching for transactions (1 minute TTL)
-    let transactions = await getCachedData(
-      'transactions',
-      () => getTransactions(),
-      60000 // 1 minute
-    )
+    let transactions
+    try {
+      transactions = await getCachedData(
+        'transactions',
+        () => getTransactions(),
+        60000 // 1 minute
+      )
+    } catch (dbError) {
+      console.error("[Reports API] Database error (returning empty report):", dbError)
+      return NextResponse.json(emptySalesReport())
+    }
 
     // Helper function to safely parse timestamp
     const safeParseTimestamp = (timestamp: string): Date | null => {
@@ -107,17 +128,30 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const salesTransactions = transactions.filter((t) => t.type === "sale" && t.transactionType === "sale")
+    // Filter by status if provided
+    let salesTransactions = transactions.filter((t) => t.type === "sale" && t.transactionType === "sale")
+    
+    const statusFilter = searchParams.get("status")
+    if (statusFilter && statusFilter !== "all") {
+      salesTransactions = salesTransactions.filter((t) => {
+        const tStatus = t.status || 'completed'
+        return tStatus === statusFilter
+      })
+    }
+
+    // For revenue calculations, exclude cancelled orders
+    const completedSalesTransactions = salesTransactions.filter((t) => t.status !== "cancelled")
 
     console.log('[Reports API] Total transactions:', transactions.length);
     console.log('[Reports API] Sales transactions:', salesTransactions.length);
+    console.log('[Reports API] Completed sales (for revenue):', completedSalesTransactions.length);
     console.log('[Reports API] Sample transaction:', salesTransactions[0]);
 
-    const totalRevenue = salesTransactions.reduce((sum, t) => sum + t.totalRevenue, 0)
-    const totalCost = salesTransactions.reduce((sum, t) => sum + t.totalCost, 0)
+    const totalRevenue = completedSalesTransactions.reduce((sum, t) => sum + t.totalRevenue, 0)
+    const totalCost = completedSalesTransactions.reduce((sum, t) => sum + t.totalCost, 0)
     const totalProfit = totalRevenue - totalCost
     const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
-    const itemsSold = salesTransactions.reduce((sum, t) => sum + t.quantity, 0)
+    const itemsSold = completedSalesTransactions.reduce((sum, t) => sum + t.quantity, 0)
     const totalOrders = salesTransactions.length
 
     console.log('[Reports API] Calculated:', {
@@ -135,7 +169,7 @@ export async function GET(request: NextRequest) {
         case "Today":
           // Group by hour for today
           const hourlyMap = new Map<string, number>()
-          salesTransactions.forEach((t) => {
+          completedSalesTransactions.forEach((t) => {
             const parsedDate = safeParseTimestamp(t.timestamp)
             if (parsedDate) {
               const hour = parsedDate.getHours()
@@ -151,7 +185,7 @@ export async function GET(request: NextRequest) {
         case "1W":
           // Group by day for 1 week
           const weeklyMap = new Map<string, number>()
-          salesTransactions.forEach((t) => {
+          completedSalesTransactions.forEach((t) => {
             const parsedDate = safeParseTimestamp(t.timestamp)
             if (parsedDate) {
               const date = parsedDate.toISOString().split("T")[0]
@@ -166,7 +200,7 @@ export async function GET(request: NextRequest) {
         case "1M":
           // Group by day for 1 month
           const monthlyMap = new Map<string, number>()
-          salesTransactions.forEach((t) => {
+          completedSalesTransactions.forEach((t) => {
             const parsedDate = safeParseTimestamp(t.timestamp)
             if (parsedDate) {
               const date = parsedDate.toISOString().split("T")[0]
@@ -185,7 +219,7 @@ export async function GET(request: NextRequest) {
       if (isMonthlyView) {
         // Group by month for monthly view
         const monthlyViewMap = new Map<string, number>()
-        salesTransactions.forEach((t) => {
+        completedSalesTransactions.forEach((t) => {
           const parsedDate = safeParseTimestamp(t.timestamp)
           if (parsedDate) {
             const month = parsedDate.toISOString().slice(0, 7) // YYYY-MM
@@ -198,7 +232,7 @@ export async function GET(request: NextRequest) {
       } else {
         // Default to daily sales for backward compatibility
         const dailyMap = new Map<string, number>()
-        salesTransactions.forEach((t) => {
+        completedSalesTransactions.forEach((t) => {
           const parsedDate = safeParseTimestamp(t.timestamp)
           if (parsedDate) {
             const date = parsedDate.toISOString().split("T")[0]
@@ -214,7 +248,7 @@ export async function GET(request: NextRequest) {
     // Always populate both daily and monthly sales data for other components
     const dailyMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
 
-    salesTransactions.forEach((t) => {
+    completedSalesTransactions.forEach((t) => {
       const parsedDate = safeParseTimestamp(t.timestamp)
       if (parsedDate) {
         const date = parsedDate.toISOString().split("T")[0]
@@ -234,7 +268,7 @@ export async function GET(request: NextRequest) {
 
     const monthlySalesMap = new Map<string, { revenue: number; itemsSold: number; profit: number }>()
 
-    salesTransactions.forEach((t) => {
+    completedSalesTransactions.forEach((t) => {
       const parsedDate = safeParseTimestamp(t.timestamp)
       if (parsedDate) {
         const month = parsedDate.toISOString().slice(0, 7)

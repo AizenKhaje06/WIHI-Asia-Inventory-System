@@ -1,7 +1,7 @@
 /**
  * Supabase Database Layer
  * 
- * This file provides the same interface as google-sheets.ts but uses Supabase as the backend.
+ * This file provides database functions using Supabase as the backend.
  * All functions return the same data structures for seamless migration.
  */
 
@@ -212,6 +212,16 @@ export async function getTransactions(): Promise<Transaction[]> {
       department: row.department,
       staffName: row.staff_name,
       notes: row.notes,
+      // Transaction status tracking
+      status: row.status || 'completed',
+      cancellationReason: row.cancellation_reason,
+      cancelledBy: row.cancelled_by,
+      cancelledAt: row.cancelled_at,
+      // Customer information
+      customerName: row.customer_name,
+      customerPhone: row.customer_phone,
+      customerEmail: row.customer_email,
+      customerAddress: row.customer_address,
     }
   })
 }
@@ -231,6 +241,7 @@ export async function addLog(log: Omit<Log, "id" | "timestamp">): Promise<Log> {
       item_name: log.itemName || '',
       details: log.details,
       timestamp,
+      quantity: log.quantity || 0,
     })
     .select()
     .single()
@@ -261,6 +272,12 @@ export async function getLogs(): Promise<Log[]> {
     itemName: row.item_name,
     details: row.details,
     timestamp: row.timestamp,
+    quantity: row.quantity,
+    // Transaction status tracking
+    status: row.status,
+    cancellationReason: row.cancellation_reason,
+    cancelledBy: row.cancelled_by,
+    cancelledAt: row.cancelled_at,
   }))
 }
 

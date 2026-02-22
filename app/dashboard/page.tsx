@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { SetupRequiredAlert } from "@/components/setup-required-alert"
 import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart2, ShoppingCart, Activity, ArrowUpRight, ArrowDownRight, Percent, Plus, FileText, AlertCircle, PackageX, PackageOpen, RotateCcw } from "lucide-react"
 import {
   XAxis,
@@ -104,15 +103,9 @@ export default function DashboardPage() {
         <p className="text-xs text-slate-600 dark:text-slate-400">Welcome back! Here's what's happening with your inventory.</p>
       </div>
 
-      {/* Setup Required Alert */}
-      {!stats && !loading && (
-        <div className="animate-in fade-in-0 slide-in-from-top-4 duration-500">
-          <SetupRequiredAlert />
-        </div>
-      )}
 
-      {/* Enhanced Metric Cards - 6 KPIs */}
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      {/* Enhanced Metric Cards - 7 KPIs */}
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         {/* Total Revenue */}
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-3">
@@ -249,6 +242,46 @@ export default function DashboardPage() {
                 <Package className="h-2.5 w-2.5 text-indigo-600 dark:text-indigo-400" />
                 <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
                   {stats.totalItems} items in stock
+                </span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Cancelled Orders - NEW 7th KPI */}
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="p-1.5 rounded-[4px] bg-red-100 dark:bg-red-900/30">
+                <PackageX className="h-3 w-3 text-red-600 dark:text-red-400" />
+              </div>
+              {stats?.cancellationRate !== undefined && stats.cancellationRate > 0 && (
+                <Badge className={cn(
+                  "text-[10px] px-1.5 py-0",
+                  stats.cancellationRate > 10 ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
+                  stats.cancellationRate > 5 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
+                  "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400"
+                )}>
+                  {stats.cancellationRate.toFixed(1)}%
+                </Badge>
+              )}
+            </div>
+            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+              <AnimatedNumber value={stats?.totalCancelledOrders || 0} duration={1500} />
+            </div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 mb-1.5">Cancelled Orders</div>
+            {stats?.cancelledOrdersValue !== undefined && stats.cancelledOrdersValue > 0 && (
+              <div className="flex items-center gap-0.5">
+                <ArrowDownRight className="h-2.5 w-2.5 text-red-600 dark:text-red-400" />
+                <span className="text-xs text-red-600 dark:text-red-400 font-medium">
+                  ₱{formatNumber(stats.cancelledOrdersValue)} lost
+                </span>
+              </div>
+            )}
+            {(!stats?.totalCancelledOrders || stats.totalCancelledOrders === 0) && (
+              <div className="flex items-center gap-0.5">
+                <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                  No cancellations
                 </span>
               </div>
             )}
