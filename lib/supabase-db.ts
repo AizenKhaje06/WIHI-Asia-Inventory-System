@@ -230,7 +230,10 @@ export async function getTransactions(): Promise<Transaction[]> {
 
 export async function addLog(log: Omit<Log, "id" | "timestamp">): Promise<Log> {
   const id = generateId('LOG')
-  const timestamp = formatTimestamp()
+  // Use ISO format for better Supabase compatibility
+  const timestamp = new Date().toISOString()
+
+  console.log('[addLog] Attempting to insert log:', { id, operation: log.operation, itemName: log.itemName })
 
   const { data, error } = await supabaseAdmin
     .from('logs')
@@ -247,10 +250,11 @@ export async function addLog(log: Omit<Log, "id" | "timestamp">): Promise<Log> {
     .single()
 
   if (error) {
-    console.error('Error adding log:', error)
+    console.error('[addLog] Error adding log:', error)
     throw new Error(`Failed to add log: ${error.message}`)
   }
 
+  console.log('[addLog] Log inserted successfully:', data)
   return { ...log, id, timestamp }
 }
 

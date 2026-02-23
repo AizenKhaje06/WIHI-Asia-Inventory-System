@@ -1,0 +1,32 @@
+INSTRUCTIONS TO COMMIT AND PUSH CHANGES
+========================================
+
+The changes to app/dashboard/sales-channels/page.tsx are ready to commit.
+
+OPTION 1: Use the batch file (EASIEST)
+---------------------------------------
+1. Open a NEW Command Prompt window (not the one running npm dev)
+2. Navigate to your project folder
+3. Run: COMMIT-CHANGES.cmd
+4. Done!
+
+OPTION 2: Run commands manually
+--------------------------------
+Open a NEW Command Prompt or PowerShell window and run:
+
+git add app/dashboard/sales-channels/page.tsx
+git commit -m "Fix sales channel icons - replace Next Image with img tag for custom PNG icons"
+git push
+
+OPTION 3: Use PowerShell script
+--------------------------------
+1. Open a NEW PowerShell window
+2. Navigate to your project folder
+3. Run: .\commit-now.ps1
+
+NOTE: Make sure to use a DIFFERENT terminal window than the one running your dev server!
+
+WHAT WAS CHANGED:
+- Replaced Next.js Image component with regular img tag
+- Fixed icon display issue for sales channel cards
+- Icons now properly show: facebook.png, tiktok.png, Lazada.png, Shopee.png, Physical Store.png

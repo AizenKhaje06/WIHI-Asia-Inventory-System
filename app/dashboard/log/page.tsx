@@ -95,6 +95,10 @@ export default function LogPage() {
     if (operationFilter !== "all") {
       filtered = filtered.filter(log => {
         const logOp = log.operation?.toLowerCase().replace(/\s+/g, '-')
+        // Handle both 'transaction-cancelled' and 'transaction_cancelled' formats
+        if (operationFilter === 'transaction-cancelled') {
+          return logOp === 'transaction-cancelled' || logOp === 'transaction_cancelled' || log.operation?.toLowerCase().includes('cancelled')
+        }
         return logOp === operationFilter
       })
     }
@@ -148,12 +152,16 @@ export default function LogPage() {
 
   // Get operation badge
   const getOperationBadge = (operation: string, details: string) => {
-    // Determine operation from details if needed
-    let actualOperation = operation?.toLowerCase().replace(/\s+/g, '-') || 'other'
+    // Normalize operation: convert to lowercase, replace spaces and underscores with dashes
+    let actualOperation = operation?.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-') || 'other'
     
-    // Only override based on details if operation is unclear (like 'other' or missing)
-    // Don't override explicit operations like 'create', 'update', 'delete'
-    const explicitOperations = ['create', 'update', 'delete', 'restock']
+    // Check if it's a cancellation operation
+    if (actualOperation.includes('cancelled') || details?.toLowerCase().includes('transaction') && details?.toLowerCase().includes('cancelled')) {
+      actualOperation = 'transaction-cancelled'
+    }
+    
+    // Only override based on details if operation is still unclear
+    const explicitOperations = ['create', 'update', 'delete', 'restock', 'transaction-cancelled']
     const isExplicitOperation = explicitOperations.includes(actualOperation)
     
     if (!isExplicitOperation) {
