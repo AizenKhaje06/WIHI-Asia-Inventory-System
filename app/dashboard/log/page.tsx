@@ -41,6 +41,7 @@ const OPERATION_CONFIG = {
   delete: { label: "Delete", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800", icon: Trash2 },
   restock: { label: "Restock", color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-800", icon: RefreshCw },
   sale: { label: "Sale", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800", icon: ShoppingCart },
+  'transaction-cancelled': { label: "Cancelled", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800", icon: X },
   'internal-usage': { label: "Internal Usage", color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800", icon: Package },
   'demo-display': { label: "Demo/Display", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800", icon: Activity },
   warehouse: { label: "Warehouse", color: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800", icon: Database },
@@ -122,7 +123,7 @@ export default function LogPage() {
 
   // Statistics
   const stats = useMemo(() => {
-    if (!Array.isArray(logs)) return { total: 0, today: 0, creates: 0, updates: 0, deletes: 0 }
+    if (!Array.isArray(logs)) return { total: 0, today: 0, creates: 0, updates: 0, deletes: 0, cancelled: 0 }
     
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -132,7 +133,8 @@ export default function LogPage() {
       today: logs.filter(log => new Date(log.timestamp) >= today).length,
       creates: logs.filter(log => log.operation?.toLowerCase() === 'create').length,
       updates: logs.filter(log => log.operation?.toLowerCase() === 'update').length,
-      deletes: logs.filter(log => log.operation?.toLowerCase() === 'delete').length
+      deletes: logs.filter(log => log.operation?.toLowerCase() === 'delete').length,
+      cancelled: logs.filter(log => log.operation?.toLowerCase().includes('cancelled')).length
     }
   }, [logs])
 
@@ -211,7 +213,7 @@ export default function LogPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
@@ -271,6 +273,18 @@ export default function LogPage() {
             </div>
           </div>
         </Card>
+
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-[5px] bg-amber-100 dark:bg-amber-900/30">
+              <X className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Cancelled</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.cancelled}</p>
+            </div>
+          </div>
+        </Card>
       </div>
 
       {/* Filters Card */}
@@ -315,6 +329,7 @@ export default function LogPage() {
               <SelectItem value="delete">Delete</SelectItem>
               <SelectItem value="restock">Restock</SelectItem>
               <SelectItem value="sale">Sale</SelectItem>
+              <SelectItem value="transaction-cancelled">Cancelled Transactions</SelectItem>
               <SelectItem value="internal-usage">Internal Usage</SelectItem>
               <SelectItem value="demo-display">Demo/Display</SelectItem>
               <SelectItem value="warehouse">Warehouse</SelectItem>
