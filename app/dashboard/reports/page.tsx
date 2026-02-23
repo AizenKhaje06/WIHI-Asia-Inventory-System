@@ -458,7 +458,7 @@ export default function ReportsPage() {
         </div>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+            <h1 className="text-3xl font-bold gradient-text mb-2 tracking-tight">
               Executive Reports
             </h1>
             <p className="text-sm text-slate-600 dark:text-slate-400">

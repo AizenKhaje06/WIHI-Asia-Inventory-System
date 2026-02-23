@@ -242,7 +242,7 @@ export default function OutOfStockPage() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-4 pb-6 px-0 md:pt-6 md:px-0">
       {/* Page Header */}
       <div className="mb-5 px-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1">
+        <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-1">
           Out of Stock Items
         </h1>
         <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400">

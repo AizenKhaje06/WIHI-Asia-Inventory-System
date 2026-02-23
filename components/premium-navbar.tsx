@@ -23,11 +23,31 @@ interface PremiumNavbarProps {
 export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggle }: PremiumNavbarProps) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [username, setUsername] = useState("Admin User")
+  const [userRole, setUserRole] = useState("Administrator")
   const reducedMotion = useReducedMotion()
 
   // Prevent hydration mismatch
   React.useEffect(() => {
     setMounted(true)
+    
+    // Get user info from localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        const storedUsername = localStorage.getItem("username")
+        const storedRole = localStorage.getItem("userRole")
+        const displayName = localStorage.getItem("displayName")
+        
+        if (storedUsername) {
+          setUsername(displayName || storedUsername)
+        }
+        if (storedRole) {
+          setUserRole(storedRole === "admin" ? "Administrator" : "Staff")
+        }
+      } catch (error) {
+        console.error('Error reading from localStorage:', error)
+      }
+    }
   }, [])
 
   return (
@@ -135,8 +155,8 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
                   <User className="h-4 w-4 text-white" strokeWidth={2} />
                 </div>
                 <div className="hidden xl:block text-left min-w-0">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white truncate">Admin User</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate">Administrator</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{username}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{userRole}</p>
                 </div>
               </button>
             </DropdownMenuTrigger>

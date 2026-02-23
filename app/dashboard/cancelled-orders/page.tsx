@@ -100,148 +100,151 @@ export default function CancelledOrdersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-        <div className="text-center">
-          <div className="relative inline-block">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-200 dark:border-slate-700"></div>
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-600 border-t-transparent absolute top-0 left-0"></div>
-          </div>
-          <p className="mt-6 text-slate-600 dark:text-slate-400 font-medium">Loading cancelled orders...</p>
-        </div>
+      <div className="flex h-full items-center justify-center">
+        <div className="text-muted-foreground">Loading cancelled orders...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 md:p-6">
-      <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-6">
-        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-          <span>Dashboard</span>
-          <ChevronRight className="h-4 w-4" />
-          <span className="text-slate-900 dark:text-white font-medium">Cancelled Orders</span>
+    <div className="space-y-6 pt-6">
+      {/* Page Header */}
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold gradient-text mb-2">Cancelled Orders</h1>
+          <p className="text-slate-600 dark:text-slate-400 text-sm">
+            Track and analyze cancelled transactions
+          </p>
         </div>
-
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Cancelled Orders
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-1">
-              Enterprise-grade tracking and analysis
-            </p>
-          </div>
-          <Button onClick={fetchCancelledOrders} variant="outline" size="sm">
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={fetchCancelledOrders}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
         </div>
+      </div>
 
-        <div className="grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-4">
-          <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">Total</CardTitle>
-              <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                <XCircle className="h-4 w-4 md:h-5 md:w-5 text-red-600 dark:text-red-400" />
+      {/* Statistics Cards */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-[5px] bg-red-100 dark:bg-red-900/30">
+                <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{totalCancelled}</div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                {((totalCancelled / (transactions.length || 1)) * 100).toFixed(1)}% rate
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">Lost</CardTitle>
-              <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-amber-600 dark:text-amber-400" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white">₱{(totalValue/1000).toFixed(1)}k</div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Revenue impact</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">Top</CardTitle>
-              <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <AlertCircle className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{reasonStats[0]?.count || 0}</div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">{reasonStats[0]?.reason || 'N/A'}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">Avg</CardTitle>
-              <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-green-600 dark:text-green-400" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white">
-                ₱{(totalValue / (totalCancelled || 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Per order</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
-          <CardHeader>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <CardTitle className="text-lg">Filters</CardTitle>
-                <CardDescription>Refine your search</CardDescription>
-              </div>
-              <Button onClick={clearFilters} variant="ghost" size="sm">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Clear
-              </Button>
+              <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0">
+                Total
+              </Badge>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-5">
-              <div className="relative md:col-span-2">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-10" />
-              </div>
-              <Select value={selectedReason} onValueChange={setSelectedReason}>
-                <SelectTrigger className="h-10"><SelectValue placeholder="All Reasons" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Reasons</SelectItem>
-                  {uniqueReasons.map(reason => <SelectItem key={reason} value={reason!}>{reason}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={selectedStaff} onValueChange={setSelectedStaff}>
-                <SelectTrigger className="h-10"><SelectValue placeholder="All Staff" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Staff</SelectItem>
-                  {uniqueStaff.map(staff => <SelectItem key={staff} value={staff!}>{staff}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Button onClick={exportToCSV} variant="default" className="h-10">
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+              {totalCancelled}
+            </div>
+            <div className="text-xs text-slate-600 dark:text-slate-400">
+              {((totalCancelled / (transactions.length || 1)) * 100).toFixed(1)}% cancellation rate
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid gap-4 md:gap-6 lg:grid-cols-3">
-          <Card className="lg:col-span-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-lg">Transactions ({filteredTransactions.length})</CardTitle>
-              <CardDescription>All cancelled orders</CardDescription>
-            </CardHeader>
-            <CardContent>
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-[5px] bg-amber-100 dark:bg-amber-900/30">
+                <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0">
+                Lost Revenue
+              </Badge>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+              ₱{(totalValue/1000).toFixed(1)}k
+            </div>
+            <div className="text-xs text-slate-600 dark:text-slate-400">Revenue impact</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
+                <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0">
+                Top Reason
+              </Badge>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+              {reasonStats[0]?.count || 0}
+            </div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 truncate">{reasonStats[0]?.reason || 'N/A'}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-[5px] bg-green-100 dark:bg-green-900/30">
+                <BarChart3 className="h-4 w-4 text-green-600 dark:text-green-400" />
+              </div>
+              <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0">
+                Average
+              </Badge>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+              ₱{(totalValue / (totalCancelled || 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </div>
+            <div className="text-xs text-slate-600 dark:text-slate-400">Per order</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Filters</CardTitle>
+              <CardDescription className="text-sm text-slate-600 dark:text-slate-400">Refine your search</CardDescription>
+            </div>
+            <Button onClick={clearFilters} variant="ghost" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Clear
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-5">
+            <div className="relative md:col-span-2">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-10" />
+            </div>
+            <Select value={selectedReason} onValueChange={setSelectedReason}>
+              <SelectTrigger className="h-10"><SelectValue placeholder="All Reasons" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Reasons</SelectItem>
+                {uniqueReasons.map(reason => <SelectItem key={reason} value={reason!}>{reason}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={selectedStaff} onValueChange={setSelectedStaff}>
+              <SelectTrigger className="h-10"><SelectValue placeholder="All Staff" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Staff</SelectItem>
+                {uniqueStaff.map(staff => <SelectItem key={staff} value={staff!}>{staff}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Button onClick={exportToCSV} variant="default" className="h-10">
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2 border-0 shadow-lg bg-white dark:bg-slate-900">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Transactions ({filteredTransactions.length})</CardTitle>
+            <CardDescription className="text-sm text-slate-600 dark:text-slate-400">All cancelled orders</CardDescription>
+          </CardHeader>
+          <CardContent>
               {filteredTransactions.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 py-12">
                   <XCircle className="h-12 w-12 text-slate-300 dark:text-slate-600" />
@@ -651,38 +654,38 @@ export default function CancelledOrdersPage() {
             </CardContent>
           </Card>
 
-          <div className="space-y-4 md:space-y-6">
-            <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg">Top Reasons</CardTitle>
-                <CardDescription>Most common</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {reasonStats.slice(0, 5).map((stat, index) => (
-                    <div key={stat.reason} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3 flex-1 min-w-0">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-bold shadow-lg flex-shrink-0">
-                          {index + 1}
-                        </div>
-                        <span className="text-sm font-medium truncate">{stat.reason}</span>
+        <div className="space-y-4 md:space-y-6">
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Top Reasons</CardTitle>
+              <CardDescription className="text-sm text-slate-600 dark:text-slate-400">Most common</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {reasonStats.slice(0, 5).map((stat, index) => (
+                  <div key={stat.reason} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-bold shadow-lg flex-shrink-0">
+                        {index + 1}
                       </div>
-                      <div className="flex items-center space-x-2 flex-shrink-0">
-                        <Badge variant="secondary" className="text-xs">{stat.count}</Badge>
-                        <span className="text-xs text-slate-500 w-10 text-right">{((stat.count / totalCancelled) * 100).toFixed(0)}%</span>
-                      </div>
+                      <span className="text-sm font-medium truncate text-slate-900 dark:text-white">{stat.reason}</span>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="flex items-center space-x-2 flex-shrink-0">
+                      <Badge variant="secondary" className="text-xs">{stat.count}</Badge>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 w-10 text-right">{((stat.count / totalCancelled) * 100).toFixed(0)}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card className="border-slate-200 dark:border-slate-700 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg">Insights</CardTitle>
-                <CardDescription>Key observations</CardDescription>
-              </CardHeader>
-              <CardContent>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Insights</CardTitle>
+              <CardDescription className="text-sm text-slate-600 dark:text-slate-400">Key observations</CardDescription>
+            </CardHeader>
+            <CardContent>
                 <div className="space-y-3">
                   <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3">
                     <div className="flex items-start space-x-2">
@@ -714,6 +717,5 @@ export default function CancelledOrdersPage() {
           </div>
         </div>
       </div>
-    </div>
-  )
+    )
 }

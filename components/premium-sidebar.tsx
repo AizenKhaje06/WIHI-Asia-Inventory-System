@@ -239,99 +239,43 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         role="navigation"
         aria-label="Main navigation"
       >
-        {/* Logo & Brand - Clean Minimal Layout */}
+        {/* Logo & Brand - Professional Layout with Dark Mode Support */}
         <div 
-          className="h-14 xl:h-16 flex items-center justify-between px-2.5 xl:px-3 border-b flex-shrink-0 border-slate-200/60 dark:border-slate-800/60"
+          className="h-14 xl:h-16 flex items-center justify-center px-1.5 xl:px-2 border-b flex-shrink-0 border-slate-200/60 dark:border-slate-800/60"
         >
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {!collapsed ? (
-              <div className="flex items-center gap-2 w-full min-w-0">
-                <div className="flex-shrink-0 w-8 h-8 xl:w-10 xl:h-10 relative" aria-hidden="true">
-                  <img 
-                    src="/System Logo.png" 
-                    alt="StockSync Logo" 
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <div className="flex flex-col justify-center min-w-0 flex-1">
-                  <h1 className="text-xs xl:text-sm font-semibold text-slate-900 dark:text-white truncate">
-                    StockSync
-                  </h1>
-                  <p className="text-xs xl:text-sm text-slate-500 dark:text-slate-400 truncate">
-                    Advanced Inventory System
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex-shrink-0 w-8 h-8 xl:w-10 xl:h-10 relative mx-auto" aria-hidden="true">
-                <img 
-                  src="/System Logo.png" 
-                  alt="StockSync Logo" 
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            )}
-          </div>
+          {!collapsed ? (
+            <div className="flex items-center justify-center w-full py-1.5">
+              {/* Light mode logo */}
+              <img 
+                src="/Vertex-icon.png" 
+                alt="Vertex" 
+                className="h-11 xl:h-[52px] w-auto object-contain dark:hidden"
+              />
+              {/* Dark mode logo */}
+              <img 
+                src="/Vertex-icon-2.png" 
+                alt="Vertex" 
+                className="h-11 xl:h-[52px] w-auto object-contain hidden dark:block"
+              />
+            </div>
+          ) : (
+            <div className="w-9 h-9 xl:w-10 xl:h-10 relative" aria-hidden="true">
+              <img 
+                src="/Vertex-icon-3.png" 
+                alt="Vertex" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+          )}
           
           {/* Mobile Close Button */}
           {isMobile && (
             <button
               onClick={onMobileClose}
-              className="p-2 rounded-lg transition-colors text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 flex-shrink-0 ml-2"
+              className="absolute right-2 p-2 rounded-lg transition-colors text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
               aria-label="Close navigation menu"
             >
               <X className="h-5 w-5" />
-            </button>
-          )}
-        </div>
-
-          {/* User Profile Section - Clean Minimal */}
-        <div className="p-2.5 xl:p-3 border-b flex-shrink-0 border-slate-200/60 dark:border-slate-800/60">
-          <div className={cn(
-            "flex items-center gap-2 px-1.5 xl:px-2 py-1.5 xl:py-2 rounded-lg bg-slate-50 dark:bg-slate-900/50",
-            collapsed && "justify-center px-1"
-          )}>
-            <div className="relative flex-shrink-0">
-              <div className="w-5 h-5 xl:w-6 xl:h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white">
-                <User className="h-2.5 w-2.5 xl:h-3 xl:w-3" strokeWidth={2} />
-              </div>
-              {/* Online status indicator */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 xl:w-2 xl:h-2 bg-green-500 rounded-full border-2 border-white dark:border-slate-900" aria-hidden="true" />
-            </div>
-            {!collapsed && currentUser && (
-              <div className="flex-1 min-w-0">
-                <p className="text-xs xl:text-sm font-medium text-slate-900 dark:text-white truncate">{currentUser.displayName}</p>
-                <p className="text-xs xl:text-sm text-slate-500 dark:text-slate-400 truncate">
-                  {ROLES[currentUser.role]?.name || currentUser.role}
-                </p>
-              </div>
-            )}
-          </div>
-          
-          {/* Collapse/Expand Button - Desktop Only */}
-          {!isMobile && (
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className={cn(
-                "absolute top-1/2 -translate-y-1/2 -right-2.5 xl:-right-3 z-50",
-                "w-5 h-5 xl:w-6 xl:h-6 flex items-center justify-center",
-                "bg-white dark:bg-slate-900",
-                "border border-slate-200 dark:border-slate-800",
-                "rounded-full shadow-sm",
-                "transition-all duration-200",
-                "text-slate-600 dark:text-slate-400",
-                "hover:text-blue-500 dark:hover:text-blue-400",
-                "hover:bg-slate-50 dark:hover:bg-slate-800",
-                "hover:border-blue-200 dark:hover:border-blue-800"
-              )}
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              <div className={cn(
-                "transition-transform duration-200",
-                collapsed ? "rotate-180" : "rotate-0"
-              )}>
-                <ChevronLeft className="h-3 w-3 xl:h-3.5 xl:w-3.5" strokeWidth={2} />
-              </div>
             </button>
           )}
         </div>
@@ -340,6 +284,10 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2.5 xl:py-3 px-1.5 xl:px-2 min-h-0 max-h-full" style={{ scrollbarGutter: 'stable' }} aria-label="Primary">
           {navigation.map((section, sectionIdx) => (
             <div key={section.section} className={cn("mb-4 xl:mb-5", sectionIdx === 0 && "mt-0")}>
+              {/* Separator line above section (except first section) */}
+              {!collapsed && sectionIdx > 0 && (
+                <div className="h-px mb-3 mx-2 bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-700" />
+              )}
               {!collapsed && (
                 <div className="px-1.5 xl:px-2 mb-1">
                   <p className="text-xs xl:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -541,6 +489,34 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             </button>
           )}
         </div>
+
+        {/* Collapse/Expand Button - Desktop Only - Better Position */}
+        {!isMobile && (
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className={cn(
+              "absolute top-1/2 -translate-y-1/2 -right-3 z-50",
+              "w-6 h-6 flex items-center justify-center",
+              "bg-white dark:bg-slate-900",
+              "border border-slate-200 dark:border-slate-800",
+              "rounded-full shadow-md",
+              "transition-all duration-200",
+              "text-slate-600 dark:text-slate-400",
+              "hover:text-blue-500 dark:hover:text-blue-400",
+              "hover:bg-slate-50 dark:hover:bg-slate-800",
+              "hover:border-blue-200 dark:hover:border-blue-800",
+              "hover:shadow-lg"
+            )}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <div className={cn(
+              "transition-transform duration-200",
+              collapsed ? "rotate-180" : "rotate-0"
+            )}>
+              <ChevronLeft className="h-4 w-4" strokeWidth={2} />
+            </div>
+          </button>
+        )}
       </aside>
     </>
   )
