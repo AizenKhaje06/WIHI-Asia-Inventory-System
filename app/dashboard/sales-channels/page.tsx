@@ -87,12 +87,13 @@ export default function SalesChannelsPage() {
   }
 
   const getChannelIcon = (name: string) => {
-    if (name.includes('Facebook')) return '📘'
-    if (name.includes('Tiktok')) return '🎵'
-    if (name.includes('Lazada')) return '🛒'
-    if (name.includes('Shopee')) return '🛍️'
-    if (name.includes('Physical')) return '🏪'
-    return '📦'
+    const nameLower = name.toLowerCase()
+    if (nameLower.includes('facebook')) return '/facebook.png'
+    if (nameLower.includes('tiktok')) return '/tiktok.png'
+    if (nameLower.includes('lazada')) return '/Lazada.png'
+    if (nameLower.includes('shopee')) return '/Shopee.png'
+    if (nameLower.includes('physical')) return '/Physical Store.png'
+    return '/placeholder.svg'
   }
 
   const getTypeColor = (type: string) => {
@@ -365,7 +366,13 @@ export default function SalesChannelsPage() {
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-2xl">{getChannelIcon(dept.name)}</span>
+                        <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center">
+                          <img
+                            src={getChannelIcon(dept.name)}
+                            alt={dept.name}
+                            className="w-10 h-10 object-contain"
+                          />
+                        </div>
                         <div>
                           <h3 className="font-semibold text-slate-900 dark:text-white">
                             {dept.name}
