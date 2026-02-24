@@ -60,19 +60,39 @@ export default function LogPage() {
 
   // Fetch logs
   useEffect(() => {
+    let isInitialLoad = true
+    
     const fetchLogs = async () => {
       try {
-        setLoading(true)
+        // Only show loading spinner on initial load, not on auto-refresh
+        if (isInitialLoad) {
+          setLoading(true)
+        }
         const data = await apiGet<Log[]>('/api/logs')
         setLogs(data)
       } catch (error) {
         console.error('Error fetching logs:', error)
-        toast.error('Failed to load logs')
+        if (isInitialLoad) {
+          toast.error('Failed to load logs')
+        }
       } finally {
-        setLoading(false)
+        if (isInitialLoad) {
+          setLoading(false)
+          isInitialLoad = false
+        }
       }
     }
+    
+    // Initial fetch
     fetchLogs()
+    
+    // Auto-refresh every 5 seconds
+    const interval = setInterval(() => {
+      fetchLogs()
+    }, 5000)
+    
+    // Cleanup interval on unmount
+    return () => clearInterval(interval)
   }, [])
 
   // Filter and sort logs
