@@ -1040,14 +1040,14 @@ export default function ReportsPage() {
               <table className="w-full text-sm min-w-[800px]">
                 <thead className="bg-slate-50 dark:bg-slate-800/50">
                   <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[130px]">Date & Time</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[200px]">Item</th>
-                    <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[90px]">Status</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[60px]">Qty</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Revenue</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Cost</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Profit</th>
-                    <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[80px]">Actions</th>
+                    <th className="py-2.5 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[130px]">Date & Time</th>
+                    <th className="py-2.5 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[200px]">Item</th>
+                    <th className="py-2.5 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[90px]">Status</th>
+                    <th className="py-2.5 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[60px]">Qty</th>
+                    <th className="py-2.5 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Revenue</th>
+                    <th className="py-2.5 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Cost</th>
+                    <th className="py-2.5 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Profit</th>
+                    <th className="py-2.5 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[80px]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1064,7 +1064,7 @@ export default function ReportsPage() {
                           : "hover:bg-slate-50 dark:hover:bg-slate-800/30"
                       )}
                     >
-                      <td className="py-3 px-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                      <td className="py-2.5 px-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
                         {new Date(transaction.timestamp).toLocaleDateString('en-US', { 
                           month: '2-digit', 
                           day: '2-digit', 
@@ -1080,18 +1080,18 @@ export default function ReportsPage() {
                         })}
                       </td>
                       <td className={cn(
-                        "py-3 px-4 text-xs font-medium whitespace-nowrap",
+                        "py-2.5 px-4 text-xs font-medium max-w-[200px] truncate",
                         selectedRowId === transaction.id
                           ? "text-blue-900 dark:text-blue-100"
                           : "text-slate-800 dark:text-slate-200"
                       )}>
                         {transaction.itemName}
                       </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <td className="py-2.5 px-4 text-center whitespace-nowrap">
                         {getStatusBadge(transaction.status || 'completed')}
                       </td>
                       <td className={cn(
-                        "py-3 px-4 text-right text-xs font-semibold tabular-nums whitespace-nowrap",
+                        "py-2.5 px-4 text-right text-xs font-semibold tabular-nums whitespace-nowrap",
                         selectedRowId === transaction.id
                           ? "text-blue-900 dark:text-blue-100"
                           : "text-slate-800 dark:text-slate-200"
@@ -1099,20 +1099,20 @@ export default function ReportsPage() {
                         {formatNumber(transaction.quantity)}
                       </td>
                       <td className={cn(
-                        "py-3 px-4 text-right text-xs font-semibold tabular-nums whitespace-nowrap",
+                        "py-2.5 px-4 text-right text-xs font-semibold tabular-nums whitespace-nowrap",
                         selectedRowId === transaction.id
                           ? "text-blue-900 dark:text-blue-100"
                           : "text-slate-800 dark:text-slate-200"
                       )}>
                         {formatCurrency(transaction.totalRevenue)}
                       </td>
-                      <td className="py-3 px-4 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums whitespace-nowrap">
+                      <td className="py-2.5 px-4 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums whitespace-nowrap">
                         {formatCurrency(transaction.totalCost)}
                       </td>
-                      <td className="py-3 px-4 text-right text-xs font-bold text-green-600 dark:text-green-400 tabular-nums whitespace-nowrap">
+                      <td className="py-2.5 px-4 text-right text-xs font-bold text-green-600 dark:text-green-400 tabular-nums whitespace-nowrap">
                         {formatCurrency(transaction.profit)}
                       </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <td className="py-2.5 px-4 text-center whitespace-nowrap">
                         {(!transaction.status || transaction.status === 'completed') && (
                           <Button
                             variant="ghost"

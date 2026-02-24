@@ -1173,7 +1173,7 @@ export default function InternalUsagePage() {
                             )}
                           </Badge>
                         </td>
-                        <td className="py-2.5 px-3 text-xs font-medium text-slate-900 dark:text-white">
+                        <td className="py-2.5 px-3 text-xs font-medium text-slate-900 dark:text-white max-w-[200px] truncate">
                           {transaction.itemName}
                         </td>
                         <td className="py-2.5 px-3 text-xs text-right text-slate-900 dark:text-white tabular-nums">

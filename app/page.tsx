@@ -27,11 +27,13 @@ export default function EnterpriseLoginPage() {
   const [loginMode, setLoginMode] = useState<LoginMode>("admin")
   const [capsLockOn, setCapsLockOn] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState(0)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
 
   const isDevelopment = process.env.NODE_ENV === 'development'
 
   useEffect(() => {
+    setMounted(true)
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem("isLoggedIn")
@@ -127,6 +129,11 @@ export default function EnterpriseLoginPage() {
     if (passwordStrength < 40) return "Weak"
     if (passwordStrength < 70) return "Medium"
     return "Strong"
+  }
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return null
   }
 
   return (
