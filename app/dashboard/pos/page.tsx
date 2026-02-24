@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import type { InventoryItem } from "@/lib/types"
 import { apiGet, apiPost } from "@/lib/api-client"
 import { getCurrentUser } from "@/lib/auth"
+import { formatCurrency, cn } from "@/lib/utils"
 
 interface CartItem {
   item: InventoryItem
@@ -29,6 +30,7 @@ export default function POSPage() {
   const [staffName, setStaffName] = useState('')
   const [notes, setNotes] = useState('')
   const [dispatchId, setDispatchId] = useState('')
+  const [dispatchedItems, setDispatchedItems] = useState<Array<{name: string, quantity: number, price: number}>>([])
   const [successModalOpen, setSuccessModalOpen] = useState(false)
 
   const total = useMemo(() => cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0), [cart])
@@ -160,6 +162,13 @@ export default function POSPage() {
       // Generate dispatch ID
       const newDispatchId = `WD-${Date.now()}`
       setDispatchId(newDispatchId)
+      
+      // Store dispatched items for display
+      setDispatchedItems(cart.map(cartItem => ({
+        name: cartItem.item.name,
+        quantity: cartItem.quantity,
+        price: cartItem.item.sellingPrice
+      })))
       
       setCart([])
       fetchItems()
@@ -429,55 +438,94 @@ export default function POSPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredItems.map((item) => {
               const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
               const isOutOfStock = item.quantity === 0
+              const profitMargin = item.sellingPrice > 0 ? ((item.sellingPrice - item.costPrice) / item.sellingPrice * 100) : 0
               
               return (
                 <button
                   key={item.id}
                   onClick={() => addToCart(item)}
                   disabled={isOutOfStock}
-                  className={`
-                    relative rounded-[5px] border-2 p-3 text-left transition-all duration-200
-                    ${isOutOfStock 
-                      ? 'border-red-200 bg-red-50 dark:bg-red-900/10 opacity-60 cursor-not-allowed' 
-                      : isLowStock
-                      ? 'border-amber-200 bg-amber-50 dark:bg-amber-900/10 hover:border-amber-400 hover:shadow-md'
-                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-400 hover:shadow-md hover:scale-105'
-                    }
-                  `}
+                  className={cn(
+                    "group relative overflow-hidden transition-all duration-300 text-left border rounded-lg",
+                    isOutOfStock
+                      ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10 opacity-60 cursor-not-allowed"
+                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-600 hover:-translate-y-1 cursor-pointer"
+                  )}
                 >
-                  {/* Stock Badge */}
-                  <div className="absolute top-2 right-2">
-                    {isOutOfStock ? (
-                      <span className="px-2 py-0.5 text-xs font-bold rounded-md bg-red-500 text-white">
-                        OUT
-                      </span>
-                    ) : isLowStock ? (
-                      <span className="px-2 py-0.5 text-xs font-bold rounded-md bg-amber-500 text-white">
+                  {/* Stock Badge - Fixed Position */}
+                  <div className="absolute top-3 right-3 z-10">
+                    <span className={cn(
+                      "px-2.5 py-1 text-xs font-bold rounded-md shadow-sm border",
+                      isOutOfStock
+                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
+                        : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                    )}>
+                      {isOutOfStock ? "OUT" : item.quantity}
+                    </span>
+                  </div>
+
+                  {/* Status Badge - Fixed Position */}
+                  {(isLowStock && !isOutOfStock) && (
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shadow-sm">
                         LOW
                       </span>
-                    ) : (
-                      <span className="px-2 py-0.5 text-xs font-semibold rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                        {item.quantity}
-                      </span>
+                    </div>
+                  )}
+
+                  <div className="p-5 pt-12">
+                    {/* Product Name - Fixed Height */}
+                    <div className="mb-4 h-16">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 line-clamp-2">
+                        {item.name}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                        {item.category}
+                      </p>
+                    </div>
+
+                    {/* Price */}
+                    <div className="mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+                          ₱{item.sellingPrice.toFixed(2)}
+                        </span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 line-through">
+                          ₱{item.costPrice.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">
+                          {profitMargin.toFixed(0)}% margin
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Stock Info */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-600 dark:text-slate-400 font-medium">Stock Level</span>
+                        <span className="font-bold text-slate-900 dark:text-white">{item.quantity} units</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-600 dark:text-slate-400 font-medium">Storage</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">{item.storageRoom}</span>
+                      </div>
+                    </div>
+
+                    {/* Add to Cart Indicator */}
+                    {!isOutOfStock && (
+                      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 text-sm font-semibold">
+                          <ShoppingCart className="h-4 w-4" />
+                          <span>Click to add</span>
+                        </div>
+                      </div>
                     )}
-                  </div>
-
-                  {/* Product Name */}
-                  <div className="mt-6 mb-3">
-                    <h3 className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-2 min-h-[2.5rem]">
-                      {item.name}
-                    </h3>
-                  </div>
-
-                  {/* Price */}
-                  <div>
-                    <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-                      ₱{item.sellingPrice.toFixed(2)}
-                    </p>
                   </div>
                 </button>
               )
@@ -507,7 +555,7 @@ export default function POSPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-[5px] p-4">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
               <p className="text-center text-green-800 dark:text-green-200 font-medium mb-2">
                 Stock Released to {department}
               </p>
@@ -515,6 +563,42 @@ export default function POSPage() {
                 Dispatch ID: <span className="font-mono font-bold">{dispatchId}</span>
               </p>
             </div>
+
+            {/* Product Details */}
+            {dispatchedItems.length > 0 && (
+              <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                <div className="bg-slate-50 dark:bg-slate-800 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                  <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Dispatched Items</h4>
+                </div>
+                <div className="divide-y divide-slate-200 dark:divide-slate-700 max-h-48 overflow-y-auto">
+                  {dispatchedItems.map((item, index) => (
+                    <div key={index} className="px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                          {item.name}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {formatCurrency(item.price)} × {item.quantity}
+                        </p>
+                      </div>
+                      <div className="ml-4 flex-shrink-0">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                          {formatCurrency(item.price * item.quantity)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-800 px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Total</span>
+                    <span className="text-lg font-bold text-slate-900 dark:text-white">
+                      {formatCurrency(dispatchedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0))}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
             
             <div className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
               <p>✓ Inventory has been updated</p>
