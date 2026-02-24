@@ -1065,9 +1065,19 @@ export default function ReportsPage() {
                       )}
                     >
                       <td className="py-3 px-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                        {new Date(transaction.timestamp).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })}
+                        {new Date(transaction.timestamp).toLocaleDateString('en-US', { 
+                          month: '2-digit', 
+                          day: '2-digit', 
+                          year: '2-digit',
+                          timeZone: 'Asia/Manila'
+                        })}
                         {' '}
-                        {new Date(transaction.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                        {new Date(transaction.timestamp).toLocaleTimeString('en-US', { 
+                          hour: '2-digit', 
+                          minute: '2-digit', 
+                          hour12: false,
+                          timeZone: 'Asia/Manila'
+                        })}
                       </td>
                       <td className={cn(
                         "py-3 px-4 text-xs font-medium whitespace-nowrap",
