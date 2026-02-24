@@ -11,9 +11,10 @@ import type { InventoryItem, Transaction, Log, Restock } from './types'
 // ==================== HELPER FUNCTIONS ====================
 
 const formatTimestamp = (date: Date = new Date()) => {
-  // Use Taipei timezone (UTC+8) for accurate local time
+  // Store in ISO format with Manila timezone offset
+  // This ensures consistent storage and proper timezone handling
   const options: Intl.DateTimeFormatOptions = {
-    timeZone: 'Asia/Taipei',
+    timeZone: 'Asia/Manila',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -22,14 +23,8 @@ const formatTimestamp = (date: Date = new Date()) => {
     second: '2-digit',
     hour12: false
   }
-  const formatted = date.toLocaleString('en-US', options)
-  const [datePart, timePart] = formatted.split(', ')
-  const [month, day, year] = datePart.split('/')
-  const [hour, minute] = timePart.split(':')
-  const hour24 = parseInt(hour)
-  const ampm = hour24 >= 12 ? 'PM' : 'AM'
-  const hour12 = hour24 % 12 || 12
-  return `${year}-${month}-${day} / ${hour12}:${minute} ${ampm}`
+  const formatted = date.toLocaleString('sv-SE', options) // sv-SE gives YYYY-MM-DD HH:MM:SS format
+  return formatted.replace(' ', 'T') // Convert to ISO-like format: YYYY-MM-DDTHH:MM:SS
 }
 
 const generateId = (prefix: string) => `${prefix}-${Date.now()}`
@@ -230,8 +225,8 @@ export async function getTransactions(): Promise<Transaction[]> {
 
 export async function addLog(log: Omit<Log, "id" | "timestamp">): Promise<Log> {
   const id = generateId('LOG')
-  // Use ISO format for better Supabase compatibility
-  const timestamp = new Date().toISOString()
+  // Use same timestamp format as transactions for consistency
+  const timestamp = formatTimestamp()
 
   console.log('[addLog] Attempting to insert log:', { id, operation: log.operation, itemName: log.itemName })
 
