@@ -433,16 +433,18 @@ export default function LogPage() {
                         <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
                             <Clock className="h-3.5 w-3.5 text-slate-400" />
-                            {new Date(log.timestamp).toLocaleString('en-US', { 
-                              month: 'short', 
-                              day: '2-digit', 
-                              year: 'numeric', 
-                              hour: '2-digit', 
-                              minute: '2-digit', 
-                              second: '2-digit',
-                              hour12: false,
-                              timeZone: 'Asia/Manila'
-                            })}
+                            {(() => {
+                              // Convert UTC to Philippine Time (UTC+8)
+                              const date = new Date(log.timestamp)
+                              const phTime = new Date(date.getTime() + (8 * 60 * 60 * 1000))
+                              const month = phTime.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })
+                              const day = String(phTime.getUTCDate()).padStart(2, '0')
+                              const year = phTime.getUTCFullYear()
+                              const hours = String(phTime.getUTCHours()).padStart(2, '0')
+                              const minutes = String(phTime.getUTCMinutes()).padStart(2, '0')
+                              const seconds = String(phTime.getUTCSeconds()).padStart(2, '0')
+                              return `${month} ${day}, ${year} ${hours}:${minutes}:${seconds}`
+                            })()}
                           </div>
                         </td>
                         <td className="py-2.5 px-3 whitespace-nowrap">
