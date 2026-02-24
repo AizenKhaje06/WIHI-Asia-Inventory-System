@@ -12,6 +12,7 @@ import type { InventoryItem } from "@/lib/types"
 import { apiGet, apiPost } from "@/lib/api-client"
 import { getCurrentUser } from "@/lib/auth"
 import { formatCurrency, cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 interface CartItem {
   item: InventoryItem
@@ -98,9 +99,25 @@ export default function POSPage() {
             cartItem.item.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem,
           ),
         )
+        // Toast for quantity increase
+        toast.success(`${item.name} quantity increased to ${existingItem.quantity + 1}`, {
+          duration: 2000,
+          icon: '➕',
+        })
+      } else {
+        // Toast when max stock reached
+        toast.warning(`Maximum stock reached for ${item.name}`, {
+          duration: 2000,
+          icon: '⚠️',
+        })
       }
     } else {
       setCart([...cart, { item, quantity: 1 }])
+      // Toast for new item added
+      toast.success(`${item.name} added to cart`, {
+        duration: 2000,
+        icon: '✓',
+      })
     }
   }
 
@@ -453,7 +470,7 @@ export default function POSPage() {
                     "group relative overflow-hidden transition-all duration-300 text-left border rounded-lg",
                     isOutOfStock
                       ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10 opacity-60 cursor-not-allowed"
-                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-600 hover:-translate-y-1 cursor-pointer"
+                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-600 hover:-translate-y-1 cursor-pointer active:scale-95 active:shadow-md"
                   )}
                 >
                   {/* Stock Badge - Fixed Position */}
