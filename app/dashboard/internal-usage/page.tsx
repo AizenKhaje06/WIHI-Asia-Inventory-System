@@ -288,7 +288,7 @@ export default function InternalUsagePage() {
   }
 
   return (
-    <div className="space-y-6 pt-6">
+    <div className="space-y-6 pt-2">
       {/* Page Header */}
       <div className="flex items-start justify-between mb-6">
         <div>

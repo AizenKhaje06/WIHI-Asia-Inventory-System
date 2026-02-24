@@ -448,14 +448,9 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-6 pb-12">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2 pb-12">
       {/* Page Header - Enterprise Premium */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-3">
-          <span>Dashboard</span>
-          <ChevronRight className="h-3 w-3" />
-          <span className="text-slate-900 dark:text-white font-medium">Executive Reports</span>
-        </div>
+      <div className="mb-6">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold gradient-text mb-2 tracking-tight">

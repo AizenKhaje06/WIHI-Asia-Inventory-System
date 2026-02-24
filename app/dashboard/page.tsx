@@ -96,7 +96,7 @@ export default function DashboardPage() {
   })) || []
 
   return (
-    <div className="space-y-5 pt-5">
+    <div className="space-y-5 pt-2">
       {/* Page Header - Vertically aligned with sidebar brand */}
       <div>
         <h1 className="text-3xl font-bold gradient-text mb-1.5">Dashboard</h1>

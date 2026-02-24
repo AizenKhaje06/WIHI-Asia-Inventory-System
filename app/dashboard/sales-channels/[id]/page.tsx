@@ -181,7 +181,7 @@ export default function SalesChannelDetailPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-6">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
       {/* Page Header */}
       <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <Button 
