@@ -68,6 +68,10 @@ export default function ReportsPage() {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("all") // NEW: Status filter
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(50)
+  
   // Cancel transaction dialog state
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
@@ -85,6 +89,11 @@ export default function ReportsPage() {
   useEffect(() => {
     loadAllData()
   }, [startDate, endDate, statusFilter]) // Add statusFilter dependency
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [startDate, endDate, statusFilter])
 
   async function loadAllData() {
     setLoading(true)
@@ -1042,7 +1051,9 @@ export default function ReportsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {report.transactions.slice(0, 50).map((transaction: any) => (
+                  {report.transactions
+                    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                    .map((transaction: any) => (
                     <tr 
                       key={transaction.id} 
                       onClick={() => setSelectedRowId(selectedRowId === transaction.id ? null : transaction.id)}
@@ -1116,11 +1127,64 @@ export default function ReportsPage() {
               </table>
             </div>
 
-            {report.transactions.length > 50 && (
-              <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg text-center">
-                <p className="text-xs text-slate-600 dark:text-slate-400">
-                  Showing first 50 of {report.transactions.length} transactions. Export to see all data.
-                </p>
+            {/* Pagination Controls */}
+            {report.transactions.length > itemsPerPage && (
+              <div className="mt-4 flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <div className="text-sm text-slate-600 dark:text-slate-400">
+                  Showing <span className="font-semibold text-slate-900 dark:text-white">{((currentPage - 1) * itemsPerPage) + 1}</span> to{' '}
+                  <span className="font-semibold text-slate-900 dark:text-white">
+                    {Math.min(currentPage * itemsPerPage, report.transactions.length)}
+                  </span> of{' '}
+                  <span className="font-semibold text-slate-900 dark:text-white">{report.transactions.length}</span> transactions
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="h-8 px-3 text-xs"
+                  >
+                    Previous
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.ceil(report.transactions.length / itemsPerPage) }, (_, i) => i + 1)
+                      .filter(page => {
+                        // Show first page, last page, current page, and pages around current
+                        const totalPages = Math.ceil(report.transactions.length / itemsPerPage)
+                        return page === 1 || 
+                               page === totalPages || 
+                               (page >= currentPage - 1 && page <= currentPage + 1)
+                      })
+                      .map((page, index, array) => (
+                        <div key={page} className="flex items-center">
+                          {index > 0 && array[index - 1] !== page - 1 && (
+                            <span className="px-2 text-slate-400">...</span>
+                          )}
+                          <Button
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className={cn(
+                              "h-8 w-8 p-0 text-xs",
+                              currentPage === page && "bg-blue-600 hover:bg-blue-700 text-white"
+                            )}
+                          >
+                            {page}
+                          </Button>
+                        </div>
+                      ))}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(Math.ceil(report.transactions.length / itemsPerPage), prev + 1))}
+                    disabled={currentPage === Math.ceil(report.transactions.length / itemsPerPage)}
+                    className="h-8 px-3 text-xs"
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
