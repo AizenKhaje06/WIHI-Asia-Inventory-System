@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Search, Pencil, Trash2, PackagePlus, Package, Filter, X, ArrowUpDown, AlertCircle, TrendingUp, Warehouse, Tag, Loader2 } from "lucide-react"
+import { Plus, Search, Pencil, Trash2, PackagePlus, Package, Filter, X, ArrowUpDown, AlertCircle, TrendingUp, Warehouse, Tag, Loader2, LayoutGrid, LayoutList, Eye, ShoppingCart } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -58,6 +58,8 @@ export default function InventoryPage() {
   const [deleteWarehouseId, setDeleteWarehouseId] = useState<string | null>(null)
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid') // Add view mode toggle
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set()) // Bulk selection
   
   // Resizable columns state
   const [columnWidths, setColumnWidths] = useState({
@@ -588,9 +590,40 @@ export default function InventoryPage() {
                 </div>
                 <span>Product Inventory</span>
               </CardTitle>
-              <Badge className="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 dark:from-slate-800 dark:to-slate-700 dark:text-slate-300 border-0 text-sm px-3 py-1.5 font-bold shadow-sm">
-                {filteredItems.length} items
-              </Badge>
+              <div className="flex items-center gap-3">
+                {/* View Toggle */}
+                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className={cn(
+                      "h-8 px-3 rounded-md transition-all",
+                      viewMode === 'grid'
+                        ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                    )}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setViewMode('table')}
+                    className={cn(
+                      "h-8 px-3 rounded-md transition-all",
+                      viewMode === 'table'
+                        ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                    )}
+                  >
+                    <LayoutList className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Badge className="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 dark:from-slate-800 dark:to-slate-700 dark:text-slate-300 border-0 text-sm px-3 py-1.5 font-bold shadow-sm">
+                  {filteredItems.length} items
+                </Badge>
+              </div>
             </div>
             
             {/* Stats Row */}
@@ -632,6 +665,134 @@ export default function InventoryPage() {
             </div>
           ) : (
             <>
+              {viewMode === 'grid' ? (
+                /* Grid View - Enterprise Grade */
+                <div className="p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {filteredItems.map((item) => {
+                      const profitMargin = item.sellingPrice > 0 ? ((item.sellingPrice - item.costPrice) / item.sellingPrice * 100) : 0
+                      const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
+                      const isOutOfStock = item.quantity === 0
+                      const isSelected = selectedItems.has(item.id)
+                      
+                      return (
+                        <Card
+                          key={item.id}
+                          className={cn(
+                            "group relative overflow-hidden transition-all duration-300 cursor-pointer border",
+                            isSelected
+                              ? "ring-2 ring-blue-500 dark:ring-blue-400 border-blue-500 dark:border-blue-400 shadow-lg"
+                              : "border-slate-200 dark:border-slate-700 hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-600 hover:-translate-y-1"
+                          )}
+                          onClick={() => {
+                            const newSelected = new Set(selectedItems)
+                            if (isSelected) {
+                              newSelected.delete(item.id)
+                            } else {
+                              newSelected.add(item.id)
+                            }
+                            setSelectedItems(newSelected)
+                          }}
+                        >
+                          {/* Stock Badge - Fixed Position */}
+                          <div className="absolute top-3 right-3 z-10">
+                            <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-xs font-bold px-2.5 py-1 border border-slate-200 dark:border-slate-700 shadow-sm">
+                              {item.quantity}
+                            </Badge>
+                          </div>
+
+                          {/* Status Badge - Fixed Position */}
+                          {(isOutOfStock || isLowStock) && (
+                            <div className="absolute top-3 left-3 z-10">
+                              <Badge className={cn(
+                                "text-[10px] font-bold px-2 py-0.5 shadow-sm",
+                                isOutOfStock
+                                  ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
+                                  : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+                              )}>
+                                {isOutOfStock ? "OUT" : "LOW"}
+                              </Badge>
+                            </div>
+                          )}
+
+                          <CardContent className="p-5 pt-12">
+                            {/* Product Name - Fixed Height */}
+                            <div className="mb-4 h-16">
+                              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 line-clamp-2">
+                                {item.name}
+                              </h3>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                                {item.category}
+                              </p>
+                            </div>
+
+                            {/* Price */}
+                            <div className="mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+                                  {formatCurrency(item.sellingPrice)}
+                                </span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400 line-through">
+                                  {formatCurrency(item.costPrice)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold px-2 py-0.5 border border-green-200 dark:border-green-800">
+                                  {profitMargin.toFixed(0)}% margin
+                                </Badge>
+                              </div>
+                            </div>
+
+                            {/* Stock Info */}
+                            <div className="mb-4 space-y-2">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-slate-600 dark:text-slate-400 font-medium">Stock Level</span>
+                                <span className="font-bold text-slate-900 dark:text-white">{item.quantity} units</span>
+                              </div>
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-slate-600 dark:text-slate-400 font-medium">Storage</span>
+                                <span className="font-semibold text-slate-700 dark:text-slate-300">{item.storageRoom}</span>
+                              </div>
+                            </div>
+
+                            {/* Quick Actions */}
+                            {getCurrentUser()?.role === 'admin' && (
+                              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="flex-1 h-9 text-xs border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleEdit(item)
+                                  }}
+                                >
+                                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="flex-1 h-9 text-xs border-green-200 dark:border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-300"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleRestock(item)
+                                  }}
+                                >
+                                  <PackagePlus className="h-3.5 w-3.5 mr-1.5" />
+                                  Restock
+                                </Button>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                </div>
+              ) : (
+                /* Table View */
+                <>
               {/* Mobile Scroll Hint - Enhanced */}
               <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
                 <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
@@ -751,9 +912,6 @@ export default function InventoryPage() {
                                   title={item.name}
                                 >
                                   {item.name}
-                                </p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                  {item.id.slice(0, 8)}
                                 </p>
                               </div>
                             </div>
@@ -923,6 +1081,8 @@ export default function InventoryPage() {
                   </tbody>
                 </table>
               </div>
+                </>
+              )}
             </>
           )}
         </CardContent>
