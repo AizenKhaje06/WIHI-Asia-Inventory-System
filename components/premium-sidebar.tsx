@@ -16,8 +16,8 @@ import {
   Warehouse,
   Users,
   Brain,
-  ChevronLeft,
-  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   X,
   Settings,
   User,
@@ -419,8 +419,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           ))}
         </nav>
 
-        {/* Logout */}
-        <div className="p-2.5 xl:p-3 border-t flex-shrink-0 border-slate-200/60 dark:border-slate-800/60">
+        {/* Logout & Collapse Button Container */}
+        <div className="p-2.5 xl:p-3 border-t flex-shrink-0 border-slate-200/60 dark:border-slate-800/60 relative">
           {collapsed ? (
             <TooltipProvider>
               <Tooltip delayDuration={100}>
@@ -488,35 +488,34 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
               </span>
             </button>
           )}
-        </div>
 
-        {/* Collapse/Expand Button - Desktop Only - Better Position */}
-        {!isMobile && (
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className={cn(
-              "absolute top-1/2 -translate-y-1/2 -right-3 z-50",
-              "w-6 h-6 flex items-center justify-center",
-              "bg-white dark:bg-slate-900",
-              "border border-slate-200 dark:border-slate-800",
-              "rounded-full shadow-md",
-              "transition-all duration-200",
-              "text-slate-600 dark:text-slate-400",
-              "hover:text-blue-500 dark:hover:text-blue-400",
-              "hover:bg-slate-50 dark:hover:bg-slate-800",
-              "hover:border-blue-200 dark:hover:border-blue-800",
-              "hover:shadow-lg"
-            )}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            <div className={cn(
-              "transition-transform duration-200",
-              collapsed ? "rotate-180" : "rotate-0"
-            )}>
-              <ChevronLeft className="h-4 w-4" strokeWidth={2} />
-            </div>
-          </button>
-        )}
+          {/* Collapse/Expand Button - Desktop Only - Aligned with Logout */}
+          {!isMobile && (
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className={cn(
+                "absolute top-1/2 -translate-y-1/2 -right-2 z-50",
+                "w-5 h-5 flex items-center justify-center",
+                "bg-white dark:bg-slate-900",
+                "border border-slate-200 dark:border-slate-800",
+                "rounded-full shadow-md",
+                "transition-all duration-200",
+                "text-slate-600 dark:text-slate-400",
+                "hover:text-blue-500 dark:hover:text-blue-400",
+                "hover:bg-slate-50 dark:hover:bg-slate-800",
+                "hover:border-blue-200 dark:hover:border-blue-800",
+                "hover:shadow-lg hover:scale-110"
+              )}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {collapsed ? (
+                <ChevronsRight className="h-3 w-3" strokeWidth={2.5} />
+              ) : (
+                <ChevronsLeft className="h-3 w-3" strokeWidth={2.5} />
+              )}
+            </button>
+          )}
+        </div>
       </aside>
     </>
   )
