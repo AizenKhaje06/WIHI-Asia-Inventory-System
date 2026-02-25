@@ -42,12 +42,12 @@ export async function POST(
       reason,
     })
 
-    // Log the operation
+    // Log the operation with reason
     await addLog({
       operation: "restock",
       itemId: id,
       itemName: item.name,
-      details: `Added ${amount} units (total cost: $${(item.costPrice * amount).toFixed(2)})`,
+      details: `Added ${amount} units (total cost: ₱${(item.costPrice * amount).toFixed(2)}) - Reason: ${reason}`,
     })
 
     return NextResponse.json({ 
