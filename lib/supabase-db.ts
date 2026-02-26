@@ -210,6 +210,7 @@ export async function getTransactions(): Promise<Transaction[]> {
       // Transaction status tracking
       status: row.status || 'completed',
       cancellationReason: row.cancellation_reason,
+      cancellation_notes: row.cancellation_notes,
       cancelledBy: row.cancelled_by,
       cancelledAt: row.cancelled_at,
       // Customer information

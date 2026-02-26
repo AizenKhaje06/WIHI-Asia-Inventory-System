@@ -494,8 +494,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             <button
               onClick={() => setCollapsed(!collapsed)}
               className={cn(
-                "absolute top-1/2 -translate-y-1/2 -right-1.5 z-50",
-                "w-3 h-3 flex items-center justify-center",
+                "absolute top-1/2 -translate-y-1/2 -right-2 z-50",
+                "w-4 h-4 flex items-center justify-center",
                 "bg-white dark:bg-slate-900",
                 "border border-slate-200 dark:border-slate-800",
                 "rounded-full shadow-md",
@@ -504,14 +504,14 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                 "hover:text-blue-500 dark:hover:text-blue-400",
                 "hover:bg-slate-50 dark:hover:bg-slate-800",
                 "hover:border-blue-200 dark:hover:border-blue-800",
-                "hover:shadow-lg hover:scale-125"
+                "hover:shadow-lg hover:scale-110"
               )}
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {collapsed ? (
-                <ChevronsRight className="h-2 w-2" strokeWidth={3} />
+                <ChevronsRight className="h-3 w-3" strokeWidth={2.5} />
               ) : (
-                <ChevronsLeft className="h-2 w-2" strokeWidth={3} />
+                <ChevronsLeft className="h-3 w-3" strokeWidth={2.5} />
               )}
             </button>
           )}

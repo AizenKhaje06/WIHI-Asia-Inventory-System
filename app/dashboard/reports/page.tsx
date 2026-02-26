@@ -634,143 +634,142 @@ export default function ReportsPage() {
         </Card>
       </div>
 
-      {/* Report Type Selection */}
-      <div className="mb-8">
-        {/* Report Type Cards - Premium Design */}
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-white">Select Report Type</CardTitle>
-            <CardDescription className="text-xs">Choose the report you want to generate and export</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Executive Sales Card */}
-              <button
-                onClick={() => setReportType('executive')}
-                className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                  reportType === 'executive'
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 shadow-lg shadow-blue-500/10'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md'
-                }`}
-              >
-                <div className={`inline-flex p-2 rounded-lg mb-3 transition-colors ${
-                  reportType === 'executive' 
-                    ? 'bg-blue-100 dark:bg-blue-900/50' 
-                    : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30'
-                }`}>
-                  <BarChart3 className={`h-5 w-5 transition-colors ${
-                    reportType === 'executive' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'
-                  }`} />
-                </div>
-                <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
-                  Executive Sales
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Sales performance & profit analysis
-                </p>
-                {reportType === 'executive' && (
-                  <div className="absolute top-3 right-3">
-                    <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
-                  </div>
-                )}
-              </button>
-
-              {/* Inventory Card */}
-              <button
-                onClick={() => setReportType('inventory')}
-                className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                  reportType === 'inventory'
-                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30 shadow-lg shadow-purple-500/10'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-md'
-                }`}
-              >
-                <div className={`inline-flex p-2 rounded-lg mb-3 transition-colors ${
-                  reportType === 'inventory' 
-                    ? 'bg-purple-100 dark:bg-purple-900/50' 
-                    : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-purple-50 dark:group-hover:bg-purple-900/30'
-                }`}>
-                  <Package className={`h-5 w-5 transition-colors ${
-                    reportType === 'inventory' ? 'text-purple-600 dark:text-purple-400' : 'text-slate-500 dark:text-slate-400'
-                  }`} />
-                </div>
-                <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
-                  Inventory
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Stock value & status overview
-                </p>
-                {reportType === 'inventory' && (
-                  <div className="absolute top-3 right-3">
-                    <div className="h-2 w-2 rounded-full bg-purple-500 animate-pulse"></div>
-                  </div>
-                )}
-              </button>
-
-              {/* Product Performance Card */}
-              <button
-                onClick={() => setReportType('product')}
-                className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                  reportType === 'product'
-                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-lg shadow-orange-500/10'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md'
-                }`}
-              >
-                <div className={`inline-flex p-2 rounded-lg mb-3 transition-colors ${
-                  reportType === 'product' 
-                    ? 'bg-orange-100 dark:bg-orange-900/50' 
-                    : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-orange-50 dark:group-hover:bg-orange-900/30'
-                }`}>
-                  <TrendingUp className={`h-5 w-5 transition-colors ${
-                    reportType === 'product' ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 dark:text-slate-400'
-                  }`} />
-                </div>
-                <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
-                  Product Performance
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Top performers & margins
-                </p>
-                {reportType === 'product' && (
-                  <div className="absolute top-3 right-3">
-                    <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse"></div>
-                  </div>
-                )}
-              </button>
+      {/* Report Type Selection - Enterprise Layout */}
+      <Card className="border-slate-200 dark:border-slate-800 shadow-sm mb-8">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-white">Select Report Type</CardTitle>
+              <CardDescription className="text-xs">Choose the report you want to generate and export</CardDescription>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            {/* Export Buttons - Top Right Corner */}
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={() => {
+                  if (reportType === 'executive') handleExportExecutive('excel')
+                  else if (reportType === 'inventory') handleExportInventory('excel')
+                  else handleExportProductPerformance('excel')
+                }}
+                disabled={loading || !report}
+                className="bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                <span className="text-sm font-semibold">Excel</span>
+              </Button>
+              <Button
+                onClick={() => {
+                  if (reportType === 'executive') handleExportExecutive('pdf')
+                  else if (reportType === 'inventory') handleExportInventory('pdf')
+                  else handleExportProductPerformance('pdf')
+                }}
+                disabled={loading || !report}
+                variant="outline"
+                className="border-2 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-md hover:shadow-lg transition-all duration-200"
+              >
+                <FileDown className="h-4 w-4 mr-2" />
+                <span className="text-sm font-semibold">PDF</span>
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Grid Layout: 3 equal cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Executive Sales Card */}
+            <button
+              onClick={() => setReportType('executive')}
+              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left min-h-[160px] flex flex-col ${
+                reportType === 'executive'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 shadow-lg shadow-blue-500/10'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md'
+              }`}
+            >
+              <div className={`inline-flex p-2 rounded-lg mb-3 transition-colors ${
+                reportType === 'executive' 
+                  ? 'bg-blue-100 dark:bg-blue-900/50' 
+                  : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30'
+              }`}>
+                <BarChart3 className={`h-5 w-5 transition-colors ${
+                  reportType === 'executive' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'
+                }`} />
+              </div>
+              <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
+                Executive Sales
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Sales performance & profit analysis
+              </p>
+              {reportType === 'executive' && (
+                <div className="absolute top-3 right-3">
+                  <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
+                </div>
+              )}
+            </button>
 
-      {/* Export Actions - Premium Button Hierarchy */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        <Button
-          onClick={() => {
-            if (reportType === 'executive') handleExportExecutive('excel')
-            else if (reportType === 'inventory') handleExportInventory('excel')
-            else handleExportProductPerformance('excel')
-          }}
-          disabled={loading}
-          className="gap-2.5 bg-green-600 hover:bg-green-700 text-white h-11 font-medium shadow-sm hover:shadow-md transition-all"
-        >
-          <FileSpreadsheet className="h-4 w-4" />
-          <span>Export to Excel</span>
-        </Button>
+            {/* Inventory Card */}
+            <button
+              onClick={() => setReportType('inventory')}
+              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left min-h-[160px] flex flex-col ${
+                reportType === 'inventory'
+                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30 shadow-lg shadow-purple-500/10'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-md'
+              }`}
+            >
+              <div className={`inline-flex p-2 rounded-lg mb-3 transition-colors ${
+                reportType === 'inventory' 
+                  ? 'bg-purple-100 dark:bg-purple-900/50' 
+                  : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-purple-50 dark:group-hover:bg-purple-900/30'
+              }`}>
+                <Package className={`h-5 w-5 transition-colors ${
+                  reportType === 'inventory' ? 'text-purple-600 dark:text-purple-400' : 'text-slate-500 dark:text-slate-400'
+                }`} />
+              </div>
+              <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
+                Inventory
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Stock value & status overview
+              </p>
+              {reportType === 'inventory' && (
+                <div className="absolute top-3 right-3">
+                  <div className="h-2 w-2 rounded-full bg-purple-500 animate-pulse"></div>
+                </div>
+              )}
+            </button>
 
-        <Button
-          onClick={() => {
-            if (reportType === 'executive') handleExportExecutive('pdf')
-            else if (reportType === 'inventory') handleExportInventory('pdf')
-            else handleExportProductPerformance('pdf')
-          }}
-          disabled={loading}
-          variant="outline"
-          className="gap-2.5 h-11 font-medium border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
-        >
-          <FileDown className="h-4 w-4" />
-          <span>Export to PDF</span>
-        </Button>
-      </div>
-
+            {/* Product Performance Card */}
+            <button
+              onClick={() => setReportType('product')}
+              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left min-h-[160px] flex flex-col ${
+                reportType === 'product'
+                  ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-lg shadow-orange-500/10'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md'
+              }`}
+            >
+              <div className={`inline-flex p-2 rounded-lg mb-3 transition-colors ${
+                reportType === 'product' 
+                  ? 'bg-orange-100 dark:bg-orange-900/50' 
+                  : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-orange-50 dark:group-hover:bg-orange-900/30'
+              }`}>
+                <TrendingUp className={`h-5 w-5 transition-colors ${
+                  reportType === 'product' ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 dark:text-slate-400'
+                }`} />
+              </div>
+              <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
+                Product Performance
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Top performers & margins
+              </p>
+              {reportType === 'product' && (
+                <div className="absolute top-3 right-3">
+                  <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse"></div>
+                </div>
+              )}
+            </button>
+          </div>
+        </CardContent>
+      </Card>
       {/* Report Preview - Executive Sales */}
       {reportType === 'executive' && !loading && (
         <Card className="border-slate-200 dark:border-slate-800 shadow-sm">

@@ -19,6 +19,16 @@ import {
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts"
 import { apiGet } from "@/lib/api-client"
+import { toast } from "sonner"
+import { 
+  exportToExcel, 
+  exportToPDF,
+  formatCurrencyForExport,
+  formatDateForExport,
+  formatNumberForExport,
+  formatPercentageForExport
+} from "@/lib/export-utils"
+import { FileSpreadsheet, FileDown } from "lucide-react"
 
 interface DepartmentDetail {
   name: string
@@ -180,6 +190,342 @@ export default function SalesChannelDetailPage() {
     }
   }
 
+  // Export Function for Sales Channel Report
+  async function handleExportChannel(format: 'excel' | 'pdf') {
+    if (!data) {
+      toast.error("No data available to export")
+      return
+    }
+
+    const filters = []
+    if (startDate) filters.push({ label: 'Start Date', value: new Date(startDate).toLocaleDateString() })
+    if (endDate) filters.push({ label: 'End Date', value: new Date(endDate).toLocaleDateString() })
+
+    const summary = [
+      { label: 'Sales Channel', value: data.name },
+      { label: 'Total Revenue', value: formatCurrencyForExport(data.metrics.totalRevenue) },
+      { label: 'Total Cost', value: formatCurrencyForExport(data.metrics.totalCost) },
+      { label: 'Total Profit', value: formatCurrencyForExport(data.metrics.totalProfit) },
+      { label: 'Profit Margin', value: formatPercentageForExport(data.metrics.profitMargin) },
+      { label: 'Total Transactions', value: formatNumberForExport(data.metrics.transactionCount) },
+      { label: 'Total Items Sold', value: formatNumberForExport(data.metrics.totalQuantity) },
+    ]
+
+    // Separate transactions by status
+    const salesTransactions = data.recentTransactions.filter((t: any) => !t.status || t.status === 'completed')
+    const cancelledTransactions = data.recentTransactions.filter((t: any) => t.status === 'cancelled')
+    const returnedTransactions = data.recentTransactions.filter((t: any) => t.status === 'returned')
+
+    const columns = [
+      { header: 'Date & Time', key: 'timestamp', width: 20, format: formatDateForExport },
+      { header: 'Item Name', key: 'itemName', width: 30 },
+      { header: 'Quantity', key: 'quantity', width: 12, format: formatNumberForExport },
+      { header: 'Revenue', key: 'revenue', width: 15, format: formatCurrencyForExport },
+      { header: 'Cost', key: 'cost', width: 15, format: formatCurrencyForExport },
+      { header: 'Profit', key: 'profit', width: 15, format: formatCurrencyForExport },
+      { header: 'Staff', key: 'staffName', width: 20 },
+    ]
+
+    const toastId = toast.loading(`Generating ${format.toUpperCase()} report...`)
+    
+    try {
+      if (format === 'excel') {
+        // For Excel, create multiple sheets
+        const XLSX = await import('xlsx')
+        const wb = XLSX.utils.book_new()
+
+        // Summary Sheet
+        const summaryData: any[][] = []
+        summaryData.push([`${data.name} - Sales Channel Report`])
+        summaryData.push([])
+        summaryData.push(['Generated:', new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })])
+        summaryData.push([])
+        
+        if (filters.length > 0) {
+          summaryData.push(['Applied Filters:'])
+          filters.forEach(filter => summaryData.push([filter.label, filter.value]))
+          summaryData.push([])
+        }
+
+        summaryData.push(['Summary:'])
+        summary.forEach(item => summaryData.push([item.label, item.value]))
+        summaryData.push([])
+        summaryData.push(['Transaction Breakdown:'])
+        summaryData.push(['Sales Transactions', salesTransactions.length])
+        summaryData.push(['Cancelled Transactions', cancelledTransactions.length])
+        summaryData.push(['Returned Transactions', returnedTransactions.length])
+        summaryData.push(['Total Transactions', data.recentTransactions.length])
+
+        const summaryWs = XLSX.utils.aoa_to_sheet(summaryData)
+        XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary')
+
+        // Sales Transactions Sheet
+        if (salesTransactions.length > 0) {
+          const salesData: any[][] = []
+          salesData.push(['Sales Transactions'])
+          salesData.push([])
+          salesData.push(columns.map(col => col.header))
+          salesTransactions.forEach((row: any) => {
+            salesData.push(columns.map(col => {
+              const value = row[col.key]
+              return col.format ? col.format(value, row) : value
+            }))
+          })
+          salesData.push([])
+          salesData.push(['Total Sales:', salesTransactions.length])
+
+          const salesWs = XLSX.utils.aoa_to_sheet(salesData)
+          salesWs['!cols'] = columns.map(col => ({ wch: col.width || 15 }))
+          XLSX.utils.book_append_sheet(wb, salesWs, 'Sales')
+        }
+
+        // Cancelled Transactions Sheet
+        if (cancelledTransactions.length > 0) {
+          const cancelledData: any[][] = []
+          cancelledData.push(['Cancelled Transactions'])
+          cancelledData.push([])
+          cancelledData.push(columns.map(col => col.header))
+          cancelledTransactions.forEach((row: any) => {
+            cancelledData.push(columns.map(col => {
+              const value = row[col.key]
+              return col.format ? col.format(value, row) : value
+            }))
+          })
+          cancelledData.push([])
+          cancelledData.push(['Total Cancelled:', cancelledTransactions.length])
+
+          const cancelledWs = XLSX.utils.aoa_to_sheet(cancelledData)
+          cancelledWs['!cols'] = columns.map(col => ({ wch: col.width || 15 }))
+          XLSX.utils.book_append_sheet(wb, cancelledWs, 'Cancelled')
+        }
+
+        // Returned Transactions Sheet
+        if (returnedTransactions.length > 0) {
+          const returnedData: any[][] = []
+          returnedData.push(['Returned Transactions'])
+          returnedData.push([])
+          returnedData.push(columns.map(col => col.header))
+          returnedTransactions.forEach((row: any) => {
+            returnedData.push(columns.map(col => {
+              const value = row[col.key]
+              return col.format ? col.format(value, row) : value
+            }))
+          })
+          returnedData.push([])
+          returnedData.push(['Total Returned:', returnedTransactions.length])
+
+          const returnedWs = XLSX.utils.aoa_to_sheet(returnedData)
+          returnedWs['!cols'] = columns.map(col => ({ wch: col.width || 15 }))
+          XLSX.utils.book_append_sheet(wb, returnedWs, 'Returned')
+        }
+
+        // Top Products Sheet
+        if (data.topProducts && data.topProducts.length > 0) {
+          const topProductsData: any[][] = []
+          topProductsData.push(['Top Products'])
+          topProductsData.push([])
+          topProductsData.push(['Product Name', 'Quantity Sold', 'Revenue'])
+          data.topProducts.forEach((product: any) => {
+            topProductsData.push([
+              product.name,
+              formatNumberForExport(product.quantity),
+              formatCurrencyForExport(product.revenue)
+            ])
+          })
+
+          const topProductsWs = XLSX.utils.aoa_to_sheet(topProductsData)
+          topProductsWs['!cols'] = [{ wch: 35 }, { wch: 15 }, { wch: 15 }]
+          XLSX.utils.book_append_sheet(wb, topProductsWs, 'Top Products')
+        }
+
+        // Save Excel file
+        const filename = `Sales-Channel-Report-${data.name}-${new Date().toISOString().split('T')[0]}-${String(new Date().getHours()).padStart(2, '0')}${String(new Date().getMinutes()).padStart(2, '0')}.xlsx`
+        XLSX.writeFile(wb, filename)
+        
+        toast.success('Excel report downloaded successfully!', { id: toastId })
+      } else {
+        // For PDF, create sections for each transaction type
+        const jsPDF = (await import('jspdf')).default
+        const autoTable = (await import('jspdf-autotable')).default
+
+        const doc = new jsPDF({
+          orientation: 'landscape',
+          unit: 'mm',
+          format: 'a4'
+        }) as any
+
+        let yPosition = 20
+
+        // Title
+        doc.setFontSize(18)
+        doc.setFont('helvetica', 'bold')
+        doc.text(`${data.name} - Sales Channel Report`, 14, yPosition)
+        yPosition += 10
+
+        // Timestamp
+        doc.setFontSize(10)
+        doc.setFont('helvetica', 'normal')
+        doc.text(`Generated: ${new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}`, 14, yPosition)
+        yPosition += 8
+
+        // Filters
+        if (filters.length > 0) {
+          doc.setFont('helvetica', 'bold')
+          doc.text('Applied Filters:', 14, yPosition)
+          yPosition += 5
+          doc.setFont('helvetica', 'normal')
+          filters.forEach((filter: any) => {
+            doc.text(`${filter.label}: ${filter.value}`, 14, yPosition)
+            yPosition += 5
+          })
+          yPosition += 3
+        }
+
+        // Summary (remove ₱ symbols for PDF)
+        const pdfSummary = summary.map(item => ({
+          ...item,
+          value: typeof item.value === 'string' ? item.value.replace(/₱/g, '') : item.value
+        }))
+
+        doc.setFont('helvetica', 'bold')
+        doc.text('Summary:', 14, yPosition)
+        yPosition += 5
+        doc.setFont('helvetica', 'normal')
+        pdfSummary.forEach((item: any) => {
+          doc.text(`${item.label}: ${item.value}`, 14, yPosition)
+          yPosition += 5
+        })
+        yPosition += 5
+
+        // Transaction breakdown
+        doc.setFont('helvetica', 'bold')
+        doc.text('Transaction Breakdown:', 14, yPosition)
+        yPosition += 5
+        doc.setFont('helvetica', 'normal')
+        doc.text(`Sales: ${salesTransactions.length}`, 14, yPosition)
+        yPosition += 5
+        doc.text(`Cancelled: ${cancelledTransactions.length}`, 14, yPosition)
+        yPosition += 5
+        doc.text(`Returned: ${returnedTransactions.length}`, 14, yPosition)
+        yPosition += 10
+
+        // Sales Transactions Table
+        if (salesTransactions.length > 0) {
+          doc.setFontSize(12)
+          doc.setFont('helvetica', 'bold')
+          doc.text('Sales Transactions', 14, yPosition)
+          yPosition += 5
+
+          const salesTableData = salesTransactions.map((row: any) => 
+            columns.map(col => {
+              const value = row[col.key]
+              const formatted = col.format ? col.format(value, row) : String(value ?? '')
+              return typeof formatted === 'string' ? formatted.replace(/₱/g, '') : formatted
+            })
+          )
+
+          autoTable(doc, {
+            head: [columns.map(col => col.header)],
+            body: salesTableData,
+            startY: yPosition,
+            theme: 'striped',
+            headStyles: { fillColor: [34, 197, 94], textColor: 255, fontStyle: 'bold' },
+            styles: { fontSize: 8, cellPadding: 2 },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+          })
+
+          yPosition = (doc as any).lastAutoTable.finalY + 10
+        }
+
+        // Cancelled Transactions Table
+        if (cancelledTransactions.length > 0) {
+          if (yPosition > 180) {
+            doc.addPage()
+            yPosition = 20
+          }
+
+          doc.setFontSize(12)
+          doc.setFont('helvetica', 'bold')
+          doc.text('Cancelled Transactions', 14, yPosition)
+          yPosition += 5
+
+          const cancelledTableData = cancelledTransactions.map((row: any) => 
+            columns.map(col => {
+              const value = row[col.key]
+              const formatted = col.format ? col.format(value, row) : String(value ?? '')
+              return typeof formatted === 'string' ? formatted.replace(/₱/g, '') : formatted
+            })
+          )
+
+          autoTable(doc, {
+            head: [columns.map(col => col.header)],
+            body: cancelledTableData,
+            startY: yPosition,
+            theme: 'striped',
+            headStyles: { fillColor: [239, 68, 68], textColor: 255, fontStyle: 'bold' },
+            styles: { fontSize: 8, cellPadding: 2 },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+          })
+
+          yPosition = (doc as any).lastAutoTable.finalY + 10
+        }
+
+        // Returned Transactions Table
+        if (returnedTransactions.length > 0) {
+          if (yPosition > 180) {
+            doc.addPage()
+            yPosition = 20
+          }
+
+          doc.setFontSize(12)
+          doc.setFont('helvetica', 'bold')
+          doc.text('Returned Transactions', 14, yPosition)
+          yPosition += 5
+
+          const returnedTableData = returnedTransactions.map((row: any) => 
+            columns.map(col => {
+              const value = row[col.key]
+              const formatted = col.format ? col.format(value, row) : String(value ?? '')
+              return typeof formatted === 'string' ? formatted.replace(/₱/g, '') : formatted
+            })
+          )
+
+          autoTable(doc, {
+            head: [columns.map(col => col.header)],
+            body: returnedTableData,
+            startY: yPosition,
+            theme: 'striped',
+            headStyles: { fillColor: [245, 158, 11], textColor: 255, fontStyle: 'bold' },
+            styles: { fontSize: 8, cellPadding: 2 },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+          })
+        }
+
+        // Footer on all pages
+        const pageCount = doc.internal.getNumberOfPages()
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i)
+          const pageSize = doc.internal.pageSize
+          const pageHeight = pageSize.height || pageSize.getHeight()
+          
+          doc.setFontSize(8)
+          doc.setFont('helvetica', 'normal')
+          doc.text(`Page ${i} of ${pageCount}`, 14, pageHeight - 10)
+          doc.text(`Total Records: ${data.recentTransactions.length}`, pageSize.width - 50, pageHeight - 10)
+        }
+
+        // Save PDF
+        const filename = `Sales-Channel-Report-${data.name}-${new Date().toISOString().split('T')[0]}-${String(new Date().getHours()).padStart(2, '0')}${String(new Date().getMinutes()).padStart(2, '0')}.pdf`
+        doc.save(filename)
+        
+        toast.success('PDF report downloaded successfully!', { id: toastId })
+      }
+    } catch (error) {
+      toast.error(`Failed to export ${format.toUpperCase()} report`, { id: toastId })
+      console.error(error)
+    }
+  }
+
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
       {/* Page Header */}
@@ -193,12 +539,35 @@ export default function SalesChannelDetailPage() {
           Back to Sales Channels
         </Button>
         
-        <h1 className="text-4xl font-bold gradient-text mb-2">
-          {data.name}
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
-          Detailed performance analytics and cash flow
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-4xl font-bold gradient-text mb-2">
+              {data.name}
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 text-base">
+              Detailed performance analytics and cash flow
+            </p>
+          </div>
+          
+          {/* Export Buttons - Top Right Corner */}
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => handleExportChannel('excel')}
+              className="bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+            >
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              <span className="text-sm font-semibold">Excel</span>
+            </Button>
+            <Button
+              onClick={() => handleExportChannel('pdf')}
+              variant="outline"
+              className="border-2 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-md hover:shadow-lg transition-all duration-200"
+            >
+              <FileDown className="h-4 w-4 mr-2" />
+              <span className="text-sm font-semibold">PDF</span>
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Date Filter */}

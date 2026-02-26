@@ -303,47 +303,54 @@ export default function CancelledOrdersPage() {
                                     </Button>
                                   </DialogTrigger>
                                   <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                                    <DialogHeader className="border-b pb-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 -m-6 mb-0 p-6">
-                                      <div className="flex items-start gap-4">
-                                        <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
-                                          <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                                    <DialogHeader className="border-b pb-3 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 -m-6 mb-0 p-4">
+                                      <div className="flex items-start gap-3">
+                                        <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                                          <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
                                         </div>
                                         <div className="flex-1">
-                                          <DialogTitle className="text-2xl font-bold">Cancelled Order Details</DialogTitle>
-                                          <DialogDescription className="mt-1">
+                                          <DialogTitle className="text-xl font-bold">Cancelled Order Details</DialogTitle>
+                                          <DialogDescription className="mt-0.5 text-xs">
                                             Complete transaction and customer information
                                           </DialogDescription>
                                         </div>
                                       </div>
                                     </DialogHeader>
                                     {selectedTransaction && (
-                                      <div className="space-y-6 py-6">
+                                      <div className="space-y-4 py-4">
                                         {/* Transaction Summary Card */}
-                                        <div className="p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                                          <div className="flex items-start justify-between mb-4">
+                                        <div className="p-3 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                                          <div className="flex items-start justify-between mb-3">
                                             <div>
-                                              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{selectedTransaction.itemName}</h3>
-                                              <p className="text-sm text-slate-500 dark:text-slate-400 font-mono mt-1">{selectedTransaction.id}</p>
+                                              <h3 className="text-base font-bold text-slate-900 dark:text-white">{selectedTransaction.itemName}</h3>
+                                              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">{selectedTransaction.id}</p>
                                             </div>
-                                            <Badge variant="destructive" className="text-sm px-3 py-1">
-                                              Cancelled
-                                            </Badge>
+                                            <div className="flex flex-col items-end gap-1.5">
+                                              <Badge variant="destructive" className="text-xs px-2 py-0.5">
+                                                Cancelled
+                                              </Badge>
+                                              {selectedTransaction.department && (
+                                                <Badge variant="outline" className="text-xs px-2 py-0.5 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
+                                                  {selectedTransaction.department}
+                                                </Badge>
+                                              )}
+                                            </div>
                                           </div>
-                                          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                                          <div className="grid grid-cols-3 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
                                             <div>
-                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Quantity</p>
-                                              <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{selectedTransaction.quantity}</p>
+                                              <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">Quantity</p>
+                                              <p className="text-base font-bold text-slate-900 dark:text-white mt-0.5">{selectedTransaction.quantity}</p>
                                             </div>
                                             <div>
-                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Amount</p>
-                                              <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">₱{selectedTransaction.totalRevenue?.toFixed(2)}</p>
+                                              <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">Amount</p>
+                                              <p className="text-base font-bold text-slate-900 dark:text-white mt-0.5">₱{selectedTransaction.totalRevenue?.toFixed(2)}</p>
                                             </div>
                                             <div>
-                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Date</p>
-                                              <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">
+                                              <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">Date</p>
+                                              <p className="text-xs font-semibold text-slate-900 dark:text-white mt-0.5">
                                                 {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'MMM dd, yyyy')}
                                               </p>
-                                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                              <p className="text-[10px] text-slate-500 dark:text-slate-400">
                                                 {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'HH:mm')}
                                               </p>
                                             </div>
@@ -351,39 +358,39 @@ export default function CancelledOrdersPage() {
                                         </div>
 
                                         {/* Customer Information Section */}
-                                        <div className="space-y-4">
-                                          <div className="flex items-center gap-3 pb-3 border-b">
-                                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                              <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                        <div className="space-y-2.5">
+                                          <div className="flex items-center gap-2 pb-2 border-b">
+                                            <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-md">
+                                              <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                                             </div>
-                                            <h4 className="text-lg font-bold text-slate-900 dark:text-white">Customer Information</h4>
+                                            <h4 className="text-sm font-bold text-slate-900 dark:text-white">Customer Information</h4>
                                           </div>
-                                          <div className="grid grid-cols-2 gap-4">
-                                            <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Full Name</p>
-                                              <p className="font-semibold text-slate-900 dark:text-white">{selectedTransaction.customerName || 'Walk-in Customer'}</p>
+                                          <div className="grid grid-cols-2 gap-2.5">
+                                            <div className="p-2.5 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700">
+                                              <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Full Name</p>
+                                              <p className="text-xs font-semibold text-slate-900 dark:text-white">{selectedTransaction.customerName || 'Walk-in Customer'}</p>
                                             </div>
-                                            <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Contact Number</p>
-                                              <p className="font-semibold text-slate-900 dark:text-white flex items-center">
-                                                <Phone className="mr-2 h-4 w-4 text-slate-400" />
+                                            <div className="p-2.5 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700">
+                                              <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Contact Number</p>
+                                              <p className="text-xs font-semibold text-slate-900 dark:text-white flex items-center">
+                                                <Phone className="mr-1.5 h-3 w-3 text-slate-400" />
                                                 {selectedTransaction.customerPhone || 'N/A'}
                                               </p>
                                             </div>
                                             {selectedTransaction.customerEmail && (
-                                              <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Email Address</p>
-                                                <p className="font-semibold text-slate-900 dark:text-white flex items-center text-sm">
-                                                  <Mail className="mr-2 h-4 w-4 text-slate-400" />
+                                              <div className="p-2.5 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700">
+                                                <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Email Address</p>
+                                                <p className="text-xs font-semibold text-slate-900 dark:text-white flex items-center">
+                                                  <Mail className="mr-1.5 h-3 w-3 text-slate-400" />
                                                   {selectedTransaction.customerEmail}
                                                 </p>
                                               </div>
                                             )}
                                             {selectedTransaction.customerAddress && (
-                                              <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 col-span-2">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Address</p>
-                                                <p className="font-semibold text-slate-900 dark:text-white flex items-start text-sm">
-                                                  <MapPin className="mr-2 h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                                              <div className="p-2.5 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 col-span-2">
+                                                <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Address</p>
+                                                <p className="text-xs font-semibold text-slate-900 dark:text-white flex items-start">
+                                                  <MapPin className="mr-1.5 h-3 w-3 text-slate-400 mt-0.5 flex-shrink-0" />
                                                   {selectedTransaction.customerAddress}
                                                 </p>
                                               </div>
@@ -391,65 +398,37 @@ export default function CancelledOrdersPage() {
                                           </div>
                                         </div>
 
-                                        {/* Order Details Section */}
-                                        <div className="space-y-4">
-                                          <div className="flex items-center gap-3 pb-3 border-b">
-                                            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                                              <BarChart3 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                                            </div>
-                                            <h4 className="text-lg font-bold text-slate-900 dark:text-white">Order Details</h4>
-                                          </div>
-                                          <div className="grid grid-cols-2 gap-4">
-                                            <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 col-span-2">
-                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Product</p>
-                                              <p className="text-lg font-bold text-slate-900 dark:text-white">{selectedTransaction.itemName}</p>
-                                            </div>
-                                            <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Quantity</p>
-                                              <p className="text-2xl font-bold text-slate-900 dark:text-white">{selectedTransaction.quantity}</p>
-                                            </div>
-                                            <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Unit Price</p>
-                                              <p className="text-2xl font-bold text-slate-900 dark:text-white">₱{selectedTransaction.sellingPrice?.toFixed(2)}</p>
-                                            </div>
-                                            <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-lg border-2 border-amber-200 dark:border-amber-800 col-span-2">
-                                              <p className="text-xs text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-2 font-semibold">Total Amount</p>
-                                              <p className="text-3xl font-bold text-amber-900 dark:text-amber-300">₱{selectedTransaction.totalRevenue?.toFixed(2)}</p>
-                                            </div>
-                                          </div>
-                                        </div>
-
                                         {/* Cancellation Information Section */}
-                                        <div className="space-y-4">
-                                          <div className="flex items-center gap-3 pb-3 border-b">
-                                            <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                                              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                                        <div className="space-y-2.5">
+                                          <div className="flex items-center gap-2 pb-2 border-b">
+                                            <div className="p-1.5 bg-red-100 dark:bg-red-900/30 rounded-md">
+                                              <AlertCircle className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
                                             </div>
-                                            <h4 className="text-lg font-bold text-slate-900 dark:text-white">Cancellation Information</h4>
+                                            <h4 className="text-sm font-bold text-slate-900 dark:text-white">Cancellation Information</h4>
                                           </div>
-                                          <div className="space-y-4">
-                                            <div className="p-4 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-200 dark:border-red-800">
-                                              <p className="text-xs text-red-700 dark:text-red-400 uppercase tracking-wide mb-2 font-semibold">Reason</p>
-                                              <Badge variant="destructive" className="text-base px-4 py-2">
+                                          <div className="space-y-2.5">
+                                            <div className="p-2.5 bg-red-50 dark:bg-red-900/10 rounded-md border border-red-200 dark:border-red-800">
+                                              <p className="text-[10px] text-red-700 dark:text-red-400 uppercase tracking-wide mb-1.5 font-semibold">Reason</p>
+                                              <Badge variant="destructive" className="text-xs px-2.5 py-1">
                                                 {selectedTransaction.cancellationReason || 'N/A'}
                                               </Badge>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                              <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Cancelled By</p>
-                                                <p className="font-semibold text-slate-900 dark:text-white">{selectedTransaction.cancelledBy || 'N/A'}</p>
+                                            <div className="grid grid-cols-2 gap-2.5">
+                                              <div className="p-2.5 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700">
+                                                <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Cancelled By</p>
+                                                <p className="text-xs font-semibold text-slate-900 dark:text-white">{selectedTransaction.cancelledBy || 'N/A'}</p>
                                               </div>
-                                              <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Cancelled At</p>
-                                                <p className="font-semibold text-slate-900 dark:text-white text-sm">
+                                              <div className="p-2.5 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700">
+                                                <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Cancelled At</p>
+                                                <p className="text-xs font-semibold text-slate-900 dark:text-white">
                                                   {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'PPpp')}
                                                 </p>
                                               </div>
                                             </div>
-                                            {selectedTransaction.notes && (
-                                              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Additional Notes</p>
-                                                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{selectedTransaction.notes}</p>
+                                            {selectedTransaction.cancellation_notes && (
+                                              <div className="p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700">
+                                                <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Additional Notes</p>
+                                                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{selectedTransaction.cancellation_notes}</p>
                                               </div>
                                             )}
                                           </div>
@@ -485,48 +464,55 @@ export default function CancelledOrdersPage() {
                               <Button variant="ghost" size="sm" onClick={() => setSelectedTransaction(transaction)}>View</Button>
                             </DialogTrigger>
                           </div>
-                        <DialogContent className="max-w-[95vw] md:max-w-3xl max-h-[90vh] overflow-y-auto">
-                          <DialogHeader className="border-b pb-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 -m-6 mb-0 p-6">
-                            <div className="flex items-start gap-3">
-                              <div className="p-2.5 bg-red-100 dark:bg-red-900/30 rounded-xl">
-                                <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                        <DialogContent className="max-w-[92vw] md:max-w-3xl max-h-[85vh] overflow-y-auto mx-4">
+                          <DialogHeader className="border-b pb-3 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 -m-6 mb-0 p-4">
+                            <div className="flex items-start gap-2.5">
+                              <div className="p-1.5 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                                <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                               </div>
                               <div className="flex-1">
-                                <DialogTitle className="text-xl font-bold">Cancelled Order Details</DialogTitle>
-                                <DialogDescription className="mt-1 text-sm">
+                                <DialogTitle className="text-base font-bold">Cancelled Order Details</DialogTitle>
+                                <DialogDescription className="mt-0.5 text-xs">
                                   Complete transaction and customer information
                                 </DialogDescription>
                               </div>
                             </div>
                           </DialogHeader>
                           {selectedTransaction && (
-                            <div className="space-y-5 py-5">
+                            <div className="space-y-3 py-3">
                               {/* Transaction Summary Card */}
-                              <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <div className="flex items-start justify-between mb-3">
+                              <div className="p-2.5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                                <div className="flex items-start justify-between mb-2.5">
                                   <div>
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">{selectedTransaction.itemName}</h3>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1">{selectedTransaction.id}</p>
+                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{selectedTransaction.itemName}</h3>
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">{selectedTransaction.id}</p>
                                   </div>
-                                  <Badge variant="destructive" className="text-xs px-2.5 py-1">
-                                    Cancelled
-                                  </Badge>
+                                  <div className="flex flex-col items-end gap-1">
+                                    <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5">
+                                      Cancelled
+                                    </Badge>
+                                    {selectedTransaction.department && (
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
+                                        {selectedTransaction.department}
+                                      </Badge>
+                                    )}
+                                  </div>
                                 </div>
-                                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                                <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-slate-200 dark:border-slate-700">
                                   <div>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Qty</p>
-                                    <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{selectedTransaction.quantity}</p>
+                                    <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">Qty</p>
+                                    <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{selectedTransaction.quantity}</p>
                                   </div>
                                   <div>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Amount</p>
-                                    <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">₱{selectedTransaction.totalRevenue?.toFixed(2)}</p>
+                                    <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">Amount</p>
+                                    <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">₱{selectedTransaction.totalRevenue?.toFixed(2)}</p>
                                   </div>
                                   <div>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Date</p>
-                                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">
+                                    <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">Date</p>
+                                    <p className="text-[10px] font-semibold text-slate-900 dark:text-white mt-0.5">
                                       {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'MMM dd')}
                                     </p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    <p className="text-[9px] text-slate-500 dark:text-slate-400">
                                       {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'HH:mm')}
                                     </p>
                                   </div>
@@ -534,39 +520,39 @@ export default function CancelledOrdersPage() {
                               </div>
 
                               {/* Customer Information Section */}
-                              <div className="space-y-3">
-                                <div className="flex items-center gap-2.5 pb-2.5 border-b">
-                                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                    <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 pb-1.5 border-b">
+                                  <div className="p-1 bg-blue-100 dark:bg-blue-900/30 rounded">
+                                    <User className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                   </div>
-                                  <h4 className="text-base font-bold text-slate-900 dark:text-white">Customer Information</h4>
+                                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">Customer Information</h4>
                                 </div>
-                                <div className="space-y-2.5">
-                                  <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Full Name</p>
-                                    <p className="font-semibold text-slate-900 dark:text-white">{selectedTransaction.customerName || 'Walk-in Customer'}</p>
+                                <div className="space-y-2">
+                                  <div className="p-2 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700">
+                                    <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Full Name</p>
+                                    <p className="text-xs font-semibold text-slate-900 dark:text-white">{selectedTransaction.customerName || 'Walk-in Customer'}</p>
                                   </div>
-                                  <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Contact Number</p>
-                                    <p className="font-semibold text-slate-900 dark:text-white flex items-center">
-                                      <Phone className="mr-2 h-3.5 w-3.5 text-slate-400" />
+                                  <div className="p-2 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700">
+                                    <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Contact Number</p>
+                                    <p className="text-xs font-semibold text-slate-900 dark:text-white flex items-center">
+                                      <Phone className="mr-1.5 h-2.5 w-2.5 text-slate-400" />
                                       {selectedTransaction.customerPhone || 'N/A'}
                                     </p>
                                   </div>
                                   {selectedTransaction.customerEmail && (
-                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Email Address</p>
-                                      <p className="font-semibold text-slate-900 dark:text-white flex items-center text-sm break-all">
-                                        <Mail className="mr-2 h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                                    <div className="p-2 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700">
+                                      <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Email Address</p>
+                                      <p className="text-xs font-semibold text-slate-900 dark:text-white flex items-center break-all">
+                                        <Mail className="mr-1.5 h-2.5 w-2.5 text-slate-400 flex-shrink-0" />
                                         {selectedTransaction.customerEmail}
                                       </p>
                                     </div>
                                   )}
                                   {selectedTransaction.customerAddress && (
-                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Address</p>
-                                      <p className="font-semibold text-slate-900 dark:text-white flex items-start text-sm">
-                                        <MapPin className="mr-2 h-3.5 w-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
+                                    <div className="p-2 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700">
+                                      <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Address</p>
+                                      <p className="text-xs font-semibold text-slate-900 dark:text-white flex items-start">
+                                        <MapPin className="mr-1.5 h-2.5 w-2.5 text-slate-400 mt-0.5 flex-shrink-0" />
                                         {selectedTransaction.customerAddress}
                                       </p>
                                     </div>
@@ -574,70 +560,40 @@ export default function CancelledOrdersPage() {
                                 </div>
                               </div>
 
-                              {/* Order Details Section */}
-                              <div className="space-y-3">
-                                <div className="flex items-center gap-2.5 pb-2.5 border-b">
-                                  <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                                    <BarChart3 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                                  </div>
-                                  <h4 className="text-base font-bold text-slate-900 dark:text-white">Order Details</h4>
-                                </div>
-                                <div className="space-y-2.5">
-                                  <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Product</p>
-                                    <p className="text-base font-bold text-slate-900 dark:text-white">{selectedTransaction.itemName}</p>
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-2.5">
-                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Quantity</p>
-                                      <p className="text-xl font-bold text-slate-900 dark:text-white">{selectedTransaction.quantity}</p>
-                                    </div>
-                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Unit Price</p>
-                                      <p className="text-xl font-bold text-slate-900 dark:text-white">₱{selectedTransaction.sellingPrice?.toFixed(2)}</p>
-                                    </div>
-                                  </div>
-                                  <div className="p-3 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-lg border-2 border-amber-200 dark:border-amber-800">
-                                    <p className="text-xs text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-1.5 font-semibold">Total Amount</p>
-                                    <p className="text-2xl font-bold text-amber-900 dark:text-amber-300">₱{selectedTransaction.totalRevenue?.toFixed(2)}</p>
-                                  </div>
-                                </div>
-                              </div>
-
                               {/* Cancellation Information Section */}
-                              <div className="space-y-3">
-                                <div className="flex items-center gap-2.5 pb-2.5 border-b">
-                                  <div className="p-1.5 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                                    <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 pb-1.5 border-b">
+                                  <div className="p-1 bg-red-100 dark:bg-red-900/30 rounded">
+                                    <AlertCircle className="h-3 w-3 text-red-600 dark:text-red-400" />
                                   </div>
-                                  <h4 className="text-base font-bold text-slate-900 dark:text-white">Cancellation Information</h4>
+                                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">Cancellation Information</h4>
                                 </div>
-                                <div className="space-y-2.5">
-                                  <div className="p-3 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-200 dark:border-red-800">
-                                    <p className="text-xs text-red-700 dark:text-red-400 uppercase tracking-wide mb-2 font-semibold">Reason</p>
-                                    <Badge variant="destructive" className="text-sm px-3 py-1.5">
+                                <div className="space-y-2">
+                                  <div className="p-2 bg-red-50 dark:bg-red-900/10 rounded-md border border-red-200 dark:border-red-800">
+                                    <p className="text-[9px] text-red-700 dark:text-red-400 uppercase tracking-wide mb-1.5 font-semibold">Reason</p>
+                                    <Badge variant="destructive" className="text-xs px-2 py-1">
                                       {selectedTransaction.cancellationReason || 'N/A'}
                                     </Badge>
                                   </div>
-                                  <div className="grid grid-cols-2 gap-2.5">
-                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Cancelled By</p>
-                                      <p className="font-semibold text-slate-900 dark:text-white text-sm">{selectedTransaction.cancelledBy || 'N/A'}</p>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="p-2 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700">
+                                      <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Cancelled By</p>
+                                      <p className="text-xs font-semibold text-slate-900 dark:text-white">{selectedTransaction.cancelledBy || 'N/A'}</p>
                                     </div>
-                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Cancelled At</p>
-                                      <p className="font-semibold text-slate-900 dark:text-white text-xs">
+                                    <div className="p-2 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700">
+                                      <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Cancelled At</p>
+                                      <p className="text-[10px] font-semibold text-slate-900 dark:text-white">
                                         {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'MMM dd, yyyy')}
                                       </p>
-                                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                      <p className="text-[9px] text-slate-500 dark:text-slate-400 mt-0.5">
                                         {format(new Date(selectedTransaction.cancelledAt || selectedTransaction.timestamp), 'HH:mm')}
                                       </p>
                                     </div>
                                   </div>
-                                  {selectedTransaction.notes && (
-                                    <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Additional Notes</p>
-                                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{selectedTransaction.notes}</p>
+                                  {selectedTransaction.cancellation_notes && (
+                                    <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700">
+                                      <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Additional Notes</p>
+                                      <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{selectedTransaction.cancellation_notes}</p>
                                     </div>
                                   )}
                                 </div>
