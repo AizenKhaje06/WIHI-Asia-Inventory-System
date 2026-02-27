@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
 
     const totalRevenue = completedSalesTransactions.reduce((sum, t) => sum + t.totalRevenue, 0)
     const totalCost = completedSalesTransactions.reduce((sum, t) => sum + t.totalCost, 0)
-    const totalProfit = totalRevenue - totalCost
+    const totalProfit = completedSalesTransactions.reduce((sum, t) => sum + t.profit, 0)
     const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
     const itemsSold = completedSalesTransactions.reduce((sum, t) => sum + t.quantity, 0)
     const totalOrders = salesTransactions.length

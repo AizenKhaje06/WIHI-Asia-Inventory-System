@@ -224,25 +224,28 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           "fixed z-50 flex flex-col",
           reducedMotion ? "" : "transition-all duration-300",
           // Responsive width: smaller on <27" screens, optimal on 27"+
-          collapsed ? "w-16 xl:w-[72px]" : "w-48 xl:w-52", // Increased collapsed width from 14/16 to 16/72px
+          collapsed ? "w-30 xl:w-[72px]" : "w-48 xl:w-52", // Increased collapsed width from 14/16 to 16/72px
           isMobile && !mobileOpen && "-translate-x-full",
           isMobile && mobileOpen && "translate-x-0",
           // Desktop: clean edge with subtle border
           "lg:left-0 lg:top-0 lg:h-screen",
           // Mobile: full screen
           "left-0 top-0 h-screen",
-          // Light mode - clean white with subtle border
-          "bg-white/80 backdrop-blur-md border-r border-slate-200/60",
-          // Dark mode - minimal dark with subtle border
-          "dark:bg-[#0a0a0a]/80 dark:border-slate-800/60"
+          // Light mode - vibrant purple/magenta gradient
+          "bg-gradient-to-b from-fuchsia-600 to-purple-700 border-r border-fuchsia-500/30",
+          // Dark mode - pure black with subtle border
+          "dark:bg-black dark:border-slate-800/60"
         )}
         role="navigation"
         aria-label="Main navigation"
       >
         {/* Logo & Brand - Professional Layout with Dark Mode Support */}
         <div 
-          className="h-14 xl:h-16 flex items-center justify-center px-1.5 xl:px-2 border-b flex-shrink-0 border-slate-200/60 dark:border-slate-800/60"
+          className="h-14 xl:h-16 flex items-center justify-center px-1.5 xl:px-2 flex-shrink-0 relative"
         >
+          {/* Bottom border line - matching separator style */}
+          <div className="absolute bottom-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-white to-transparent dark:from-transparent dark:via-white dark:to-transparent" />
+          
           {!collapsed ? (
             <div className="flex items-center justify-center w-full py-1.5">
               {/* Light mode logo */}
@@ -272,7 +275,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           {isMobile && (
             <button
               onClick={onMobileClose}
-              className="absolute right-2 p-2 rounded-lg transition-colors text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="absolute right-2 p-2 rounded-lg transition-colors text-white hover:bg-white/10 dark:text-slate-400 dark:hover:bg-slate-800"
               aria-label="Close navigation menu"
             >
               <X className="h-5 w-5" />
@@ -281,22 +284,22 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2.5 xl:py-3 px-1.5 xl:px-2 min-h-0 max-h-full" style={{ scrollbarGutter: 'stable' }} aria-label="Primary">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2.5 xl:py-3 px-1.5 xl:px-2 min-h-0 max-h-full scrollbar-hide" aria-label="Primary">
           {navigation.map((section, sectionIdx) => (
             <div key={section.section} className={cn("mb-4 xl:mb-5", sectionIdx === 0 && "mt-0")}>
               {/* Separator line above section (except first section) */}
               {!collapsed && sectionIdx > 0 && (
-                <div className="h-px mb-3 mx-2 bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-700" />
+                <div className="h-px mb-3 mx-2 bg-gradient-to-r from-transparent via-white to-transparent dark:from-transparent dark:via-white dark:to-transparent" />
               )}
               {!collapsed && (
                 <div className="px-1.5 xl:px-2 mb-1">
-                  <p className="text-xs xl:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <p className="text-xs xl:text-sm font-semibold uppercase tracking-wider text-white dark:text-white">
                     {section.section}
                   </p>
                 </div>
               )}
               {collapsed && sectionIdx > 0 && (
-                <div className="h-px my-2.5 xl:my-3 mx-2 bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-700" />
+                <div className="h-px my-2.5 xl:my-3 mx-2 bg-gradient-to-r from-transparent via-white to-transparent dark:from-transparent dark:via-white dark:to-transparent" />
               )}
               <div className="space-y-0.5 xl:space-y-1" role="list">
                 {section.items.map((item) => {
@@ -313,10 +316,10 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                         collapsed ? "justify-center py-2.5 xl:py-3 mx-auto" : "gap-1.5 xl:gap-2 px-1.5 xl:px-2 py-1.5 xl:py-2",
                         // Active state with gradient and shadow
                         isActive 
-                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30" 
-                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white",
+                          ? "bg-white/20 text-white shadow-lg shadow-white/10 backdrop-blur-sm" 
+                          : "text-white hover:bg-white/10 hover:text-white dark:text-white dark:hover:bg-slate-800/80 dark:hover:text-white",
                         // Hover effects for collapsed state
-                        collapsed && !isActive && "hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-50 dark:hover:from-slate-800 dark:hover:to-slate-800/50",
+                        collapsed && !isActive && "hover:bg-white/10 dark:hover:from-slate-800 dark:hover:to-slate-800/50",
                         // Scale effect on hover (collapsed only)
                         collapsed && !reducedMotion && "hover:scale-105"
                       )}
@@ -344,7 +347,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                       
                       {!collapsed && (
                         <>
-                          <span className="text-xs xl:text-sm font-medium flex-1">
+                          <span className="text-xs xl:text-sm font-normal flex-1">
                             {item.name}
                           </span>
                           {item.badge !== undefined && (
@@ -420,7 +423,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         </nav>
 
         {/* Logout & Collapse Button Container */}
-        <div className="p-2.5 xl:p-3 border-t flex-shrink-0 border-slate-200/60 dark:border-slate-800/60 relative">
+        <div className="p-2.5 xl:p-3 border-t flex-shrink-0 border-white/10 dark:border-slate-800/60 relative">
           {collapsed ? (
             <TooltipProvider>
               <Tooltip delayDuration={100}>
@@ -434,8 +437,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                       "flex items-center justify-center rounded-lg w-full group relative overflow-hidden",
                       "py-2.5 xl:py-3",
                       reducedMotion ? "" : "transition-all duration-200",
-                      "text-slate-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-600",
-                      "dark:text-slate-400 dark:hover:bg-gradient-to-r dark:hover:from-red-900/20 dark:hover:to-red-900/30 dark:hover:text-red-400",
+                      "text-white hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-600",
+                      "dark:text-white dark:hover:bg-gradient-to-r dark:hover:from-red-900/20 dark:hover:to-red-900/30 dark:hover:text-white",
                       !reducedMotion && "hover:scale-105"
                     )}
                     aria-label="Logout from application"
@@ -474,7 +477,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
               className={cn(
                 "flex items-center gap-1.5 xl:gap-2 px-1.5 xl:px-2 py-1.5 xl:py-2 rounded-lg w-full",
                 reducedMotion ? "" : "transition-colors duration-200",
-                "text-slate-600 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                "text-white hover:bg-red-500/20 hover:text-white dark:text-white dark:hover:bg-red-900/20 dark:hover:text-white"
               )}
               aria-label="Logout from application"
             >
@@ -497,13 +500,13 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                 "absolute top-1/2 -translate-y-1/2 -right-2 z-50",
                 "w-4 h-4 flex items-center justify-center",
                 "bg-white dark:bg-slate-900",
-                "border border-slate-200 dark:border-slate-800",
+                "border border-fuchsia-400 dark:border-slate-800",
                 "rounded-full shadow-md",
                 "transition-all duration-200",
-                "text-slate-600 dark:text-slate-400",
-                "hover:text-blue-500 dark:hover:text-blue-400",
-                "hover:bg-slate-50 dark:hover:bg-slate-800",
-                "hover:border-blue-200 dark:hover:border-blue-800",
+                "text-fuchsia-600 dark:text-slate-400",
+                "hover:text-fuchsia-700 dark:hover:text-blue-400",
+                "hover:bg-fuchsia-50 dark:hover:bg-slate-800",
+                "hover:border-fuchsia-500 dark:hover:border-blue-800",
                 "hover:shadow-lg hover:scale-110"
               )}
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}

@@ -81,7 +81,7 @@ export default function DashboardPage() {
   }
 
   // Calculate additional metrics
-  const netProfit = (stats?.totalRevenue || 0) - (stats?.totalCost || 0) - (stats?.returnValue || 0)
+  const netProfit = (stats?.totalProfit || 0) - (stats?.returnValue || 0)
   const lowStockCount = lowStockItems.length
   const outOfStockCount = outOfStockItems.length
 

@@ -92,6 +92,8 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || 'ID'
+    const startDate = searchParams.get('startDate')
+    const endDate = searchParams.get('endDate')
 
     let items: InventoryItem[] = []
     let transactions: Transaction[] = []
@@ -116,6 +118,16 @@ export async function GET(request: Request) {
     } catch (dbError) {
       console.error("[Dashboard API] Database error (returning empty stats):", dbError)
       return NextResponse.json(emptyDashboardStats())
+    }
+
+    // Apply date filters if provided (takes precedence over period)
+    if (startDate || endDate) {
+      transactions = transactions.filter((t: Transaction) => {
+        const tDate = parseTimestamp(t.timestamp)
+        if (startDate && tDate < new Date(startDate)) return false
+        if (endDate && tDate > new Date(endDate)) return false
+        return true
+      })
     }
 
     const totalItems = items.length
@@ -309,9 +321,9 @@ export async function GET(request: Request) {
     // Calculate financial metrics (only actual sales, not demo/internal, excluding cancelled)
     const totalRevenue = completedTransactions.reduce((sum, t) => sum + t.totalRevenue, 0)
 
-    const totalCost = transactions.reduce((sum, t) => sum + t.totalCost, 0)
+    const totalCost = completedTransactions.reduce((sum, t) => sum + t.totalCost, 0)
 
-    const totalProfit = totalRevenue - totalCost
+    const totalProfit = completedTransactions.reduce((sum, t) => sum + t.profit, 0)
 
     const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
 

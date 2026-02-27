@@ -136,7 +136,14 @@ export default function ReportsPage() {
 
   async function loadDashboardData() {
     try {
-      const data = await apiGet<any>("/api/dashboard?period=1M")
+      const params = new URLSearchParams()
+      // Apply same date filters as report data
+      if (startDate) params.append("startDate", startDate.toISOString().split('T')[0])
+      if (endDate) params.append("endDate", endDate.toISOString().split('T')[0])
+      // Add timestamp to bypass cache
+      params.append("_t", Date.now().toString())
+      
+      const data = await apiGet<any>(`/api/dashboard?${params}`)
       setDashboardData(data)
     } catch (error) {
       console.error("[Reports] Error fetching dashboard data:", error)
@@ -673,12 +680,12 @@ export default function ReportsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Grid Layout: 3 equal cards */}
+          {/* Grid Layout: 3 equal cards with embedded previews */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Executive Sales Card */}
+            {/* Executive Sales Card with Preview */}
             <button
               onClick={() => setReportType('executive')}
-              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left min-h-[160px] flex flex-col ${
+              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left flex flex-col ${
                 reportType === 'executive'
                   ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 shadow-lg shadow-blue-500/10'
                   : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md'
@@ -696,9 +703,42 @@ export default function ReportsPage() {
               <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
                 Executive Sales
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
                 Sales performance & profit analysis
               </p>
+              
+              {/* Embedded Preview - 4 Mini Metric Cards */}
+              {dashboardData && (
+                <div className="grid grid-cols-2 gap-2 mt-auto">
+                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-blue-200/50 dark:border-blue-800/50">
+                    <p className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-0.5">Revenue</p>
+                    <p className="text-xs font-bold text-blue-900 dark:text-white tabular-nums">
+                      {formatCurrency(dashboardData?.totalRevenue || 0)}
+                    </p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-green-200/50 dark:border-green-800/50">
+                    <p className="text-[9px] font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-0.5">Profit</p>
+                    <p className="text-xs font-bold text-green-900 dark:text-white tabular-nums">
+                      {formatCurrency(dashboardData?.totalProfit || 0)}
+                    </p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-purple-200/50 dark:border-purple-800/50">
+                    <p className="text-[9px] font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide mb-0.5">Transactions</p>
+                    <p className="text-xs font-bold text-purple-900 dark:text-white tabular-nums">
+                      {formatNumber(report?.transactions?.length || 0)}
+                    </p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-orange-200/50 dark:border-orange-800/50">
+                    <p className="text-[9px] font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide mb-0.5">Margin</p>
+                    <p className="text-xs font-bold text-orange-900 dark:text-white tabular-nums">
+                      {dashboardData?.totalRevenue > 0 
+                        ? ((dashboardData.totalProfit / dashboardData.totalRevenue) * 100).toFixed(1)
+                        : '0.0'}%
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               {reportType === 'executive' && (
                 <div className="absolute top-3 right-3">
                   <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
@@ -706,10 +746,10 @@ export default function ReportsPage() {
               )}
             </button>
 
-            {/* Inventory Card */}
+            {/* Inventory Card with Preview */}
             <button
               onClick={() => setReportType('inventory')}
-              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left min-h-[160px] flex flex-col ${
+              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left flex flex-col ${
                 reportType === 'inventory'
                   ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30 shadow-lg shadow-purple-500/10'
                   : 'border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-md'
@@ -727,9 +767,40 @@ export default function ReportsPage() {
               <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
                 Inventory
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
                 Stock value & status overview
               </p>
+              
+              {/* Embedded Preview - 4 Mini Metric Cards */}
+              {items && items.length > 0 && (
+                <div className="grid grid-cols-2 gap-2 mt-auto">
+                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-blue-200/50 dark:border-blue-800/50">
+                    <p className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-0.5">Items</p>
+                    <p className="text-xs font-bold text-blue-900 dark:text-white tabular-nums">
+                      {formatNumber(items.length)}
+                    </p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-green-200/50 dark:border-green-800/50">
+                    <p className="text-[9px] font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-0.5">Value</p>
+                    <p className="text-xs font-bold text-green-900 dark:text-white tabular-nums">
+                      {formatCurrency(items.reduce((sum, item) => sum + (item.quantity * item.sellingPrice), 0))}
+                    </p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-amber-200/50 dark:border-amber-800/50">
+                    <p className="text-[9px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide mb-0.5">Low Stock</p>
+                    <p className="text-xs font-bold text-amber-900 dark:text-white tabular-nums">
+                      {formatNumber(items.filter(item => item.quantity <= item.reorderLevel && item.quantity > 0).length)}
+                    </p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-red-200/50 dark:border-red-800/50">
+                    <p className="text-[9px] font-semibold text-red-700 dark:text-red-300 uppercase tracking-wide mb-0.5">Out</p>
+                    <p className="text-xs font-bold text-red-900 dark:text-white tabular-nums">
+                      {formatNumber(items.filter(item => item.quantity === 0).length)}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               {reportType === 'inventory' && (
                 <div className="absolute top-3 right-3">
                   <div className="h-2 w-2 rounded-full bg-purple-500 animate-pulse"></div>
@@ -737,10 +808,10 @@ export default function ReportsPage() {
               )}
             </button>
 
-            {/* Product Performance Card */}
+            {/* Product Performance Card with Preview */}
             <button
               onClick={() => setReportType('product')}
-              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left min-h-[160px] flex flex-col ${
+              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left flex flex-col ${
                 reportType === 'product'
                   ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-lg shadow-orange-500/10'
                   : 'border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md'
@@ -758,9 +829,66 @@ export default function ReportsPage() {
               <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
                 Product Performance
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
                 Top performers & margins
               </p>
+              
+              {/* Embedded Preview - Product Stats */}
+              {report && report.transactions && report.transactions.length > 0 && (() => {
+                const productMap = new Map()
+                report.transactions.forEach(t => {
+                  if (!productMap.has(t.itemName)) {
+                    productMap.set(t.itemName, {
+                      totalRevenue: 0,
+                      totalProfit: 0,
+                      totalQuantity: 0
+                    })
+                  }
+                  const product = productMap.get(t.itemName)
+                  product.totalRevenue += (t.totalRevenue || 0)
+                  product.totalProfit += (t.profit || 0)
+                  product.totalQuantity += (t.quantity || 0)
+                })
+                const productData = Array.from(productMap.values())
+                const totalRevenue = productData.reduce((sum, p) => sum + p.totalRevenue, 0)
+                const totalProfit = productData.reduce((sum, p) => sum + p.totalProfit, 0)
+                
+                // Debug logging
+                console.log('[Product Performance Card] Sample transaction:', report.transactions[0])
+                console.log('[Product Performance Card] Total Revenue:', totalRevenue)
+                console.log('[Product Performance Card] Total Profit:', totalProfit)
+                console.log('[Product Performance Card] Product Data:', productData.slice(0, 3))
+                
+                return (
+                  <div className="grid grid-cols-2 gap-2 mt-auto">
+                    <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-blue-200/50 dark:border-blue-800/50">
+                      <p className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-0.5">Products</p>
+                      <p className="text-xs font-bold text-blue-900 dark:text-white tabular-nums">
+                        {formatNumber(productData.length)}
+                      </p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-green-200/50 dark:border-green-800/50">
+                      <p className="text-[9px] font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-0.5">Revenue</p>
+                      <p className="text-xs font-bold text-green-900 dark:text-white tabular-nums">
+                        {formatCurrency(totalRevenue)}
+                      </p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-orange-200/50 dark:border-orange-800/50">
+                      <p className="text-[9px] font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide mb-0.5">Profit</p>
+                      <p className="text-xs font-bold text-orange-900 dark:text-white tabular-nums">
+                        {formatCurrency(totalProfit)}
+                      </p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-purple-200/50 dark:border-purple-800/50">
+                      <p className="text-[9px] font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide mb-0.5">Margin</p>
+                      <p className="text-xs font-bold text-purple-900 dark:text-white tabular-nums">
+                        {totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : '0.0'}%
+                      </p>
+                    </div>
+                  </div>
+                )
+              })()}
+              
               {reportType === 'product' && (
                 <div className="absolute top-3 right-3">
                   <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse"></div>
@@ -770,247 +898,6 @@ export default function ReportsPage() {
           </div>
         </CardContent>
       </Card>
-      {/* Report Preview - Executive Sales */}
-      {reportType === 'executive' && !loading && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
-          <CardHeader className="pb-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base font-semibold flex items-center gap-2.5 text-slate-900 dark:text-white">
-                  <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                    <BarChart3 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  Executive Sales Report
-                </CardTitle>
-                <CardDescription className="text-xs mt-1.5">
-                  Key performance indicators and transaction details
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {report && dashboardData ? (
-              <>
-                {/* Premium KPI Cards with Trends */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <div className="group p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 hover:shadow-md transition-all">
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">Total Revenue</p>
-                    </div>
-                    <p className="text-2xl font-bold text-blue-900 dark:text-white tabular-nums">
-                      {formatCurrency(dashboardData?.totalRevenue || 0)}
-                    </p>
-                  </div>
-
-                  <div className="group p-4 rounded-xl border border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 hover:shadow-md transition-all">
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">Total Profit</p>
-                    </div>
-                    <p className="text-2xl font-bold text-green-900 dark:text-white tabular-nums">
-                      {formatCurrency(dashboardData?.totalProfit || 0)}
-                    </p>
-                  </div>
-
-                  <div className="group p-4 rounded-xl border border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20 hover:shadow-md transition-all">
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">Transactions</p>
-                    </div>
-                    <p className="text-2xl font-bold text-purple-900 dark:text-white tabular-nums">
-                      {formatNumber(report.transactions?.length || 0)}
-                    </p>
-                  </div>
-
-                  <div className="group p-4 rounded-xl border border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20 hover:shadow-md transition-all">
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Profit Margin</p>
-                    </div>
-                    <p className="text-2xl font-bold text-orange-900 dark:text-white tabular-nums">
-                      {dashboardData?.totalRevenue > 0 
-                        ? ((dashboardData.totalProfit / dashboardData.totalRevenue) * 100).toFixed(1)
-                        : '0.0'}%
-                    </p>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800">
-                  <p className="text-sm text-blue-900 dark:text-blue-100 text-center font-medium">
-                    💡 Export to Excel or PDF to view complete transaction details and analysis
-                  </p>
-                </div>
-              </>
-            ) : (
-              <div className="p-8 text-center">
-                <div className="inline-flex p-3 rounded-full bg-slate-100 dark:bg-slate-800 mb-3">
-                  <BarChart3 className="h-6 w-6 text-slate-400" />
-                </div>
-                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No sales data available</p>
-                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Select a date range with sales data to view this report</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Report Preview - Inventory */}
-      {reportType === 'inventory' && !loading && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm mb-8">
-          <CardHeader className="pb-5">
-            <CardTitle className="text-base font-semibold flex items-center gap-2.5 text-slate-900 dark:text-white">
-              <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                <Package className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </div>
-              Inventory Valuation Report
-            </CardTitle>
-            <CardDescription className="text-xs mt-1.5">
-              Stock value and status overview
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {items && items.length > 0 ? (
-              <>
-                {/* Premium KPI Cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <div className="group p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 hover:shadow-md transition-all">
-                    <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-2">Total Items</p>
-                    <p className="text-2xl font-bold text-blue-900 dark:text-white tabular-nums">
-                      {formatNumber(items.length)}
-                    </p>
-                  </div>
-
-                  <div className="group p-4 rounded-xl border border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 hover:shadow-md transition-all">
-                    <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-2">Inventory Value</p>
-                    <p className="text-2xl font-bold text-green-900 dark:text-white tabular-nums">
-                      {formatCurrency(items.reduce((sum, item) => sum + (item.quantity * item.sellingPrice), 0))}
-                    </p>
-                  </div>
-
-                  <div className="group p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 hover:shadow-md transition-all">
-                    <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide mb-2">Low Stock</p>
-                    <p className="text-2xl font-bold text-amber-900 dark:text-white tabular-nums">
-                      {formatNumber(items.filter(item => item.quantity <= item.reorderLevel && item.quantity > 0).length)}
-                    </p>
-                  </div>
-
-                  <div className="group p-4 rounded-xl border border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/30 dark:to-red-900/20 hover:shadow-md transition-all">
-                    <p className="text-xs font-semibold text-red-700 dark:text-red-300 uppercase tracking-wide mb-2">Out of Stock</p>
-                    <p className="text-2xl font-bold text-red-900 dark:text-white tabular-nums">
-                      {formatNumber(items.filter(item => item.quantity === 0).length)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 rounded-xl border border-purple-200 dark:border-purple-800">
-                  <p className="text-sm text-purple-900 dark:text-purple-100 text-center font-medium">
-                    📦 Export to Excel or PDF to view complete inventory details with valuations
-                  </p>
-                </div>
-              </>
-            ) : (
-              <div className="p-8 text-center">
-                <div className="inline-flex p-3 rounded-full bg-slate-100 dark:bg-slate-800 mb-3">
-                  <Package className="h-6 w-6 text-slate-400" />
-                </div>
-                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No inventory data available</p>
-                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Add items to your inventory to view this report</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Report Preview - Product Performance */}
-      {reportType === 'product' && !loading && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm mb-8">
-          <CardHeader className="pb-5">
-            <CardTitle className="text-base font-semibold flex items-center gap-2.5 text-slate-900 dark:text-white">
-              <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                <TrendingUp className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-              </div>
-              Product Performance Report
-            </CardTitle>
-            <CardDescription className="text-xs mt-1.5">
-              Top performing products and profit analysis
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {report && report.transactions && report.transactions.length > 0 ? (
-              (() => {
-                // Calculate product performance metrics
-                const productMap = new Map()
-                report.transactions.forEach(t => {
-                  if (!productMap.has(t.itemName)) {
-                    productMap.set(t.itemName, {
-                      totalQuantity: 0,
-                      totalRevenue: 0,
-                      totalProfit: 0,
-                    })
-                  }
-                  const product = productMap.get(t.itemName)
-                  product.totalQuantity += t.quantity
-                  product.totalRevenue += t.totalRevenue
-                  product.totalProfit += t.profit
-                })
-                
-                const productData = Array.from(productMap.values())
-                const totalProducts = productData.length
-                const totalRevenue = productData.reduce((sum, p) => sum + p.totalRevenue, 0)
-                const totalProfit = productData.reduce((sum, p) => sum + p.totalProfit, 0)
-                const totalUnits = productData.reduce((sum, p) => sum + p.totalQuantity, 0)
-                const avgProfitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
-                
-                return (
-                  <>
-                    {/* Premium KPI Cards */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                      <div className="group p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 hover:shadow-md transition-all">
-                        <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-2">Products Sold</p>
-                        <p className="text-2xl font-bold text-blue-900 dark:text-white tabular-nums">
-                          {formatNumber(totalProducts)}
-                        </p>
-                      </div>
-
-                      <div className="group p-4 rounded-xl border border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 hover:shadow-md transition-all">
-                        <p className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-2">Total Revenue</p>
-                        <p className="text-2xl font-bold text-green-900 dark:text-white tabular-nums">
-                          {formatCurrency(totalRevenue)}
-                        </p>
-                      </div>
-
-                      <div className="group p-4 rounded-xl border border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20 hover:shadow-md transition-all">
-                        <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide mb-2">Units Sold</p>
-                        <p className="text-2xl font-bold text-purple-900 dark:text-white tabular-nums">
-                          {formatNumber(totalUnits)}
-                        </p>
-                      </div>
-
-                      <div className="group p-4 rounded-xl border border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20 hover:shadow-md transition-all">
-                        <p className="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide mb-2">Avg Margin</p>
-                        <p className="text-2xl font-bold text-orange-900 dark:text-white tabular-nums">
-                          {avgProfitMargin.toFixed(1)}%
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl border border-orange-200 dark:border-orange-800">
-                      <p className="text-sm text-orange-900 dark:text-orange-100 text-center font-medium">
-                        🏆 Export to Excel or PDF to view complete product performance rankings and profit margins
-                      </p>
-                    </div>
-                  </>
-                )
-              })()
-            ) : (
-              <div className="p-8 text-center">
-                <div className="inline-flex p-3 rounded-full bg-slate-100 dark:bg-slate-800 mb-3">
-                  <TrendingUp className="h-6 w-6 text-slate-400" />
-                </div>
-                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No transaction data available</p>
-                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Select a date range with sales data to view product performance</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       {/* Transaction History - All Reports */}
       {!loading && report && report.transactions && report.transactions.length > 0 && (
