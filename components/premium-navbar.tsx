@@ -5,6 +5,7 @@ import { Bell, Settings, User, Moon, Sun, Menu } from "lucide-react"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/hooks/use-accessibility"
+import { CommandPaletteSearch } from "@/components/command-palette-search"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,17 +58,17 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
         reducedMotion ? "" : "transition-all duration-300",
         // Desktop: clean minimal header - adjust based on sidebar
         sidebarCollapsed ? "lg:left-20" : "lg:left-64",
-        "lg:right-0 lg:top-0 lg:h-16",
+        "lg:right-0 lg:top-0 lg:h-14",
         // Mobile: full width at top
-        "left-0 right-0 top-0 h-16",
+        "left-0 right-0 top-0 h-14",
         // Fully transparent - invisible background
         "bg-transparent"
       )}
       role="banner"
     >
-      <div className="h-full px-6 lg:px-8 flex items-center justify-between gap-6 min-w-0">
-        {/* Left: Mobile Menu only (brand is in sidebar on desktop) */}
-        <div className="flex items-center gap-4 min-w-0">
+      <div className="h-full px-6 lg:px-8 flex items-center justify-between gap-4 min-w-0">
+        {/* Left: Mobile Menu only */}
+        <div className="flex items-center gap-4 min-w-0 lg:flex-1">
           <button
             onClick={onMobileMenuToggle}
             className="lg:hidden p-2 rounded-lg transition-colors flex-shrink-0 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -78,11 +79,18 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           </button>
         </div>
 
-        {/* Center: Breathing space (intentionally empty) */}
-        <div className="flex-1" />
+        {/* Center: Command Palette Search */}
+        <div className="flex-1 max-w-2xl mx-auto hidden lg:block">
+          <CommandPaletteSearch />
+        </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div className="flex items-center gap-1.5 flex-shrink-0 lg:flex-1 lg:justify-end">
+          {/* Mobile Search Button */}
+          <div className="lg:hidden">
+            <CommandPaletteSearch />
+          </div>
+
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
