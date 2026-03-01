@@ -128,41 +128,105 @@ export default function TrackOrdersPage() {
 
   const exportToExcel = () => {
     try {
-      // Prepare data for Excel
-      const excelData = filteredOrders.map((order, index) => ({
-        'No.': index + 1,
-        'Order #': `#${order.id.slice(-6)}`,
-        'Date': new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        'Sales Channel': order.department || 'N/A',
-        'Store': order.customerAddress || 'N/A',
-        'Product': order.itemName,
-        'Quantity': order.quantity,
-        'Total Amount': order.totalAmount,
-        'COGS': (order.totalAmount * 0.6).toFixed(2),
-        'Courier': order.courier || '-',
-        'Waybill': order.trackingNumber || '-',
-        'Payment Status': order.paymentStatus.toUpperCase(),
-        'Order Status': order.orderStatus,
-        'Parcel Status': order.parcelStatus,
-      }))
+      // Calculate financial totals
+      const totalQuantity = filteredOrders.reduce((sum, order) => sum + order.quantity, 0)
+      const totalAmount = filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0)
+      const totalCOGS = filteredOrders.reduce((sum, order) => sum + (order.totalAmount * 0.6), 0)
+      const totalProfit = totalAmount - totalCOGS
+      const totalProfitMargin = totalAmount > 0 ? ((totalProfit / totalAmount) * 100) : 0
 
-      // Convert to CSV format
-      const headers = Object.keys(excelData[0]).join(',')
-      const rows = excelData.map(row => Object.values(row).map(val => `"${val}"`).join(',')).join('\n')
-      const csv = `${headers}\n${rows}`
+      // Calculate per-status financials
+      const getStatusFinancials = (statusOrders: Order[]) => {
+        const qty = statusOrders.reduce((sum, o) => sum + o.quantity, 0)
+        const amt = statusOrders.reduce((sum, o) => sum + o.totalAmount, 0)
+        const cogs = amt * 0.6
+        const profit = amt - cogs
+        const margin = amt > 0 ? ((profit / amt) * 100) : 0
+        return { qty, amt, cogs, profit, margin }
+      }
+
+      const pendingFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'PENDING'))
+      const inTransitFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT'))
+      const onDeliveryFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'ON DELIVERY'))
+      const pickupFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'PICKUP'))
+      const deliveredFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'DELIVERED'))
+      const cancelledFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'CANCELLED'))
+      const detainedFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'DETAINED'))
+      const problematicFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC'))
+      const returnedFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'RETURNED'))
+
+      // Build comprehensive CSV content
+      let csvContent = ''
+      
+      // Header Section
+      csvContent += 'TRACK ORDERS REPORT - COMPREHENSIVE DATA\n'
+      csvContent += `Generated: ${new Date().toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}\n`
+      csvContent += `Total Orders: ${filteredOrders.length}\n`
+      csvContent += '\n'
+
+      // Financial Summary Section
+      csvContent += 'FINANCIAL SUMMARY\n'
+      csvContent += 'Metric,Value\n'
+      csvContent += `Total Quantity,${totalQuantity}\n`
+      csvContent += `Total Amount,₱${totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}\n`
+      csvContent += `Total COGS,₱${totalCOGS.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}\n`
+      csvContent += `Total Profit,₱${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}\n`
+      csvContent += `Profit Margin,${totalProfitMargin.toFixed(2)}%\n`
+      csvContent += '\n'
+
+      // Per-Status Breakdown Section
+      csvContent += 'STATUS BREAKDOWN\n'
+      csvContent += 'Status,Orders,Quantity,Amount,COGS,Profit,Margin\n'
+      csvContent += `Total Orders,${filteredOrders.length},${totalQuantity},₱${totalAmount.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${totalCOGS.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${totalProfit.toLocaleString(undefined, {maximumFractionDigits: 2})},${totalProfitMargin.toFixed(2)}%\n`
+      csvContent += `Pending,${filteredOrders.filter(o => o.parcelStatus === 'PENDING').length},${pendingFinancials.qty},₱${pendingFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${pendingFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${pendingFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${pendingFinancials.margin.toFixed(2)}%\n`
+      csvContent += `In Transit,${filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT').length},${inTransitFinancials.qty},₱${inTransitFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${inTransitFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${inTransitFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${inTransitFinancials.margin.toFixed(2)}%\n`
+      csvContent += `On Delivery,${filteredOrders.filter(o => o.parcelStatus === 'ON DELIVERY').length},${onDeliveryFinancials.qty},₱${onDeliveryFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${onDeliveryFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${onDeliveryFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${onDeliveryFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Pickup,${filteredOrders.filter(o => o.parcelStatus === 'PICKUP').length},${pickupFinancials.qty},₱${pickupFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${pickupFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${pickupFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${pickupFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Delivered,${filteredOrders.filter(o => o.parcelStatus === 'DELIVERED').length},${deliveredFinancials.qty},₱${deliveredFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${deliveredFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${deliveredFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${deliveredFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Cancelled,${filteredOrders.filter(o => o.parcelStatus === 'CANCELLED').length},${cancelledFinancials.qty},₱${cancelledFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${cancelledFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${cancelledFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${cancelledFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Detained,${filteredOrders.filter(o => o.parcelStatus === 'DETAINED').length},${detainedFinancials.qty},₱${detainedFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${detainedFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${detainedFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${detainedFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Problematic,${filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC').length},${problematicFinancials.qty},₱${problematicFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${problematicFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${problematicFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${problematicFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Returned,${filteredOrders.filter(o => o.parcelStatus === 'RETURNED').length},${returnedFinancials.qty},₱${returnedFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${returnedFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${returnedFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${returnedFinancials.margin.toFixed(2)}%\n`
+      csvContent += '\n'
+
+      // Detailed Orders Section
+      csvContent += 'DETAILED ORDERS\n'
+      csvContent += 'No.,Order #,Date,Sales Channel,Store,Product,Qty,Amount,COGS,Profit,Margin,Courier,Waybill,Payment Status,Parcel Status\n'
+      
+      filteredOrders.forEach((order, index) => {
+        const cogs = order.totalAmount * 0.6
+        const profit = order.totalAmount - cogs
+        const margin = order.totalAmount > 0 ? ((profit / order.totalAmount) * 100) : 0
+        
+        csvContent += `${index + 1},`
+        csvContent += `#${order.id.slice(-6)},`
+        csvContent += `"${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}",`
+        csvContent += `"${order.department || 'N/A'}",`
+        csvContent += `"${order.customerAddress || 'N/A'}",`
+        csvContent += `"${order.itemName}",`
+        csvContent += `${order.quantity},`
+        csvContent += `₱${order.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})},`
+        csvContent += `₱${cogs.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})},`
+        csvContent += `₱${profit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})},`
+        csvContent += `${margin.toFixed(2)}%,`
+        csvContent += `"${order.courier || '-'}",`
+        csvContent += `"${order.trackingNumber || '-'}",`
+        csvContent += `${order.paymentStatus.toUpperCase()},`
+        csvContent += `${order.parcelStatus}\n`
+      })
 
       // Create blob and download
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')
       const url = URL.createObjectURL(blob)
       link.setAttribute('href', url)
-      link.setAttribute('download', `Track_Orders_Report_${new Date().toISOString().split('T')[0]}.csv`)
+      link.setAttribute('download', `Track_Orders_Comprehensive_Report_${new Date().toISOString().split('T')[0]}.csv`)
       link.style.visibility = 'hidden'
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
 
-      toast.success('Excel report downloaded successfully')
+      toast.success('Comprehensive Excel report downloaded successfully')
     } catch (error) {
       console.error('Error exporting to Excel:', error)
       toast.error('Failed to export Excel report')

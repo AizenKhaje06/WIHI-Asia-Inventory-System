@@ -240,101 +240,99 @@ export default function TransactionHistoryPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                    <th className="py-4 px-2 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-12">#</th>
-                    <th className="py-4 px-3 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-28">Date</th>
-                    <th className="py-4 px-3 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-32">Channel</th>
-                    <th className="py-4 px-3 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-32">Store</th>
-                    <th className="py-4 px-3 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-24">Courier</th>
-                    <th className="py-4 px-3 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-32">Waybill</th>
-                    <th className="py-4 px-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-24">Status</th>
-                    <th className="py-4 px-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-16">QTY</th>
-                    <th className="py-4 px-3 text-right text-xs font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-24">COGS</th>
-                    <th className="py-4 px-3 text-right text-xs font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-24">Total</th>
-                    <th className="py-4 px-3 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Product</th>
-                    <th className="py-4 px-3 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-32">Dispatched By</th>
-                    <th className="py-4 px-3 text-center text-xs font-bold text-white uppercase tracking-wider w-32">Action</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">#</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Date</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Channel</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Store</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Product</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Courier</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Waybill</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider">Status</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider">QTY</th>
+                    <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider">COGS</th>
+                    <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider">Total</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Dispatched By</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredOrders.map((order, index) => (
                     <tr 
                       key={order.id} 
-                      className="group hover:bg-blue-50 dark:hover:bg-slate-800/50 transition-all duration-200"
+                      className="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
                     >
-                      <td className="py-3 px-2 border-r border-slate-100 dark:border-slate-800">
-                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
+                      <td className="py-2 px-3">
+                        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
                           {index + 1}
                         </span>
                       </td>
-                      <td className="py-3 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-xs font-medium text-slate-900 dark:text-white whitespace-nowrap">
+                      <td className="py-2 px-3">
+                        <div className="text-[11px] font-medium text-slate-900 dark:text-white whitespace-nowrap">
                           {new Date(order.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </div>
                       </td>
-                      <td className="py-3 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[10px] font-semibold px-2 py-0.5 shadow-sm whitespace-nowrap">
+                      <td className="py-2 px-3">
+                        <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] font-semibold px-2 py-0.5 whitespace-nowrap">
                           {order.sales_channel}
                         </Badge>
                       </td>
-                      <td className="py-3 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-xs text-slate-700 dark:text-slate-300 font-medium truncate">{order.store}</div>
+                      <td className="py-2 px-3">
+                        <div className="text-[11px] text-slate-700 dark:text-slate-300 font-medium truncate">{order.store}</div>
                       </td>
-                      <td className="py-3 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-xs text-slate-700 dark:text-slate-300 truncate">{order.courier}</div>
-                      </td>
-                      <td className="py-3 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-xs font-mono text-slate-900 dark:text-white font-semibold truncate">{order.waybill}</div>
-                      </td>
-                      <td className="py-3 px-3 text-center border-r border-slate-100 dark:border-slate-800">
-                        <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800 text-[10px] font-semibold px-2 py-0.5 whitespace-nowrap">
-                          {order.status}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-3 text-center border-r border-slate-100 dark:border-slate-800">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-sm font-bold">
-                          {order.qty}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-right border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">{formatCurrency(order.cogs)}</div>
-                      </td>
-                      <td className="py-3 px-3 text-right border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-sm font-bold text-green-600 dark:text-green-400 whitespace-nowrap">{formatCurrency(order.total)}</div>
-                      </td>
-                      <td className="py-3 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-xs text-slate-700 dark:text-slate-300 max-w-[200px] truncate" title={order.product}>
+                      <td className="py-2 px-3">
+                        <div className="text-[11px] text-slate-700 dark:text-slate-300 max-w-[200px] truncate" title={order.product}>
                           {order.product}
                         </div>
                       </td>
-                      <td className="py-3 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                      <td className="py-2 px-3">
+                        <div className="text-[11px] text-slate-700 dark:text-slate-300 truncate">{order.courier}</div>
+                      </td>
+                      <td className="py-2 px-3">
+                        <div className="text-[11px] font-mono text-slate-900 dark:text-white font-semibold truncate">{order.waybill}</div>
+                      </td>
+                      <td className="py-2 px-3 text-center">
+                        <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800 text-[9px] font-semibold px-2 py-0.5 whitespace-nowrap">
+                          {order.status}
+                        </Badge>
+                      </td>
+                      <td className="py-2 px-3 text-center">
+                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[11px] font-bold">
+                          {order.qty}
+                        </span>
+                      </td>
+                      <td className="py-2 px-3 text-right">
+                        <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap tabular-nums">{formatCurrency(order.cogs)}</div>
+                      </td>
+                      <td className="py-2 px-3 text-right">
+                        <div className="text-[11px] font-bold text-green-600 dark:text-green-400 whitespace-nowrap tabular-nums">{formatCurrency(order.total)}</div>
+                      </td>
+                      <td className="py-2 px-3">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold">
                             {order.dispatched_by.charAt(0).toUpperCase()}
                           </div>
-                          <span className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate max-w-[100px]">{order.dispatched_by}</span>
+                          <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate max-w-[80px]">{order.dispatched_by}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-3 text-center">
+                      <td className="py-2 px-3 text-center">
                         {order.packed_by ? (
-                          <div className="flex flex-col items-center gap-1">
-                            <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800 text-[10px] font-semibold px-2 py-0.5 whitespace-nowrap">
+                          <div className="flex flex-col items-center gap-0.5">
+                            <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800 text-[9px] font-semibold px-2 py-0.5 whitespace-nowrap">
                               <CheckCircle className="h-2.5 w-2.5 mr-1 inline" />
                               Packed
                             </Badge>
-                            <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium truncate max-w-[100px]">{order.packed_by}</div>
+                            <div className="text-[9px] text-slate-600 dark:text-slate-400 font-medium truncate max-w-[80px]">{order.packed_by}</div>
                           </div>
                         ) : (
-                          <Button
-                            size="sm"
+                          <button
                             onClick={() => handleMarkAsPacked(order.id)}
-                            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-7 px-3 text-[10px] font-semibold shadow-md hover:shadow-lg transition-all duration-200 whitespace-nowrap"
+                            className="text-[11px] font-semibold text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:underline transition-colors"
                           >
-                            <CheckCircle className="h-3 w-3 mr-1" />
                             Mark as Packed
-                          </Button>
+                          </button>
                         )}
                       </td>
                     </tr>
