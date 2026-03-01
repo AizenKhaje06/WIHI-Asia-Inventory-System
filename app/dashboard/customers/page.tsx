@@ -19,6 +19,7 @@ import { formatCurrency } from "@/lib/utils"
 import { PremiumTableLoading } from "@/components/premium-loading"
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api-client"
 import { getCurrentUser } from "@/lib/auth"
+import { BrandLoader } from '@/components/ui/brand-loader'
 
 export default function CustomersPage() {
   const { toast } = useToast()
@@ -377,7 +378,16 @@ export default function CustomersPage() {
   const paginatedCustomers = filteredCustomers.slice(startIndex, endIndex)
 
   if (loading) {
-    return <PremiumTableLoading />
+    return (
+      <div className="flex h-full items-center justify-center min-h-[600px]">
+        <div className="text-center">
+          <BrandLoader size="lg" />
+          <p className="text-slate-600 dark:text-slate-400 mt-6 text-sm font-medium">
+            Loading customers...
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (

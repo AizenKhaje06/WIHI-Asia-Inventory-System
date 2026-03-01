@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { BrandLoader } from '@/components/ui/brand-loader'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -100,8 +101,13 @@ export default function CancelledOrdersPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-muted-foreground">Loading cancelled orders...</div>
+      <div className="flex h-full items-center justify-center min-h-[600px]">
+        <div className="text-center">
+          <BrandLoader size="lg" />
+          <p className="text-slate-600 dark:text-slate-400 mt-6 text-sm font-medium">
+            Loading cancelled orders...
+          </p>
+        </div>
       </div>
     )
   }

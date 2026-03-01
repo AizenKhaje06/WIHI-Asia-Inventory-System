@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { BrandLoader } from '@/components/ui/brand-loader'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -264,8 +265,13 @@ export default function LowStockPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-muted-foreground">Loading low stock items...</div>
+      <div className="flex h-full items-center justify-center min-h-[600px]">
+        <div className="text-center">
+          <BrandLoader size="lg" />
+          <p className="text-slate-600 dark:text-slate-400 mt-6 text-sm font-medium">
+            Loading low stock items...
+          </p>
+        </div>
       </div>
     )
   }

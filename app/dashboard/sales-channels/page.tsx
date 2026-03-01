@@ -21,6 +21,7 @@ import {
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { apiGet } from "@/lib/api-client"
+import { BrandLoader } from '@/components/ui/brand-loader'
 
 interface Department {
   name: string
@@ -115,8 +116,13 @@ export default function SalesChannelsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-muted-foreground">Loading sales channels...</div>
+      <div className="flex h-full items-center justify-center min-h-[600px]">
+        <div className="text-center">
+          <BrandLoader size="lg" />
+          <p className="text-slate-600 dark:text-slate-400 mt-6 text-sm font-medium">
+            Loading sales channels...
+          </p>
+        </div>
       </div>
     )
   }

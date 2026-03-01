@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
+import { BrandLoader } from '@/components/ui/brand-loader'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -215,8 +216,8 @@ export default function LogPage() {
         </div>
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading logs...</p>
+            <BrandLoader size="lg" />
+            <p className="text-slate-600 dark:text-slate-400 mt-6 text-sm font-medium">Loading logs...</p>
           </div>
         </div>
       </div>

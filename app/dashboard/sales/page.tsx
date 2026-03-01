@@ -68,8 +68,13 @@ export default function SalesAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="flex h-full items-center justify-center min-h-[600px]">
+        <div className="text-center">
+          <BrandLoader size="lg" />
+          <p className="text-slate-600 dark:text-slate-400 mt-6 text-sm font-medium">
+            Loading sales data...
+          </p>
+        </div>
       </div>
     );
   }

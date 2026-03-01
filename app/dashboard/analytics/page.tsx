@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { BrandLoader } from '@/components/ui/brand-loader'
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -77,8 +78,13 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-muted-foreground">Loading analytics...</div>
+      <div className="flex h-full items-center justify-center min-h-[600px]">
+        <div className="text-center">
+          <BrandLoader size="lg" />
+          <p className="text-slate-600 dark:text-slate-400 mt-6 text-sm font-medium">
+            Loading analytics...
+          </p>
+        </div>
       </div>
     )
   }
