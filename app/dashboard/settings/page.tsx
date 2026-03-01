@@ -48,6 +48,7 @@ import {
 import { toast } from "sonner"
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api-client"
 import { getCurrentUser } from "@/lib/auth"
+import { BrandLoader } from "@/components/ui/brand-loader"
 
 interface Account {
   id: string
@@ -590,10 +591,10 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex h-full items-center justify-center min-h-[600px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-lg font-medium text-slate-700 dark:text-slate-300">Loading settings...</p>
+          <BrandLoader size="lg" />
+          <p className="text-slate-600 dark:text-slate-400 mt-6 text-sm font-medium">Loading settings...</p>
         </div>
       </div>
     )

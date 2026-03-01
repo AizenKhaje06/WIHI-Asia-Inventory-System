@@ -2,7 +2,8 @@ export interface InventoryItem {
   id: string
   name: string
   category: string
-  storageRoom: string
+  store: string // Changed from storageRoom
+  salesChannel?: string // NEW: Sales channel (Shopee, Lazada, Facebook, TikTok, Physical Store)
   quantity: number
   costPrice: number
   sellingPrice: number
@@ -123,7 +124,7 @@ export interface DashboardStats {
   totalProducts: number
   stockPercentageByCategory: { name: string; percentage: number }[]
   stocksCountByCategory: { name: string; count: number }[]
-  stocksCountByStorageRoom: { name: string; count: number }[]
+  stocksCountByStore: { name: string; count: number }[] // Changed from stocksCountByStorageRoom
   totalCustomers?: number
   topCustomers?: { name: string; spent: number }[]
   averageOrderValue?: number
@@ -205,8 +206,9 @@ export interface InventoryTurnover {
   status: 'fast-moving' | 'normal' | 'slow-moving' | 'dead-stock'
 }
 
-export interface StorageRoom {
+export interface Store {
   id: string
-  name: string
-  createdAt: string
+  store_name: string // Changed from name to match database
+  sales_channel: string // NEW: Sales channel this store belongs to
+  created_at: string
 }

@@ -121,7 +121,7 @@ export default function OutOfStockPage() {
     }
 
     if (stockRoomFilter && stockRoomFilter !== "all") {
-      filtered = filtered.filter((item) => item.storageRoom === stockRoomFilter)
+      filtered = filtered.filter((item) => item.store === stockRoomFilter)
     }
 
     // Apply sorting
@@ -540,7 +540,7 @@ export default function OutOfStockPage() {
                                   OUT
                                 </Badge>
                                 <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                                  {item.storageRoom || 'N/A'}
+                                  {item.salesChannel || 'N/A'} - {item.store || 'N/A'}
                                 </span>
                               </div>
                             </div>

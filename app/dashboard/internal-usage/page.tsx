@@ -1,1295 +1,1014 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Package, Monitor, Users, Search, RefreshCw, Calendar, TrendingUp, BarChart3, PieChart } from "lucide-react"
-import type { Transaction } from "@/lib/types"
-import { formatCurrency, formatNumber } from "@/lib/utils"
-import { cn } from "@/lib/utils"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from "recharts"
-import { ChartTooltip } from "@/components/ui/chart-tooltip"
-import { apiGet } from "@/lib/api-client"
+import { Search, Plus, ShoppingCart, Trash2, CheckCircle, Package, Monitor, Users, Calendar, User, FileText, PieChart, TrendingUp, BarChart3 } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import type { InventoryItem, Transaction } from "@/lib/types"
+import { apiGet, apiPost } from "@/lib/api-client"
+import { getCurrentUser } from "@/lib/auth"
+import { formatCurrency, cn } from "@/lib/utils"
+import { toast } from "sonner"
+import { format } from "date-fns"
+
+interface CartItem {
+  item: InventoryItem
+  quantity: number
+}
 
 export default function InternalUsagePage() {
+  // Table data
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterType, setFilterType] = useState<"all" | "demo" | "internal">("all")
-  const [dateFilter, setDateFilter] = useState<"all" | "today" | "week" | "month">("all")
+  const [searchTable, setSearchTable] = useState("")
+  const [filterType, setFilterType] = useState<string>("all")
   const [activeTab, setActiveTab] = useState("overview")
+  
+  // Dispatch Modal
+  const [dispatchModalOpen, setDispatchModalOpen] = useState(false)
+  const [items, setItems] = useState<InventoryItem[]>([])
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [searchProducts, setSearchProducts] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [staffName, setStaffName] = useState('')
+  const [dispatchId, setDispatchId] = useState('')
+  const [dispatchedItems, setDispatchedItems] = useState<Array<{name: string, quantity: number, price: number}>>([])
+  const [successModalOpen, setSuccessModalOpen] = useState(false)
+  
+  // Dispatch Form States
+  const [purpose, setPurpose] = useState('')
+  const [salesChannel, setSalesChannel] = useState('')
+  const [notes, setNotes] = useState('')
+
+  const cartTotal = cart.reduce((sum, cartItem) => sum + cartItem.item.costPrice * cartItem.quantity, 0)
+
+  const filteredProducts = items.filter(item => {
+    if (!searchProducts) return true
+    const searchLower = searchProducts.toLowerCase()
+    return item.name.toLowerCase().includes(searchLower) || 
+           item.category.toLowerCase().includes(searchLower)
+  })
+
+  const filteredTransactions = transactions.filter(transaction => {
+    // Filter by type
+    if (filterType !== "all") {
+      if (filterType === "demo" && transaction.transactionType !== "demo") return false
+      if (filterType === "internal" && transaction.transactionType !== "internal") return false
+      if (filterType === "transfer" && transaction.transactionType !== "transfer") return false
+    }
+    
+    // Filter by search
+    if (!searchTable) return true
+    const searchLower = searchTable.toLowerCase()
+    return transaction.itemName.toLowerCase().includes(searchLower) ||
+           transaction.department?.toLowerCase().includes(searchLower) ||
+           transaction.staffName?.toLowerCase().includes(searchLower)
+  })
+
+  // Analytics calculations
+  const totalCost = transactions.reduce((sum, t) => sum + t.totalCost, 0)
+  const demoTransactions = transactions.filter(t => t.transactionType === 'demo')
+  const internalTransactions = transactions.filter(t => t.transactionType === 'internal')
+  const transferTransactions = transactions.filter(t => t.transactionType === 'transfer')
+  
+  const demoCost = demoTransactions.reduce((sum, t) => sum + t.totalCost, 0)
+  const internalCost = internalTransactions.reduce((sum, t) => sum + t.totalCost, 0)
+  const transferCost = transferTransactions.reduce((sum, t) => sum + t.totalCost, 0)
+  
+  // Sales channel breakdown
+  const salesChannelData = transactions.reduce((acc, t) => {
+    if (t.department && (t.transactionType === 'demo' || t.transactionType === 'internal')) {
+      const parts = t.department.split(' / ')
+      if (parts.length > 1) {
+        const channel = parts[1]
+        if (!acc[channel]) {
+          acc[channel] = { count: 0, cost: 0 }
+        }
+        acc[channel].count++
+        acc[channel].cost += t.totalCost
+      }
+    }
+    return acc
+  }, {} as Record<string, { count: number, cost: number }>)
 
   useEffect(() => {
-    fetchInternalUsage()
+    const currentUser = getCurrentUser()
+    if (currentUser) {
+      const name = currentUser.displayName || currentUser.username || 'Unknown User'
+      setStaffName(name)
+    } else {
+      setStaffName('Unknown User')
+    }
+    
+    fetchTransactions()
+    fetchItems()
   }, [])
 
-  async function fetchInternalUsage() {
+  async function fetchTransactions() {
+    try {
+      const data = await apiGet<Transaction[]>("/api/internal-usage")
+      setTransactions(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error("[Internal Usage] Error fetching transactions:", error)
+      setTransactions([])
+    }
+  }
+
+  async function fetchItems() {
+    try {
+      const data = await apiGet<InventoryItem[]>("/api/items")
+      setItems(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error("[Internal Usage] Error fetching items:", error)
+      setItems([])
+    }
+  }
+
+  function addToCart(item: InventoryItem) {
+    const existingItem = cart.find((cartItem) => cartItem.item.id === item.id)
+
+    if (existingItem) {
+      if (existingItem.quantity < item.quantity) {
+        setCart(
+          cart.map((cartItem) =>
+            cartItem.item.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem,
+          ),
+        )
+        toast.success(`${item.name} quantity increased to ${existingItem.quantity + 1}`, {
+          duration: 2000,
+          icon: '➕',
+        })
+      } else {
+        toast.warning(`Maximum stock reached for ${item.name}`, {
+          duration: 2000,
+          icon: '⚠️',
+        })
+      }
+    } else {
+      setCart([...cart, { item, quantity: 1 }])
+      toast.success(`${item.name} added to cart`, {
+        duration: 2000,
+        icon: '✓',
+      })
+    }
+  }
+
+  function updateQuantity(itemId: string, quantity: number) {
+    const cartItem = cart.find((ci) => ci.item.id === itemId)
+    if (!cartItem) return
+
+    if (quantity <= 0) {
+      removeFromCart(itemId)
+      return
+    }
+
+    const finalQuantity = Math.min(quantity, cartItem.item.quantity)
+    setCart(cart.map((ci) => (ci.item.id === itemId ? { ...ci, quantity: finalQuantity } : ci)))
+  }
+
+  function removeFromCart(itemId: string) {
+    setCart(cart.filter((cartItem) => cartItem.item.id !== itemId))
+  }
+
+  async function handleDispatch() {
+    if (cart.length === 0 || !purpose || !staffName) {
+      alert('Please add items and select a purpose')
+      return
+    }
+    
+    // Check if purpose requires sales channel
+    if ((purpose === 'Demo/Display' || purpose === 'Internal Use') && !salesChannel) {
+      alert('Please select a sales channel')
+      return
+    }
+
     setLoading(true)
     try {
-      const data = await apiGet<{ transactions: Transaction[] }>("/api/internal-usage")
-      console.log('[Internal Usage] Fetched transactions:', data.transactions)
-      console.log('[Internal Usage] Transaction count:', data.transactions?.length || 0)
+      const saleItems = cart.map((cartItem) => ({
+        itemId: cartItem.item.id,
+        quantity: cartItem.quantity,
+      }))
+
+      // Combine purpose and sales channel
+      const finalDepartment = salesChannel 
+        ? `${purpose} / ${salesChannel}`
+        : purpose
+
+      await apiPost("/api/sales", {
+        items: saleItems,
+        department: finalDepartment,
+        staffName,
+        notes
+      })
+
+      // Generate dispatch ID
+      const newDispatchId = `INT-${Date.now()}`
+      setDispatchId(newDispatchId)
       
-      setTransactions(data.transactions || [])
+      // Store dispatched items for display
+      setDispatchedItems(cart.map(cartItem => ({
+        name: cartItem.item.name,
+        quantity: cartItem.quantity,
+        price: cartItem.item.costPrice
+      })))
+      
+      // Reset
+      setCart([])
+      setPurpose('')
+      setSalesChannel('')
+      setNotes('')
+      setDispatchModalOpen(false)
+      setSuccessModalOpen(true)
+      
+      // Refresh data
+      fetchItems()
+      fetchTransactions()
     } catch (error) {
-      console.error("Error fetching internal usage:", error)
-      setTransactions([])
+      console.error("Error dispatching items:", error)
+      alert("Failed to dispatch items")
     } finally {
       setLoading(false)
     }
   }
 
-  // Filter transactions
-  const filteredTransactions = transactions.filter(t => {
-    const matchesSearch = t.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         t.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         t.staffName?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesType = filterType === "all" || 
-                       (filterType === "demo" && t.transactionType === "demo") ||
-                       (filterType === "internal" && t.transactionType === "internal")
-    
-    const transactionDate = new Date(t.timestamp)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    let matchesDate = true
-    if (dateFilter === "today") {
-      matchesDate = transactionDate >= today
-    } else if (dateFilter === "week") {
-      const weekAgo = new Date(today)
-      weekAgo.setDate(weekAgo.getDate() - 7)
-      matchesDate = transactionDate >= weekAgo
-    } else if (dateFilter === "month") {
-      const monthAgo = new Date(today)
-      monthAgo.setMonth(monthAgo.getMonth() - 1)
-      matchesDate = transactionDate >= monthAgo
-    }
-    
-    return matchesSearch && matchesType && matchesDate
-  })
-
-  // Calculate statistics
-  const demoTransactions = filteredTransactions.filter(t => t.transactionType === "demo")
-  const internalTransactions = filteredTransactions.filter(t => t.transactionType === "internal")
-  
-  const demoQuantity = demoTransactions.reduce((sum, t) => sum + t.quantity, 0)
-  const internalQuantity = internalTransactions.reduce((sum, t) => sum + t.quantity, 0)
-  
-  const demoValue = demoTransactions.reduce((sum, t) => sum + t.totalCost, 0)
-  const internalValue = internalTransactions.reduce((sum, t) => sum + t.totalCost, 0)
-
-  // Top items by usage type - use ALL transactions for accurate top items
-  const topDemoItems = transactions
-    .filter(t => t.transactionType === "demo")
-    .reduce((acc, t) => {
-      const existing = acc.find(item => item.name === t.itemName)
-      if (existing) {
-        existing.quantity += t.quantity
-        existing.value += t.totalCost
-      } else {
-        acc.push({ name: t.itemName, quantity: t.quantity, value: t.totalCost })
-      }
-      return acc
-    }, [] as { name: string; quantity: number; value: number }[])
-    .sort((a, b) => b.quantity - a.quantity)
-    .slice(0, 5)
-
-  const topInternalItems = transactions
-    .filter(t => t.transactionType === "internal")
-    .reduce((acc, t) => {
-      const existing = acc.find(item => item.name === t.itemName)
-      if (existing) {
-        existing.quantity += t.quantity
-        existing.value += t.totalCost
-      } else {
-        acc.push({ name: t.itemName, quantity: t.quantity, value: t.totalCost })
-      }
-      return acc
-    }, [] as { name: string; quantity: number; value: number }[])
-    .sort((a, b) => b.quantity - a.quantity)
-    .slice(0, 5)
-
-  // Usage by department - for Sales Channels tab, parse combined format
-  const usageByDepartment = filteredTransactions.reduce((acc, t) => {
-    let dept = t.department || "Unknown"
-    
-    // Parse combined format: "Demo/Display / Tiktok" or "Internal Use / Lazada"
-    if (dept.includes(' / ')) {
-      const parts = dept.split(' / ')
-      dept = parts[1] || parts[0] // Use sales channel part
-    }
-    
-    const existing = acc.find(item => item.department === dept)
-    if (existing) {
-      existing.demo += t.transactionType === "demo" ? t.quantity : 0
-      existing.internal += t.transactionType === "internal" ? t.quantity : 0
-      existing.demoValue += t.transactionType === "demo" ? t.totalCost : 0
-      existing.internalValue += t.transactionType === "internal" ? t.totalCost : 0
-    } else {
-      acc.push({
-        department: dept,
-        demo: t.transactionType === "demo" ? t.quantity : 0,
-        internal: t.transactionType === "internal" ? t.quantity : 0,
-        demoValue: t.transactionType === "demo" ? t.totalCost : 0,
-        internalValue: t.transactionType === "internal" ? t.totalCost : 0
-      })
-    }
-    return acc
-  }, [] as { department: string; demo: number; internal: number; demoValue: number; internalValue: number }[])
-    .filter(d => {
-      // Exclude non-sales destinations from Sales Channels tab
-      const nonSalesDestinations = ['Demo/Display', 'Internal Use', 'Warehouse', 'Unknown']
-      return !nonSalesDestinations.includes(d.department)
-    })
-    .sort((a, b) => (b.demo + b.internal) - (a.demo + a.internal))
-
-  // Daily usage trend (last 7 days) - use ALL transactions, not filtered
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date()
-    date.setDate(date.getDate() - (6 - i))
-    date.setHours(0, 0, 0, 0)
-    return date
-  })
-
-  const dailyUsage = last7Days.map(date => {
-    const nextDay = new Date(date)
-    nextDay.setDate(nextDay.getDate() + 1)
-    
-    // Use ALL transactions for trend, not filtered
-    const dayTransactions = transactions.filter(t => {
-      const tDate = new Date(t.timestamp)
-      return tDate >= date && tDate < nextDay
-    })
-    
-    return {
-      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      demo: dayTransactions.filter(t => t.transactionType === "demo").reduce((sum, t) => sum + t.quantity, 0),
-      internal: dayTransactions.filter(t => t.transactionType === "internal").reduce((sum, t) => sum + t.quantity, 0)
-    }
-  })
-
-  // Pie chart data
-  const pieData = [
-    { name: 'Demo/Display', value: demoQuantity, color: '#A855F7' },
-    { name: 'Internal Use', value: internalQuantity, color: '#3B82F6' }
-  ]
-
-  const COLORS = ['#A855F7', '#3B82F6']
-
-  // Monthly comparison (last 6 months)
-  const last6Months = Array.from({ length: 6 }, (_, i) => {
-    const date = new Date()
-    date.setMonth(date.getMonth() - (5 - i))
-    return date
-  })
-
-  console.log('[Internal Usage] Calculating monthly comparison...')
-  console.log('[Internal Usage] Total transactions:', transactions.length)
-
-  const monthlyComparison = last6Months.map(date => {
-    const monthStart = new Date(date.getFullYear(), date.getMonth(), 1)
-    const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0)
-    monthEnd.setHours(23, 59, 59, 999)
-    
-    const monthTransactions = transactions.filter(t => {
-      const tDate = new Date(t.timestamp)
-      return tDate >= monthStart && tDate <= monthEnd
-    })
-    
-    console.log(`[Internal Usage] ${date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}: ${monthTransactions.length} transactions`)
-    
-    const demoQty = monthTransactions.filter(t => t.transactionType === "demo").reduce((sum, t) => sum + t.quantity, 0)
-    const internalQty = monthTransactions.filter(t => t.transactionType === "internal").reduce((sum, t) => sum + t.quantity, 0)
-    const demoVal = monthTransactions.filter(t => t.transactionType === "demo").reduce((sum, t) => sum + t.totalCost, 0)
-    const internalVal = monthTransactions.filter(t => t.transactionType === "internal").reduce((sum, t) => sum + t.totalCost, 0)
-    
-    return {
-      month: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-      demoQty,
-      internalQty,
-      demoValue: demoVal,
-      internalValue: internalVal,
-      total: demoQty + internalQty
-    }
-  })
-
-  console.log('[Internal Usage] Monthly comparison data:', monthlyComparison)
-
-  // Staff usage tracking
-  console.log('[Internal Usage] Calculating staff usage...')
-  const staffUsage = filteredTransactions.reduce((acc, t) => {
-    const staff = t.staffName || "Unknown"
-    const existing = acc.find(item => item.staff === staff)
-    if (existing) {
-      existing.demo += t.transactionType === "demo" ? t.quantity : 0
-      existing.internal += t.transactionType === "internal" ? t.quantity : 0
-      existing.demoValue += t.transactionType === "demo" ? t.totalCost : 0
-      existing.internalValue += t.transactionType === "internal" ? t.totalCost : 0
-      existing.transactions += 1
-    } else {
-      acc.push({
-        staff,
-        demo: t.transactionType === "demo" ? t.quantity : 0,
-        internal: t.transactionType === "internal" ? t.quantity : 0,
-        demoValue: t.transactionType === "demo" ? t.totalCost : 0,
-        internalValue: t.transactionType === "internal" ? t.totalCost : 0,
-        transactions: 1
-      })
-    }
-    return acc
-  }, [] as { staff: string; demo: number; internal: number; demoValue: number; internalValue: number; transactions: number }[])
-    .sort((a, b) => (b.demo + b.internal) - (a.demo + a.internal))
-
-  console.log('[Internal Usage] Staff usage data:', staffUsage)
-
-  // Cost analysis
-  const costAnalysis = {
-    totalCost: demoValue + internalValue,
-    demoCost: demoValue,
-    internalCost: internalValue,
-    demoPercentage: demoValue + internalValue > 0 ? (demoValue / (demoValue + internalValue)) * 100 : 0,
-    internalPercentage: demoValue + internalValue > 0 ? (internalValue / (demoValue + internalValue)) * 100 : 0,
-    avgDemoCost: demoTransactions.length > 0 ? demoValue / demoTransactions.length : 0,
-    avgInternalCost: internalTransactions.length > 0 ? internalValue / internalTransactions.length : 0
-  }
-
-  // Cost breakdown by item
-  const costByItem = filteredTransactions.reduce((acc, t) => {
-    const existing = acc.find(item => item.name === t.itemName)
-    if (existing) {
-      existing.demoValue += t.transactionType === "demo" ? t.totalCost : 0
-      existing.internalValue += t.transactionType === "internal" ? t.totalCost : 0
-      existing.totalValue += t.totalCost
-    } else {
-      acc.push({
-        name: t.itemName,
-        demoValue: t.transactionType === "demo" ? t.totalCost : 0,
-        internalValue: t.transactionType === "internal" ? t.totalCost : 0,
-        totalValue: t.totalCost
-      })
-    }
-    return acc
-  }, [] as { name: string; demoValue: number; internalValue: number; totalValue: number }[])
-    .sort((a, b) => b.totalValue - a.totalValue)
-    .slice(0, 10)
-
-  if (loading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-muted-foreground">Loading internal usage data...</div>
-      </div>
-    )
+  function openDispatchModal() {
+    setCart([])
+    setPurpose('')
+    setSalesChannel('')
+    setNotes('')
+    setSearchProducts('')
+    setDispatchModalOpen(true)
   }
 
   return (
-    <div className="space-y-6 pt-2">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
       {/* Page Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">Internal Usage Tracking</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm">
-            Track items used for Demo/Display and Internal Company Use
+          <h1 className="text-4xl font-bold gradient-text mb-2">
+            Internal Usage
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 text-base">
+            Track items for demo displays, internal use, and warehouse transfers
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={fetchInternalUsage}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
+        <Button 
+          onClick={openDispatchModal}
+          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+          size="lg"
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          Dispatch Items
+        </Button>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-purple-100 dark:bg-purple-900/30">
-                <Monitor className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </div>
-              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-0">
-                Demo
-              </Badge>
-            </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {formatNumber(demoQuantity)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Items for Demo/Display</div>
-            {transactions.length === 0 && (
-              <div className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                No transactions yet
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
-                <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              </div>
-              <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0">
-                Internal
-              </Badge>
-            </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {formatNumber(internalQuantity)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Items for Internal Use</div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-amber-100 dark:bg-amber-900/30">
-                <Package className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              </div>
-            </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {formatCurrency(demoValue)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Demo/Display Value</div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-green-100 dark:bg-green-900/30">
-                <Package className="h-4 w-4 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {formatCurrency(internalValue)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Internal Use Value</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters - Enterprise Grade */}
-      <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-        <CardContent className="p-4">
-          {/* Filter Header with Count */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <Search className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              </div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Filters</h3>
-              {(searchTerm || filterType !== "all" || dateFilter !== "all") && (
-                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0 text-xs">
-                  {[searchTerm, filterType !== "all", dateFilter !== "all"].filter(Boolean).length} active
-                </Badge>
-              )}
-            </div>
-            {(searchTerm || filterType !== "all" || dateFilter !== "all") && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearchTerm("")
-                  setFilterType("all")
-                  setDateFilter("all")
-                }}
-                className="h-8 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              >
-                Clear all
-              </Button>
-            )}
-          </div>
-
-          {/* Filter Inputs */}
-          <div className="space-y-3 mb-3">
-            {/* Search - Full Width */}
-            <div>
-              <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Search</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input
-                  placeholder="Search items, department, staff..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-9"
-                />
-              </div>
-            </div>
-            
-            {/* Type + Date Range - Side by Side */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Type</Label>
-                <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="demo">Demo/Display</SelectItem>
-                    <SelectItem value="internal">Internal Use</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Date Range</Label>
-                <Select value={dateFilter} onValueChange={(value: any) => setDateFilter(value)}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Time</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="week">Last 7 Days</SelectItem>
-                    <SelectItem value="month">Last 30 Days</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          {/* Active Filter Chips */}
-          {(searchTerm || filterType !== "all" || dateFilter !== "all") && (
-            <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-              {searchTerm && (
-                <Badge 
-                  variant="secondary" 
-                  className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-0 text-xs pl-2 pr-1 py-1 flex items-center gap-1.5"
-                >
-                  <span className="max-w-[150px] truncate">Search: {searchTerm}</span>
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    className="hover:bg-slate-200 dark:hover:bg-slate-700 rounded p-0.5 transition-colors"
-                  >
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </Badge>
-              )}
-              {filterType !== "all" && (
-                <Badge 
-                  variant="secondary" 
-                  className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-0 text-xs pl-2 pr-1 py-1 flex items-center gap-1.5"
-                >
-                  <span>Type: {filterType === "demo" ? "Demo/Display" : "Internal Use"}</span>
-                  <button
-                    onClick={() => setFilterType("all")}
-                    className="hover:bg-purple-200 dark:hover:bg-purple-800 rounded p-0.5 transition-colors"
-                  >
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </Badge>
-              )}
-              {dateFilter !== "all" && (
-                <Badge 
-                  variant="secondary" 
-                  className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0 text-xs pl-2 pr-1 py-1 flex items-center gap-1.5"
-                >
-                  <span>
-                    Date: {dateFilter === "today" ? "Today" : dateFilter === "week" ? "Last 7 Days" : "Last 30 Days"}
-                  </span>
-                  <button
-                    onClick={() => setDateFilter("all")}
-                    className="hover:bg-blue-200 dark:hover:bg-blue-800 rounded p-0.5 transition-colors"
-                  >
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </Badge>
-              )}
-            </div>
-          )}
-
-          {/* Results Count */}
-          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              Showing <span className="font-semibold text-slate-900 dark:text-white">{filteredTransactions.length}</span> of <span className="font-semibold text-slate-900 dark:text-white">{transactions.length}</span> transactions
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* No Data Alert */}
-      {transactions.length === 0 && (
-        <Card className="border-0 shadow-md bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-600">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <Package className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">No Internal Usage Data Yet</h3>
-                <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
-                  To start tracking internal usage, dispatch items from the Warehouse Dispatch page:
-                </p>
-                <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1 ml-4 list-disc">
-                  <li>Go to <strong>Warehouse Dispatch</strong></li>
-                  <li>Select items to dispatch</li>
-                  <li>Choose department: <strong>"Demo/Display"</strong> or <strong>"Internal Use"</strong></li>
-                  <li>Complete the dispatch</li>
-                </ul>
-                <p className="text-sm text-blue-700 dark:text-blue-300 mt-2">
-                  All demo and internal use transactions will automatically appear here.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Tabs for different views */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <div className="overflow-x-auto overflow-y-visible pb-2">
-          <TabsList className="inline-flex h-12 items-center justify-start md:justify-center rounded-xl bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-700 dark:text-slate-300 shadow-sm gap-2 w-full md:w-auto min-w-max">
-            <TabsTrigger 
-              value="overview" 
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 md:px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-blue-600 dark:data-[state=active]:to-blue-500 flex-shrink-0"
-            >
-              <PieChart className="h-4 w-4 md:mr-2.5" />
-              <span className="hidden md:inline">Overview</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="department" 
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 md:px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-purple-600 dark:data-[state=active]:to-purple-500 flex-shrink-0"
-            >
-              <BarChart3 className="h-4 w-4 md:mr-2.5" />
-              <span className="hidden md:inline">Sales Channels</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="cost" 
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 md:px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-green-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-green-600 dark:data-[state=active]:to-green-500 flex-shrink-0"
-            >
-              <TrendingUp className="h-4 w-4 md:mr-2.5" />
-              <span className="hidden md:inline">Cost Analysis</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="history" 
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 md:px-5 py-2.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:from-amber-600 dark:data-[state=active]:to-amber-500 flex-shrink-0"
-            >
-              <Calendar className="h-4 w-4 md:mr-2.5" />
-              <span className="hidden md:inline">Transaction History</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4 mb-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-lg">
+          <TabsTrigger 
+            value="overview" 
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+          >
+            <PieChart className="h-4 w-4 mr-2" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger 
+            value="sales-channels"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+          >
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Sales Channels
+          </TabsTrigger>
+          <TabsTrigger 
+            value="cost-analysis"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+          >
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Cost Analysis
+          </TabsTrigger>
+          <TabsTrigger 
+            value="transaction-history"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Transaction History
+          </TabsTrigger>
+        </TabsList>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          {/* Charts Section */}
-          <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        {/* Usage Distribution Pie Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
-              <div className="p-2 rounded-[5px] bg-gradient-to-br from-purple-500 to-blue-600 text-white shadow-md">
-                <PieChart className="h-5 w-5" />
-              </div>
-              Usage Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {pieData.some(d => d.value > 0) ? (
-              <>
-                <ResponsiveContainer width="100%" height={280}>
-                  <RechartsPieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend 
-                      verticalAlign="bottom" 
-                      height={36}
-                      formatter={(value, entry: any) => {
-                        const item = pieData.find(d => d.name === value)
-                        return `${value}: ${item?.value || 0} (${((item?.value || 0) / pieData.reduce((sum, d) => sum + d.value, 0) * 100).toFixed(0)}%)`
-                      }}
-                    />
-                  </RechartsPieChart>
-                </ResponsiveContainer>
-              </>
-            ) : (
-              <div className="text-center py-12">
-                <PieChart className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                <p className="text-sm text-slate-600 dark:text-slate-400">No data available</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Daily Usage Trend */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
-              <div className="p-2 rounded-[5px] bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-md">
-                <TrendingUp className="h-5 w-5" />
-              </div>
-              7-Day Usage Trend
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {dailyUsage.some(d => d.demo > 0 || d.internal > 0) ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={dailyUsage} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="demoGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#A855F7" stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor="#A855F7" stopOpacity={0.05}/>
-                    </linearGradient>
-                    <linearGradient id="internalGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
-                  <XAxis 
-                    dataKey="date" 
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={11}
-                    tickLine={false}
-                  />
-                  <YAxis 
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={11}
-                    tickLine={false}
-                    width={40}
-                  />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Legend />
-                  <Area 
-                    type="monotone" 
-                    dataKey="demo" 
-                    stroke="#A855F7" 
-                    strokeWidth={2}
-                    fill="url(#demoGradient)" 
-                    name="Demo/Display"
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="internal" 
-                    stroke="#3B82F6" 
-                    strokeWidth={2}
-                    fill="url(#internalGradient)" 
-                    name="Internal Use"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="text-center py-12">
-                <TrendingUp className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                <p className="text-sm text-slate-600 dark:text-slate-400">No trend data available</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Top Items and Department Usage */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        {/* Top Demo Items */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
-              <div className="p-2 rounded-[5px] bg-purple-100 dark:bg-purple-900/30">
-                <Monitor className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-              </div>
-              Top Demo/Display Items
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {topDemoItems.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart 
-                  data={topDemoItems} 
-                  layout="vertical"
-                  margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
-                >
-                  <defs>
-                    <linearGradient id="demoBarGradient" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#A855F7" stopOpacity={0.9}/>
-                      <stop offset="100%" stopColor="#9333EA" stopOpacity={0.8}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
-                  <XAxis 
-                    type="number"
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={11}
-                    tickLine={false}
-                  />
-                  <YAxis 
-                    type="category"
-                    dataKey="name" 
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={11}
-                    tickLine={false}
-                    width={100}
-                  />
-                  <Tooltip content={<ChartTooltip formatter={(value) => [value.toString(), 'Quantity']} />} />
-                  <Bar 
-                    dataKey="quantity" 
-                    fill="url(#demoBarGradient)" 
-                    radius={[0, 8, 8, 0]}
-                    maxBarSize={40}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="text-center py-12">
-                <Monitor className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                <p className="text-sm text-slate-600 dark:text-slate-400">No demo items yet</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Top Internal Use Items */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
-              <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
-                <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              Top Internal Use Items
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {topInternalItems.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart 
-                  data={topInternalItems} 
-                  layout="vertical"
-                  margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
-                >
-                  <defs>
-                    <linearGradient id="internalBarGradient" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.9}/>
-                      <stop offset="100%" stopColor="#1D4ED8" stopOpacity={0.8}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
-                  <XAxis 
-                    type="number"
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={11}
-                    tickLine={false}
-                  />
-                  <YAxis 
-                    type="category"
-                    dataKey="name" 
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={11}
-                    tickLine={false}
-                    width={100}
-                  />
-                  <Tooltip content={<ChartTooltip formatter={(value) => [value.toString(), 'Quantity']} />} />
-                  <Bar 
-                    dataKey="quantity" 
-                    fill="url(#internalBarGradient)" 
-                    radius={[0, 8, 8, 0]}
-                    maxBarSize={40}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="text-center py-12">
-                <Users className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                <p className="text-sm text-slate-600 dark:text-slate-400">No internal use items yet</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Usage by Department */}
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
-            <div className="p-2 rounded-[5px] bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md">
-              <BarChart3 className="h-5 w-5" />
-            </div>
-            Usage by Department
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {usageByDepartment.length > 0 ? (
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={usageByDepartment} margin={{ top: 10, right: 10, left: 0, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
-                <XAxis 
-                  dataKey="department" 
-                  className="fill-gray-600 dark:fill-gray-400" 
-                  fontSize={10}
-                  tickLine={false}
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                />
-                <YAxis 
-                  className="fill-gray-600 dark:fill-gray-400" 
-                  fontSize={11}
-                  tickLine={false}
-                  width={40}
-                />
-                <Tooltip content={<ChartTooltip />} />
-                <Legend />
-                <Bar dataKey="demo" fill="#A855F7" name="Demo/Display" radius={[8, 8, 0, 0]} />
-                <Bar dataKey="internal" fill="#3B82F6" name="Internal Use" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="text-center py-12">
-              <BarChart3 className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-              <p className="text-sm text-slate-600 dark:text-slate-400">No department data available</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-        </TabsContent>
-
-        {/* Department Tracking Tab */}
-        <TabsContent value="department" className="space-y-6">
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-[5px] bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md">
-                  <Users className="h-5 w-5" />
+          {/* Stats Cards */}
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                  Total Cost
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {formatCurrency(totalCost)}
                 </div>
-                Sales Channel Usage Summary
-              </CardTitle>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-                Track which sales channels (TikTok, Lazada, Shopee, etc.) are using products for demo or internal purposes
-              </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  All internal usage
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                  Demo/Display
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                  {formatCurrency(demoCost)}
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {demoTransactions.length} transactions
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                  Internal Use
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {formatCurrency(internalCost)}
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {internalTransactions.length} transactions
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                  Warehouse Transfer
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                  {formatCurrency(transferCost)}
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {transferTransactions.length} transactions
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Transactions */}
+          <Card className="border-slate-200 dark:border-slate-800">
+            <CardHeader>
+              <CardTitle>Recent Transactions</CardTitle>
             </CardHeader>
             <CardContent>
-              {usageByDepartment.length > 0 ? (
-                <div className="space-y-6">
-                  {/* Department Usage Table */}
-                  <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-                    <table className="w-full text-sm">
-                      <thead className="bg-slate-50 dark:bg-slate-800/50">
-                        <tr className="border-b border-slate-200 dark:border-slate-700">
-                          <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Sales Channel / Department</th>
-                          <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Demo Qty</th>
-                          <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Internal Qty</th>
-                          <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Qty</th>
-                          <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Amount</th>
-                          <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">% of Total</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {usageByDepartment.map((dept, index) => {
-                          const totalQty = dept.demo + dept.internal
-                          const totalValue = dept.demoValue + dept.internalValue
-                          const totalAllDepts = usageByDepartment.reduce((sum, d) => sum + d.demo + d.internal, 0)
-                          const percentage = totalAllDepts > 0 ? (totalQty / totalAllDepts) * 100 : 0
-                          
-                          return (
-                            <tr 
-                              key={index}
-                              className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
-                            >
-                              <td className="py-2.5 px-3 text-xs font-medium text-slate-900 dark:text-white">
-                                {dept.department}
-                              </td>
-                              <td className="py-2.5 px-3 text-xs text-right text-purple-600 dark:text-purple-400 tabular-nums">
-                                {formatNumber(dept.demo)}
-                              </td>
-                              <td className="py-2.5 px-3 text-xs text-right text-blue-600 dark:text-blue-400 tabular-nums">
-                                {formatNumber(dept.internal)}
-                              </td>
-                              <td className="py-2.5 px-3 text-xs text-right font-semibold text-slate-900 dark:text-white tabular-nums">
-                                {formatNumber(totalQty)}
-                              </td>
-                              <td className="py-2.5 px-3 text-xs text-right font-semibold text-green-600 dark:text-green-400 tabular-nums">
-                                {formatCurrency(totalValue)}
-                              </td>
-                              <td className="py-2.5 px-3 text-xs text-right text-slate-600 dark:text-slate-400 tabular-nums">
-                                {percentage.toFixed(1)}%
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                      <tfoot>
-                        <tr className="border-t-2 border-slate-300 dark:border-slate-600 font-semibold">
-                          <td className="py-3 px-4 text-sm text-slate-900 dark:text-white">TOTAL</td>
-                          <td className="py-3 px-4 text-sm text-right text-purple-600 dark:text-purple-400">
-                            {formatNumber(usageByDepartment.reduce((sum, d) => sum + d.demo, 0))}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-right text-blue-600 dark:text-blue-400">
-                            {formatNumber(usageByDepartment.reduce((sum, d) => sum + d.internal, 0))}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-right text-slate-900 dark:text-white">
-                            {formatNumber(usageByDepartment.reduce((sum, d) => sum + d.demo + d.internal, 0))}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-right font-semibold text-green-600 dark:text-green-400">
-                            {formatCurrency(usageByDepartment.reduce((sum, d) => sum + d.demoValue + d.internalValue, 0))}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-right text-slate-600 dark:text-slate-400">
-                            100%
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
+              <div className="space-y-3">
+                {transactions.slice(0, 5).map((transaction) => (
+                  <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                        {transaction.itemName.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900 dark:text-white">{transaction.itemName}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {transaction.department} • {format(new Date(transaction.timestamp), 'MMM dd, yyyy')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-slate-900 dark:text-white">{formatCurrency(transaction.totalCost)}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Qty: {transaction.quantity}</p>
+                    </div>
                   </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                  {/* Department Usage Chart */}
-                  <Card className="border-0 shadow-md bg-slate-50 dark:bg-slate-800/50">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
-                        Sales Channel Comparison
-                      </CardTitle>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                        Compare demo vs internal usage across TikTok, Lazada, Shopee, and other channels
-                      </p>
-                    </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={400}>
-                        <BarChart data={usageByDepartment} margin={{ top: 10, right: 10, left: 0, bottom: 60 }}>
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
-                          <XAxis 
-                            dataKey="department" 
-                            className="fill-gray-600 dark:fill-gray-400" 
-                            fontSize={10}
-                            tickLine={false}
-                            angle={-45}
-                            textAnchor="end"
-                            height={80}
-                          />
-                          <YAxis 
-                            className="fill-gray-600 dark:fill-gray-400" 
-                            fontSize={11}
-                            tickLine={false}
-                            width={40}
-                          />
-                          <Tooltip content={<ChartTooltip />} />
-                          <Legend />
-                          <Bar dataKey="demo" fill="#A855F7" name="Demo/Display" radius={[8, 8, 0, 0]} />
-                          <Bar dataKey="internal" fill="#3B82F6" name="Internal Use" radius={[8, 8, 0, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Users className="h-16 w-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No Department Data</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    No department usage records found for the selected filters.
-                  </p>
-                </div>
-              )}
+        {/* Sales Channels Tab */}
+        <TabsContent value="sales-channels" className="space-y-6">
+          <Card className="border-slate-200 dark:border-slate-800">
+            <CardHeader>
+              <CardTitle>Sales Channel Breakdown</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {Object.entries(salesChannelData).map(([channel, data]) => (
+                  <div key={channel} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-slate-900 dark:text-white">{channel}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">({data.count} transactions)</span>
+                      </div>
+                      <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(data.cost)}</span>
+                    </div>
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${(data.cost / totalCost) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {Object.keys(salesChannelData).length === 0 && (
+                  <div className="text-center py-8">
+                    <BarChart3 className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-500 dark:text-slate-400">No sales channel data available</p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         {/* Cost Analysis Tab */}
-        <TabsContent value="cost" className="space-y-6">
-          {/* Cost Summary Cards */}
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-              <CardContent className="p-4">
-                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Total Cost</div>
-                <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {formatCurrency(costAnalysis.totalCost)}
+        <TabsContent value="cost-analysis" className="space-y-6">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+            <Card className="border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                  Demo/Display Cost
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                  {formatCurrency(demoCost)}
+                </div>
+                <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  {((demoCost / totalCost) * 100 || 0).toFixed(1)}% of total
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-              <CardContent className="p-4">
-                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Demo Cost</div>
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  {formatCurrency(costAnalysis.demoCost)}
-                </div>
-                <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                  {costAnalysis.demoPercentage.toFixed(1)}% of total
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-              <CardContent className="p-4">
-                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Internal Cost</div>
+            <Card className="border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                  Internal Use Cost
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {formatCurrency(costAnalysis.internalCost)}
+                  {formatCurrency(internalCost)}
                 </div>
-                <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                  {costAnalysis.internalPercentage.toFixed(1)}% of total
+                <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  {((internalCost / totalCost) * 100 || 0).toFixed(1)}% of total
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-              <CardContent className="p-4">
-                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Avg Transaction Cost</div>
-                <div className="text-xl font-bold text-slate-900 dark:text-white">
-                  {formatCurrency((costAnalysis.demoCost + costAnalysis.internalCost) / (demoTransactions.length + internalTransactions.length || 1))}
+            <Card className="border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                  Transfer Cost
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                  {formatCurrency(transferCost)}
+                </div>
+                <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  {((transferCost / totalCost) * 100 || 0).toFixed(1)}% of total
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Cost Breakdown by Item */}
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-[5px] bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-md">
-                  <BarChart3 className="h-5 w-5" />
-                </div>
-                Cost Breakdown by Item (Top 10)
-              </CardTitle>
+          <Card className="border-slate-200 dark:border-slate-800">
+            <CardHeader>
+              <CardTitle>Cost by Type</CardTitle>
             </CardHeader>
             <CardContent>
-              {costByItem.length > 0 ? (
-                <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-                  <table className="w-full text-sm">
-                    <thead className="bg-slate-50 dark:bg-slate-800/50">
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Item</th>
-                        <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Demo Cost</th>
-                        <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Internal Cost</th>
-                        <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Cost</th>
-                        <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">% of Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {costByItem.map((item, index) => {
-                        const percentage = costAnalysis.totalCost > 0 ? (item.totalValue / costAnalysis.totalCost) * 100 : 0
-                        return (
-                          <tr 
-                            key={index}
-                            className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
-                          >
-                            <td className="py-2.5 px-3 text-xs font-medium text-slate-900 dark:text-white">
-                              {item.name}
-                            </td>
-                            <td className="py-2.5 px-3 text-xs text-right text-purple-600 dark:text-purple-400 tabular-nums">
-                              {formatCurrency(item.demoValue)}
-                            </td>
-                            <td className="py-2.5 px-3 text-xs text-right text-blue-600 dark:text-blue-400 tabular-nums">
-                              {formatCurrency(item.internalValue)}
-                            </td>
-                            <td className="py-2.5 px-3 text-xs text-right font-semibold text-slate-900 dark:text-white tabular-nums">
-                              {formatCurrency(item.totalValue)}
-                            </td>
-                            <td className="py-2.5 px-3 text-xs text-right text-slate-600 dark:text-slate-400 tabular-nums">
-                              {percentage.toFixed(1)}%
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Demo/Display</span>
+                    <span className="text-sm font-bold text-amber-600 dark:text-amber-400">{formatCurrency(demoCost)}</span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
+                    <div 
+                      className="bg-amber-500 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${(demoCost / totalCost) * 100 || 0}%` }}
+                    />
+                  </div>
                 </div>
-              ) : (
-                <div className="text-center py-12">
-                  <BarChart3 className="h-16 w-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No Cost Data</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    No cost records found for the selected filters.
-                  </p>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Internal Use</span>
+                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{formatCurrency(internalCost)}</span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
+                    <div 
+                      className="bg-blue-500 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${(internalCost / totalCost) * 100 || 0}%` }}
+                    />
+                  </div>
                 </div>
-              )}
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Warehouse Transfer</span>
+                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(transferCost)}</span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
+                    <div 
+                      className="bg-indigo-500 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${(transferCost / totalCost) * 100 || 0}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         {/* Transaction History Tab */}
-        <TabsContent value="history" className="space-y-6">
+        <TabsContent value="transaction-history" className="space-y-6">
+          {/* Filters and Search */}
+          <Card className="border-slate-200 dark:border-slate-800">
+            <CardContent className="pt-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    placeholder="Search by item, department, or staff..."
+                    value={searchTable}
+                    onChange={(e) => setSearchTable(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue placeholder="Filter by type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="demo">Demo/Display</SelectItem>
+                    <SelectItem value="internal">Internal Use</SelectItem>
+                    <SelectItem value="transfer">Warehouse Transfer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Transactions Table */}
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Usage History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredTransactions.length > 0 ? (
-            <>
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-                <table className="w-full text-sm">
-                  <thead className="bg-slate-50 dark:bg-slate-800/50">
-                    <tr className="border-b border-slate-200 dark:border-slate-700">
-                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Type</th>
-                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Item</th>
-                      <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Quantity</th>
-                      <th className="text-right py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
-                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Department</th>
-                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Staff</th>
-                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredTransactions.map((transaction, index) => (
-                      <tr 
-                        key={index}
-                        className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
-                      >
-                        <td className="py-2.5 px-3 text-xs text-slate-900 dark:text-white whitespace-nowrap">
-                          {new Date(transaction.timestamp).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <Badge className={cn(
-                            "border-0 text-xs px-1.5 py-0.5",
-                            transaction.transactionType === "demo" 
-                              ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                              : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          )}>
-                            {transaction.transactionType === "demo" ? (
-                              <>
-                                <Monitor className="h-3 w-3 mr-1" />
+          <Card className="border-slate-200 dark:border-slate-800">
+            <CardHeader className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+              <CardTitle className="text-white text-lg">
+                Internal Usage History ({filteredTransactions.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50 dark:bg-slate-900/50">
+                      <TableHead className="font-semibold">Date</TableHead>
+                      <TableHead className="font-semibold">Item</TableHead>
+                      <TableHead className="font-semibold">Type</TableHead>
+                      <TableHead className="font-semibold">Department</TableHead>
+                      <TableHead className="font-semibold text-center">Qty</TableHead>
+                      <TableHead className="font-semibold text-right">Cost</TableHead>
+                      <TableHead className="font-semibold">Staff</TableHead>
+                      <TableHead className="font-semibold">Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredTransactions.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-12">
+                          <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                          <p className="text-slate-500 dark:text-slate-400">No internal usage records found</p>
+                          <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
+                            Click "Dispatch Items" to create a new record
+                          </p>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredTransactions.map((transaction) => (
+                        <TableRow 
+                          key={transaction.id}
+                          className="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors duration-200"
+                        >
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-slate-400" />
+                              <span>{format(new Date(transaction.timestamp), 'MMM dd, yyyy')}</span>
+                            </div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                              {format(new Date(transaction.timestamp), 'hh:mm a')}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium text-slate-900 dark:text-white">
+                              {transaction.itemName}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {transaction.transactionType === 'demo' && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                <Monitor className="h-3 w-3" />
                                 Demo
-                              </>
-                            ) : (
-                              <>
-                                <Users className="h-3 w-3 mr-1" />
-                                Internal
-                              </>
+                              </span>
                             )}
-                          </Badge>
-                        </td>
-                        <td className="py-2.5 px-3 text-xs font-medium text-slate-900 dark:text-white max-w-[200px] truncate">
-                          {transaction.itemName}
-                        </td>
-                        <td className="py-2.5 px-3 text-xs text-right text-slate-900 dark:text-white tabular-nums">
-                          {formatNumber(transaction.quantity)}
-                        </td>
-                        <td className="py-2.5 px-3 text-xs text-right font-semibold text-slate-900 dark:text-white tabular-nums">
-                          {formatCurrency(transaction.totalCost)}
-                        </td>
-                        <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
-                          {transaction.department || "-"}
-                        </td>
-                        <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
-                          {transaction.staffName || "-"}
-                        </td>
-                        <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400 max-w-[150px] truncate">
-                          {transaction.notes || "-"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile Card View */}
-              <div className="md:hidden space-y-3">
-                {filteredTransactions.map((transaction, index) => (
-                  <div 
-                    key={index}
-                    className="border border-slate-200 dark:border-slate-700 rounded-lg p-4 bg-white dark:bg-slate-900 hover:shadow-md transition-shadow"
-                  >
-                    {/* Header Row */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge className={cn(
-                            "border-0 text-xs px-2 py-0.5",
-                            transaction.transactionType === "demo" 
-                              ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                              : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          )}>
-                            {transaction.transactionType === "demo" ? (
-                              <>
-                                <Monitor className="h-3 w-3 mr-1" />
-                                Demo
-                              </>
-                            ) : (
-                              <>
-                                <Users className="h-3 w-3 mr-1" />
+                            {transaction.transactionType === 'internal' && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                <Users className="h-3 w-3" />
                                 Internal
-                              </>
+                              </span>
                             )}
-                          </Badge>
-                          <span className="text-xs text-slate-500 dark:text-slate-400">
-                            {new Date(transaction.timestamp).toLocaleDateString('en-US', { 
-                              month: 'short', 
-                              day: 'numeric',
-                              year: 'numeric'
-                            })}
-                          </span>
-                        </div>
-                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-                          {transaction.itemName}
-                        </h3>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-slate-900 dark:text-white">
-                          {formatCurrency(transaction.totalCost)}
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Qty: {formatNumber(transaction.quantity)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Details Grid */}
-                    <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                      <div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Department</div>
-                        <div className="text-xs font-medium text-slate-900 dark:text-white truncate">
-                          {transaction.department || "-"}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Staff</div>
-                        <div className="text-xs font-medium text-slate-900 dark:text-white truncate">
-                          {transaction.staffName || "-"}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Notes (if exists) */}
-                    {transaction.notes && transaction.notes !== "-" && (
-                      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Notes</div>
-                        <div className="text-xs text-slate-600 dark:text-slate-400 break-words">
-                          {transaction.notes}
-                        </div>
-                      </div>
+                            {transaction.transactionType === 'transfer' && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                                <Package className="h-3 w-3" />
+                                Transfer
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-slate-700 dark:text-slate-300">
+                              {transaction.department || 'N/A'}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                              {transaction.quantity}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <span className="font-semibold text-slate-900 dark:text-white">
+                              {formatCurrency(transaction.totalCost)}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <div className="h-7 w-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+                                {transaction.staffName ? transaction.staffName.charAt(0).toUpperCase() : '?'}
+                              </div>
+                              <span className="text-sm text-slate-700 dark:text-slate-300">
+                                {transaction.staffName || 'N/A'}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {transaction.notes ? (
+                              <div className="flex items-start gap-1.5 max-w-xs">
+                                <FileText className="h-3.5 w-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
+                                <span className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
+                                  {transaction.notes}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))
                     )}
-                  </div>
-                ))}
+                  </TableBody>
+                </Table>
               </div>
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <Package className="h-16 w-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No Usage Records</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                No demo or internal use transactions found for the selected filters.
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Dispatch Modal */}
+      <Dialog open={dispatchModalOpen} onOpenChange={setDispatchModalOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold gradient-text">Dispatch Items</DialogTitle>
+          </DialogHeader>
+          
+          <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+            {/* Left: Dispatch Form */}
+            <div className="space-y-4">
+              <Card className="border-slate-200 dark:border-slate-800">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold">Dispatch Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Purpose */}
+                  <div>
+                    <Label className="text-sm font-medium">Purpose *</Label>
+                    <Select value={purpose} onValueChange={(value) => {
+                      setPurpose(value)
+                      if (value === 'Warehouse Transfer') {
+                        setSalesChannel('')
+                      }
+                    }}>
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder="Select purpose" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Demo/Display">
+                          <div className="flex items-center gap-2">
+                            <Monitor className="h-4 w-4 text-purple-600" />
+                            <span>Demo/Display</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Internal Use">
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-blue-600" />
+                            <span>Internal Use</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Warehouse Transfer">
+                          <div className="flex items-center gap-2">
+                            <Package className="h-4 w-4 text-indigo-600" />
+                            <span>Warehouse Transfer</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Sales Channel */}
+                  {(purpose === 'Demo/Display' || purpose === 'Internal Use') && (
+                    <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                      <Label className="text-sm font-medium">
+                        Sales Channel * <span className="text-xs text-slate-500">(Where will this be used?)</span>
+                      </Label>
+                      <Select value={salesChannel} onValueChange={setSalesChannel}>
+                        <SelectTrigger className="mt-1.5">
+                          <SelectValue placeholder="Select sales channel" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Facebook">📘 Facebook Store</SelectItem>
+                          <SelectItem value="TikTok">🎵 TikTok Shop</SelectItem>
+                          <SelectItem value="Lazada">🛒 Lazada</SelectItem>
+                          <SelectItem value="Shopee">🛍️ Shopee</SelectItem>
+                          <SelectItem value="Physical Store">🏪 Physical Store</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* Notes */}
+                  <div>
+                    <Label className="text-sm font-medium">Notes (Optional)</Label>
+                    <Input
+                      placeholder="Purpose or notes..."
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="mt-1.5"
+                    />
+                  </div>
+
+                  {/* Dispatched By */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Dispatched By *</Label>
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                        {staffName ? staffName.charAt(0).toUpperCase() : '?'}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {staffName || 'Unknown User'}
+                        </p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">Currently logged in</p>
+                      </div>
+                      <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 px-2 py-1 rounded bg-blue-100 dark:bg-blue-800">
+                        Verified
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Cart Summary */}
+              <Card className="border-slate-200 dark:border-slate-800">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold flex items-center justify-between">
+                    <span>Cart</span>
+                    <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                      ₱{cartTotal.toFixed(2)}
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {cart.length === 0 ? (
+                    <div className="text-center py-6">
+                      <ShoppingCart className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No items in cart</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                      {cart.map((cartItem) => (
+                        <div
+                          key={cartItem.item.id}
+                          className="flex items-center gap-2 p-2 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-xs text-slate-900 dark:text-white truncate">
+                              {cartItem.item.name}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              ₱{cartItem.item.costPrice.toFixed(2)} × {cartItem.quantity}
+                            </p>
+                          </div>
+                          <Input
+                            type="number"
+                            min="1"
+                            max={cartItem.item.quantity}
+                            value={cartItem.quantity}
+                            onChange={(e) => {
+                              const value = e.target.value
+                              if (value === '') return
+                              const numValue = parseInt(value, 10)
+                              if (!isNaN(numValue) && numValue >= 1) {
+                                updateQuantity(cartItem.item.id, numValue)
+                              }
+                            }}
+                            className="w-16 h-7 text-xs text-center"
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFromCart(cartItem.item.id)}
+                            className="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                          <p className="font-semibold text-xs text-purple-600 dark:text-purple-400 min-w-[60px] text-right">
+                            ₱{(cartItem.item.costPrice * cartItem.quantity).toFixed(2)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right: Products */}
+            <div>
+              <Card className="border-slate-200 dark:border-slate-800">
+                <CardHeader className="pb-3">
+                  <div className="space-y-3">
+                    <CardTitle className="text-base font-semibold">
+                      Products ({filteredProducts.length})
+                    </CardTitle>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                      <Input
+                        placeholder="Search products..."
+                        value={searchProducts}
+                        onChange={(e) => setSearchProducts(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-2 max-h-[400px] overflow-y-auto">
+                    {filteredProducts.map((item) => {
+                      const isOutOfStock = item.quantity === 0
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => addToCart(item)}
+                          disabled={isOutOfStock}
+                          className={cn(
+                            "text-left border rounded-lg p-3 transition-all duration-200",
+                            isOutOfStock
+                              ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10 opacity-60 cursor-not-allowed"
+                              : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:shadow-md hover:border-purple-300 dark:hover:border-purple-600 cursor-pointer active:scale-95"
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <h4 className="text-xs font-bold text-slate-900 dark:text-white line-clamp-2 flex-1">
+                              {item.name}
+                            </h4>
+                            <span className={cn(
+                              "px-1.5 py-0.5 text-[10px] font-bold rounded",
+                              isOutOfStock
+                                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                            )}>
+                              {isOutOfStock ? "OUT" : item.quantity}
+                            </span>
+                          </div>
+                          <p className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                            ₱{item.costPrice.toFixed(2)}
+                          </p>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                            {item.category}
+                          </p>
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {filteredProducts.length === 0 && (
+                    <div className="text-center py-8">
+                      <Package className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No products found</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setDispatchModalOpen(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDispatch}
+              disabled={loading || cart.length === 0}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            >
+              {loading ? "Processing..." : `Dispatch ${cart.length > 0 ? `(${cart.length} items)` : ''}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal */}
+      <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold flex items-center gap-2">
+              <CheckCircle className="h-6 w-6 text-green-500" />
+              Items Dispatched Successfully!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+              <p className="text-center text-green-800 dark:text-green-200 font-medium mb-2">
+                Internal Usage Recorded
+              </p>
+              <p className="text-center text-sm text-green-700 dark:text-green-300">
+                Dispatch ID: <span className="font-mono font-bold">{dispatchId}</span>
+              </p>
+            </div>
+
+            {dispatchedItems.length > 0 && (
+              <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                <div className="bg-slate-50 dark:bg-slate-800 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                  <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Dispatched Items</h4>
+                </div>
+                <div className="divide-y divide-slate-200 dark:divide-slate-700 max-h-48 overflow-y-auto">
+                  {dispatchedItems.map((item, index) => (
+                    <div key={index} className="px-4 py-3 flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                          {item.name}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {formatCurrency(item.price)} × {item.quantity}
+                        </p>
+                      </div>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white ml-4">
+                        {formatCurrency(item.price * item.quantity)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-800 px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Total</span>
+                    <span className="text-lg font-bold text-slate-900 dark:text-white">
+                      {formatCurrency(dispatchedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0))}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
+              <p>✓ Inventory has been updated</p>
+              <p>✓ Transaction logged successfully</p>
+              <p>✓ Staff: {staffName}</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setSuccessModalOpen(false)} className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

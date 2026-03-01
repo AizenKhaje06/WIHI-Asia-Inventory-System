@@ -124,7 +124,7 @@ export default function LowStockPage() {
     }
 
     if (stockRoomFilter && stockRoomFilter !== "all") {
-      filtered = filtered.filter((item) => item.storageRoom === stockRoomFilter)
+      filtered = filtered.filter((item) => item.store === stockRoomFilter)
     }
 
     if (urgencyFilter && urgencyFilter !== "all") {
@@ -602,7 +602,7 @@ export default function LowStockPage() {
                                   {item.name}
                                 </p>
                                 <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                                  {item.storageRoom || 'N/A'}
+                                  {item.salesChannel || 'N/A'} - {item.store || 'N/A'}
                                 </p>
                               </div>
                             </div>

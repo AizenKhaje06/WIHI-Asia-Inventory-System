@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Search, Pencil, Trash2, PackagePlus, Package, Filter, X, ArrowUpDown, AlertCircle, TrendingUp, Warehouse, Tag, Loader2, LayoutGrid, LayoutList, Eye, ShoppingCart } from "lucide-react"
+import { Plus, Search, Pencil, Trash2, PackagePlus, Package, Filter, X, ArrowUpDown, AlertCircle, TrendingUp, Warehouse, Tag, Loader2, LayoutGrid, LayoutList, Eye, ShoppingCart, Check } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -16,9 +16,11 @@ import { AddItemDialog } from "@/components/add-item-dialog"
 import { EditItemDialog } from "@/components/edit-item-dialog"
 import { formatNumber, formatCurrency, cn } from "@/lib/utils"
 import { showSuccess, showError } from "@/lib/toast-utils"
-import type { StorageRoom } from "@/lib/types"
+import type { Store } from "@/lib/types"
 import { getCurrentUser } from "@/lib/auth"
 import { apiGet, apiDelete, apiPost, apiPut } from "@/lib/api-client"
+
+const SALES_CHANNELS = ['Shopee', 'Lazada', 'Facebook', 'TikTok', 'Physical Store'] as const
 
 import { PremiumTableLoading } from "@/components/premium-loading"
 
@@ -48,12 +50,12 @@ export default function InventoryPage() {
   const [editCategoryValue, setEditCategoryValue] = useState("")
   const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null)
   
-  // Warehouse Management
-  const [warehouseDialogOpen, setWarehouseDialogOpen] = useState(false)
-  const [warehouses, setWarehouses] = useState<StorageRoom[]>([])
-  const [newWarehouse, setNewWarehouse] = useState("")
-  const [editingWarehouse, setEditingWarehouse] = useState<StorageRoom | null>(null)
-  const [editWarehouseValue, setEditWarehouseValue] = useState("")
+  // Store Management (renamed from Warehouse Management)
+  const [storeDialogOpen, setStoreDialogOpen] = useState(false)
+  const [stores, setStores] = useState<Store[]>([])
+  const [newStore, setNewStore] = useState({ name: "", salesChannel: "" })
+  const [editingStore, setEditingStore] = useState<Store | null>(null)
+  const [editStoreValue, setEditStoreValue] = useState({ name: "", salesChannel: "" })
   const [submitting, setSubmitting] = useState(false)
   const [deleteWarehouseId, setDeleteWarehouseId] = useState<string | null>(null)
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
@@ -67,7 +69,8 @@ export default function InventoryPage() {
     category: 180,
     status: 90,
     stock: 100,
-    storage: 120,
+    salesChannel: 120,
+    store: 120,
     cost: 100,
     price: 100,
     margin: 90,
@@ -127,13 +130,13 @@ export default function InventoryPage() {
 
   useEffect(() => {
     fetchItems()
-    fetchWarehouses()
+    fetchStores()
     fetchCategories()
 
     // Refresh data when window regains focus (e.g., after switching tabs)
     const handleFocus = () => {
       fetchItems()
-      fetchWarehouses()
+      fetchStores()
       fetchCategories()
     }
 
@@ -171,7 +174,7 @@ export default function InventoryPage() {
     }
 
     if (stockRoomFilter && stockRoomFilter !== "all") {
-      filtered = filtered.filter((item) => item.storageRoom === stockRoomFilter)
+      filtered = filtered.filter((item) => item.store === stockRoomFilter)
     }
 
     if (stockStatusFilter && stockStatusFilter !== "all") {
@@ -217,12 +220,12 @@ export default function InventoryPage() {
     }
   }
 
-  async function fetchWarehouses() {
+  async function fetchStores() {
     try {
-      const data = await apiGet<StorageRoom[]>("/api/storage-rooms")
-      setWarehouses(data)
+      const data = await apiGet<Store[]>("/api/stores")
+      setStores(data)
     } catch (error) {
-      console.error("Error fetching warehouses:", error)
+      console.error("Error fetching stores:", error)
     }
   }
 
@@ -285,55 +288,61 @@ export default function InventoryPage() {
     }
   }
 
-  // Warehouse Management Functions
-  async function handleAddWarehouse() {
-    if (!newWarehouse.trim()) {
-      showError("Please enter a warehouse name")
+  // Store Management Functions
+  async function handleAddStore() {
+    if (!newStore.name.trim() || !newStore.salesChannel) {
+      showError("Please enter store name and select sales channel")
       return
     }
 
     try {
       setSubmitting(true)
-      await apiPost("/api/storage-rooms", { name: newWarehouse.trim() })
-      showSuccess("Warehouse added successfully")
-      setNewWarehouse("")
-      fetchWarehouses()
+      await apiPost("/api/stores", { 
+        store_name: newStore.name.trim(),
+        sales_channel: newStore.salesChannel 
+      })
+      showSuccess("Store added successfully")
+      setNewStore({ name: "", salesChannel: "" })
+      fetchStores()
     } catch (error) {
-      console.error("Error adding warehouse:", error)
-      showError("Failed to add warehouse")
+      console.error("Error adding store:", error)
+      showError("Failed to add store")
     } finally {
       setSubmitting(false)
     }
   }
 
-  async function handleEditWarehouse() {
-    if (!editingWarehouse || !editWarehouseValue.trim()) {
-      showError("Please enter a warehouse name")
+  async function handleEditStore() {
+    if (!editingStore || !editStoreValue.name.trim() || !editStoreValue.salesChannel) {
+      showError("Please enter store name and select sales channel")
       return
     }
 
     try {
       setSubmitting(true)
-      await apiPut(`/api/storage-rooms/${editingWarehouse.id}`, { name: editWarehouseValue.trim() })
-      showSuccess("Warehouse updated successfully")
-      setEditingWarehouse(null)
-      setEditWarehouseValue("")
-      fetchWarehouses()
+      await apiPut(`/api/stores/${editingStore.id}`, { 
+        store_name: editStoreValue.name.trim(),
+        sales_channel: editStoreValue.salesChannel 
+      })
+      showSuccess("Store updated successfully")
+      setEditingStore(null)
+      setEditStoreValue({ name: "", salesChannel: "" })
+      fetchStores()
     } catch (error) {
-      console.error("Error updating warehouse:", error)
-      showError("Failed to update warehouse")
+      console.error("Error updating store:", error)
+      showError("Failed to update store")
     } finally {
       setSubmitting(false)
     }
   }
 
-  async function handleDeleteWarehouse(id: string) {
+  async function handleDeleteStore(id: string) {
     try {
       setSubmitting(true)
-      await apiDelete(`/api/storage-rooms/${id}`)
-      showSuccess("Warehouse deleted successfully")
+      await apiDelete(`/api/stores/${id}`)
+      showSuccess("Store deleted successfully")
       setDeleteWarehouseId(null)
-      fetchWarehouses()
+      fetchStores()
     } catch (error) {
       console.error("Error deleting warehouse:", error)
       showError("Failed to delete warehouse")
@@ -453,11 +462,11 @@ export default function InventoryPage() {
             Categories
           </Button>
           <Button
-            onClick={() => setWarehouseDialogOpen(true)}
+            onClick={() => setStoreDialogOpen(true)}
             className="flex-1 min-w-[110px] h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg"
           >
             <Warehouse className="h-4 w-4 mr-2" />
-            Storage
+            Stores
           </Button>
         </div>
       )}
@@ -504,13 +513,13 @@ export default function InventoryPage() {
 
               <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
                 <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <SelectValue placeholder="Storage" />
+                  <SelectValue placeholder="Store" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Storage</SelectItem>
-                  {warehouses.map((warehouse) => (
-                    <SelectItem key={warehouse.id} value={warehouse.name}>
-                      {warehouse.name}
+                  <SelectItem value="all">All Stores</SelectItem>
+                  {stores.map((store) => (
+                    <SelectItem key={store.id} value={store.store_name}>
+                      {store.store_name} ({store.sales_channel})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -750,8 +759,12 @@ export default function InventoryPage() {
                                 <span className="font-bold text-slate-900 dark:text-white">{item.quantity} units</span>
                               </div>
                               <div className="flex items-center justify-between text-xs">
-                                <span className="text-slate-600 dark:text-slate-400 font-medium">Storage</span>
-                                <span className="font-semibold text-slate-700 dark:text-slate-300">{item.storageRoom}</span>
+                                <span className="text-slate-600 dark:text-slate-400 font-medium">Sales Channel</span>
+                                <span className="font-semibold text-slate-700 dark:text-slate-300">{item.salesChannel || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-slate-600 dark:text-slate-400 font-medium">Store</span>
+                                <span className="font-semibold text-slate-700 dark:text-slate-300">{item.store}</span>
                               </div>
                             </div>
 
@@ -842,11 +855,18 @@ export default function InventoryPage() {
                           onMouseDown={(e) => handleMouseDown(e, 'stock')}
                         />
                       </th>
-                      <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.storage }}>
-                        Storage
+                      <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.salesChannel }}>
+                        Sales Channel
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
-                          onMouseDown={(e) => handleMouseDown(e, 'storage')}
+                          onMouseDown={(e) => handleMouseDown(e, 'salesChannel')}
+                        />
+                      </th>
+                      <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.store }}>
+                        Store
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          onMouseDown={(e) => handleMouseDown(e, 'store')}
                         />
                       </th>
                       <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.cost }}>
@@ -974,11 +994,20 @@ export default function InventoryPage() {
                             </div>
                           </td>
 
-                          {/* Storage Room */}
-                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.storage }}>
+                          {/* Sales Channel */}
+                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.salesChannel }}>
                             <div className="flex justify-center">
                               <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                                {item.storageRoom || 'N/A'}
+                                {item.salesChannel || 'N/A'}
+                              </Badge>
+                            </div>
+                          </td>
+
+                          {/* Store */}
+                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.store }}>
+                            <div className="flex justify-center">
+                              <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                                {item.store || 'N/A'}
                               </Badge>
                             </div>
                           </td>
@@ -1275,169 +1304,200 @@ export default function InventoryPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Warehouse Management Dialog */}
-      <Dialog open={warehouseDialogOpen} onOpenChange={setWarehouseDialogOpen}>
+      {/* Store Management Dialog */}
+      <Dialog open={storeDialogOpen} onOpenChange={setStoreDialogOpen}>
         <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl max-h-[85vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold flex items-center gap-2">
               <Warehouse className="h-5 w-5 text-orange-600" />
-              Storage Management
+              Store Management
             </DialogTitle>
             <DialogDescription className="text-slate-600 dark:text-slate-400">
-              Manage storage locations
+              Manage stores by sales channel
             </DialogDescription>
           </DialogHeader>
           
           <div className="flex-1 overflow-y-auto space-y-3 py-2">
-            {/* Add New Warehouse */}
-            <div className="flex gap-2 sticky top-0 bg-white dark:bg-slate-950 pb-2 z-10">
-              <Input
-                placeholder="Add new storage room"
-                value={newWarehouse}
-                onChange={(e) => setNewWarehouse(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddWarehouse()}
+            {/* Add New Store */}
+            <div className="space-y-2 sticky top-0 bg-white dark:bg-slate-950 pb-2 z-10">
+              <Select 
+                value={newStore.salesChannel} 
+                onValueChange={(value) => setNewStore({ ...newStore, salesChannel: value })}
                 disabled={submitting}
-                className="h-10 text-sm rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-              />
-              <Button
-                onClick={handleAddWarehouse}
-                disabled={!newWarehouse.trim() || submitting}
-                size="sm"
-                className="h-10 w-10 p-0 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white flex-shrink-0"
               >
-                {submitting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Plus className="h-4 w-4" />
-                )}
-              </Button>
+                <SelectTrigger className="h-10 text-sm rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                  <SelectValue placeholder="Select sales channel" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SALES_CHANNELS.map((channel) => (
+                    <SelectItem key={channel} value={channel}>
+                      {channel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Store name"
+                  value={newStore.name}
+                  onChange={(e) => setNewStore({ ...newStore, name: e.target.value })}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddStore()}
+                  disabled={submitting}
+                  className="h-10 text-sm rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                />
+                <Button
+                  onClick={handleAddStore}
+                  disabled={!newStore.name.trim() || !newStore.salesChannel || submitting}
+                  size="sm"
+                  className="h-10 w-10 p-0 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white flex-shrink-0"
+                >
+                  {submitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
 
-            {/* Warehouse List */}
-            {warehouses.length === 0 ? (
+            {/* Store List */}
+            {stores.length === 0 ? (
               <div className="text-center py-8">
                 <Warehouse className="h-10 w-10 mx-auto text-slate-400 mb-2" />
-                <p className="text-sm text-slate-600 dark:text-slate-400">No storage rooms yet</p>
-                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Add your first storage room</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">No stores yet</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Add your first store</p>
               </div>
             ) : (
-              <div className="space-y-1.5">
-                {warehouses.map((warehouse) => (
-                  <div
-                    key={warehouse.id}
-                    className="flex items-center justify-between p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-orange-300 dark:hover:border-orange-700 transition-colors"
-                  >
-                    {editingWarehouse?.id === warehouse.id ? (
-                      <div className="flex-1 flex gap-2">
-                        <Input
-                          value={editWarehouseValue}
-                          onChange={(e) => setEditWarehouseValue(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleEditWarehouse()
-                            if (e.key === "Escape") {
-                              setEditingWarehouse(null)
-                              setEditWarehouseValue("")
-                            }
-                          }}
-                          disabled={submitting}
-                          className="h-9 text-sm flex-1"
-                          autoFocus
-                        />
-                        <Button
-                          size="sm"
-                          onClick={handleEditWarehouse}
-                          disabled={submitting || !editWarehouseValue.trim()}
-                          className="h-9 px-4 bg-green-600 hover:bg-green-700 text-white text-sm whitespace-nowrap"
-                        >
-                          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setEditingWarehouse(null)
-                            setEditWarehouseValue("")
-                          }}
-                          disabled={submitting}
-                          className="h-9 px-4 text-sm whitespace-nowrap"
-                        >
-                          Cancel
-                        </Button>
+              <div className="space-y-3">
+                {SALES_CHANNELS.map((channel) => {
+                  const channelStores = stores.filter(s => s.sales_channel === channel)
+                  if (channelStores.length === 0) return null
+                  
+                  return (
+                    <div key={channel} className="space-y-1.5">
+                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider px-2">
+                        {channel} ({channelStores.length})
                       </div>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <Warehouse className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{warehouse.name}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{warehouse.createdAt}</p>
-                          </div>
+                      {channelStores.map((store) => (
+                        <div
+                          key={store.id}
+                          className="flex items-center justify-between p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-orange-300 dark:hover:border-orange-700 transition-colors"
+                        >
+                          {editingStore?.id === store.id ? (
+                            <div className="flex-1 space-y-2">
+                              <Select 
+                                value={editStoreValue.salesChannel} 
+                                onValueChange={(value) => setEditStoreValue({ ...editStoreValue, salesChannel: value })}
+                                disabled={submitting}
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {SALES_CHANNELS.map((ch) => (
+                                    <SelectItem key={ch} value={ch}>{ch}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <div className="flex gap-2">
+                                <Input
+                                  value={editStoreValue.name}
+                                  onChange={(e) => setEditStoreValue({ ...editStoreValue, name: e.target.value })}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") handleEditStore()
+                                    if (e.key === "Escape") {
+                                      setEditingStore(null)
+                                      setEditStoreValue({ name: "", salesChannel: "" })
+                                    }
+                                  }}
+                                  disabled={submitting}
+                                  className="h-8 text-xs flex-1"
+                                  autoFocus
+                                />
+                                <Button
+                                  onClick={handleEditStore}
+                                  disabled={!editStoreValue.name.trim() || !editStoreValue.salesChannel || submitting}
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                >
+                                  {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    setEditingStore(null)
+                                    setEditStoreValue({ name: "", salesChannel: "" })
+                                  }}
+                                  disabled={submitting}
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <span className="text-sm font-medium text-slate-900 dark:text-white flex-1">
+                                {store.store_name}
+                              </span>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingStore(store)
+                                    setEditStoreValue({ name: store.store_name, salesChannel: store.sales_channel })
+                                  }}
+                                  disabled={submitting}
+                                  className="h-7 w-7 p-0 text-slate-600 hover:text-orange-600 dark:text-slate-400 dark:hover:text-orange-400"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setDeleteWarehouseId(store.id)}
+                                  disabled={submitting}
+                                  className="h-7 w-7 p-0 text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </>
+                          )}
                         </div>
-                        <div className="flex items-center gap-0.5 flex-shrink-0">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setEditingWarehouse(warehouse)
-                              setEditWarehouseValue(warehouse.name)
-                            }}
-                            disabled={submitting}
-                            className="h-7 w-7 p-0 text-slate-600 hover:text-orange-600 dark:text-slate-400 dark:hover:text-orange-400"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setDeleteWarehouseId(warehouse.id)}
-                            disabled={submitting}
-                            className="h-7 w-7 p-0 text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ))}
+                      ))}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Warehouse Confirmation */}
+      {/* Delete Store Confirmation */}
       <Dialog open={!!deleteWarehouseId} onOpenChange={() => setDeleteWarehouseId(null)}>
-        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
           <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold">Delete Warehouse</DialogTitle>
+            <DialogTitle className="text-slate-900 dark:text-white">Delete Store</DialogTitle>
             <DialogDescription className="text-slate-600 dark:text-slate-400">
-              Are you sure you want to delete this warehouse? This action cannot be undone.
+              Are you sure you want to delete this store? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteWarehouseId(null)}
-              disabled={submitting}
-            >
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteWarehouseId(null)}>
               Cancel
             </Button>
             <Button
-              onClick={() => deleteWarehouseId && handleDeleteWarehouse(deleteWarehouseId)}
+              onClick={() => deleteWarehouseId && handleDeleteStore(deleteWarehouseId)}
               disabled={submitting}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
+              {submitting ? "Deleting..." : "Delete"}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 

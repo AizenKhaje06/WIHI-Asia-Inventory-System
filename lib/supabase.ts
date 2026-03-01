@@ -51,7 +51,8 @@ export interface Database {
           cost_price: number
           selling_price: number
           reorder_level: number
-          storage_room: string
+          store: string // Changed from storage_room
+          sales_channel: string // NEW
           last_updated: string
         }
         Insert: Omit<Database['public']['Tables']['inventory']['Row'], 'id' | 'last_updated'>
@@ -102,14 +103,15 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['restocks']['Row'], 'id' | 'timestamp'>
         Update: Partial<Database['public']['Tables']['restocks']['Insert']>
       }
-      storage_rooms: {
+      stores: {
         Row: {
           id: string
-          name: string
+          store_name: string // Changed from name
+          sales_channel: string // NEW
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['storage_rooms']['Row'], 'id' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['storage_rooms']['Insert']>
+        Insert: Omit<Database['public']['Tables']['stores']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['stores']['Insert']>
       }
       categories: {
         Row: {

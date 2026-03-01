@@ -9,8 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Package, Loader2 } from "lucide-react"
-import type { StorageRoom } from "@/lib/types"
+import type { Store } from "@/lib/types"
 import { apiGet, apiPost } from "@/lib/api-client"
+
+const SALES_CHANNELS = ['Shopee', 'Lazada', 'Facebook', 'TikTok', 'Physical Store'] as const
 
 interface AddItemDialogProps {
   open: boolean
@@ -20,14 +22,15 @@ interface AddItemDialogProps {
 
 export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogProps) {
   const [loading, setLoading] = useState(false)
-  const [storageRooms, setStorageRooms] = useState<StorageRoom[]>([])
+  const [stores, setStores] = useState<Store[]>([])
   const [categories, setCategories] = useState<Array<{id: string, name: string}>>([])
-  const [loadingRooms, setLoadingRooms] = useState(true)
+  const [loadingStores, setLoadingStores] = useState(true)
   const [loadingCategories, setLoadingCategories] = useState(true)
   const [formData, setFormData] = useState({
     name: "",
     category: "",
-    storageRoom: "",
+    salesChannel: "",
+    store: "",
     quantity: 0,
     costPrice: 0,
     sellingPrice: 0,
@@ -36,20 +39,20 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
 
   useEffect(() => {
     if (open) {
-      fetchStorageRooms()
+      fetchStores()
       fetchCategories()
     }
   }, [open])
 
-  async function fetchStorageRooms() {
+  async function fetchStores() {
     try {
-      setLoadingRooms(true)
-      const data = await apiGet<StorageRoom[]>("/api/storage-rooms")
-      setStorageRooms(data)
+      setLoadingStores(true)
+      const data = await apiGet<Store[]>("/api/stores")
+      setStores(data)
     } catch (error) {
-      console.error("Error fetching storage rooms:", error)
+      console.error("Error fetching stores:", error)
     } finally {
-      setLoadingRooms(false)
+      setLoadingStores(false)
     }
   }
 
@@ -76,7 +79,8 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
       setFormData({
         name: "",
         category: "",
-        storageRoom: "",
+        salesChannel: "",
+        store: "",
         quantity: 0,
         costPrice: 0,
         sellingPrice: 0,
@@ -194,24 +198,48 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="storageRoom" className="text-slate-700 dark:text-slate-300 font-medium">
-                Storage Room
+              <Label htmlFor="salesChannel" className="text-slate-700 dark:text-slate-300 font-medium">
+                Sales Channel
               </Label>
-              <Select value={formData.storageRoom} onValueChange={(value) => setFormData({ ...formData, storageRoom: value })} required>
-                <SelectTrigger id="storageRoom" className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
-                  <SelectValue placeholder={loadingRooms ? "Loading rooms..." : "Select a storage room"} />
+              <Select value={formData.salesChannel} onValueChange={(value) => setFormData({ ...formData, salesChannel: value, store: "" })} required>
+                <SelectTrigger id="salesChannel" className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
+                  <SelectValue placeholder="Select sales channel" />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  {loadingRooms ? (
+                  {SALES_CHANNELS.map((channel) => (
+                    <SelectItem key={channel} value={channel}>
+                      {channel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="store" className="text-slate-700 dark:text-slate-300 font-medium">
+                Store
+              </Label>
+              <Select 
+                value={formData.store} 
+                onValueChange={(value) => setFormData({ ...formData, store: value })} 
+                required
+                disabled={!formData.salesChannel}
+              >
+                <SelectTrigger id="store" className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
+                  <SelectValue placeholder={!formData.salesChannel ? "Select sales channel first" : loadingStores ? "Loading stores..." : "Select a store"} />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  {loadingStores ? (
                     <SelectItem value="loading" disabled>Loading...</SelectItem>
-                  ) : storageRooms.length === 0 ? (
-                    <SelectItem value="none" disabled>No rooms available</SelectItem>
+                  ) : stores.filter(s => s.sales_channel === formData.salesChannel).length === 0 ? (
+                    <SelectItem value="none" disabled>No stores available for this channel</SelectItem>
                   ) : (
-                    storageRooms.map((room) => (
-                      <SelectItem key={room.id} value={room.name}>
-                        {room.name}
-                      </SelectItem>
-                    ))
+                    stores
+                      .filter(s => s.sales_channel === formData.salesChannel)
+                      .map((store) => (
+                        <SelectItem key={store.id} value={store.store_name}>
+                          {store.store_name}
+                        </SelectItem>
+                      ))
                   )}
                 </SelectContent>
               </Select>

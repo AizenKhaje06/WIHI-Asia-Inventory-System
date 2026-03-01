@@ -54,6 +54,8 @@ const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0, c
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, // Admin only
       { name: "Operations Dashboard", href: "/dashboard/operations", icon: LayoutDashboard }, // Operations only
       { name: "Warehouse Dispatch", href: "/dashboard/pos", icon: ShoppingCart }, // Operations only
+      { name: "Packing Queue", href: "/dashboard/operations/transaction-history", icon: FileText }, // Orders waiting to be packed
+      { name: "Track Orders", href: "/dashboard/track-orders", icon: Package }, // Track customer orders
       { name: "Transactions", href: "/dashboard/reports", icon: FileText }, // Admin + Operations
       { 
         name: "Cancelled Orders", 

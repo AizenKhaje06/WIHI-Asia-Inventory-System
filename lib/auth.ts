@@ -33,6 +33,8 @@ export const ROLE_PERMISSIONS = {
     '/dashboard/sales-channels/**',
     '/dashboard/customers',
     '/dashboard/reports',
+    '/dashboard/operations/transaction-history',
+    '/dashboard/track-orders',
     '/dashboard/cancelled-orders',
     '/dashboard/insights',
     '/dashboard/inventory/**',
@@ -44,6 +46,8 @@ export const ROLE_PERMISSIONS = {
   operations: [
     '/dashboard/operations',
     '/dashboard/pos',
+    '/dashboard/operations/transaction-history',
+    '/dashboard/track-orders',
     '/dashboard/inventory/**',
     '/dashboard/customers',
     '/dashboard/log',

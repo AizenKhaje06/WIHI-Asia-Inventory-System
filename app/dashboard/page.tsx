@@ -25,6 +25,7 @@ import type { TimePeriod } from "@/components/dashboard/revenue-chart"
 import { formatNumber } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { PremiumDashboardLoading } from "@/components/premium-loading"
+import { BrandLoader } from "@/components/ui/brand-loader"
 import { apiGet } from "@/lib/api-client"
 import { formatChartData, calculatePeriodComparison } from "@/lib/dashboard-utils"
 import { getCurrentUser } from "@/lib/auth"
@@ -73,11 +74,14 @@ export default function DashboardPage() {
 
   // Show loading state
   if (loading) {
-    return <PremiumDashboardLoading />
-  }
-
-  if (loading) {
-    return <PremiumDashboardLoading />
+    return (
+      <div className="flex h-full items-center justify-center min-h-[600px]">
+        <div className="text-center">
+          <BrandLoader size="lg" />
+          <p className="text-slate-600 dark:text-slate-400 mt-6 text-sm font-medium">Loading dashboard...</p>
+        </div>
+      </div>
+    )
   }
 
   // Calculate additional metrics

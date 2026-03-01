@@ -6,7 +6,7 @@
  */
 
 import { supabaseAdmin } from './supabase'
-import type { InventoryItem, Transaction, Log, Restock } from './types'
+import type { InventoryItem, Transaction, Log, Restock, Store } from './types'
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -46,7 +46,8 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
     id: item.id,
     name: item.name,
     category: item.category,
-    storageRoom: item.storage_room,
+    store: item.store, // Changed from storage_room
+    salesChannel: item.sales_channel, // NEW
     quantity: item.quantity,
     totalCOGS: item.total_cogs,
     costPrice: item.cost_price,
@@ -67,7 +68,8 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "lastUpd
       id,
       name: item.name,
       category: item.category,
-      storage_room: item.storageRoom,
+      store: item.store, // Changed from storage_room
+      sales_channel: item.salesChannel, // NEW
       quantity: item.quantity,
       total_cogs: totalCOGS,
       cost_price: item.costPrice,
@@ -96,7 +98,8 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
 
   if (updates.name !== undefined) updateData.name = updates.name
   if (updates.category !== undefined) updateData.category = updates.category
-  if (updates.storageRoom !== undefined) updateData.storage_room = updates.storageRoom
+  if (updates.store !== undefined) updateData.store = updates.store // Changed from storageRoom
+  if (updates.salesChannel !== undefined) updateData.sales_channel = updates.salesChannel // NEW
   if (updates.quantity !== undefined) updateData.quantity = updates.quantity
   if (updates.costPrice !== undefined) updateData.cost_price = updates.costPrice
   if (updates.sellingPrice !== undefined) updateData.selling_price = updates.sellingPrice
@@ -341,67 +344,72 @@ export interface StorageRoom {
   createdAt: string
 }
 
-export async function getStorageRooms(): Promise<StorageRoom[]> {
-  const { data, error } = await supabaseAdmin
-    .from('storage_rooms')
+// ==================== STORES ====================
+
+export async function getStores(): Promise<Store[]> {
+  const { data, error} = await supabaseAdmin
+    .from('stores')
     .select('*')
-    .order('name', { ascending: true })
+    .order('sales_channel', { ascending: true })
+    .order('store_name', { ascending: true })
 
   if (error) {
-    console.error('Error fetching storage rooms:', error)
-    throw new Error(`Failed to fetch storage rooms: ${error.message}`)
+    console.error('Error fetching stores:', error)
+    throw new Error(`Failed to fetch stores: ${error.message}`)
   }
 
   return (data || []).map(row => ({
     id: row.id,
-    name: row.name,
-    createdAt: row.created_at,
+    store_name: row.store_name,
+    sales_channel: row.sales_channel,
+    created_at: row.created_at,
   }))
 }
 
-export async function addStorageRoom(name: string): Promise<StorageRoom> {
-  const id = generateId('ROOM')
-  const createdAt = formatTimestamp()
+export async function addStore(store_name: string, sales_channel: string): Promise<Store> {
+  const id = generateId('STORE')
+  const created_at = formatTimestamp()
 
   const { data, error } = await supabaseAdmin
-    .from('storage_rooms')
+    .from('stores')
     .insert({
       id,
-      name,
-      created_at: createdAt,
+      store_name,
+      sales_channel,
+      created_at,
     })
     .select()
     .single()
 
   if (error) {
-    console.error('Error adding storage room:', error)
-    throw new Error(`Failed to add storage room: ${error.message}`)
+    console.error('Error adding store:', error)
+    throw new Error(`Failed to add store: ${error.message}`)
   }
 
-  return { id, name, createdAt }
+  return { id, store_name, sales_channel, created_at }
 }
 
-export async function updateStorageRoom(id: string, name: string): Promise<void> {
+export async function updateStore(id: string, store_name: string, sales_channel: string): Promise<void> {
   const { error } = await supabaseAdmin
-    .from('storage_rooms')
-    .update({ name })
+    .from('stores')
+    .update({ store_name, sales_channel })
     .eq('id', id)
 
   if (error) {
-    console.error('Error updating storage room:', error)
-    throw new Error(`Failed to update storage room: ${error.message}`)
+    console.error('Error updating store:', error)
+    throw new Error(`Failed to update store: ${error.message}`)
   }
 }
 
-export async function deleteStorageRoom(id: string): Promise<void> {
+export async function deleteStore(id: string): Promise<void> {
   const { error } = await supabaseAdmin
-    .from('storage_rooms')
+    .from('stores')
     .delete()
     .eq('id', id)
 
   if (error) {
-    console.error('Error deleting storage room:', error)
-    throw new Error(`Failed to delete storage room: ${error.message}`)
+    console.error('Error deleting store:', error)
+    throw new Error(`Failed to delete store: ${error.message}`)
   }
 }
 

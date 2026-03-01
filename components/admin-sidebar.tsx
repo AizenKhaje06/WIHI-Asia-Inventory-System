@@ -12,7 +12,8 @@ import {
   FileText, 
   ArrowLeft,
   UserCog,
-  Lock
+  Lock,
+  Package
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -21,6 +22,7 @@ import { cn } from "@/lib/utils"
 const adminNavigation = [
   { name: "Instructions", href: "/admin/instructions", icon: FileText },
   { name: "Login Credentials", href: "/admin/credentials", icon: UserCog },
+  { name: "Track Orders", href: "/admin/track-orders", icon: Package },
   { name: "Product Edit", href: "/admin/product-edit", icon: Settings },
   { name: "Database", href: "/admin/database", icon: Database },
 ]

@@ -24,7 +24,7 @@ export async function testSupabaseConnection() {
     console.log('✅ Supabase connection successful!')
     
     // Test 2: Check all tables exist
-    const tables = ['inventory', 'transactions', 'logs', 'restocks', 'storage_rooms', 'categories', 'users']
+    const tables = ['inventory', 'transactions', 'logs', 'restocks', 'stores', 'categories', 'users']
     
     for (const table of tables) {
       const { error: tableError } = await supabaseAdmin

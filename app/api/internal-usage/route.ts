@@ -1,46 +1,30 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getTransactions } from "@/lib/supabase-db"
-import { getCachedData } from "@/lib/cache"
-import { withAuth } from "@/lib/api-helpers"
 
-export const GET = withAuth(async (request, { user }) => {
+export async function GET(request: NextRequest) {
   try {
-    // Get all transactions with caching
-    const transactions = await getCachedData(
-      'transactions',
-      () => getTransactions(),
-      2 * 60 * 1000 // 2 minutes
-    )
-
-    console.log('[Internal Usage API] Total transactions:', transactions.length)
+    // Fetch all transactions
+    const allTransactions = await getTransactions()
     
-    // Log first 5 transactions with their types
-    const sample = transactions.slice(0, 5).map((t: any) => ({
-      id: t.id,
-      itemName: t.itemName,
-      department: t.department,
-      transactionType: t.transactionType,
-      type: t.type
-    }))
-    console.log('[Internal Usage API] Sample transactions:', JSON.stringify(sample, null, 2))
-
-    // Filter only demo and internal use transactions
-    const internalUsageTransactions = transactions.filter(
-      (t: any) => {
-        const isDemo = t.transactionType === 'demo'
-        const isInternal = t.transactionType === 'internal'
-        if (isDemo || isInternal) {
-          console.log(`[Internal Usage API] Found ${t.transactionType}:`, t.itemName, t.department)
-        }
-        return isDemo || isInternal
-      }
+    // Filter for internal usage types only (demo, internal, transfer)
+    const internalTransactions = allTransactions.filter(
+      (transaction) => 
+        transaction.transactionType === 'demo' ||
+        transaction.transactionType === 'internal' ||
+        transaction.transactionType === 'transfer'
     )
-
-    console.log('[Internal Usage API] Filtered demo/internal count:', internalUsageTransactions.length)
-
-    return NextResponse.json({ transactions: internalUsageTransactions })
+    
+    // Sort by timestamp descending (newest first)
+    internalTransactions.sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )
+    
+    return NextResponse.json(internalTransactions)
   } catch (error) {
-    console.error("[Internal Usage API] Error:", error)
-    return NextResponse.json({ error: "Failed to fetch internal usage data" }, { status: 500 })
+    console.error("[API] Error fetching internal usage transactions:", error)
+    return NextResponse.json(
+      { error: "Failed to fetch internal usage transactions" },
+      { status: 500 }
+    )
   }
-})
+}

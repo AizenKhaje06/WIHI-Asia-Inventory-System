@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, BarChart3, TrendingUp, DollarSign, Package, Users, ShoppingCart } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { apiGet } from '@/lib/api-client';
+import { BrandLoader } from '@/components/ui/brand-loader';
 
 interface SalesData {
   totalRevenue: number;

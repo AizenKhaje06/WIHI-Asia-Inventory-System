@@ -68,6 +68,12 @@ export default function ReportsPage() {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("all") // NEW: Status filter
   
+  // Transaction History Filters
+  const [txHistoryChannelFilter, setTxHistoryChannelFilter] = useState<string>("all")
+  const [txHistoryStatusFilter, setTxHistoryStatusFilter] = useState<string>("all")
+  const [txHistoryStartDate, setTxHistoryStartDate] = useState<Date | null>(null)
+  const [txHistoryEndDate, setTxHistoryEndDate] = useState<Date | null>(null)
+  
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(50)
@@ -901,18 +907,75 @@ export default function ReportsPage() {
 
       {/* Transaction History - All Reports */}
       {!loading && report && report.transactions && report.transactions.length > 0 && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
-          <CardHeader className="pb-5">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
-                Transaction History
-              </CardTitle>
-              <span className="px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-full">
-                {report.transactions.length} transactions
-              </span>
+        <>
+          {/* Header with Title and Transaction Count */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+              Transaction History
+            </h2>
+            <span className="text-sm text-slate-600 dark:text-slate-400">
+              {report.transactions.filter((t: any) => {
+                const matchesChannel = txHistoryChannelFilter === "all" || t.department === txHistoryChannelFilter
+                const matchesStatus = txHistoryStatusFilter === "all" || (t.status || 'completed') === txHistoryStatusFilter
+                const matchesDate = (!txHistoryStartDate || new Date(t.timestamp) >= txHistoryStartDate) &&
+                                   (!txHistoryEndDate || new Date(t.timestamp) <= txHistoryEndDate)
+                return matchesChannel && matchesStatus && matchesDate
+              }).length} transactions
+            </span>
+          </div>
+
+          {/* Filters Row */}
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            {/* Sales Channel Filter */}
+            <div className="w-[200px]">
+              <Select value={txHistoryChannelFilter} onValueChange={setTxHistoryChannelFilter}>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="All Channels" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Channels</SelectItem>
+                  <SelectItem value="Shopee">Shopee</SelectItem>
+                  <SelectItem value="Lazada">Lazada</SelectItem>
+                  <SelectItem value="Facebook">Facebook</SelectItem>
+                  <SelectItem value="TikTok">TikTok</SelectItem>
+                  <SelectItem value="Physical Store">Physical Store</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </CardHeader>
-          <CardContent>
+
+            {/* Status Filter */}
+            <div className="w-[180px]">
+              <Select value={txHistoryStatusFilter} onValueChange={setTxHistoryStatusFilter}>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="All Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="returned">Returned</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Date Filter */}
+            <div className="w-[240px]">
+              <DateRangePicker
+                startDate={txHistoryStartDate}
+                endDate={txHistoryEndDate}
+                onDateChange={(start, end) => {
+                  setTxHistoryStartDate(start)
+                  setTxHistoryEndDate(end)
+                }}
+                className="h-11"
+              />
+            </div>
+          </div>
+
+          {/* Table Card */}
+          <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+            <CardContent className="p-0">
             {/* Mobile Scroll Hint */}
             <div className="md:hidden mb-2 text-center">
               <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1">
@@ -927,7 +990,8 @@ export default function ReportsPage() {
                 <thead className="bg-slate-50 dark:bg-slate-800/50">
                   <tr className="border-b border-slate-200 dark:border-slate-700">
                     <th className="py-2.5 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[130px]">Date & Time</th>
-                    <th className="py-2.5 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[200px]">Item</th>
+                    <th className="py-2.5 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[250px]">Item</th>
+                    <th className="py-2.5 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[120px]">Sales Channel</th>
                     <th className="py-2.5 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[90px]">Status</th>
                     <th className="py-2.5 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[60px]">Qty</th>
                     <th className="py-2.5 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider min-w-[100px]">Revenue</th>
@@ -938,6 +1002,13 @@ export default function ReportsPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {report.transactions
+                    .filter((t: any) => {
+                      const matchesChannel = txHistoryChannelFilter === "all" || t.department === txHistoryChannelFilter
+                      const matchesStatus = txHistoryStatusFilter === "all" || (t.status || 'completed') === txHistoryStatusFilter
+                      const matchesDate = (!txHistoryStartDate || new Date(t.timestamp) >= txHistoryStartDate) &&
+                                         (!txHistoryEndDate || new Date(t.timestamp) <= txHistoryEndDate)
+                      return matchesChannel && matchesStatus && matchesDate
+                    })
                     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                     .map((transaction: any) => (
                     <tr 
@@ -966,12 +1037,21 @@ export default function ReportsPage() {
                         })}
                       </td>
                       <td className={cn(
-                        "py-2.5 px-4 text-xs font-medium max-w-[200px] truncate",
+                        "py-2.5 px-4 text-xs font-medium",
                         selectedRowId === transaction.id
                           ? "text-blue-900 dark:text-blue-100"
                           : "text-slate-800 dark:text-slate-200"
                       )}>
                         {transaction.itemName}
+                      </td>
+                      <td className="py-2.5 px-4 text-center whitespace-nowrap">
+                        {transaction.department ? (
+                          <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-medium bg-white dark:bg-slate-800">
+                            {transaction.department}
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-slate-400 dark:text-slate-500">-</span>
+                        )}
                       </td>
                       <td className="py-2.5 px-4 text-center whitespace-nowrap">
                         {getStatusBadge(transaction.status || 'completed')}
@@ -1024,67 +1104,77 @@ export default function ReportsPage() {
             </div>
 
             {/* Pagination Controls */}
-            {report.transactions.length > itemsPerPage && (
-              <div className="mt-4 flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                <div className="text-sm text-slate-600 dark:text-slate-400">
-                  Showing <span className="font-semibold text-slate-900 dark:text-white">{((currentPage - 1) * itemsPerPage) + 1}</span> to{' '}
-                  <span className="font-semibold text-slate-900 dark:text-white">
-                    {Math.min(currentPage * itemsPerPage, report.transactions.length)}
-                  </span> of{' '}
-                  <span className="font-semibold text-slate-900 dark:text-white">{report.transactions.length}</span> transactions
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="h-8 px-3 text-xs"
-                  >
-                    Previous
-                  </Button>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: Math.ceil(report.transactions.length / itemsPerPage) }, (_, i) => i + 1)
-                      .filter(page => {
-                        // Show first page, last page, current page, and pages around current
-                        const totalPages = Math.ceil(report.transactions.length / itemsPerPage)
-                        return page === 1 || 
-                               page === totalPages || 
-                               (page >= currentPage - 1 && page <= currentPage + 1)
-                      })
-                      .map((page, index, array) => (
-                        <div key={page} className="flex items-center">
-                          {index > 0 && array[index - 1] !== page - 1 && (
-                            <span className="px-2 text-slate-400">...</span>
-                          )}
-                          <Button
-                            variant={currentPage === page ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            className={cn(
-                              "h-8 w-8 p-0 text-xs",
-                              currentPage === page && "bg-blue-600 hover:bg-blue-700 text-white"
-                            )}
-                          >
-                            {page}
-                          </Button>
-                        </div>
-                      ))}
+            {(() => {
+              const filteredTransactions = report.transactions.filter((t: any) => {
+                const matchesChannel = txHistoryChannelFilter === "all" || t.department === txHistoryChannelFilter
+                const matchesStatus = txHistoryStatusFilter === "all" || (t.status || 'completed') === txHistoryStatusFilter
+                const matchesDate = (!txHistoryStartDate || new Date(t.timestamp) >= txHistoryStartDate) &&
+                                   (!txHistoryEndDate || new Date(t.timestamp) <= txHistoryEndDate)
+                return matchesChannel && matchesStatus && matchesDate
+              })
+              const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage)
+              
+              return filteredTransactions.length > itemsPerPage && (
+                <div className="mt-4 flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    Showing <span className="font-semibold text-slate-900 dark:text-white">{((currentPage - 1) * itemsPerPage) + 1}</span> to{' '}
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {Math.min(currentPage * itemsPerPage, filteredTransactions.length)}
+                    </span> of{' '}
+                    <span className="font-semibold text-slate-900 dark:text-white">{filteredTransactions.length}</span> transactions
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(Math.ceil(report.transactions.length / itemsPerPage), prev + 1))}
-                    disabled={currentPage === Math.ceil(report.transactions.length / itemsPerPage)}
-                    className="h-8 px-3 text-xs"
-                  >
-                    Next
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="h-8 px-3 text-xs"
+                    >
+                      Previous
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(page => {
+                          return page === 1 || 
+                                 page === totalPages || 
+                                 (page >= currentPage - 1 && page <= currentPage + 1)
+                        })
+                        .map((page, index, array) => (
+                          <div key={page} className="flex items-center">
+                            {index > 0 && array[index - 1] !== page - 1 && (
+                              <span className="px-2 text-slate-400">...</span>
+                            )}
+                            <Button
+                              variant={currentPage === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(page)}
+                              className={cn(
+                                "h-8 w-8 p-0 text-xs",
+                                currentPage === page && "bg-blue-600 hover:bg-blue-700 text-white"
+                              )}
+                            >
+                              {page}
+                            </Button>
+                          </div>
+                        ))}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="h-8 px-3 text-xs"
+                    >
+                      Next
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
           </CardContent>
         </Card>
+        </>
       )}
 
       {/* Loading State - Premium */}

@@ -24,15 +24,28 @@ export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(false)
-  const [department, setDepartment] = useState('')
-  const [salesChannel, setSalesChannel] = useState('') // For demo/internal use
-  const [destinationStorage, setDestinationStorage] = useState('') // For warehouse transfer
-  const [storageRooms, setStorageRooms] = useState<string[]>([])
+  const [stores, setStores] = useState<Array<{id: string, store_name: string, sales_channel: string}>>([])
   const [staffName, setStaffName] = useState('')
-  const [notes, setNotes] = useState('')
   const [dispatchId, setDispatchId] = useState('')
   const [dispatchedItems, setDispatchedItems] = useState<Array<{name: string, quantity: number, price: number}>>([])
   const [successModalOpen, setSuccessModalOpen] = useState(false)
+  
+  // Order Form Modal States
+  const [orderFormOpen, setOrderFormOpen] = useState(false)
+  const [orderForm, setOrderForm] = useState({
+    date: new Date().toISOString().split('T')[0],
+    salesChannel: '',
+    store: '',
+    courier: '',
+    waybill: '',
+    status: 'Pending',
+    qty: 0,
+    cogs: 0,
+    total: 0,
+    parcelStatus: 'Pending',
+    product: '',
+    dispatchedBy: ''
+  })
 
   const total = useMemo(() => cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0), [cart])
 
@@ -81,11 +94,129 @@ export default function POSPage() {
 
   async function fetchStorageRooms() {
     try {
-      const data = await apiGet<any[]>('/api/storage-rooms')
-      const rooms = data.map(room => room.name)
-      setStorageRooms(rooms)
+      const data = await apiGet<Array<{id: string, store_name: string, sales_channel: string}>>('/api/stores')
+      setStores(data)
     } catch (error) {
-      console.error('Error fetching storage rooms:', error)
+      console.error('Error fetching stores:', error)
+    }
+  }
+
+  function handleOpenOrderForm() {
+    if (cart.length === 0) {
+      alert('Please add items to cart first')
+      return
+    }
+
+    // Auto-fill form data from cart
+    const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0)
+    const totalCOGS = cart.reduce((sum, item) => sum + (item.item.costPrice * item.quantity), 0)
+    const totalPrice = cart.reduce((sum, item) => sum + (item.item.sellingPrice * item.quantity), 0)
+    const productList = cart.map(item => `${item.item.name} (${item.quantity})`).join(', ')
+    
+    // Get sales channel and store from first item (assuming all items are from same store)
+    const firstItem = cart[0].item
+    
+    setOrderForm({
+      date: new Date().toISOString().split('T')[0],
+      salesChannel: firstItem.salesChannel || '',
+      store: firstItem.store || '',
+      courier: '',
+      waybill: '',
+      status: 'Pending',
+      qty: totalQty,
+      cogs: totalCOGS,
+      total: totalPrice,
+      parcelStatus: 'Pending',
+      product: productList,
+      dispatchedBy: staffName
+    })
+    
+    setOrderFormOpen(true)
+  }
+
+  async function handleSubmitOrder() {
+    if (!orderForm.courier || !orderForm.waybill) {
+      alert('Please fill in Courier and Waybill')
+      return
+    }
+
+    setLoading(true)
+    try {
+      // Prepare order items for detailed tracking
+      const orderItems = cart.map((cartItem) => ({
+        itemId: cartItem.item.id,
+        itemName: cartItem.item.name,
+        quantity: cartItem.quantity,
+        costPrice: cartItem.item.costPrice,
+        sellingPrice: cartItem.item.sellingPrice,
+      }))
+
+      // Create order in orders table (for tracking system)
+      await apiPost("/api/orders", {
+        date: orderForm.date,
+        salesChannel: orderForm.salesChannel,
+        store: orderForm.store,
+        courier: orderForm.courier,
+        waybill: orderForm.waybill,
+        qty: orderForm.qty,
+        cogs: orderForm.cogs,
+        total: orderForm.total,
+        product: orderForm.product,
+        dispatchedBy: orderForm.dispatchedBy,
+        orderItems: orderItems
+      })
+
+      // Also process as sale/dispatch for inventory update
+      const saleItems = cart.map((cartItem) => ({
+        itemId: cartItem.item.id,
+        quantity: cartItem.quantity,
+      }))
+
+      await apiPost("/api/sales", {
+        items: saleItems,
+        department: `${orderForm.salesChannel} - ${orderForm.store}`,
+        staffName: orderForm.dispatchedBy,
+        notes: `Courier: ${orderForm.courier}, Waybill: ${orderForm.waybill}`,
+      })
+
+      // Generate dispatch ID
+      const newDispatchId = `WD-${Date.now()}`
+      setDispatchId(newDispatchId)
+      
+      // Store dispatched items for display
+      setDispatchedItems(cart.map(cartItem => ({
+        name: cartItem.item.name,
+        quantity: cartItem.quantity,
+        price: cartItem.item.sellingPrice
+      })))
+      
+      setCart([])
+      fetchItems()
+      setOrderFormOpen(false)
+      setSuccessModalOpen(true)
+
+      // Reset form
+      setOrderForm({
+        date: new Date().toISOString().split('T')[0],
+        salesChannel: '',
+        store: '',
+        courier: '',
+        waybill: '',
+        status: 'Pending',
+        qty: 0,
+        cogs: 0,
+        total: 0,
+        parcelStatus: 'Pending',
+        product: '',
+        dispatchedBy: staffName
+      })
+
+      toast.success('Order created successfully! Check Transaction History to mark as packed.')
+    } catch (error) {
+      console.error("Error submitting order:", error)
+      alert("Failed to submit order")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -139,71 +270,6 @@ export default function POSPage() {
     setCart(cart.filter((cartItem) => cartItem.item.id !== itemId))
   }
 
-  async function handleCheckout() {
-    if (cart.length === 0 || !department || !staffName) return
-    
-    // Check if demo/internal use requires sales channel
-    const requiresSalesChannel = ['Demo/Display', 'Internal Use'].includes(department)
-    if (requiresSalesChannel && !salesChannel) {
-      alert('Please select a sales channel for demo/internal use')
-      return
-    }
-
-    // Check if warehouse transfer requires destination storage
-    if (department === 'Warehouse' && !destinationStorage) {
-      alert('Please select a destination storage room for warehouse transfer')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const saleItems = cart.map((cartItem) => ({
-        itemId: cartItem.item.id,
-        quantity: cartItem.quantity,
-      }))
-
-      // Combine department and sales channel/storage room if applicable
-      const finalDepartment = requiresSalesChannel && salesChannel 
-        ? `${department} / ${salesChannel}`
-        : department === 'Warehouse' && destinationStorage
-        ? `${department} / ${destinationStorage}`
-        : department
-
-      await apiPost("/api/sales", {
-        items: saleItems,
-        department: finalDepartment,
-        staffName,
-        notes,
-      })
-
-      // Generate dispatch ID
-      const newDispatchId = `WD-${Date.now()}`
-      setDispatchId(newDispatchId)
-      
-      // Store dispatched items for display
-      setDispatchedItems(cart.map(cartItem => ({
-        name: cartItem.item.name,
-        quantity: cartItem.quantity,
-        price: cartItem.item.sellingPrice
-      })))
-      
-      setCart([])
-      fetchItems()
-      setSuccessModalOpen(true)
-
-      // Reset form fields (keep staffName as it's tied to logged-in user)
-      setDepartment('')
-      setSalesChannel('')
-      setDestinationStorage('')
-      setNotes('')
-    } catch (error) {
-      console.error("[v0] Error processing sale:", error)
-      alert("Failed to process sale")
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
       {/* Page Header */}
@@ -225,134 +291,40 @@ export default function POSPage() {
               Dispatch Information
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="relative">
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Dispatched By *
-              </Label>
-              <div className="relative mt-1.5">
-                <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                      {staffName ? staffName.charAt(0).toUpperCase() : '?'}
-                    </div>
+          <CardContent className="space-y-4">
+            {/* Dispatched By - Box Style */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Dispatched By *</Label>
+              <div className="flex items-center justify-between p-4 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                    {staffName ? staffName.charAt(0).toUpperCase() : '?'}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                  <div className="flex flex-col">
+                    <p className="text-base font-semibold text-slate-900 dark:text-white">
                       {staffName || 'Unknown User'}
                     </p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                      <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                      Currently logged in
-                    </p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <div className="px-2.5 py-1 rounded-md bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700">
-                      <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Verified</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">Currently logged in</span>
                     </div>
                   </div>
                 </div>
+                <div className="px-4 py-2 rounded-md bg-blue-100 dark:bg-blue-800 border border-blue-300 dark:border-blue-600">
+                  <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">Verified</span>
+                </div>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1">
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-2">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                Auto-verified from your account for security
-              </p>
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Destination *</Label>
-              <Select value={department} onValueChange={(value) => {
-                setDepartment(value)
-                // Reset sales channel when destination changes
-                if (!['Demo/Display', 'Internal Use'].includes(value)) {
-                  setSalesChannel('')
-                }
-                // Reset destination storage when not warehouse
-                if (value !== 'Warehouse') {
-                  setDestinationStorage('')
-                }
-              }}>
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Select destination" />
-                </SelectTrigger>
-                <SelectContent>
-                  <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">Sales Channels</div>
-                  <SelectItem value="Facebook">📘 Facebook Store</SelectItem>
-                  <SelectItem value="Tiktok">🎵 Tiktok Shop</SelectItem>
-                  <SelectItem value="Lazada">🛒 Lazada</SelectItem>
-                  <SelectItem value="Shopee">🛍️ Shopee</SelectItem>
-                  <SelectItem value="Physical Store">🏪 Physical Store</SelectItem>
-                  <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2">Internal Use</div>
-                  <SelectItem value="Demo/Display">🎯 Demo/Display</SelectItem>
-                  <SelectItem value="Internal Use">🔧 Internal Use</SelectItem>
-                  <SelectItem value="Warehouse">📦 Warehouse Transfer</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Conditional Sales Channel Dropdown */}
-            {(department === 'Demo/Display' || department === 'Internal Use') && (
-              <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Sales Channel * <span className="text-xs text-slate-500">(Where will this be used?)</span>
-                </Label>
-                <Select value={salesChannel} onValueChange={setSalesChannel}>
-                  <SelectTrigger className="mt-1.5 border-blue-300 dark:border-blue-700">
-                    <SelectValue placeholder="Select sales channel" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Facebook">📘 Facebook Store</SelectItem>
-                    <SelectItem value="Tiktok">🎵 Tiktok Shop</SelectItem>
-                    <SelectItem value="Lazada">🛒 Lazada</SelectItem>
-                    <SelectItem value="Shopee">🛍️ Shopee</SelectItem>
-                    <SelectItem value="Physical Store">🏪 Physical Store</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  This will be saved as: <span className="font-semibold text-blue-600 dark:text-blue-400">{department} / {salesChannel || '...'}</span>
-                </p>
+                <span>Auto-verified from your account for security</span>
               </div>
-            )}
-
-            {/* Conditional Warehouse Storage Room Dropdown */}
-            {department === 'Warehouse' && (
-              <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Destination Storage Room * <span className="text-xs text-slate-500">(Transfer to which storage?)</span>
-                </Label>
-                <Select value={destinationStorage} onValueChange={setDestinationStorage}>
-                  <SelectTrigger className="mt-1.5 border-indigo-300 dark:border-indigo-700">
-                    <SelectValue placeholder="Select destination storage" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {storageRooms.map((room) => (
-                      <SelectItem key={room} value={room}>
-                        📦 {room}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Items will be transferred to: <span className="font-semibold text-indigo-600 dark:text-indigo-400">{destinationStorage || '...'}</span>
-                </p>
-              </div>
-            )}
-
-            <div>
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Notes (Optional)</Label>
-              <Input
-                placeholder="Purpose or notes..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="mt-1.5"
-              />
             </div>
 
             <Button 
-              onClick={handleCheckout} 
-              disabled={loading || !department || !staffName || cart.length === 0} 
+              onClick={handleOpenOrderForm} 
+              disabled={loading || cart.length === 0} 
               className="w-full bg-blue-600 hover:bg-blue-700 mt-2" 
               size="lg"
             >
@@ -559,6 +531,187 @@ export default function POSPage() {
         </CardContent>
       </Card>
 
+      {/* Order Form Modal - NEW */}
+      <Dialog open={orderFormOpen} onOpenChange={setOrderFormOpen}>
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold">
+              Order Dispatch Form
+            </DialogTitle>
+            <DialogDescription className="text-slate-600 dark:text-slate-400">
+              Fill in courier and tracking details for this dispatch
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-2 gap-4 py-4">
+            {/* Date */}
+            <div>
+              <Label className="text-sm font-medium">Date</Label>
+              <Input
+                type="date"
+                value={orderForm.date}
+                onChange={(e) => setOrderForm({...orderForm, date: e.target.value})}
+                className="mt-1.5"
+              />
+            </div>
+
+            {/* Sales Channel */}
+            <div>
+              <Label className="text-sm font-medium">Sales Channel</Label>
+              <Input
+                value={orderForm.salesChannel}
+                readOnly
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            {/* Store */}
+            <div>
+              <Label className="text-sm font-medium">Store</Label>
+              <Input
+                value={orderForm.store}
+                readOnly
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            {/* Courier - REQUIRED */}
+            <div>
+              <Label className="text-sm font-medium">Courier *</Label>
+              <Select value={orderForm.courier} onValueChange={(value) => setOrderForm({...orderForm, courier: value})}>
+                <SelectTrigger className="mt-1.5">
+                  <SelectValue placeholder="Select courier" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  <SelectItem value="Flash">Flash</SelectItem>
+                  <SelectItem value="J&T">J&T</SelectItem>
+                  <SelectItem value="Ninja Van">Ninja Van</SelectItem>
+                  <SelectItem value="Lalamove">Lalamove</SelectItem>
+                  <SelectItem value="Grab">Grab</SelectItem>
+                  <SelectItem value="LBC">LBC</SelectItem>
+                  <SelectItem value="2GO">2GO</SelectItem>
+                  <SelectItem value="JRS Express">JRS Express</SelectItem>
+                  <SelectItem value="Entrego">Entrego</SelectItem>
+                  <SelectItem value="ABest Express">ABest Express</SelectItem>
+                  <SelectItem value="Gogo Xpress">Gogo Xpress</SelectItem>
+                  <SelectItem value="XDE Logistics">XDE Logistics</SelectItem>
+                  <SelectItem value="AP Cargo">AP Cargo</SelectItem>
+                  <SelectItem value="Gryffon Courier Services">Gryffon Courier Services</SelectItem>
+                  <SelectItem value="Delivery Parcel Express">Delivery Parcel Express</SelectItem>
+                  <SelectItem value="Bluebee Express">Bluebee Express</SelectItem>
+                  <SelectItem value="GrabExpress">GrabExpress</SelectItem>
+                  <SelectItem value="Borzo">Borzo</SelectItem>
+                  <SelectItem value="Transportify">Transportify</SelectItem>
+                  <SelectItem value="DHL Express">DHL Express</SelectItem>
+                  <SelectItem value="UPS">UPS</SelectItem>
+                  <SelectItem value="FedEx">FedEx</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Waybill - REQUIRED */}
+            <div>
+              <Label className="text-sm font-medium">Waybill / Tracking Number *</Label>
+              <Input
+                value={orderForm.waybill}
+                onChange={(e) => setOrderForm({...orderForm, waybill: e.target.value})}
+                placeholder="Enter tracking number"
+                className="mt-1.5"
+              />
+            </div>
+
+            {/* Status */}
+            <div>
+              <Label className="text-sm font-medium">Status</Label>
+              <Input
+                value={orderForm.status}
+                readOnly
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            {/* QTY */}
+            <div>
+              <Label className="text-sm font-medium">Total Quantity</Label>
+              <Input
+                type="number"
+                value={orderForm.qty}
+                readOnly
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            {/* COGS */}
+            <div>
+              <Label className="text-sm font-medium">Total COGS</Label>
+              <Input
+                value={formatCurrency(orderForm.cogs)}
+                readOnly
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            {/* Total */}
+            <div>
+              <Label className="text-sm font-medium">Total Amount</Label>
+              <Input
+                value={formatCurrency(orderForm.total)}
+                readOnly
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 font-bold"
+              />
+            </div>
+
+            {/* Parcel Status */}
+            <div>
+              <Label className="text-sm font-medium">Parcel Status</Label>
+              <Input
+                value={orderForm.parcelStatus}
+                readOnly
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            {/* Product - Full Width */}
+            <div className="col-span-2">
+              <Label className="text-sm font-medium">Products</Label>
+              <textarea
+                value={orderForm.product}
+                readOnly
+                rows={3}
+                className="mt-1.5 w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"
+              />
+            </div>
+
+            {/* Dispatched By */}
+            <div className="col-span-2">
+              <Label className="text-sm font-medium">Dispatched By</Label>
+              <Input
+                value={orderForm.dispatchedBy}
+                readOnly
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setOrderFormOpen(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmitOrder}
+              disabled={loading || !orderForm.courier || !orderForm.waybill}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {loading ? "Submitting..." : "Submit Order"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Success Modal */}
       <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
         <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-md">
@@ -574,7 +727,7 @@ export default function POSPage() {
           <div className="space-y-4 py-4">
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
               <p className="text-center text-green-800 dark:text-green-200 font-medium mb-2">
-                Stock Released to {department}
+                Order Dispatched Successfully
               </p>
               <p className="text-center text-sm text-green-700 dark:text-green-300">
                 Dispatch ID: <span className="font-mono font-bold">{dispatchId}</span>
