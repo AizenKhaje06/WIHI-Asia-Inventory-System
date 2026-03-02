@@ -16,6 +16,7 @@ import { formatCurrency } from '@/lib/utils'
 import { toast } from 'sonner'
 import { apiGet } from '@/lib/api-client'
 import { BrandLoader } from '@/components/ui/brand-loader'
+import { DateRangePicker } from '@/components/ui/date-range-picker'
 
 interface Order {
   id: string
@@ -46,6 +47,8 @@ export default function TrackOrdersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [salesChannelFilter, setSalesChannelFilter] = useState<string>('all')
+  const [startDate, setStartDate] = useState<Date | null>(null)
+  const [endDate, setEndDate] = useState<Date | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
 
@@ -55,7 +58,7 @@ export default function TrackOrdersPage() {
 
   useEffect(() => {
     filterOrders()
-  }, [searchTerm, statusFilter, salesChannelFilter, orders])
+  }, [searchTerm, statusFilter, salesChannelFilter, startDate, endDate, orders])
 
   const fetchOrders = async () => {
     try {
@@ -399,43 +402,63 @@ export default function TrackOrdersPage() {
             
             table { 
               width: 100%; 
-              border-collapse: collapse; 
-              margin-top: 20px; 
-              font-size: 10px;
-              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-              border-radius: 8px;
-              overflow: hidden;
+              border-collapse: separate;
+              border-spacing: 0;
+              margin-top: 30px; 
+              font-size: 11px;
+              border: 1px solid #cbd5e1;
+              background: white;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
             thead {
-              background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+              background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
             }
             th { 
               color: white; 
-              padding: 14px 10px; 
+              padding: 14px 12px; 
               text-align: left; 
-              font-size: 9px; 
+              font-size: 10px; 
               font-weight: 700;
               text-transform: uppercase;
               letter-spacing: 0.5px;
-              border-right: 1px solid rgba(255,255,255,0.1);
+              border-right: 1px solid rgba(255,255,255,0.15);
+              border-bottom: 2px solid #1e40af;
             }
             th:last-child { border-right: none; }
             td { 
-              padding: 12px 10px; 
+              padding: 12px; 
               border-bottom: 1px solid #e2e8f0;
-              font-size: 10px;
+              border-right: 1px solid #f1f5f9;
+              font-size: 11px;
+              color: #334155;
+              line-height: 1.5;
+            }
+            td:last-child { border-right: none; }
+            tbody tr { 
+              transition: background-color 0.15s ease;
+            }
+            tbody tr:nth-child(even) { 
+              background-color: #f8fafc; 
+            }
+            tbody tr:hover { 
+              background-color: #eff6ff;
+              box-shadow: inset 0 0 0 1px #dbeafe;
+            }
+            tbody tr:last-child td {
+              border-bottom: none;
             }
             tr:nth-child(even) { background-color: #f8fafc; }
             tr:hover { background-color: #f1f5f9; }
             
             .badge { 
               display: inline-block; 
-              padding: 4px 10px; 
-              border-radius: 6px; 
-              font-size: 8px; 
+              padding: 3px 6px; 
+              border-radius: 4px; 
+              font-size: 7px; 
               font-weight: 700;
               text-transform: uppercase;
-              letter-spacing: 0.3px;
+              letter-spacing: 0.2px;
+              white-space: nowrap;
             }
             .badge-pending { background: #fef3c7; color: #92400e; }
             .badge-paid { background: #d1fae5; color: #065f46; }
@@ -622,37 +645,37 @@ export default function TrackOrdersPage() {
           <table>
             <thead>
               <tr>
-                <th style="width: 70px;">Order #</th>
-                <th style="width: 75px;">Date</th>
-                <th style="width: 80px;">Channel</th>
-                <th style="width: 85px;">Store</th>
+                <th>Order #</th>
+                <th>Date</th>
+                <th>Channel</th>
+                <th>Store</th>
                 <th>Product</th>
-                <th style="width: 35px;">Qty</th>
-                <th style="width: 70px;">Amount</th>
-                <th style="width: 65px;">COGS</th>
-                <th style="width: 70px;">Courier</th>
-                <th style="width: 90px;">Waybill</th>
-                <th style="width: 65px;">Payment</th>
-                <th style="width: 60px;">Status</th>
-                <th style="width: 75px;">Parcel</th>
+                <th style="text-align: center;">Qty</th>
+                <th style="text-align: right;">Amount</th>
+                <th style="text-align: right;">COGS</th>
+                <th>Courier</th>
+                <th>Waybill</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Parcel</th>
               </tr>
             </thead>
             <tbody>
               ${filteredOrders.map(order => `
                 <tr>
-                  <td style="font-weight: 700; font-family: monospace;">#${order.id.slice(-6)}</td>
-                  <td>${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                  <td><span class="badge" style="background: linear-gradient(135deg, #ec540e, #d6361f); color: white;">${order.department || 'N/A'}</span></td>
-                  <td style="font-weight: 600;">${order.customerAddress || 'N/A'}</td>
-                  <td style="font-weight: 500;">${order.itemName}</td>
-                  <td style="text-align: center; font-weight: 700;">${order.quantity}</td>
-                  <td style="font-weight: 700; color: #059669;">₱${order.totalAmount.toLocaleString()}</td>
-                  <td style="font-weight: 600; color: #64748b;">₱${(order.totalAmount * 0.6).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                  <td>${order.courier || '-'}</td>
-                  <td style="font-family: monospace; font-size: 9px;">${order.trackingNumber || '-'}</td>
-                  <td><span class="badge badge-${order.paymentStatus}">${order.paymentStatus.toUpperCase()}</span></td>
-                  <td><span class="badge badge-${order.orderStatus.toLowerCase()}">${order.orderStatus.toUpperCase()}</span></td>
-                  <td><span class="badge badge-${order.parcelStatus.toLowerCase().replace(' ', '-')}">${order.parcelStatus}</span></td>
+                  <td style="font-weight: 600; font-family: 'Courier New', monospace; color: #1e40af;">#${order.id.slice(-6)}</td>
+                  <td style="color: #64748b;">${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                  <td style="font-weight: 600; color: #0f172a;">${order.department || 'N/A'}</td>
+                  <td style="color: #475569;">${order.customerAddress || 'N/A'}</td>
+                  <td style="font-weight: 500; color: #0f172a;">${order.itemName}</td>
+                  <td style="text-align: center; font-weight: 700; color: #0f172a;">${order.quantity}</td>
+                  <td style="text-align: right; font-weight: 600; color: #059669;">₱${order.totalAmount.toLocaleString()}</td>
+                  <td style="text-align: right; font-weight: 500; color: #64748b;">₱${(order.totalAmount * 0.6).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                  <td style="color: #475569;">${order.courier || '-'}</td>
+                  <td style="font-family: 'Courier New', monospace; font-size: 10px; color: #64748b;">${order.trackingNumber || '-'}</td>
+                  <td style="font-weight: 600; color: #0f172a;">${order.paymentStatus.toUpperCase()}</td>
+                  <td style="font-weight: 600; color: #0f172a;">${order.orderStatus.toUpperCase()}</td>
+                  <td style="font-weight: 600; color: #0f172a;">${order.parcelStatus}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -699,6 +722,19 @@ export default function TrackOrdersPage() {
     
     if (salesChannelFilter !== 'all') {
       filtered = filtered.filter(order => order.department === salesChannelFilter)
+    }
+    
+    // Date filtering
+    if (startDate) {
+      const start = new Date(startDate)
+      start.setHours(0, 0, 0, 0)
+      filtered = filtered.filter(order => new Date(order.orderDate) >= start)
+    }
+    
+    if (endDate) {
+      const end = new Date(endDate)
+      end.setHours(23, 59, 59, 999)
+      filtered = filtered.filter(order => new Date(order.orderDate) <= end)
     }
     
     setFilteredOrders(filtered)
@@ -1037,6 +1073,18 @@ export default function TrackOrdersPage() {
               <SelectItem value="Physical Store">Physical Store</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="w-[280px]">
+          <DateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onDateChange={(start, end) => {
+              setStartDate(start)
+              setEndDate(end)
+            }}
+            className="h-11"
+          />
         </div>
       </div>
 
