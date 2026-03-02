@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { 
   ArrowLeft,
+  ArrowUpRight,
+  ArrowDownRight,
   DollarSign,
   TrendingUp,
   ShoppingCart,
