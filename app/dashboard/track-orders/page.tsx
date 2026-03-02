@@ -171,25 +171,25 @@ export default function TrackOrdersPage() {
       csvContent += 'FINANCIAL SUMMARY\n'
       csvContent += 'Metric,Value\n'
       csvContent += `Total Quantity,${totalQuantity}\n`
-      csvContent += `Total Amount,₱${totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}\n`
-      csvContent += `Total COGS,₱${totalCOGS.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}\n`
-      csvContent += `Total Profit,₱${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}\n`
+      csvContent += `Total Amount,₱${totalAmount.toFixed(2)}\n`
+      csvContent += `Total COGS,₱${totalCOGS.toFixed(2)}\n`
+      csvContent += `Total Profit,₱${totalProfit.toFixed(2)}\n`
       csvContent += `Profit Margin,${totalProfitMargin.toFixed(2)}%\n`
       csvContent += '\n'
 
       // Per-Status Breakdown Section
       csvContent += 'STATUS BREAKDOWN\n'
       csvContent += 'Status,Orders,Quantity,Amount,COGS,Profit,Margin\n'
-      csvContent += `Total Orders,${filteredOrders.length},${totalQuantity},₱${totalAmount.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${totalCOGS.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${totalProfit.toLocaleString(undefined, {maximumFractionDigits: 2})},${totalProfitMargin.toFixed(2)}%\n`
-      csvContent += `Pending,${filteredOrders.filter(o => o.parcelStatus === 'PENDING').length},${pendingFinancials.qty},₱${pendingFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${pendingFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${pendingFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${pendingFinancials.margin.toFixed(2)}%\n`
-      csvContent += `In Transit,${filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT').length},${inTransitFinancials.qty},₱${inTransitFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${inTransitFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${inTransitFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${inTransitFinancials.margin.toFixed(2)}%\n`
-      csvContent += `On Delivery,${filteredOrders.filter(o => o.parcelStatus === 'ON DELIVERY').length},${onDeliveryFinancials.qty},₱${onDeliveryFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${onDeliveryFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${onDeliveryFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${onDeliveryFinancials.margin.toFixed(2)}%\n`
-      csvContent += `Pickup,${filteredOrders.filter(o => o.parcelStatus === 'PICKUP').length},${pickupFinancials.qty},₱${pickupFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${pickupFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${pickupFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${pickupFinancials.margin.toFixed(2)}%\n`
-      csvContent += `Delivered,${filteredOrders.filter(o => o.parcelStatus === 'DELIVERED').length},${deliveredFinancials.qty},₱${deliveredFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${deliveredFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${deliveredFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${deliveredFinancials.margin.toFixed(2)}%\n`
-      csvContent += `Cancelled,${filteredOrders.filter(o => o.parcelStatus === 'CANCELLED').length},${cancelledFinancials.qty},₱${cancelledFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${cancelledFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${cancelledFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${cancelledFinancials.margin.toFixed(2)}%\n`
-      csvContent += `Detained,${filteredOrders.filter(o => o.parcelStatus === 'DETAINED').length},${detainedFinancials.qty},₱${detainedFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${detainedFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${detainedFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${detainedFinancials.margin.toFixed(2)}%\n`
-      csvContent += `Problematic,${filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC').length},${problematicFinancials.qty},₱${problematicFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${problematicFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${problematicFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${problematicFinancials.margin.toFixed(2)}%\n`
-      csvContent += `Returned,${filteredOrders.filter(o => o.parcelStatus === 'RETURNED').length},${returnedFinancials.qty},₱${returnedFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${returnedFinancials.cogs.toLocaleString(undefined, {maximumFractionDigits: 2})},₱${returnedFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 2})},${returnedFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Total Orders,${filteredOrders.length},${totalQuantity},₱${totalAmount.toFixed(2)},₱${totalCOGS.toFixed(2)},₱${totalProfit.toFixed(2)},${totalProfitMargin.toFixed(2)}%\n`
+      csvContent += `Pending,${filteredOrders.filter(o => o.parcelStatus === 'PENDING').length},${pendingFinancials.qty},₱${pendingFinancials.amt.toFixed(2)},₱${pendingFinancials.cogs.toFixed(2)},₱${pendingFinancials.profit.toFixed(2)},${pendingFinancials.margin.toFixed(2)}%\n`
+      csvContent += `In Transit,${filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT').length},${inTransitFinancials.qty},₱${inTransitFinancials.amt.toFixed(2)},₱${inTransitFinancials.cogs.toFixed(2)},₱${inTransitFinancials.profit.toFixed(2)},${inTransitFinancials.margin.toFixed(2)}%\n`
+      csvContent += `On Delivery,${filteredOrders.filter(o => o.parcelStatus === 'ON DELIVERY').length},${onDeliveryFinancials.qty},₱${onDeliveryFinancials.amt.toFixed(2)},₱${onDeliveryFinancials.cogs.toFixed(2)},₱${onDeliveryFinancials.profit.toFixed(2)},${onDeliveryFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Pickup,${filteredOrders.filter(o => o.parcelStatus === 'PICKUP').length},${pickupFinancials.qty},₱${pickupFinancials.amt.toFixed(2)},₱${pickupFinancials.cogs.toFixed(2)},₱${pickupFinancials.profit.toFixed(2)},${pickupFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Delivered,${filteredOrders.filter(o => o.parcelStatus === 'DELIVERED').length},${deliveredFinancials.qty},₱${deliveredFinancials.amt.toFixed(2)},₱${deliveredFinancials.cogs.toFixed(2)},₱${deliveredFinancials.profit.toFixed(2)},${deliveredFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Cancelled,${filteredOrders.filter(o => o.parcelStatus === 'CANCELLED').length},${cancelledFinancials.qty},₱${cancelledFinancials.amt.toFixed(2)},₱${cancelledFinancials.cogs.toFixed(2)},₱${cancelledFinancials.profit.toFixed(2)},${cancelledFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Detained,${filteredOrders.filter(o => o.parcelStatus === 'DETAINED').length},${detainedFinancials.qty},₱${detainedFinancials.amt.toFixed(2)},₱${detainedFinancials.cogs.toFixed(2)},₱${detainedFinancials.profit.toFixed(2)},${detainedFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Problematic,${filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC').length},${problematicFinancials.qty},₱${problematicFinancials.amt.toFixed(2)},₱${problematicFinancials.cogs.toFixed(2)},₱${problematicFinancials.profit.toFixed(2)},${problematicFinancials.margin.toFixed(2)}%\n`
+      csvContent += `Returned,${filteredOrders.filter(o => o.parcelStatus === 'RETURNED').length},${returnedFinancials.qty},₱${returnedFinancials.amt.toFixed(2)},₱${returnedFinancials.cogs.toFixed(2)},₱${returnedFinancials.profit.toFixed(2)},${returnedFinancials.margin.toFixed(2)}%\n`
       csvContent += '\n'
 
       // Detailed Orders Section
@@ -208,9 +208,9 @@ export default function TrackOrdersPage() {
         csvContent += `"${order.customerAddress || 'N/A'}",`
         csvContent += `"${order.itemName}",`
         csvContent += `${order.quantity},`
-        csvContent += `₱${order.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})},`
-        csvContent += `₱${cogs.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})},`
-        csvContent += `₱${profit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})},`
+        csvContent += `₱${order.totalAmount.toFixed(2)},`
+        csvContent += `₱${cogs.toFixed(2)},`
+        csvContent += `₱${profit.toFixed(2)},`
         csvContent += `${margin.toFixed(2)}%,`
         csvContent += `"${order.courier || '-'}",`
         csvContent += `"${order.trackingNumber || '-'}",`
