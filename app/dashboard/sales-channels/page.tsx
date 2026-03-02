@@ -16,12 +16,21 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Package,
-  BarChart3
+  BarChart3,
+  FileSpreadsheet,
+  FileDown
 } from "lucide-react"
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { apiGet } from "@/lib/api-client"
 import { BrandLoader } from '@/components/ui/brand-loader'
+import { toast } from "sonner"
+import { 
+  formatCurrencyForExport,
+  formatDateForExport,
+  formatNumberForExport,
+  formatPercentageForExport
+} from "@/lib/export-utils"
 
 interface Department {
   name: string
@@ -114,6 +123,197 @@ export default function SalesChannelsPage() {
     revenue: d.revenue
   })) || []
 
+  // Export Functions
+  async function handleExportAllChannels(format: 'excel' | 'pdf') {
+    if (!data || !data.departments || data.departments.length === 0) {
+      toast.error("No data available to export")
+      return
+    }
+
+    const filters = []
+    if (startDate) filters.push({ label: 'Start Date', value: new Date(startDate).toLocaleDateString() })
+    if (endDate) filters.push({ label: 'End Date', value: new Date(endDate).toLocaleDateString() })
+
+    const summary = [
+      { label: 'Total Sales Channels', value: formatNumberForExport(data.departments.length) },
+      { label: 'Total Revenue', value: formatCurrencyForExport(data.totals.revenue) },
+      { label: 'Total Cost', value: formatCurrencyForExport(data.totals.cost) },
+      { label: 'Total Profit', value: formatCurrencyForExport(data.totals.profit) },
+      { label: 'Profit Margin', value: formatPercentageForExport(data.totals.revenue > 0 ? (data.totals.profit / data.totals.revenue) * 100 : 0) },
+      { label: 'Total Transactions', value: formatNumberForExport(data.totals.transactions) },
+      { label: 'Total Items Sold', value: formatNumberForExport(data.totals.quantity) },
+    ]
+
+    const columns = [
+      { header: 'Sales Channel', key: 'name', width: 30 },
+      { header: 'Revenue', key: 'revenue', width: 15, format: formatCurrencyForExport },
+      { header: 'Cost', key: 'cost', width: 15, format: formatCurrencyForExport },
+      { header: 'Profit', key: 'profit', width: 15, format: formatCurrencyForExport },
+      { 
+        header: 'Profit Margin %', 
+        key: 'profitMargin', 
+        width: 12,
+        format: formatPercentageForExport
+      },
+      { header: 'Transactions', key: 'transactions', width: 12, format: formatNumberForExport },
+      { header: 'Items Sold', key: 'quantity', width: 12, format: formatNumberForExport },
+    ]
+
+    const channelsWithMargin = data.departments.map(d => ({
+      ...d,
+      profitMargin: d.revenue > 0 ? (d.profit / d.revenue) * 100 : 0
+    }))
+
+    const toastId = toast.loading(`Generating ${format.toUpperCase()} report...`)
+    
+    try {
+      if (format === 'excel') {
+        const XLSX = await import('xlsx')
+        const wb = XLSX.utils.book_new()
+
+        // Summary Sheet
+        const summaryData: any[][] = []
+        summaryData.push(['All Sales Channels Report'])
+        summaryData.push([])
+        summaryData.push(['Generated:', new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })])
+        summaryData.push([])
+        
+        if (filters.length > 0) {
+          summaryData.push(['Applied Filters:'])
+          filters.forEach(filter => summaryData.push([filter.label, filter.value]))
+          summaryData.push([])
+        }
+
+        summaryData.push(['Summary:'])
+        summary.forEach(item => summaryData.push([item.label, item.value]))
+
+        const summaryWs = XLSX.utils.aoa_to_sheet(summaryData)
+        XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary')
+
+        // Sales Channels Sheet
+        const channelsData: any[][] = []
+        channelsData.push(['Sales Channels Performance'])
+        channelsData.push([])
+        channelsData.push(columns.map(col => col.header))
+        channelsWithMargin.forEach((row: any) => {
+          channelsData.push(columns.map(col => {
+            const value = row[col.key]
+            return col.format ? col.format(value, row) : value
+          }))
+        })
+
+        const channelsWs = XLSX.utils.aoa_to_sheet(channelsData)
+        channelsWs['!cols'] = columns.map(col => ({ wch: col.width || 15 }))
+        XLSX.utils.book_append_sheet(wb, channelsWs, 'Sales Channels')
+
+        // Save Excel file
+        const filename = `All-Sales-Channels-Report-${new Date().toISOString().split('T')[0]}-${String(new Date().getHours()).padStart(2, '0')}${String(new Date().getMinutes()).padStart(2, '0')}.xlsx`
+        XLSX.writeFile(wb, filename)
+        
+        toast.success('Excel report downloaded successfully!', { id: toastId })
+      } else {
+        // PDF Export
+        const jsPDF = (await import('jspdf')).default
+        const autoTable = (await import('jspdf-autotable')).default
+
+        const doc = new jsPDF({
+          orientation: 'landscape',
+          unit: 'mm',
+          format: 'a4'
+        }) as any
+
+        let yPosition = 20
+
+        // Title
+        doc.setFontSize(18)
+        doc.setFont('helvetica', 'bold')
+        doc.text('All Sales Channels Report', 14, yPosition)
+        yPosition += 10
+
+        // Timestamp
+        doc.setFontSize(10)
+        doc.setFont('helvetica', 'normal')
+        doc.text(`Generated: ${new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}`, 14, yPosition)
+        yPosition += 8
+
+        // Filters
+        if (filters.length > 0) {
+          doc.setFont('helvetica', 'bold')
+          doc.text('Applied Filters:', 14, yPosition)
+          yPosition += 5
+          doc.setFont('helvetica', 'normal')
+          filters.forEach((filter: any) => {
+            doc.text(`${filter.label}: ${filter.value}`, 14, yPosition)
+            yPosition += 5
+          })
+          yPosition += 3
+        }
+
+        // Summary (remove ₱ symbols for PDF)
+        const pdfSummary = summary.map(item => ({
+          ...item,
+          value: typeof item.value === 'string' ? item.value.replace(/₱/g, '') : item.value
+        }))
+
+        doc.setFont('helvetica', 'bold')
+        doc.text('Summary:', 14, yPosition)
+        yPosition += 5
+        doc.setFont('helvetica', 'normal')
+        pdfSummary.forEach((item: any) => {
+          doc.text(`${item.label}: ${item.value}`, 14, yPosition)
+          yPosition += 5
+        })
+        yPosition += 10
+
+        // Sales Channels Table
+        doc.setFontSize(12)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Sales Channels Performance', 14, yPosition)
+        yPosition += 5
+
+        const tableData = channelsWithMargin.map((row: any) => 
+          columns.map(col => {
+            const value = row[col.key]
+            const formatted = col.format ? col.format(value, row) : String(value ?? '')
+            return typeof formatted === 'string' ? formatted.replace(/₱/g, '') : formatted
+          })
+        )
+
+        autoTable(doc, {
+          head: [columns.map(col => col.header)],
+          body: tableData,
+          startY: yPosition,
+          theme: 'striped',
+          headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold' },
+          styles: { fontSize: 8, cellPadding: 2 },
+          alternateRowStyles: { fillColor: [248, 250, 252] },
+        })
+
+        // Footer
+        const pageCount = doc.internal.getNumberOfPages()
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i)
+          const pageSize = doc.internal.pageSize
+          const pageHeight = pageSize.height || pageSize.getHeight()
+          
+          doc.setFontSize(8)
+          doc.setFont('helvetica', 'normal')
+          doc.text(`Page ${i} of ${pageCount}`, 14, pageHeight - 10)
+          doc.text(`Total Channels: ${data.departments.length}`, pageSize.width - 50, pageHeight - 10)
+        }
+
+        // Save PDF
+        const filename = `All-Sales-Channels-Report-${new Date().toISOString().split('T')[0]}-${String(new Date().getHours()).padStart(2, '0')}${String(new Date().getMinutes()).padStart(2, '0')}.pdf`
+        doc.save(filename)
+        
+        toast.success('PDF report downloaded successfully!', { id: toastId })
+      }
+    } catch (error) {
+      toast.error(`Failed to export ${format.toUpperCase()} report`, { id: toastId })
+      console.error(error)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center min-h-[600px]">
@@ -131,12 +331,36 @@ export default function SalesChannelsPage() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
       {/* Page Header */}
       <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold gradient-text mb-2">
-          Sales Channels
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
-          Performance analytics and insights per sales channel
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-4xl font-bold gradient-text mb-2">
+              Sales Channels
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 text-base">
+              Performance analytics and insights per sales channel
+            </p>
+          </div>
+          
+          {/* Export Buttons */}
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => handleExportAllChannels('excel')}
+              disabled={loading || !data}
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+            >
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              <span className="text-sm font-semibold">Excel Report</span>
+            </Button>
+            <Button
+              onClick={() => handleExportAllChannels('pdf')}
+              disabled={loading || !data}
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+            >
+              <FileDown className="h-4 w-4 mr-2" />
+              <span className="text-sm font-semibold">PDF Report</span>
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Date Filter */}
