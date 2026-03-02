@@ -173,25 +173,25 @@ export default function TrackOrdersPage() {
       wsData.push(['FINANCIAL SUMMARY'])
       wsData.push(['Metric', 'Value'])
       wsData.push(['Total Quantity', totalQuantity])
-      wsData.push(['Total Amount', `₱${totalAmount.toFixed(2)}`])
-      wsData.push(['Total COGS', `₱${totalCOGS.toFixed(2)}`])
-      wsData.push(['Total Profit', `₱${totalProfit.toFixed(2)}`])
+      wsData.push(['Total Amount', totalAmount.toFixed(2)])
+      wsData.push(['Total COGS', totalCOGS.toFixed(2)])
+      wsData.push(['Total Profit', totalProfit.toFixed(2)])
       wsData.push(['Profit Margin', `${totalProfitMargin.toFixed(2)}%`])
       wsData.push([]) // Empty row
 
       // Status Breakdown Section
       wsData.push(['STATUS BREAKDOWN'])
       wsData.push(['Status', 'Orders', 'Quantity', 'Amount', 'COGS', 'Profit', 'Margin'])
-      wsData.push(['Total Orders', filteredOrders.length, totalQuantity, `₱${totalAmount.toFixed(2)}`, `₱${totalCOGS.toFixed(2)}`, `₱${totalProfit.toFixed(2)}`, `${totalProfitMargin.toFixed(2)}%`])
-      wsData.push(['Pending', filteredOrders.filter(o => o.parcelStatus === 'PENDING').length, pendingFinancials.qty, `₱${pendingFinancials.amt.toFixed(2)}`, `₱${pendingFinancials.cogs.toFixed(2)}`, `₱${pendingFinancials.profit.toFixed(2)}`, `${pendingFinancials.margin.toFixed(2)}%`])
-      wsData.push(['In Transit', filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT').length, inTransitFinancials.qty, `₱${inTransitFinancials.amt.toFixed(2)}`, `₱${inTransitFinancials.cogs.toFixed(2)}`, `₱${inTransitFinancials.profit.toFixed(2)}`, `${inTransitFinancials.margin.toFixed(2)}%`])
-      wsData.push(['On Delivery', filteredOrders.filter(o => o.parcelStatus === 'ON DELIVERY').length, onDeliveryFinancials.qty, `₱${onDeliveryFinancials.amt.toFixed(2)}`, `₱${onDeliveryFinancials.cogs.toFixed(2)}`, `₱${onDeliveryFinancials.profit.toFixed(2)}`, `${onDeliveryFinancials.margin.toFixed(2)}%`])
-      wsData.push(['Pickup', filteredOrders.filter(o => o.parcelStatus === 'PICKUP').length, pickupFinancials.qty, `₱${pickupFinancials.amt.toFixed(2)}`, `₱${pickupFinancials.cogs.toFixed(2)}`, `₱${pickupFinancials.profit.toFixed(2)}`, `${pickupFinancials.margin.toFixed(2)}%`])
-      wsData.push(['Delivered', filteredOrders.filter(o => o.parcelStatus === 'DELIVERED').length, deliveredFinancials.qty, `₱${deliveredFinancials.amt.toFixed(2)}`, `₱${deliveredFinancials.cogs.toFixed(2)}`, `₱${deliveredFinancials.profit.toFixed(2)}`, `${deliveredFinancials.margin.toFixed(2)}%`])
-      wsData.push(['Cancelled', filteredOrders.filter(o => o.parcelStatus === 'CANCELLED').length, cancelledFinancials.qty, `₱${cancelledFinancials.amt.toFixed(2)}`, `₱${cancelledFinancials.cogs.toFixed(2)}`, `₱${cancelledFinancials.profit.toFixed(2)}`, `${cancelledFinancials.margin.toFixed(2)}%`])
-      wsData.push(['Detained', filteredOrders.filter(o => o.parcelStatus === 'DETAINED').length, detainedFinancials.qty, `₱${detainedFinancials.amt.toFixed(2)}`, `₱${detainedFinancials.cogs.toFixed(2)}`, `₱${detainedFinancials.profit.toFixed(2)}`, `${detainedFinancials.margin.toFixed(2)}%`])
-      wsData.push(['Problematic', filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC').length, problematicFinancials.qty, `₱${problematicFinancials.amt.toFixed(2)}`, `₱${problematicFinancials.cogs.toFixed(2)}`, `₱${problematicFinancials.profit.toFixed(2)}`, `${problematicFinancials.margin.toFixed(2)}%`])
-      wsData.push(['Returned', filteredOrders.filter(o => o.parcelStatus === 'RETURNED').length, returnedFinancials.qty, `₱${returnedFinancials.amt.toFixed(2)}`, `₱${returnedFinancials.cogs.toFixed(2)}`, `₱${returnedFinancials.profit.toFixed(2)}`, `${returnedFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Total Orders', filteredOrders.length, totalQuantity, totalAmount.toFixed(2), totalCOGS.toFixed(2), totalProfit.toFixed(2), `${totalProfitMargin.toFixed(2)}%`])
+      wsData.push(['Pending', filteredOrders.filter(o => o.parcelStatus === 'PENDING').length, pendingFinancials.qty, pendingFinancials.amt.toFixed(2), pendingFinancials.cogs.toFixed(2), pendingFinancials.profit.toFixed(2), `${pendingFinancials.margin.toFixed(2)}%`])
+      wsData.push(['In Transit', filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT').length, inTransitFinancials.qty, inTransitFinancials.amt.toFixed(2), inTransitFinancials.cogs.toFixed(2), inTransitFinancials.profit.toFixed(2), `${inTransitFinancials.margin.toFixed(2)}%`])
+      wsData.push(['On Delivery', filteredOrders.filter(o => o.parcelStatus === 'ON DELIVERY').length, onDeliveryFinancials.qty, onDeliveryFinancials.amt.toFixed(2), onDeliveryFinancials.cogs.toFixed(2), onDeliveryFinancials.profit.toFixed(2), `${onDeliveryFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Pickup', filteredOrders.filter(o => o.parcelStatus === 'PICKUP').length, pickupFinancials.qty, pickupFinancials.amt.toFixed(2), pickupFinancials.cogs.toFixed(2), pickupFinancials.profit.toFixed(2), `${pickupFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Delivered', filteredOrders.filter(o => o.parcelStatus === 'DELIVERED').length, deliveredFinancials.qty, deliveredFinancials.amt.toFixed(2), deliveredFinancials.cogs.toFixed(2), deliveredFinancials.profit.toFixed(2), `${deliveredFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Cancelled', filteredOrders.filter(o => o.parcelStatus === 'CANCELLED').length, cancelledFinancials.qty, cancelledFinancials.amt.toFixed(2), cancelledFinancials.cogs.toFixed(2), cancelledFinancials.profit.toFixed(2), `${cancelledFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Detained', filteredOrders.filter(o => o.parcelStatus === 'DETAINED').length, detainedFinancials.qty, detainedFinancials.amt.toFixed(2), detainedFinancials.cogs.toFixed(2), detainedFinancials.profit.toFixed(2), `${detainedFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Problematic', filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC').length, problematicFinancials.qty, problematicFinancials.amt.toFixed(2), problematicFinancials.cogs.toFixed(2), problematicFinancials.profit.toFixed(2), `${problematicFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Returned', filteredOrders.filter(o => o.parcelStatus === 'RETURNED').length, returnedFinancials.qty, returnedFinancials.amt.toFixed(2), returnedFinancials.cogs.toFixed(2), returnedFinancials.profit.toFixed(2), `${returnedFinancials.margin.toFixed(2)}%`])
       wsData.push([]) // Empty row
 
       // Detailed Orders Section
@@ -211,9 +211,9 @@ export default function TrackOrdersPage() {
           order.customerAddress || 'N/A',
           order.itemName,
           order.quantity,
-          `₱${order.totalAmount.toFixed(2)}`,
-          `₱${cogs.toFixed(2)}`,
-          `₱${profit.toFixed(2)}`,
+          order.totalAmount.toFixed(2),
+          cogs.toFixed(2),
+          profit.toFixed(2),
           `${margin.toFixed(2)}%`,
           order.courier || '-',
           order.trackingNumber || '-',
@@ -224,6 +224,54 @@ export default function TrackOrdersPage() {
 
       // Create worksheet from data
       const ws = XLSX.utils.aoa_to_sheet(wsData)
+
+      // Apply number formatting to currency cells
+      const range = XLSX.utils.decode_range(ws['!ref'] || 'A1')
+      
+      // Format Financial Summary amounts (rows 8-10, column B)
+      for (let row = 7; row <= 9; row++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: 1 })
+        if (ws[cellAddress] && typeof ws[cellAddress].v === 'string') {
+          const numValue = parseFloat(ws[cellAddress].v)
+          if (!isNaN(numValue)) {
+            ws[cellAddress].t = 'n'
+            ws[cellAddress].v = numValue
+            ws[cellAddress].z = '"₱"#,##0.00'
+          }
+        }
+      }
+
+      // Format Status Breakdown amounts (starting from row 15, columns D, E, F)
+      const statusStartRow = 14 // Row 15 in 0-indexed
+      for (let row = statusStartRow; row <= statusStartRow + 9; row++) {
+        for (let col = 3; col <= 5; col++) { // Columns D, E, F (Amount, COGS, Profit)
+          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col })
+          if (ws[cellAddress] && typeof ws[cellAddress].v === 'string') {
+            const numValue = parseFloat(ws[cellAddress].v)
+            if (!isNaN(numValue)) {
+              ws[cellAddress].t = 'n'
+              ws[cellAddress].v = numValue
+              ws[cellAddress].z = '"₱"#,##0.00'
+            }
+          }
+        }
+      }
+
+      // Format Detailed Orders amounts (starting from detailed orders section, columns H, I, J)
+      const detailedStartRow = statusStartRow + 13 // After status breakdown + empty rows + headers
+      for (let row = detailedStartRow; row <= range.e.r; row++) {
+        for (let col = 7; col <= 9; col++) { // Columns H, I, J (Amount, COGS, Profit)
+          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col })
+          if (ws[cellAddress] && typeof ws[cellAddress].v === 'string') {
+            const numValue = parseFloat(ws[cellAddress].v)
+            if (!isNaN(numValue)) {
+              ws[cellAddress].t = 'n'
+              ws[cellAddress].v = numValue
+              ws[cellAddress].z = '"₱"#,##0.00'
+            }
+          }
+        }
+      }
 
       // Set column widths
       ws['!cols'] = [
