@@ -500,9 +500,15 @@ export default function POSPage() {
                         <span className="text-slate-600 dark:text-slate-400 font-medium">Stock Level</span>
                         <span className="font-bold text-slate-900 dark:text-white">{item.quantity} units</span>
                       </div>
+                      {item.salesChannel && (
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-600 dark:text-slate-400 font-medium">Sales Channel</span>
+                          <span className="font-semibold text-blue-600 dark:text-blue-400">{item.salesChannel}</span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-600 dark:text-slate-400 font-medium">Storage</span>
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">{item.storageRoom}</span>
+                        <span className="text-slate-600 dark:text-slate-400 font-medium">Store</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">{item.store || item.storageRoom}</span>
                       </div>
                     </div>
 
