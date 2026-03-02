@@ -47,7 +47,7 @@ interface NavSection {
   items: NavItem[]
 }
 
-const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0, cancelledCount: number = 0): NavSection[] => [
+const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0): NavSection[] => [
   {
     section: "Main",
     items: [
@@ -57,13 +57,6 @@ const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0, c
       { name: "Packing Queue", href: "/dashboard/operations/transaction-history", icon: FileText }, // Orders waiting to be packed
       { name: "Track Orders", href: "/dashboard/track-orders", icon: Package }, // Track customer orders
       { name: "Transactions", href: "/dashboard/reports", icon: FileText }, // Admin + Operations
-      { 
-        name: "Cancelled Orders", 
-        href: "/dashboard/cancelled-orders", 
-        icon: XCircle,
-        badge: cancelledCount > 0 ? cancelledCount : undefined,
-        badgeVariant: 'destructive'
-      }, // Admin only - Track cancelled transactions
       { name: "Internal Usage", href: "/dashboard/internal-usage", icon: Users }, // Track Demo & Internal Use (Admin only)
     ],
   },
@@ -122,7 +115,6 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
   const [isMobile, setIsMobile] = useState(false)
   const [lowStockCount, setLowStockCount] = useState(0)
   const [outOfStockCount, setOutOfStockCount] = useState(0)
-  const [cancelledCount, setCancelledCount] = useState(0)
   const [currentUser, setCurrentUser] = useState<ReturnType<typeof getCurrentUser>>(null)
 
   // Get current user
@@ -144,12 +136,6 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         const outOfStock = items.filter((item: any) => item.quantity === 0).length
         setLowStockCount(lowStock)
         setOutOfStockCount(outOfStock)
-
-        // Fetch cancelled orders count from reports API
-        const reportsData = await apiGet<any>('/api/reports')
-        const allTransactions = Array.isArray(reportsData) ? reportsData : (reportsData.transactions || [])
-        const cancelled = allTransactions.filter((t: any) => t.status === 'cancelled').length
-        setCancelledCount(cancelled)
       } catch (error) {
         console.error('Error fetching inventory counts:', error)
       }
@@ -161,7 +147,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
     return () => clearInterval(interval)
   }, [])
 
-  const allNavigation = getNavigation(lowStockCount, outOfStockCount, cancelledCount)
+  const allNavigation = getNavigation(lowStockCount, outOfStockCount)
   
   // Filter navigation based on user role
   const navigation = currentUser ? allNavigation.map(section => ({

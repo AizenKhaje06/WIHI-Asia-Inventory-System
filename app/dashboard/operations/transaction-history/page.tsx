@@ -243,19 +243,19 @@ export default function TransactionHistoryPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">#</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Date</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Channel</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Store</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Product</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Courier</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Waybill</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider">Status</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider">QTY</th>
-                    <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider">COGS</th>
-                    <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider">Total</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Dispatched By</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider">Action</th>
+                    <th className="py-3 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[40px]">#</th>
+                    <th className="py-3 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[90px]">Date</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[100px]">Channel</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[120px]">Store</th>
+                    <th className="py-3 px-4 text-left text-[10px] font-bold text-white uppercase tracking-wider min-w-[200px]">Product</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[100px]">Courier</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[140px]">Waybill</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider w-[80px]">Status</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider w-[60px]">QTY</th>
+                    <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider w-[90px]">COGS</th>
+                    <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider w-[100px]">Total</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[120px]">Dispatched By</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider w-[120px]">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -264,14 +264,14 @@ export default function TransactionHistoryPage() {
                       key={order.id} 
                       className="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
                     >
-                      <td className="py-2 px-3">
+                      <td className="py-2 px-2">
                         <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
                           {index + 1}
                         </span>
                       </td>
-                      <td className="py-2 px-3">
+                      <td className="py-2 px-2">
                         <div className="text-[11px] font-medium text-slate-900 dark:text-white whitespace-nowrap">
-                          {new Date(order.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {new Date(order.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
                         </div>
                       </td>
                       <td className="py-2 px-3">
@@ -282,8 +282,8 @@ export default function TransactionHistoryPage() {
                       <td className="py-2 px-3">
                         <div className="text-[11px] text-slate-700 dark:text-slate-300 font-medium truncate">{order.store}</div>
                       </td>
-                      <td className="py-2 px-3">
-                        <div className="text-[11px] text-slate-700 dark:text-slate-300 max-w-[200px] truncate" title={order.product}>
+                      <td className="py-2 px-4">
+                        <div className="text-[11px] text-slate-700 dark:text-slate-300 font-medium" title={order.product}>
                           {order.product}
                         </div>
                       </td>
