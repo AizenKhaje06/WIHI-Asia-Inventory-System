@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import * as XLSX from 'xlsx'
 import { 
   Search, Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, 
   User, Phone, Mail, MapPin, AlertCircle, PackageCheck, Ban, AlertTriangle, RotateCcw,
@@ -158,78 +159,98 @@ export default function TrackOrdersPage() {
       const problematicFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC'))
       const returnedFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'RETURNED'))
 
-      // Build comprehensive CSV content
-      let csvContent = ''
-      
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new()
+      const wsData: any[][] = []
+
       // Header Section
-      csvContent += 'TRACK ORDERS REPORT - COMPREHENSIVE DATA\n'
-      csvContent += `Generated: ${new Date().toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}\n`
-      csvContent += `Total Orders: ${filteredOrders.length}\n`
-      csvContent += '\n'
+      wsData.push(['TRACK ORDERS REPORT - COMPREHENSIVE DATA'])
+      wsData.push([`Generated: ${new Date().toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`])
+      wsData.push([`Total Orders: ${filteredOrders.length}`])
+      wsData.push([]) // Empty row
 
       // Financial Summary Section
-      csvContent += 'FINANCIAL SUMMARY\n'
-      csvContent += 'Metric,Value\n'
-      csvContent += `Total Quantity,${totalQuantity}\n`
-      csvContent += `Total Amount,"₱${totalAmount.toFixed(2)}"\n`
-      csvContent += `Total COGS,"₱${totalCOGS.toFixed(2)}"\n`
-      csvContent += `Total Profit,"₱${totalProfit.toFixed(2)}"\n`
-      csvContent += `Profit Margin,${totalProfitMargin.toFixed(2)}%\n`
-      csvContent += '\n'
+      wsData.push(['FINANCIAL SUMMARY'])
+      wsData.push(['Metric', 'Value'])
+      wsData.push(['Total Quantity', totalQuantity])
+      wsData.push(['Total Amount', `₱${totalAmount.toFixed(2)}`])
+      wsData.push(['Total COGS', `₱${totalCOGS.toFixed(2)}`])
+      wsData.push(['Total Profit', `₱${totalProfit.toFixed(2)}`])
+      wsData.push(['Profit Margin', `${totalProfitMargin.toFixed(2)}%`])
+      wsData.push([]) // Empty row
 
-      // Per-Status Breakdown Section
-      csvContent += 'STATUS BREAKDOWN\n'
-      csvContent += 'Status,Orders,Quantity,Amount,COGS,Profit,Margin\n'
-      csvContent += `Total Orders,${filteredOrders.length},${totalQuantity},"₱${totalAmount.toFixed(2)}","₱${totalCOGS.toFixed(2)}","₱${totalProfit.toFixed(2)}",${totalProfitMargin.toFixed(2)}%\n`
-      csvContent += `Pending,${filteredOrders.filter(o => o.parcelStatus === 'PENDING').length},${pendingFinancials.qty},"₱${pendingFinancials.amt.toFixed(2)}","₱${pendingFinancials.cogs.toFixed(2)}","₱${pendingFinancials.profit.toFixed(2)}",${pendingFinancials.margin.toFixed(2)}%\n`
-      csvContent += `In Transit,${filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT').length},${inTransitFinancials.qty},"₱${inTransitFinancials.amt.toFixed(2)}","₱${inTransitFinancials.cogs.toFixed(2)}","₱${inTransitFinancials.profit.toFixed(2)}",${inTransitFinancials.margin.toFixed(2)}%\n`
-      csvContent += `On Delivery,${filteredOrders.filter(o => o.parcelStatus === 'ON DELIVERY').length},${onDeliveryFinancials.qty},"₱${onDeliveryFinancials.amt.toFixed(2)}","₱${onDeliveryFinancials.cogs.toFixed(2)}","₱${onDeliveryFinancials.profit.toFixed(2)}",${onDeliveryFinancials.margin.toFixed(2)}%\n`
-      csvContent += `Pickup,${filteredOrders.filter(o => o.parcelStatus === 'PICKUP').length},${pickupFinancials.qty},"₱${pickupFinancials.amt.toFixed(2)}","₱${pickupFinancials.cogs.toFixed(2)}","₱${pickupFinancials.profit.toFixed(2)}",${pickupFinancials.margin.toFixed(2)}%\n`
-      csvContent += `Delivered,${filteredOrders.filter(o => o.parcelStatus === 'DELIVERED').length},${deliveredFinancials.qty},"₱${deliveredFinancials.amt.toFixed(2)}","₱${deliveredFinancials.cogs.toFixed(2)}","₱${deliveredFinancials.profit.toFixed(2)}",${deliveredFinancials.margin.toFixed(2)}%\n`
-      csvContent += `Cancelled,${filteredOrders.filter(o => o.parcelStatus === 'CANCELLED').length},${cancelledFinancials.qty},"₱${cancelledFinancials.amt.toFixed(2)}","₱${cancelledFinancials.cogs.toFixed(2)}","₱${cancelledFinancials.profit.toFixed(2)}",${cancelledFinancials.margin.toFixed(2)}%\n`
-      csvContent += `Detained,${filteredOrders.filter(o => o.parcelStatus === 'DETAINED').length},${detainedFinancials.qty},"₱${detainedFinancials.amt.toFixed(2)}","₱${detainedFinancials.cogs.toFixed(2)}","₱${detainedFinancials.profit.toFixed(2)}",${detainedFinancials.margin.toFixed(2)}%\n`
-      csvContent += `Problematic,${filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC').length},${problematicFinancials.qty},"₱${problematicFinancials.amt.toFixed(2)}","₱${problematicFinancials.cogs.toFixed(2)}","₱${problematicFinancials.profit.toFixed(2)}",${problematicFinancials.margin.toFixed(2)}%\n`
-      csvContent += `Returned,${filteredOrders.filter(o => o.parcelStatus === 'RETURNED').length},${returnedFinancials.qty},"₱${returnedFinancials.amt.toFixed(2)}","₱${returnedFinancials.cogs.toFixed(2)}","₱${returnedFinancials.profit.toFixed(2)}",${returnedFinancials.margin.toFixed(2)}%\n`
-      csvContent += '\n'
+      // Status Breakdown Section
+      wsData.push(['STATUS BREAKDOWN'])
+      wsData.push(['Status', 'Orders', 'Quantity', 'Amount', 'COGS', 'Profit', 'Margin'])
+      wsData.push(['Total Orders', filteredOrders.length, totalQuantity, `₱${totalAmount.toFixed(2)}`, `₱${totalCOGS.toFixed(2)}`, `₱${totalProfit.toFixed(2)}`, `${totalProfitMargin.toFixed(2)}%`])
+      wsData.push(['Pending', filteredOrders.filter(o => o.parcelStatus === 'PENDING').length, pendingFinancials.qty, `₱${pendingFinancials.amt.toFixed(2)}`, `₱${pendingFinancials.cogs.toFixed(2)}`, `₱${pendingFinancials.profit.toFixed(2)}`, `${pendingFinancials.margin.toFixed(2)}%`])
+      wsData.push(['In Transit', filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT').length, inTransitFinancials.qty, `₱${inTransitFinancials.amt.toFixed(2)}`, `₱${inTransitFinancials.cogs.toFixed(2)}`, `₱${inTransitFinancials.profit.toFixed(2)}`, `${inTransitFinancials.margin.toFixed(2)}%`])
+      wsData.push(['On Delivery', filteredOrders.filter(o => o.parcelStatus === 'ON DELIVERY').length, onDeliveryFinancials.qty, `₱${onDeliveryFinancials.amt.toFixed(2)}`, `₱${onDeliveryFinancials.cogs.toFixed(2)}`, `₱${onDeliveryFinancials.profit.toFixed(2)}`, `${onDeliveryFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Pickup', filteredOrders.filter(o => o.parcelStatus === 'PICKUP').length, pickupFinancials.qty, `₱${pickupFinancials.amt.toFixed(2)}`, `₱${pickupFinancials.cogs.toFixed(2)}`, `₱${pickupFinancials.profit.toFixed(2)}`, `${pickupFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Delivered', filteredOrders.filter(o => o.parcelStatus === 'DELIVERED').length, deliveredFinancials.qty, `₱${deliveredFinancials.amt.toFixed(2)}`, `₱${deliveredFinancials.cogs.toFixed(2)}`, `₱${deliveredFinancials.profit.toFixed(2)}`, `${deliveredFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Cancelled', filteredOrders.filter(o => o.parcelStatus === 'CANCELLED').length, cancelledFinancials.qty, `₱${cancelledFinancials.amt.toFixed(2)}`, `₱${cancelledFinancials.cogs.toFixed(2)}`, `₱${cancelledFinancials.profit.toFixed(2)}`, `${cancelledFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Detained', filteredOrders.filter(o => o.parcelStatus === 'DETAINED').length, detainedFinancials.qty, `₱${detainedFinancials.amt.toFixed(2)}`, `₱${detainedFinancials.cogs.toFixed(2)}`, `₱${detainedFinancials.profit.toFixed(2)}`, `${detainedFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Problematic', filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC').length, problematicFinancials.qty, `₱${problematicFinancials.amt.toFixed(2)}`, `₱${problematicFinancials.cogs.toFixed(2)}`, `₱${problematicFinancials.profit.toFixed(2)}`, `${problematicFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Returned', filteredOrders.filter(o => o.parcelStatus === 'RETURNED').length, returnedFinancials.qty, `₱${returnedFinancials.amt.toFixed(2)}`, `₱${returnedFinancials.cogs.toFixed(2)}`, `₱${returnedFinancials.profit.toFixed(2)}`, `${returnedFinancials.margin.toFixed(2)}%`])
+      wsData.push([]) // Empty row
 
       // Detailed Orders Section
-      csvContent += 'DETAILED ORDERS\n'
-      csvContent += 'No.,Order #,Date,Sales Channel,Store,Product,Qty,Amount,COGS,Profit,Margin,Courier,Waybill,Payment Status,Parcel Status\n'
+      wsData.push(['DETAILED ORDERS'])
+      wsData.push(['No.', 'Order #', 'Date', 'Sales Channel', 'Store', 'Product', 'Qty', 'Amount', 'COGS', 'Profit', 'Margin', 'Courier', 'Waybill', 'Payment Status', 'Parcel Status'])
       
       filteredOrders.forEach((order, index) => {
         const cogs = order.totalAmount * 0.6
         const profit = order.totalAmount - cogs
         const margin = order.totalAmount > 0 ? ((profit / order.totalAmount) * 100) : 0
         
-        csvContent += `${index + 1},`
-        csvContent += `#${order.id.slice(-6)},`
-        csvContent += `"${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}",`
-        csvContent += `"${order.department || 'N/A'}",`
-        csvContent += `"${order.customerAddress || 'N/A'}",`
-        csvContent += `"${order.itemName}",`
-        csvContent += `${order.quantity},`
-        csvContent += `"₱${order.totalAmount.toFixed(2)}",`
-        csvContent += `"₱${cogs.toFixed(2)}",`
-        csvContent += `"₱${profit.toFixed(2)}",`
-        csvContent += `${margin.toFixed(2)}%,`
-        csvContent += `"${order.courier || '-'}",`
-        csvContent += `"${order.trackingNumber || '-'}",`
-        csvContent += `${order.paymentStatus.toUpperCase()},`
-        csvContent += `${order.parcelStatus}\n`
+        wsData.push([
+          index + 1,
+          `#${order.id.slice(-6)}`,
+          new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          order.department || 'N/A',
+          order.customerAddress || 'N/A',
+          order.itemName,
+          order.quantity,
+          `₱${order.totalAmount.toFixed(2)}`,
+          `₱${cogs.toFixed(2)}`,
+          `₱${profit.toFixed(2)}`,
+          `${margin.toFixed(2)}%`,
+          order.courier || '-',
+          order.trackingNumber || '-',
+          order.paymentStatus.toUpperCase(),
+          order.parcelStatus
+        ])
       })
 
-      // Create blob and download
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-      const link = document.createElement('a')
-      const url = URL.createObjectURL(blob)
-      link.setAttribute('href', url)
-      link.setAttribute('download', `Track_Orders_Comprehensive_Report_${new Date().toISOString().split('T')[0]}.csv`)
-      link.style.visibility = 'hidden'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      // Create worksheet from data
+      const ws = XLSX.utils.aoa_to_sheet(wsData)
 
-      toast.success('Comprehensive Excel report downloaded successfully')
+      // Set column widths
+      ws['!cols'] = [
+        { wch: 15 }, // No./Metric/Status
+        { wch: 12 }, // Order #/Value
+        { wch: 15 }, // Date/Quantity
+        { wch: 15 }, // Sales Channel/Amount
+        { wch: 20 }, // Store/COGS
+        { wch: 30 }, // Product/Profit
+        { wch: 8 },  // Qty/Margin
+        { wch: 15 }, // Amount
+        { wch: 15 }, // COGS
+        { wch: 15 }, // Profit
+        { wch: 10 }, // Margin
+        { wch: 12 }, // Courier
+        { wch: 20 }, // Waybill
+        { wch: 15 }, // Payment Status
+        { wch: 15 }  // Parcel Status
+      ]
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Track Orders Report')
+
+      // Generate Excel file and download
+      XLSX.writeFile(wb, `Track_Orders_Comprehensive_Report_${new Date().toISOString().split('T')[0]}.xlsx`)
+
+      toast.success('Excel report downloaded successfully')
     } catch (error) {
       console.error('Error exporting to Excel:', error)
       toast.error('Failed to export Excel report')
