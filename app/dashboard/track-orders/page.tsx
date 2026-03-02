@@ -181,17 +181,30 @@ export default function TrackOrdersPage() {
 
       // Status Breakdown Section
       wsData.push(['STATUS BREAKDOWN'])
-      wsData.push(['Status', 'Orders', 'Quantity', 'Amount', 'COGS', 'Profit', 'Margin'])
-      wsData.push(['Total Orders', filteredOrders.length, totalQuantity, totalAmount.toFixed(2), totalCOGS.toFixed(2), totalProfit.toFixed(2), `${totalProfitMargin.toFixed(2)}%`])
-      wsData.push(['Pending', filteredOrders.filter(o => o.parcelStatus === 'PENDING').length, pendingFinancials.qty, pendingFinancials.amt.toFixed(2), pendingFinancials.cogs.toFixed(2), pendingFinancials.profit.toFixed(2), `${pendingFinancials.margin.toFixed(2)}%`])
-      wsData.push(['In Transit', filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT').length, inTransitFinancials.qty, inTransitFinancials.amt.toFixed(2), inTransitFinancials.cogs.toFixed(2), inTransitFinancials.profit.toFixed(2), `${inTransitFinancials.margin.toFixed(2)}%`])
-      wsData.push(['On Delivery', filteredOrders.filter(o => o.parcelStatus === 'ON DELIVERY').length, onDeliveryFinancials.qty, onDeliveryFinancials.amt.toFixed(2), onDeliveryFinancials.cogs.toFixed(2), onDeliveryFinancials.profit.toFixed(2), `${onDeliveryFinancials.margin.toFixed(2)}%`])
-      wsData.push(['Pickup', filteredOrders.filter(o => o.parcelStatus === 'PICKUP').length, pickupFinancials.qty, pickupFinancials.amt.toFixed(2), pickupFinancials.cogs.toFixed(2), pickupFinancials.profit.toFixed(2), `${pickupFinancials.margin.toFixed(2)}%`])
-      wsData.push(['Delivered', filteredOrders.filter(o => o.parcelStatus === 'DELIVERED').length, deliveredFinancials.qty, deliveredFinancials.amt.toFixed(2), deliveredFinancials.cogs.toFixed(2), deliveredFinancials.profit.toFixed(2), `${deliveredFinancials.margin.toFixed(2)}%`])
-      wsData.push(['Cancelled', filteredOrders.filter(o => o.parcelStatus === 'CANCELLED').length, cancelledFinancials.qty, cancelledFinancials.amt.toFixed(2), cancelledFinancials.cogs.toFixed(2), cancelledFinancials.profit.toFixed(2), `${cancelledFinancials.margin.toFixed(2)}%`])
-      wsData.push(['Detained', filteredOrders.filter(o => o.parcelStatus === 'DETAINED').length, detainedFinancials.qty, detainedFinancials.amt.toFixed(2), detainedFinancials.cogs.toFixed(2), detainedFinancials.profit.toFixed(2), `${detainedFinancials.margin.toFixed(2)}%`])
-      wsData.push(['Problematic', filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC').length, problematicFinancials.qty, problematicFinancials.amt.toFixed(2), problematicFinancials.cogs.toFixed(2), problematicFinancials.profit.toFixed(2), `${problematicFinancials.margin.toFixed(2)}%`])
-      wsData.push(['Returned', filteredOrders.filter(o => o.parcelStatus === 'RETURNED').length, returnedFinancials.qty, returnedFinancials.amt.toFixed(2), returnedFinancials.cogs.toFixed(2), returnedFinancials.profit.toFixed(2), `${returnedFinancials.margin.toFixed(2)}%`])
+      wsData.push(['Status', 'Orders', 'Quantity', 'Amount', 'COGS', 'Profit', '% of Total'])
+      
+      // Calculate percentage of total orders for each status
+      const totalOrdersCount = filteredOrders.length
+      const pendingCount = filteredOrders.filter(o => o.parcelStatus === 'PENDING').length
+      const inTransitCount = filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT').length
+      const onDeliveryCount = filteredOrders.filter(o => o.parcelStatus === 'ON DELIVERY').length
+      const pickupCount = filteredOrders.filter(o => o.parcelStatus === 'PICKUP').length
+      const deliveredCount = filteredOrders.filter(o => o.parcelStatus === 'DELIVERED').length
+      const cancelledCount = filteredOrders.filter(o => o.parcelStatus === 'CANCELLED').length
+      const detainedCount = filteredOrders.filter(o => o.parcelStatus === 'DETAINED').length
+      const problematicCount = filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC').length
+      const returnedCount = filteredOrders.filter(o => o.parcelStatus === 'RETURNED').length
+      
+      wsData.push(['Total Orders', totalOrdersCount, totalQuantity, totalAmount.toFixed(2), totalCOGS.toFixed(2), totalProfit.toFixed(2), '100.00%'])
+      wsData.push(['Pending', pendingCount, pendingFinancials.qty, pendingFinancials.amt.toFixed(2), pendingFinancials.cogs.toFixed(2), pendingFinancials.profit.toFixed(2), `${totalOrdersCount > 0 ? ((pendingCount / totalOrdersCount) * 100).toFixed(2) : '0.00'}%`])
+      wsData.push(['In Transit', inTransitCount, inTransitFinancials.qty, inTransitFinancials.amt.toFixed(2), inTransitFinancials.cogs.toFixed(2), inTransitFinancials.profit.toFixed(2), `${totalOrdersCount > 0 ? ((inTransitCount / totalOrdersCount) * 100).toFixed(2) : '0.00'}%`])
+      wsData.push(['On Delivery', onDeliveryCount, onDeliveryFinancials.qty, onDeliveryFinancials.amt.toFixed(2), onDeliveryFinancials.cogs.toFixed(2), onDeliveryFinancials.profit.toFixed(2), `${totalOrdersCount > 0 ? ((onDeliveryCount / totalOrdersCount) * 100).toFixed(2) : '0.00'}%`])
+      wsData.push(['Pickup', pickupCount, pickupFinancials.qty, pickupFinancials.amt.toFixed(2), pickupFinancials.cogs.toFixed(2), pickupFinancials.profit.toFixed(2), `${totalOrdersCount > 0 ? ((pickupCount / totalOrdersCount) * 100).toFixed(2) : '0.00'}%`])
+      wsData.push(['Delivered', deliveredCount, deliveredFinancials.qty, deliveredFinancials.amt.toFixed(2), deliveredFinancials.cogs.toFixed(2), deliveredFinancials.profit.toFixed(2), `${totalOrdersCount > 0 ? ((deliveredCount / totalOrdersCount) * 100).toFixed(2) : '0.00'}%`])
+      wsData.push(['Cancelled', cancelledCount, cancelledFinancials.qty, cancelledFinancials.amt.toFixed(2), cancelledFinancials.cogs.toFixed(2), cancelledFinancials.profit.toFixed(2), `${totalOrdersCount > 0 ? ((cancelledCount / totalOrdersCount) * 100).toFixed(2) : '0.00'}%`])
+      wsData.push(['Detained', detainedCount, detainedFinancials.qty, detainedFinancials.amt.toFixed(2), detainedFinancials.cogs.toFixed(2), detainedFinancials.profit.toFixed(2), `${totalOrdersCount > 0 ? ((detainedCount / totalOrdersCount) * 100).toFixed(2) : '0.00'}%`])
+      wsData.push(['Problematic', problematicCount, problematicFinancials.qty, problematicFinancials.amt.toFixed(2), problematicFinancials.cogs.toFixed(2), problematicFinancials.profit.toFixed(2), `${totalOrdersCount > 0 ? ((problematicCount / totalOrdersCount) * 100).toFixed(2) : '0.00'}%`])
+      wsData.push(['Returned', returnedCount, returnedFinancials.qty, returnedFinancials.amt.toFixed(2), returnedFinancials.cogs.toFixed(2), returnedFinancials.profit.toFixed(2), `${totalOrdersCount > 0 ? ((returnedCount / totalOrdersCount) * 100).toFixed(2) : '0.00'}%`])
       wsData.push([]) // Empty row
 
       // Detailed Orders Section
@@ -613,7 +626,7 @@ export default function TrackOrdersPage() {
                 <div class="mini-stat">Qty: <span class="mini-value">${totalQuantity}</span></div>
                 <div class="mini-stat">Amt: <span class="mini-value">₱${totalAmount.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
                 <div class="mini-stat">Profit: <span class="mini-value">₱${totalProfit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Margin: <span class="mini-value">${totalProfitMargin.toFixed(1)}%</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">100.0%</span></div>
               </div>
             </div>
             <div class="summary-card">
@@ -623,7 +636,7 @@ export default function TrackOrdersPage() {
                 <div class="mini-stat">Qty: <span class="mini-value">${pendingFinancials.qty}</span></div>
                 <div class="mini-stat">Amt: <span class="mini-value">₱${pendingFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
                 <div class="mini-stat">Profit: <span class="mini-value">₱${pendingFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Margin: <span class="mini-value">${pendingFinancials.margin.toFixed(1)}%</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((pendingOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
               </div>
             </div>
             <div class="summary-card">
@@ -633,7 +646,7 @@ export default function TrackOrdersPage() {
                 <div class="mini-stat">Qty: <span class="mini-value">${inTransitFinancials.qty}</span></div>
                 <div class="mini-stat">Amt: <span class="mini-value">₱${inTransitFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
                 <div class="mini-stat">Profit: <span class="mini-value">₱${inTransitFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Margin: <span class="mini-value">${inTransitFinancials.margin.toFixed(1)}%</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((inTransitOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
               </div>
             </div>
             <div class="summary-card">
@@ -643,7 +656,7 @@ export default function TrackOrdersPage() {
                 <div class="mini-stat">Qty: <span class="mini-value">${onDeliveryFinancials.qty}</span></div>
                 <div class="mini-stat">Amt: <span class="mini-value">₱${onDeliveryFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
                 <div class="mini-stat">Profit: <span class="mini-value">₱${onDeliveryFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Margin: <span class="mini-value">${onDeliveryFinancials.margin.toFixed(1)}%</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((onDeliveryOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
               </div>
             </div>
             <div class="summary-card">
@@ -653,7 +666,7 @@ export default function TrackOrdersPage() {
                 <div class="mini-stat">Qty: <span class="mini-value">${pickupFinancials.qty}</span></div>
                 <div class="mini-stat">Amt: <span class="mini-value">₱${pickupFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
                 <div class="mini-stat">Profit: <span class="mini-value">₱${pickupFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Margin: <span class="mini-value">${pickupFinancials.margin.toFixed(1)}%</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((pickupOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
               </div>
             </div>
           </div>
@@ -666,7 +679,7 @@ export default function TrackOrdersPage() {
                 <div class="mini-stat">Qty: <span class="mini-value">${deliveredFinancials.qty}</span></div>
                 <div class="mini-stat">Amt: <span class="mini-value">₱${deliveredFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
                 <div class="mini-stat">Profit: <span class="mini-value">₱${deliveredFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Margin: <span class="mini-value">${deliveredFinancials.margin.toFixed(1)}%</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((deliveredOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
               </div>
             </div>
             <div class="summary-card">
@@ -676,7 +689,7 @@ export default function TrackOrdersPage() {
                 <div class="mini-stat">Qty: <span class="mini-value">${cancelledFinancials.qty}</span></div>
                 <div class="mini-stat">Amt: <span class="mini-value">₱${cancelledFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
                 <div class="mini-stat">Profit: <span class="mini-value">₱${cancelledFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Margin: <span class="mini-value">${cancelledFinancials.margin.toFixed(1)}%</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((cancelledOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
               </div>
             </div>
             <div class="summary-card">
@@ -686,7 +699,7 @@ export default function TrackOrdersPage() {
                 <div class="mini-stat">Qty: <span class="mini-value">${detainedFinancials.qty}</span></div>
                 <div class="mini-stat">Amt: <span class="mini-value">₱${detainedFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
                 <div class="mini-stat">Profit: <span class="mini-value">₱${detainedFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Margin: <span class="mini-value">${detainedFinancials.margin.toFixed(1)}%</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((detainedOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
               </div>
             </div>
             <div class="summary-card">
@@ -696,7 +709,7 @@ export default function TrackOrdersPage() {
                 <div class="mini-stat">Qty: <span class="mini-value">${problematicFinancials.qty}</span></div>
                 <div class="mini-stat">Amt: <span class="mini-value">₱${problematicFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
                 <div class="mini-stat">Profit: <span class="mini-value">₱${problematicFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Margin: <span class="mini-value">${problematicFinancials.margin.toFixed(1)}%</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((problematicOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
               </div>
             </div>
             <div class="summary-card">
@@ -706,7 +719,7 @@ export default function TrackOrdersPage() {
                 <div class="mini-stat">Qty: <span class="mini-value">${returnedFinancials.qty}</span></div>
                 <div class="mini-stat">Amt: <span class="mini-value">₱${returnedFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
                 <div class="mini-stat">Profit: <span class="mini-value">₱${returnedFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Margin: <span class="mini-value">${returnedFinancials.margin.toFixed(1)}%</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((returnedOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
               </div>
             </div>
           </div>
