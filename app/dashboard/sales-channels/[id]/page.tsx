@@ -51,6 +51,14 @@ interface DepartmentDetail {
     quantity: number
     revenue: number
   }>
+  storeBreakdown: Array<{
+    name: string
+    revenue: number
+    cost: number
+    profit: number
+    transactions: number
+    quantity: number
+  }>
   recentTransactions: Array<{
     id: string
     itemName: string
@@ -837,6 +845,84 @@ export default function SalesChannelDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Store/Warehouse Breakdown */}
+      {data.storeBreakdown && data.storeBreakdown.length > 1 && (
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 mb-6">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">
+              Store/Warehouse Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.storeBreakdown.map((store) => {
+                const profitMargin = store.revenue > 0 ? (store.profit / store.revenue) * 100 : 0
+                const isPositive = store.profit >= 0
+
+                return (
+                  <div
+                    key={store.name}
+                    className="p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          {store.name}
+                        </h3>
+                      </div>
+                      {isPositive ? (
+                        <ArrowUpRight className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <ArrowDownRight className="h-5 w-5 text-red-500" />
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Revenue</p>
+                        <p className="text-xl font-bold text-slate-900 dark:text-white">
+                          {formatCurrency(store.revenue)}
+                        </p>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Profit</p>
+                          <p className={`text-sm font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                            {formatCurrency(store.profit)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Margin</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                            {profitMargin.toFixed(1)}%
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Transactions</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                            {formatNumber(store.transactions)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Items</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                            {formatNumber(store.quantity)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Top Products & Recent Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6">

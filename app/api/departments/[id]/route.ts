@@ -31,6 +31,9 @@ export async function GET(
     let filteredTransactions = allTransactions.filter(t => {
       if (!t.department) return false
       
+      // Exclude cancelled and returned transactions
+      if (t.status && t.status !== 'completed') return false
+      
       // Extract base department to determine type
       const baseDepartment = t.department.split(' / ')[0]
       
@@ -39,8 +42,11 @@ export async function GET(
         return false
       }
       
-      // For sales, match the full department name directly
-      return t.department === departmentName
+      // Extract sales channel (before " - ")
+      const salesChannel = t.department.split(' - ')[0]
+      
+      // Match by sales channel
+      return salesChannel === departmentName
     })
     
     if (startDate) {
@@ -117,6 +123,44 @@ export async function GET(
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 10)
 
+    // Store/Warehouse breakdown
+    const storeMap = new Map<string, { 
+      name: string
+      revenue: number
+      cost: number
+      profit: number
+      transactions: number
+      quantity: number
+    }>()
+    
+    filteredTransactions.forEach(t => {
+      // Extract store/warehouse from department
+      // Example: "Physical Store - Warehouse 1" -> "Warehouse 1"
+      const parts = t.department?.split(' - ')
+      const storeName = parts && parts.length > 1 ? parts[1] : 'Main Store'
+      
+      if (!storeMap.has(storeName)) {
+        storeMap.set(storeName, {
+          name: storeName,
+          revenue: 0,
+          cost: 0,
+          profit: 0,
+          transactions: 0,
+          quantity: 0
+        })
+      }
+      
+      const store = storeMap.get(storeName)!
+      store.revenue += t.totalRevenue || 0
+      store.cost += t.totalCost || 0
+      store.profit += t.profit || 0
+      store.transactions += 1
+      store.quantity += t.quantity || 0
+    })
+
+    const storeBreakdown = Array.from(storeMap.values())
+      .sort((a, b) => b.revenue - a.revenue)
+
     // Recent transactions
     const recentTransactions = filteredTransactions
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
@@ -139,6 +183,7 @@ export async function GET(
         metrics,
         cashFlow,
         topProducts,
+        storeBreakdown,
         recentTransactions
       },
       dateRange: {

@@ -47,7 +47,14 @@ export const GET = withAuth(async (request, { user }) => {
 
     console.log('[Departments API] Processing transactions:', filteredTransactions.length)
 
-    filteredTransactions.forEach(transaction => {
+    // Filter out cancelled and returned transactions
+    const completedTransactions = filteredTransactions.filter(t => 
+      !t.status || t.status === 'completed'
+    )
+
+    console.log('[Departments API] Completed transactions:', completedTransactions.length)
+
+    completedTransactions.forEach(transaction => {
       if (!transaction.department) return
 
       console.log('[Departments API] Transaction department:', transaction.department)
@@ -70,8 +77,10 @@ export const GET = withAuth(async (request, { user }) => {
         return
       }
 
-      // For sales, use the department name directly (no splitting needed)
-      const salesChannel = transaction.department
+      // Extract sales channel (before " - " if it exists)
+      // Example: "Physical Store - Warehouse 1" -> "Physical Store"
+      // Example: "Lazada - Store A" -> "Lazada"
+      const salesChannel = transaction.department.split(' - ')[0]
       const key = salesChannel
 
       if (!departmentMap.has(key)) {
