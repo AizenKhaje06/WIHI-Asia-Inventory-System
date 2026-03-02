@@ -553,18 +553,17 @@ export default function SalesChannelDetailPage() {
           <div className="flex items-center gap-3">
             <Button
               onClick={() => handleExportChannel('excel')}
-              className="bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
             >
               <FileSpreadsheet className="h-4 w-4 mr-2" />
-              <span className="text-sm font-semibold">Excel</span>
+              <span className="text-sm font-semibold">Excel Report</span>
             </Button>
             <Button
               onClick={() => handleExportChannel('pdf')}
-              variant="outline"
-              className="border-2 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-md hover:shadow-lg transition-all duration-200"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
             >
               <FileDown className="h-4 w-4 mr-2" />
-              <span className="text-sm font-semibold">PDF</span>
+              <span className="text-sm font-semibold">PDF Report</span>
             </Button>
           </div>
         </div>

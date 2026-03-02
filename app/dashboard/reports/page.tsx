@@ -494,7 +494,7 @@ export default function ReportsPage() {
               <CardDescription className="text-xs">Choose the report you want to generate and export</CardDescription>
             </div>
             {/* Export Buttons - Top Right Corner */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Button
                 onClick={() => {
                   if (reportType === 'executive') handleExportExecutive('excel')
@@ -502,10 +502,10 @@ export default function ReportsPage() {
                   else handleExportProductPerformance('excel')
                 }}
                 disabled={loading || !report}
-                className="bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0 rounded-full px-6"
               >
                 <FileSpreadsheet className="h-4 w-4 mr-2" />
-                <span className="text-sm font-semibold">Excel</span>
+                <span className="text-sm font-semibold">Excel Report</span>
               </Button>
               <Button
                 onClick={() => {
@@ -514,11 +514,10 @@ export default function ReportsPage() {
                   else handleExportProductPerformance('pdf')
                 }}
                 disabled={loading || !report}
-                variant="outline"
-                className="border-2 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-md hover:shadow-lg transition-all duration-200"
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0 rounded-full px-6"
               >
                 <FileDown className="h-4 w-4 mr-2" />
-                <span className="text-sm font-semibold">PDF</span>
+                <span className="text-sm font-semibold">PDF Report</span>
               </Button>
             </div>
           </div>

@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { 
   Search, Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, 
   User, Phone, Mail, MapPin, AlertCircle, PackageCheck, Ban, AlertTriangle, RotateCcw,
-  FileSpreadsheet, FileText, Download
+  FileSpreadsheet, FileDown, Download
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -817,30 +817,20 @@ export default function TrackOrdersPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <button
+          <Button
             onClick={exportToExcel}
-            className="relative overflow-hidden rounded-lg border-2 border-transparent px-6 py-2.5 text-white font-medium text-sm transition-all duration-300 hover:opacity-80 hover:shadow-none"
-            style={{
-              background: 'linear-gradient(140.14deg, #ec540e 15.05%, #d6361f 114.99%) padding-box, linear-gradient(142.51deg, #ff9465 8.65%, #af1905 88.82%) border-box',
-              textShadow: '1px 1px 1px rgba(0, 0, 0, 0.25)',
-              boxShadow: '8px 8px 20px 0px rgba(69, 9, 0, 0.35)',
-            }}
+            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
           >
-            <FileSpreadsheet className="h-4 w-4 mr-2 inline" />
-            Excel Report
-          </button>
-          <button
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            <span className="text-sm font-semibold">Excel Report</span>
+          </Button>
+          <Button
             onClick={exportToPDF}
-            className="relative overflow-hidden rounded-lg border-2 border-transparent px-6 py-2.5 text-white font-medium text-sm transition-all duration-300 hover:opacity-80 hover:shadow-none"
-            style={{
-              background: 'linear-gradient(140.14deg, #ec540e 15.05%, #d6361f 114.99%) padding-box, linear-gradient(142.51deg, #ff9465 8.65%, #af1905 88.82%) border-box',
-              textShadow: '1px 1px 1px rgba(0, 0, 0, 0.25)',
-              boxShadow: '8px 8px 20px 0px rgba(69, 9, 0, 0.35)',
-            }}
+            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
           >
-            <FileText className="h-4 w-4 mr-2 inline" />
-            PDF Report
-          </button>
+            <FileDown className="h-4 w-4 mr-2" />
+            <span className="text-sm font-semibold">PDF Report</span>
+          </Button>
         </div>
       </div>
 
