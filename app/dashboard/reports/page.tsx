@@ -528,7 +528,7 @@ export default function ReportsPage() {
             {/* Executive Sales Card with Preview */}
             <button
               onClick={() => setReportType('executive')}
-              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left flex flex-col ${
+              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left ${
                 reportType === 'executive'
                   ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 shadow-lg shadow-blue-500/10'
                   : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md'
@@ -546,41 +546,9 @@ export default function ReportsPage() {
               <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
                 Executive Sales
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                 Sales performance & profit analysis
               </p>
-              
-              {/* Embedded Preview - 4 Mini Metric Cards */}
-              {dashboardData && (
-                <div className="grid grid-cols-2 gap-2 mt-auto">
-                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-blue-200/50 dark:border-blue-800/50">
-                    <p className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-0.5">Revenue</p>
-                    <p className="text-xs font-bold text-blue-900 dark:text-white tabular-nums">
-                      {formatCurrency(dashboardData?.totalRevenue || 0)}
-                    </p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-green-200/50 dark:border-green-800/50">
-                    <p className="text-[9px] font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-0.5">Profit</p>
-                    <p className="text-xs font-bold text-green-900 dark:text-white tabular-nums">
-                      {formatCurrency(dashboardData?.totalProfit || 0)}
-                    </p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-purple-200/50 dark:border-purple-800/50">
-                    <p className="text-[9px] font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide mb-0.5">Transactions</p>
-                    <p className="text-xs font-bold text-purple-900 dark:text-white tabular-nums">
-                      {formatNumber(report?.transactions?.length || 0)}
-                    </p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-orange-200/50 dark:border-orange-800/50">
-                    <p className="text-[9px] font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide mb-0.5">Margin</p>
-                    <p className="text-xs font-bold text-orange-900 dark:text-white tabular-nums">
-                      {dashboardData?.totalRevenue > 0 
-                        ? ((dashboardData.totalProfit / dashboardData.totalRevenue) * 100).toFixed(1)
-                        : '0.0'}%
-                    </p>
-                  </div>
-                </div>
-              )}
               
               {reportType === 'executive' && (
                 <div className="absolute top-3 right-3">
@@ -592,7 +560,7 @@ export default function ReportsPage() {
             {/* Inventory Card with Preview */}
             <button
               onClick={() => setReportType('inventory')}
-              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left flex flex-col ${
+              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left ${
                 reportType === 'inventory'
                   ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30 shadow-lg shadow-purple-500/10'
                   : 'border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-md'
@@ -610,39 +578,9 @@ export default function ReportsPage() {
               <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
                 Inventory
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                 Stock value & status overview
               </p>
-              
-              {/* Embedded Preview - 4 Mini Metric Cards */}
-              {items && items.length > 0 && (
-                <div className="grid grid-cols-2 gap-2 mt-auto">
-                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-blue-200/50 dark:border-blue-800/50">
-                    <p className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-0.5">Items</p>
-                    <p className="text-xs font-bold text-blue-900 dark:text-white tabular-nums">
-                      {formatNumber(items.length)}
-                    </p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-green-200/50 dark:border-green-800/50">
-                    <p className="text-[9px] font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-0.5">Value</p>
-                    <p className="text-xs font-bold text-green-900 dark:text-white tabular-nums">
-                      {formatCurrency(items.reduce((sum, item) => sum + (item.quantity * item.sellingPrice), 0))}
-                    </p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-amber-200/50 dark:border-amber-800/50">
-                    <p className="text-[9px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide mb-0.5">Low Stock</p>
-                    <p className="text-xs font-bold text-amber-900 dark:text-white tabular-nums">
-                      {formatNumber(items.filter(item => item.quantity <= item.reorderLevel && item.quantity > 0).length)}
-                    </p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-red-200/50 dark:border-red-800/50">
-                    <p className="text-[9px] font-semibold text-red-700 dark:text-red-300 uppercase tracking-wide mb-0.5">Out</p>
-                    <p className="text-xs font-bold text-red-900 dark:text-white tabular-nums">
-                      {formatNumber(items.filter(item => item.quantity === 0).length)}
-                    </p>
-                  </div>
-                </div>
-              )}
               
               {reportType === 'inventory' && (
                 <div className="absolute top-3 right-3">
@@ -654,7 +592,7 @@ export default function ReportsPage() {
             {/* Product Performance Card with Preview */}
             <button
               onClick={() => setReportType('product')}
-              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left flex flex-col ${
+              className={`group relative p-4 rounded-xl border-2 transition-all duration-200 text-left ${
                 reportType === 'product'
                   ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-lg shadow-orange-500/10'
                   : 'border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md'
@@ -672,65 +610,9 @@ export default function ReportsPage() {
               <h3 className="font-semibold text-sm text-slate-900 dark:text-white mb-1">
                 Product Performance
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                 Top performers & margins
               </p>
-              
-              {/* Embedded Preview - Product Stats */}
-              {report && report.transactions && report.transactions.length > 0 && (() => {
-                const productMap = new Map()
-                report.transactions.forEach(t => {
-                  if (!productMap.has(t.itemName)) {
-                    productMap.set(t.itemName, {
-                      totalRevenue: 0,
-                      totalProfit: 0,
-                      totalQuantity: 0
-                    })
-                  }
-                  const product = productMap.get(t.itemName)
-                  product.totalRevenue += (t.totalRevenue || 0)
-                  product.totalProfit += (t.profit || 0)
-                  product.totalQuantity += (t.quantity || 0)
-                })
-                const productData = Array.from(productMap.values())
-                const totalRevenue = productData.reduce((sum, p) => sum + p.totalRevenue, 0)
-                const totalProfit = productData.reduce((sum, p) => sum + p.totalProfit, 0)
-                
-                // Debug logging
-                console.log('[Product Performance Card] Sample transaction:', report.transactions[0])
-                console.log('[Product Performance Card] Total Revenue:', totalRevenue)
-                console.log('[Product Performance Card] Total Profit:', totalProfit)
-                console.log('[Product Performance Card] Product Data:', productData.slice(0, 3))
-                
-                return (
-                  <div className="grid grid-cols-2 gap-2 mt-auto">
-                    <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-blue-200/50 dark:border-blue-800/50">
-                      <p className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-0.5">Products</p>
-                      <p className="text-xs font-bold text-blue-900 dark:text-white tabular-nums">
-                        {formatNumber(productData.length)}
-                      </p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-green-200/50 dark:border-green-800/50">
-                      <p className="text-[9px] font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-0.5">Revenue</p>
-                      <p className="text-xs font-bold text-green-900 dark:text-white tabular-nums">
-                        {formatCurrency(totalRevenue)}
-                      </p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-orange-200/50 dark:border-orange-800/50">
-                      <p className="text-[9px] font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide mb-0.5">Profit</p>
-                      <p className="text-xs font-bold text-orange-900 dark:text-white tabular-nums">
-                        {formatCurrency(totalProfit)}
-                      </p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-purple-200/50 dark:border-purple-800/50">
-                      <p className="text-[9px] font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide mb-0.5">Margin</p>
-                      <p className="text-xs font-bold text-purple-900 dark:text-white tabular-nums">
-                        {totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : '0.0'}%
-                      </p>
-                    </div>
-                  </div>
-                )
-              })()}
               
               {reportType === 'product' && (
                 <div className="absolute top-3 right-3">
