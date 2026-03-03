@@ -346,7 +346,7 @@ export default function TrackOrdersPage() {
       const problematicFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC'))
       const returnedFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'RETURNED'))
 
-      // Create a comprehensive printable HTML content
+      // Create a simple, clean, enterprise-level printable HTML content
       const printContent = `
         <!DOCTYPE html>
         <html>
@@ -354,228 +354,140 @@ export default function TrackOrdersPage() {
           <title>Track Orders Report</title>
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            @page {
-              margin: 0;
-              size: auto;
-            }
-            @media print {
-              @page { margin: 0; }
-              body { margin: 1.6cm; }
-            }
+            @page { margin: 1.5cm; size: auto; }
             body { 
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-              padding: 30px; 
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+              padding: 20px; 
               background: white;
-              color: #1e293b;
+              color: #0f172a;
+              line-height: 1.5;
             }
+            
+            /* Header - Clean & Minimal */
             .header {
-              text-align: center;
-              margin-bottom: 40px;
-              padding-bottom: 25px;
-              border-bottom: 4px solid #ec540e;
+              margin-bottom: 30px;
+              padding-bottom: 15px;
+              border-bottom: 2px solid #0f172a;
             }
             .page-title {
-              font-size: 32px;
-              font-weight: 700;
-              color: #1e293b;
-              margin-bottom: 20px;
-              letter-spacing: 0.5px;
-              text-transform: uppercase;
+              font-size: 24px;
+              font-weight: 600;
+              color: #0f172a;
+              margin-bottom: 8px;
+              letter-spacing: -0.5px;
             }
             .meta { 
               color: #64748b; 
-              font-size: 15px;
-              line-height: 1.8;
+              font-size: 12px;
+              line-height: 1.6;
             }
-            .meta strong { color: #1e293b; font-weight: 700; }
+            .meta strong { color: #334155; font-weight: 600; }
             
+            /* Financial Summary - Simple Grid */
             .financial-summary {
               display: grid;
               grid-template-columns: repeat(5, 1fr);
-              gap: 15px;
-              margin-bottom: 35px;
-              padding: 25px;
-              background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
-              border-radius: 12px;
-              border: 3px solid #f59e0b;
+              gap: 12px;
+              margin-bottom: 25px;
+              padding: 20px;
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
             }
             .financial-card {
               text-align: center;
-              padding: 15px;
-              background: white;
-              border-radius: 8px;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              padding: 12px;
             }
             .financial-card .label {
-              font-size: 11px;
+              font-size: 10px;
               color: #64748b;
-              font-weight: 700;
+              font-weight: 600;
               text-transform: uppercase;
               letter-spacing: 0.5px;
-              margin-bottom: 8px;
+              margin-bottom: 6px;
             }
             .financial-card .value {
-              font-size: 24px;
-              font-weight: 800;
-              color: #1e293b;
-            }
-            .financial-card.profit .value {
-              color: #059669;
-            }
-            .financial-card.margin .value {
-              color: #0284c7;
+              font-size: 18px;
+              font-weight: 700;
+              color: #0f172a;
             }
             
+            /* Status Breakdown - Clean Cards */
             .summary { 
               display: grid; 
               grid-template-columns: repeat(5, 1fr); 
-              gap: 12px; 
-              margin-bottom: 35px; 
+              gap: 10px; 
+              margin-bottom: 25px; 
             }
             .summary-card { 
-              background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-              padding: 18px 12px;
-              border-radius: 10px;
+              background: white;
+              padding: 12px;
               text-align: center;
-              border: 2px solid #e2e8f0;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+              border: 1px solid #e2e8f0;
             }
             .summary-card .number { 
-              font-size: 32px; 
-              font-weight: 800; 
-              color: #1e293b;
-              margin-bottom: 8px;
+              font-size: 24px; 
+              font-weight: 700; 
+              color: #0f172a;
+              margin-bottom: 4px;
             }
             .summary-card .label { 
-              font-size: 11px; 
+              font-size: 10px; 
               color: #64748b; 
               font-weight: 600;
               text-transform: uppercase;
-              letter-spacing: 0.5px;
-              margin-bottom: 10px;
-            }
-            .summary-card .mini-stats {
-              display: grid;
-              grid-template-columns: repeat(2, 1fr);
-              gap: 4px;
-              margin-top: 10px;
-              padding-top: 10px;
-              border-top: 1px solid #e2e8f0;
-            }
-            .summary-card .mini-stat {
-              font-size: 8px;
-              color: #94a3b8;
-              font-weight: 600;
-            }
-            .summary-card .mini-stat .mini-value {
-              font-size: 10px;
-              color: #475569;
-              font-weight: 700;
-              display: block;
-              margin-top: 2px;
+              letter-spacing: 0.3px;
             }
             
-            .summary-row-2 {
-              display: grid; 
-              grid-template-columns: repeat(5, 1fr); 
-              gap: 12px; 
-              margin-bottom: 35px;
-            }
-            
+            /* Table - Enterprise Clean */
             table { 
               width: 100%; 
-              border-collapse: separate;
-              border-spacing: 0;
-              margin-top: 30px; 
-              font-size: 11px;
-              border: 1px solid #cbd5e1;
-              background: white;
-              box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+              border-collapse: collapse;
+              margin-top: 20px; 
+              font-size: 10px;
+              border: 1px solid #e2e8f0;
             }
             thead {
-              background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+              background: #0f172a;
             }
             th { 
               color: white; 
-              padding: 14px 12px; 
+              padding: 10px 8px; 
               text-align: left; 
-              font-size: 10px; 
-              font-weight: 700;
+              font-size: 9px; 
+              font-weight: 600;
               text-transform: uppercase;
               letter-spacing: 0.5px;
-              border-right: 1px solid rgba(255,255,255,0.15);
-              border-bottom: 2px solid #1e40af;
+              border-right: 1px solid rgba(255,255,255,0.1);
             }
             th:last-child { border-right: none; }
             td { 
-              padding: 12px; 
-              border-bottom: 1px solid #e2e8f0;
-              border-right: 1px solid #f1f5f9;
-              font-size: 11px;
+              padding: 8px; 
+              border-bottom: 1px solid #f1f5f9;
+              font-size: 10px;
               color: #334155;
-              line-height: 1.5;
-            }
-            td:last-child { border-right: none; }
-            tbody tr { 
-              transition: background-color 0.15s ease;
             }
             tbody tr:nth-child(even) { 
               background-color: #f8fafc; 
             }
-            tbody tr:hover { 
-              background-color: #eff6ff;
-              box-shadow: inset 0 0 0 1px #dbeafe;
-            }
             tbody tr:last-child td {
               border-bottom: none;
             }
-            tr:nth-child(even) { background-color: #f8fafc; }
-            tr:hover { background-color: #f1f5f9; }
             
-            .badge { 
-              display: inline-block; 
-              padding: 3px 6px; 
-              border-radius: 4px; 
-              font-size: 7px; 
-              font-weight: 700;
-              text-transform: uppercase;
-              letter-spacing: 0.2px;
-              white-space: nowrap;
-            }
-            .badge-pending { background: #fef3c7; color: #92400e; }
-            .badge-paid { background: #d1fae5; color: #065f46; }
-            .badge-cod { background: #dbeafe; color: #1e40af; }
-            .badge-refunded { background: #f3f4f6; color: #374151; }
-            .badge-packed { background: #d1fae5; color: #065f46; }
-            .badge-delivered { background: #d1fae5; color: #065f46; }
-            .badge-transit { background: #dbeafe; color: #1e40af; }
-            .badge-on-delivery { background: #dbeafe; color: #1e40af; }
-            .badge-pickup { background: #e9d5ff; color: #6b21a8; }
-            .badge-cancelled { background: #fee2e2; color: #991b1b; }
-            .badge-detained { background: #fed7aa; color: #9a3412; }
-            .badge-problematic { background: #fce7f3; color: #9f1239; }
-            .badge-returned { background: #f1f5f9; color: #475569; }
-            
+            /* Footer - Minimal */
             .footer {
-              margin-top: 40px;
-              padding-top: 20px;
-              border-top: 2px solid #e2e8f0;
+              margin-top: 30px;
+              padding-top: 15px;
+              border-top: 1px solid #e2e8f0;
               text-align: center;
               color: #94a3b8;
-              font-size: 11px;
-            }
-            .footer strong {
-              color: #1e293b;
-              font-size: 13px;
+              font-size: 10px;
             }
             
             @media print {
-              body { padding: 15px; }
-              .page-title { font-size: 28px; }
+              body { padding: 10px; }
+              .page-title { font-size: 20px; }
+              .financial-summary { padding: 15px; gap: 8px; }
               .summary { gap: 8px; }
-              .summary-card { padding: 12px 8px; }
-              .summary-card .number { font-size: 24px; }
-              .financial-summary { gap: 10px; padding: 20px; }
             }
           </style>
         </head>
@@ -589,9 +501,8 @@ export default function TrackOrdersPage() {
                 year: 'numeric', 
                 hour: '2-digit', 
                 minute: '2-digit' 
-              })}<br>
-              <strong>Total Orders:</strong> ${filteredOrders.length} | 
-              <strong>Report Type:</strong> Comprehensive Track Orders
+              })} | 
+              <strong>Total Orders:</strong> ${filteredOrders.length}
             </div>
           </div>
 
@@ -608,11 +519,11 @@ export default function TrackOrdersPage() {
               <div class="label">Total COGS</div>
               <div class="value">₱${totalCOGS.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
             </div>
-            <div class="financial-card profit">
+            <div class="financial-card">
               <div class="label">Total Profit</div>
               <div class="value">₱${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
             </div>
-            <div class="financial-card margin">
+            <div class="financial-card">
               <div class="label">Profit Margin</div>
               <div class="value">${totalProfitMargin.toFixed(2)}%</div>
             </div>
@@ -620,107 +531,47 @@ export default function TrackOrdersPage() {
           
           <div class="summary">
             <div class="summary-card">
-              <div class="number">${totalOrders}</div>
-              <div class="label">Total Orders</div>
-              <div class="mini-stats">
-                <div class="mini-stat">Qty: <span class="mini-value">${totalQuantity}</span></div>
-                <div class="mini-stat">Amt: <span class="mini-value">₱${totalAmount.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Profit: <span class="mini-value">₱${totalProfit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">% of Total: <span class="mini-value">100.0%</span></div>
-              </div>
-            </div>
-            <div class="summary-card">
               <div class="number">${pendingOrders}</div>
               <div class="label">Pending</div>
-              <div class="mini-stats">
-                <div class="mini-stat">Qty: <span class="mini-value">${pendingFinancials.qty}</span></div>
-                <div class="mini-stat">Amt: <span class="mini-value">₱${pendingFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Profit: <span class="mini-value">₱${pendingFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((pendingOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
-              </div>
             </div>
             <div class="summary-card">
               <div class="number">${inTransitOrders}</div>
               <div class="label">In Transit</div>
-              <div class="mini-stats">
-                <div class="mini-stat">Qty: <span class="mini-value">${inTransitFinancials.qty}</span></div>
-                <div class="mini-stat">Amt: <span class="mini-value">₱${inTransitFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Profit: <span class="mini-value">₱${inTransitFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((inTransitOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
-              </div>
             </div>
             <div class="summary-card">
               <div class="number">${onDeliveryOrders}</div>
               <div class="label">On Delivery</div>
-              <div class="mini-stats">
-                <div class="mini-stat">Qty: <span class="mini-value">${onDeliveryFinancials.qty}</span></div>
-                <div class="mini-stat">Amt: <span class="mini-value">₱${onDeliveryFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Profit: <span class="mini-value">₱${onDeliveryFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((onDeliveryOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
-              </div>
             </div>
             <div class="summary-card">
               <div class="number">${pickupOrders}</div>
               <div class="label">Pickup</div>
-              <div class="mini-stats">
-                <div class="mini-stat">Qty: <span class="mini-value">${pickupFinancials.qty}</span></div>
-                <div class="mini-stat">Amt: <span class="mini-value">₱${pickupFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Profit: <span class="mini-value">₱${pickupFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((pickupOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
-              </div>
             </div>
-          </div>
-
-          <div class="summary-row-2">
             <div class="summary-card">
               <div class="number">${deliveredOrders}</div>
               <div class="label">Delivered</div>
-              <div class="mini-stats">
-                <div class="mini-stat">Qty: <span class="mini-value">${deliveredFinancials.qty}</span></div>
-                <div class="mini-stat">Amt: <span class="mini-value">₱${deliveredFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Profit: <span class="mini-value">₱${deliveredFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((deliveredOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
-              </div>
             </div>
+          </div>
+
+          <div class="summary">
             <div class="summary-card">
               <div class="number">${cancelledOrders}</div>
               <div class="label">Cancelled</div>
-              <div class="mini-stats">
-                <div class="mini-stat">Qty: <span class="mini-value">${cancelledFinancials.qty}</span></div>
-                <div class="mini-stat">Amt: <span class="mini-value">₱${cancelledFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Profit: <span class="mini-value">₱${cancelledFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((cancelledOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
-              </div>
             </div>
             <div class="summary-card">
               <div class="number">${detainedOrders}</div>
               <div class="label">Detained</div>
-              <div class="mini-stats">
-                <div class="mini-stat">Qty: <span class="mini-value">${detainedFinancials.qty}</span></div>
-                <div class="mini-stat">Amt: <span class="mini-value">₱${detainedFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Profit: <span class="mini-value">₱${detainedFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((detainedOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
-              </div>
             </div>
             <div class="summary-card">
               <div class="number">${problematicOrders}</div>
               <div class="label">Problematic</div>
-              <div class="mini-stats">
-                <div class="mini-stat">Qty: <span class="mini-value">${problematicFinancials.qty}</span></div>
-                <div class="mini-stat">Amt: <span class="mini-value">₱${problematicFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Profit: <span class="mini-value">₱${problematicFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((problematicOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
-              </div>
             </div>
             <div class="summary-card">
               <div class="number">${returnedOrders}</div>
               <div class="label">Returned</div>
-              <div class="mini-stats">
-                <div class="mini-stat">Qty: <span class="mini-value">${returnedFinancials.qty}</span></div>
-                <div class="mini-stat">Amt: <span class="mini-value">₱${returnedFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">Profit: <span class="mini-value">₱${returnedFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((returnedOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
-              </div>
+            </div>
+            <div class="summary-card">
+              <div class="number">${totalOrders}</div>
+              <div class="label">Total Orders</div>
             </div>
           </div>
 
@@ -734,7 +585,6 @@ export default function TrackOrdersPage() {
                 <th>Product</th>
                 <th style="text-align: center;">Qty</th>
                 <th style="text-align: right;">Amount</th>
-                <th style="text-align: right;">COGS</th>
                 <th>Courier</th>
                 <th>Waybill</th>
                 <th>Payment</th>
@@ -745,27 +595,25 @@ export default function TrackOrdersPage() {
             <tbody>
               ${filteredOrders.map(order => `
                 <tr>
-                  <td style="font-weight: 600; font-family: 'Courier New', monospace; color: #1e40af;">#${order.id.slice(-6)}</td>
-                  <td style="color: #64748b;">${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                  <td style="font-weight: 600; color: #0f172a;">${order.department || 'N/A'}</td>
-                  <td style="color: #475569;">${order.customerAddress || 'N/A'}</td>
-                  <td style="font-weight: 500; color: #0f172a;">${order.itemName}</td>
-                  <td style="text-align: center; font-weight: 700; color: #0f172a;">${order.quantity}</td>
-                  <td style="text-align: right; font-weight: 600; color: #059669;">₱${order.totalAmount.toLocaleString()}</td>
-                  <td style="text-align: right; font-weight: 500; color: #64748b;">₱${(order.totalAmount * 0.6).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                  <td style="color: #475569;">${order.courier || '-'}</td>
-                  <td style="font-family: 'Courier New', monospace; font-size: 10px; color: #64748b;">${order.trackingNumber || '-'}</td>
-                  <td style="font-weight: 600; color: #0f172a;">${order.paymentStatus.toUpperCase()}</td>
-                  <td style="font-weight: 600; color: #0f172a;">${order.orderStatus.toUpperCase()}</td>
-                  <td style="font-weight: 600; color: #0f172a;">${order.parcelStatus}</td>
+                  <td style="font-weight: 600;">#${order.id.slice(-6)}</td>
+                  <td>${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                  <td style="font-weight: 600;">${order.department || 'N/A'}</td>
+                  <td>${order.customerAddress || 'N/A'}</td>
+                  <td style="font-weight: 500;">${order.itemName}</td>
+                  <td style="text-align: center; font-weight: 600;">${order.quantity}</td>
+                  <td style="text-align: right; font-weight: 600;">₱${order.totalAmount.toLocaleString()}</td>
+                  <td>${order.courier || '-'}</td>
+                  <td style="font-size: 9px;">${order.trackingNumber || '-'}</td>
+                  <td>${order.paymentStatus.toUpperCase()}</td>
+                  <td>${order.orderStatus.toUpperCase()}</td>
+                  <td>${order.parcelStatus}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
 
           <div class="footer">
-            <p><strong>Vertex Professional Inventory Management System</strong></p>
-            <p>Track Orders Report - Confidential Document</p>
+            <p>Vertex Inventory Management System - Track Orders Report</p>
           </div>
         </body>
         </html>

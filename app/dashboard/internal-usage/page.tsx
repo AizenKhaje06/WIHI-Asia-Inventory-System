@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, Plus, ShoppingCart, Trash2, CheckCircle, Package, Monitor, Users, Calendar, User, FileText, PieChart, TrendingUp, BarChart3 } from "lucide-react"
+import { Search, Plus, ShoppingCart, Trash2, CheckCircle, Package, Monitor, Users, Calendar, FileText, PieChart, TrendingUp, BarChart3, ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { BrandLoader } from "@/components/ui/brand-loader"
 import type { InventoryItem, Transaction } from "@/lib/types"
 import { apiGet, apiPost } from "@/lib/api-client"
 import { getCurrentUser } from "@/lib/auth"
@@ -246,314 +247,480 @@ export default function InternalUsagePage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
-      {/* Page Header */}
-      <div className="mb-6 flex items-center justify-between animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <div>
-          <h1 className="text-4xl font-bold gradient-text mb-2">
-            Internal Usage
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-base">
-            Track items for demo displays, internal use, and warehouse transfers
-          </p>
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2 pb-12">
+      {/* Page Header - Enterprise Premium */}
+      <div className="mb-8">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold gradient-text mb-2 tracking-tight">
+              Internal Usage Management
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Track demo displays, internal consumption, and warehouse transfers with real-time cost analytics
+            </p>
+          </div>
+          <Button 
+            onClick={openDispatchModal}
+            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0 rounded-full px-6 h-11"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="text-sm font-semibold">Dispatch Items</span>
+          </Button>
         </div>
-        <Button 
-          onClick={openDispatchModal}
-          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-          size="lg"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Dispatch Items
-        </Button>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs - Enterprise Design */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-lg">
+        <TabsList className="grid w-full grid-cols-4 mb-6 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1.5 rounded-xl h-auto">
           <TabsTrigger 
             value="overview" 
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-slate-900 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=inactive]:text-slate-600 dark:data-[state=inactive]:text-slate-400"
           >
             <PieChart className="h-4 w-4 mr-2" />
             Overview
           </TabsTrigger>
           <TabsTrigger 
             value="sales-channels"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-slate-900 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=inactive]:text-slate-600 dark:data-[state=inactive]:text-slate-400"
           >
             <BarChart3 className="h-4 w-4 mr-2" />
             Sales Channels
           </TabsTrigger>
           <TabsTrigger 
             value="cost-analysis"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-slate-900 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=inactive]:text-slate-600 dark:data-[state=inactive]:text-slate-400"
           >
             <TrendingUp className="h-4 w-4 mr-2" />
             Cost Analysis
           </TabsTrigger>
           <TabsTrigger 
             value="transaction-history"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-slate-900 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=inactive]:text-slate-600 dark:data-[state=inactive]:text-slate-400"
           >
             <Calendar className="h-4 w-4 mr-2" />
-            Transaction History
+            History
           </TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          {/* Stats Cards */}
+          {/* Stats Cards - Enterprise Premium */}
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-slate-200 dark:border-slate-800">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Total Cost
-                </CardTitle>
+            {/* Total Cost Card */}
+            <Card className="border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                    Total Cost
+                  </CardTitle>
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center">
+                    <TrendingUp className="h-4 w-4 text-white" />
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
                   {formatCurrency(totalCost)}
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  All internal usage
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 flex items-center gap-1">
+                  <span className="inline-flex items-center gap-0.5 text-slate-600 dark:text-slate-400">
+                    <Package className="h-3 w-3" />
+                    {transactions.length} total
+                  </span>
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200 dark:border-slate-800">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Demo/Display
-                </CardTitle>
+            {/* Demo/Display Card */}
+            <Card className="border-amber-200 dark:border-amber-800 shadow-sm hover:shadow-md transition-shadow duration-200 bg-gradient-to-br from-amber-50/50 to-white dark:from-amber-950/20 dark:to-slate-900">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+                    Demo/Display
+                  </CardTitle>
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
+                    <Monitor className="h-4 w-4 text-white" />
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                <div className="text-2xl font-bold text-amber-700 dark:text-amber-400 tabular-nums">
                   {formatCurrency(demoCost)}
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {demoTransactions.length} transactions
+                <p className="text-[11px] text-amber-600 dark:text-amber-500 mt-1.5 flex items-center gap-1">
+                  <span className="inline-flex items-center gap-0.5">
+                    <ArrowUpRight className="h-3 w-3" />
+                    {demoTransactions.length} transactions
+                  </span>
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200 dark:border-slate-800">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Internal Use
-                </CardTitle>
+            {/* Internal Use Card */}
+            <Card className="border-blue-200 dark:border-blue-800 shadow-sm hover:shadow-md transition-shadow duration-200 bg-gradient-to-br from-blue-50/50 to-white dark:from-blue-950/20 dark:to-slate-900">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-[10px] font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
+                    Internal Use
+                  </CardTitle>
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-white" />
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <div className="text-2xl font-bold text-blue-700 dark:text-blue-400 tabular-nums">
                   {formatCurrency(internalCost)}
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {internalTransactions.length} transactions
+                <p className="text-[11px] text-blue-600 dark:text-blue-500 mt-1.5 flex items-center gap-1">
+                  <span className="inline-flex items-center gap-0.5">
+                    <ArrowUpRight className="h-3 w-3" />
+                    {internalTransactions.length} transactions
+                  </span>
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200 dark:border-slate-800">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Warehouse Transfer
-                </CardTitle>
+            {/* Warehouse Transfer Card */}
+            <Card className="border-indigo-200 dark:border-indigo-800 shadow-sm hover:shadow-md transition-shadow duration-200 bg-gradient-to-br from-indigo-50/50 to-white dark:from-indigo-950/20 dark:to-slate-900">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-[10px] font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
+                    Warehouse Transfer
+                  </CardTitle>
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center">
+                    <Package className="h-4 w-4 text-white" />
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 tabular-nums">
                   {formatCurrency(transferCost)}
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {transferTransactions.length} transactions
+                <p className="text-[11px] text-indigo-600 dark:text-indigo-500 mt-1.5 flex items-center gap-1">
+                  <span className="inline-flex items-center gap-0.5">
+                    <ArrowUpRight className="h-3 w-3" />
+                    {transferTransactions.length} transactions
+                  </span>
                 </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Recent Transactions */}
-          <Card className="border-slate-200 dark:border-slate-800">
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {transactions.slice(0, 5).map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                        {transaction.itemName.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-medium text-slate-900 dark:text-white">{transaction.itemName}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {transaction.department} • {format(new Date(transaction.timestamp), 'MMM dd, yyyy')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-slate-900 dark:text-white">{formatCurrency(transaction.totalCost)}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Qty: {transaction.quantity}</p>
-                    </div>
-                  </div>
-                ))}
+          {/* Recent Transactions - Enterprise Design */}
+          <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">Recent Transactions</CardTitle>
+                  <CardDescription className="text-[11px] mt-1">Latest internal usage activity</CardDescription>
+                </div>
+                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  Last 5 entries
+                </span>
               </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              {loading ? (
+                <div className="py-12">
+                  <div className="flex flex-col items-center justify-center gap-4">
+                    <BrandLoader size="md" />
+                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Loading transactions...</p>
+                  </div>
+                </div>
+              ) : transactions.length === 0 ? (
+                <div className="text-center py-12">
+                  <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">No transactions yet</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                    Click "Dispatch Items" to create your first record
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {transactions.slice(0, 5).map((transaction) => (
+                    <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                          {transaction.itemName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-[11px] text-slate-900 dark:text-white truncate">{transaction.itemName}</p>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
+                            <span className="truncate">{transaction.department}</span>
+                            <span className="text-slate-400 dark:text-slate-500">•</span>
+                            <span className="flex-shrink-0">{format(new Date(transaction.timestamp), 'MMM dd, yyyy')}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0 ml-3">
+                        <p className="font-bold text-[11px] text-slate-900 dark:text-white tabular-nums">{formatCurrency(transaction.totalCost)}</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Qty: {transaction.quantity}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Sales Channels Tab */}
+        {/* Sales Channels Tab - Enterprise Design */}
         <TabsContent value="sales-channels" className="space-y-6">
-          <Card className="border-slate-200 dark:border-slate-800">
-            <CardHeader>
-              <CardTitle>Sales Channel Breakdown</CardTitle>
+          <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-800">
+              <div>
+                <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">Sales Channel Breakdown</CardTitle>
+                <CardDescription className="text-[11px] mt-1">Cost distribution across sales channels</CardDescription>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {Object.entries(salesChannelData).map(([channel, data]) => (
-                  <div key={channel} className="space-y-2">
+            <CardContent className="pt-6">
+              {loading ? (
+                <div className="py-12">
+                  <div className="flex flex-col items-center justify-center gap-4">
+                    <BrandLoader size="md" />
+                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Loading channel data...</p>
+                  </div>
+                </div>
+              ) : Object.keys(salesChannelData).length === 0 ? (
+                <div className="text-center py-12">
+                  <BarChart3 className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">No sales channel data available</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                    Dispatch items to demo or internal use to see channel breakdown
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  {Object.entries(salesChannelData)
+                    .sort(([, a], [, b]) => b.cost - a.cost)
+                    .map(([channel, data]) => (
+                      <div key={channel} className="space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-[11px] text-slate-900 dark:text-white">{channel}</span>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                              {data.count} {data.count === 1 ? 'transaction' : 'transactions'}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-bold text-[11px] text-slate-900 dark:text-white tabular-nums">{formatCurrency(data.cost)}</span>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 ml-2">
+                              ({((data.cost / totalCost) * 100).toFixed(1)}%)
+                            </span>
+                          </div>
+                        </div>
+                        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
+                          <div 
+                            className="bg-gradient-to-r from-orange-500 to-orange-600 h-2.5 rounded-full transition-all duration-500 ease-out"
+                            style={{ width: `${(data.cost / totalCost) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Cost Analysis Tab - Enterprise Design */}
+        <TabsContent value="cost-analysis" className="space-y-6">
+          {/* Cost Cards Grid */}
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+            <Card className="border-amber-200 dark:border-amber-800 shadow-sm bg-gradient-to-br from-amber-50/50 to-white dark:from-amber-950/20 dark:to-slate-900">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+                    Demo/Display Cost
+                  </CardTitle>
+                  <Monitor className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-amber-700 dark:text-amber-400 tabular-nums mb-2">
+                  {formatCurrency(demoCost)}
+                </div>
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="text-amber-600 dark:text-amber-500">
+                    {((demoCost / totalCost) * 100 || 0).toFixed(1)}% of total
+                  </span>
+                  <span className="text-amber-600 dark:text-amber-500 font-medium">
+                    {demoTransactions.length} txns
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-blue-200 dark:border-blue-800 shadow-sm bg-gradient-to-br from-blue-50/50 to-white dark:from-blue-950/20 dark:to-slate-900">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-[10px] font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
+                    Internal Use Cost
+                  </CardTitle>
+                  <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-700 dark:text-blue-400 tabular-nums mb-2">
+                  {formatCurrency(internalCost)}
+                </div>
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="text-blue-600 dark:text-blue-500">
+                    {((internalCost / totalCost) * 100 || 0).toFixed(1)}% of total
+                  </span>
+                  <span className="text-blue-600 dark:text-blue-500 font-medium">
+                    {internalTransactions.length} txns
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-indigo-200 dark:border-indigo-800 shadow-sm bg-gradient-to-br from-indigo-50/50 to-white dark:from-indigo-950/20 dark:to-slate-900">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-[10px] font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
+                    Transfer Cost
+                  </CardTitle>
+                  <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 tabular-nums mb-2">
+                  {formatCurrency(transferCost)}
+                </div>
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="text-indigo-600 dark:text-indigo-500">
+                    {((transferCost / totalCost) * 100 || 0).toFixed(1)}% of total
+                  </span>
+                  <span className="text-indigo-600 dark:text-indigo-500 font-medium">
+                    {transferTransactions.length} txns
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Cost Breakdown Chart */}
+          <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-800">
+              <div>
+                <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">Cost Distribution by Type</CardTitle>
+                <CardDescription className="text-[11px] mt-1">Visual breakdown of internal usage costs</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {loading ? (
+                <div className="py-12">
+                  <div className="flex flex-col items-center justify-center gap-4">
+                    <BrandLoader size="md" />
+                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Loading cost analysis...</p>
+                  </div>
+                </div>
+              ) : totalCost === 0 ? (
+                <div className="text-center py-12">
+                  <TrendingUp className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">No cost data available</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                    Start dispatching items to see cost analysis
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  {/* Demo/Display Bar */}
+                  <div className="space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-slate-900 dark:text-white">{channel}</span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">({data.count} transactions)</span>
+                        <div className="h-3 w-3 rounded-full bg-amber-500"></div>
+                        <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Demo/Display</span>
                       </div>
-                      <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(data.cost)}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                          {((demoCost / totalCost) * 100 || 0).toFixed(1)}%
+                        </span>
+                        <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 tabular-nums min-w-[80px] text-right">
+                          {formatCurrency(demoCost)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
                       <div 
-                        className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${(data.cost / totalCost) * 100}%` }}
+                        className="bg-gradient-to-r from-amber-500 to-amber-600 h-3 rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${(demoCost / totalCost) * 100 || 0}%` }}
                       />
                     </div>
                   </div>
-                ))}
-                {Object.keys(salesChannelData).length === 0 && (
-                  <div className="text-center py-8">
-                    <BarChart3 className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                    <p className="text-slate-500 dark:text-slate-400">No sales channel data available</p>
+
+                  {/* Internal Use Bar */}
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                        <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Internal Use</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                          {((internalCost / totalCost) * 100 || 0).toFixed(1)}%
+                        </span>
+                        <span className="text-[11px] font-bold text-blue-700 dark:text-blue-400 tabular-nums min-w-[80px] text-right">
+                          {formatCurrency(internalCost)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${(internalCost / totalCost) * 100 || 0}%` }}
+                      />
+                    </div>
                   </div>
-                )}
-              </div>
+
+                  {/* Warehouse Transfer Bar */}
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-indigo-500"></div>
+                        <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Warehouse Transfer</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                          {((transferCost / totalCost) * 100 || 0).toFixed(1)}%
+                        </span>
+                        <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-400 tabular-nums min-w-[80px] text-right">
+                          {formatCurrency(transferCost)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-3 rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${(transferCost / totalCost) * 100 || 0}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Cost Analysis Tab */}
-        <TabsContent value="cost-analysis" className="space-y-6">
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-            <Card className="border-slate-200 dark:border-slate-800">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Demo/Display Cost
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                  {formatCurrency(demoCost)}
-                </div>
-                <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                  {((demoCost / totalCost) * 100 || 0).toFixed(1)}% of total
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 dark:border-slate-800">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Internal Use Cost
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {formatCurrency(internalCost)}
-                </div>
-                <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                  {((internalCost / totalCost) * 100 || 0).toFixed(1)}% of total
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 dark:border-slate-800">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Transfer Cost
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                  {formatCurrency(transferCost)}
-                </div>
-                <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                  {((transferCost / totalCost) * 100 || 0).toFixed(1)}% of total
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="border-slate-200 dark:border-slate-800">
-            <CardHeader>
-              <CardTitle>Cost by Type</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Demo/Display</span>
-                    <span className="text-sm font-bold text-amber-600 dark:text-amber-400">{formatCurrency(demoCost)}</span>
-                  </div>
-                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
-                    <div 
-                      className="bg-amber-500 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${(demoCost / totalCost) * 100 || 0}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Internal Use</span>
-                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{formatCurrency(internalCost)}</span>
-                  </div>
-                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
-                    <div 
-                      className="bg-blue-500 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${(internalCost / totalCost) * 100 || 0}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Warehouse Transfer</span>
-                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(transferCost)}</span>
-                  </div>
-                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
-                    <div 
-                      className="bg-indigo-500 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${(transferCost / totalCost) * 100 || 0}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Transaction History Tab */}
+        {/* Transaction History Tab - Enterprise Table Design */}
         <TabsContent value="transaction-history" className="space-y-6">
           {/* Filters and Search */}
-          <Card className="border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
             <CardContent className="pt-6">
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <Input
                     placeholder="Search by item, department, or staff..."
                     value={searchTable}
                     onChange={(e) => setSearchTable(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 h-11"
                   />
                 </div>
                 <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectTrigger className="w-full sm:w-[200px] h-11">
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -567,122 +734,141 @@ export default function InternalUsagePage() {
             </CardContent>
           </Card>
 
-          {/* Transactions Table */}
-          <Card className="border-slate-200 dark:border-slate-800">
-            <CardHeader className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-              <CardTitle className="text-white text-lg">
-                Internal Usage History ({filteredTransactions.length})
-              </CardTitle>
-            </CardHeader>
+          {/* Transactions Table - Enterprise Grade */}
+          <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
             <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-slate-50 dark:bg-slate-900/50">
-                      <TableHead className="font-semibold">Date</TableHead>
-                      <TableHead className="font-semibold">Item</TableHead>
-                      <TableHead className="font-semibold">Type</TableHead>
-                      <TableHead className="font-semibold">Department</TableHead>
-                      <TableHead className="font-semibold text-center">Qty</TableHead>
-                      <TableHead className="font-semibold text-right">Cost</TableHead>
-                      <TableHead className="font-semibold">Staff</TableHead>
-                      <TableHead className="font-semibold">Notes</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredTransactions.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={8} className="text-center py-12">
-                          <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                          <p className="text-slate-500 dark:text-slate-400">No internal usage records found</p>
-                          <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
-                            Click "Dispatch Items" to create a new record
-                          </p>
-                        </TableCell>
+              {loading ? (
+                <div className="py-16">
+                  <div className="flex flex-col items-center justify-center gap-4">
+                    <BrandLoader size="lg" />
+                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Loading transaction history...</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black border-b border-slate-700 hover:bg-gradient-to-r hover:from-slate-800 hover:to-slate-900">
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Date</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Item</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Type</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Department</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 text-center">Qty</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 text-right">Cost</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Staff</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Notes</TableHead>
                       </TableRow>
-                    ) : (
-                      filteredTransactions.map((transaction) => (
-                        <TableRow 
-                          key={transaction.id}
-                          className="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors duration-200"
-                        >
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-slate-400" />
-                              <span>{format(new Date(transaction.timestamp), 'MMM dd, yyyy')}</span>
-                            </div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                              {format(new Date(transaction.timestamp), 'hh:mm a')}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="font-medium text-slate-900 dark:text-white">
-                              {transaction.itemName}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {transaction.transactionType === 'demo' && (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                                <Monitor className="h-3 w-3" />
-                                Demo
-                              </span>
-                            )}
-                            {transaction.transactionType === 'internal' && (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                <Users className="h-3 w-3" />
-                                Internal
-                              </span>
-                            )}
-                            {transaction.transactionType === 'transfer' && (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-                                <Package className="h-3 w-3" />
-                                Transfer
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-sm text-slate-700 dark:text-slate-300">
-                              {transaction.department || 'N/A'}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                              {transaction.quantity}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <span className="font-semibold text-slate-900 dark:text-white">
-                              {formatCurrency(transaction.totalCost)}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <div className="h-7 w-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
-                                {transaction.staffName ? transaction.staffName.charAt(0).toUpperCase() : '?'}
-                              </div>
-                              <span className="text-sm text-slate-700 dark:text-slate-300">
-                                {transaction.staffName || 'N/A'}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {transaction.notes ? (
-                              <div className="flex items-start gap-1.5 max-w-xs">
-                                <FileText className="h-3.5 w-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
-                                <span className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
-                                  {transaction.notes}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
-                            )}
+                    </TableHeader>
+                    <TableBody>
+                      {filteredTransactions.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center py-16">
+                            <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">No internal usage records found</p>
+                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                              {searchTable || filterType !== "all" 
+                                ? "Try adjusting your filters" 
+                                : "Click \"Dispatch Items\" to create a new record"}
+                            </p>
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                      ) : (
+                        filteredTransactions.map((transaction) => (
+                          <TableRow 
+                            key={transaction.id}
+                            className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150 border-b border-slate-100 dark:border-slate-800"
+                          >
+                            <TableCell className="py-2">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                                <div>
+                                  <span className="text-[11px] font-medium text-slate-900 dark:text-white block">
+                                    {format(new Date(transaction.timestamp), 'MMM dd, yyyy')}
+                                  </span>
+                                  <span className="text-[9px] text-slate-500 dark:text-slate-400 block mt-0.5">
+                                    {format(new Date(transaction.timestamp), 'hh:mm a')}
+                                  </span>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-2">
+                              <span className="text-[11px] font-semibold text-slate-900 dark:text-white">
+                                {transaction.itemName}
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-2">
+                              {transaction.transactionType === 'demo' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                  <Monitor className="h-2.5 w-2.5" />
+                                  Demo
+                                </span>
+                              )}
+                              {transaction.transactionType === 'internal' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                  <Users className="h-2.5 w-2.5" />
+                                  Internal
+                                </span>
+                              )}
+                              {transaction.transactionType === 'transfer' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                                  <Package className="h-2.5 w-2.5" />
+                                  Transfer
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell className="py-2">
+                              <span className="text-[11px] text-slate-700 dark:text-slate-300">
+                                {transaction.department || 'N/A'}
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-2 text-center">
+                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[9px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 tabular-nums">
+                                {transaction.quantity}
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-2 text-right">
+                              <span className="text-[11px] font-bold text-slate-900 dark:text-white tabular-nums">
+                                {formatCurrency(transaction.totalCost)}
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-2">
+                              <div className="flex items-center gap-2">
+                                <div className="h-6 w-6 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
+                                  {transaction.staffName ? transaction.staffName.charAt(0).toUpperCase() : '?'}
+                                </div>
+                                <span className="text-[11px] text-slate-700 dark:text-slate-300 truncate max-w-[120px]">
+                                  {transaction.staffName || 'N/A'}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-2">
+                              {transaction.notes ? (
+                                <div className="flex items-start gap-1.5 max-w-xs">
+                                  <FileText className="h-3 w-3 text-slate-400 mt-0.5 flex-shrink-0" />
+                                  <span className="text-[10px] text-slate-600 dark:text-slate-400 line-clamp-2">
+                                    {transaction.notes}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500">—</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+              
+              {/* Transaction Count Footer */}
+              {!loading && filteredTransactions.length > 0 && (
+                <div className="px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800">
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                    Showing <span className="font-semibold text-slate-900 dark:text-white">{filteredTransactions.length}</span> {filteredTransactions.length === 1 ? 'transaction' : 'transactions'}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
