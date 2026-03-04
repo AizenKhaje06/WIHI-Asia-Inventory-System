@@ -60,6 +60,7 @@ export async function GET(
         id: o.id,
         qty: o.qty || 0,
         total: o.total || 0,
+        cogs: o.cogs || 0, // Use ACTUAL COGS from order
         parcel_status: o.parcel_status || 'PENDING',
         payment_status: o.payment_status || 'pending',
         sales_channel: o.sales_channel,
@@ -112,8 +113,8 @@ export async function GET(
 
       const entry = cashFlowMap.get(date)!
       const revenue = order.total
-      const cost = order.total * 0.6
-      const profit = order.total * 0.4
+      const cost = order.cogs || 0 // Use ACTUAL COGS
+      const profit = revenue - cost
 
       entry.revenue += revenue
       entry.cost += cost
@@ -175,8 +176,8 @@ export async function GET(
 
       const store = storeMap.get(storeName)!
       const revenue = order.total || 0
-      const cost = revenue * 0.6
-      const profit = revenue * 0.4
+      const cost = order.cogs || 0 // Use ACTUAL COGS
+      const profit = revenue - cost
 
       store.revenue += revenue
       store.cost += cost
@@ -193,19 +194,25 @@ export async function GET(
       .filter(order => !EXCLUDED_STATUSES.includes(order.parcel_status))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 20)
-      .map(order => ({
-        id: order.id,
-        itemName: order.product || 'Unknown',
-        quantity: order.qty || 0,
-        revenue: order.total || 0,
-        cost: (order.total || 0) * 0.6,
-        profit: (order.total || 0) * 0.4,
-        timestamp: order.date,
-        staffName: order.dispatched_by || 'N/A',
-        notes: order.notes || '',
-        parcelStatus: order.parcel_status,
-        paymentStatus: order.payment_status
-      }))
+      .map(order => {
+        const revenue = order.total || 0
+        const cost = order.cogs || 0 // Use ACTUAL COGS
+        const profit = revenue - cost
+        
+        return {
+          id: order.id,
+          itemName: order.product || 'Unknown',
+          quantity: order.qty || 0,
+          revenue,
+          cost,
+          profit,
+          timestamp: order.date,
+          staffName: order.dispatched_by || 'N/A',
+          notes: order.notes || '',
+          parcelStatus: order.parcel_status,
+          paymentStatus: order.payment_status
+        }
+      })
 
     // Calculate excluded orders summary
     const excludedOrders = orders.filter(o => EXCLUDED_STATUSES.includes(o.parcel_status))

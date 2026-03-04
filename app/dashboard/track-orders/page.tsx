@@ -40,6 +40,7 @@ interface Order {
   estimatedDelivery?: string
   deliveryDate?: string
   notes?: string
+  dispatchNotes?: string // User notes from dispatch form
   department?: string // Sales channel (Shopee, Lazada, Flash, etc.)
 }
 
@@ -62,7 +63,9 @@ export default function TrackOrdersPage() {
     customerContact: '',
     customerAddress: '',
     courier: '',
-    trackingNumber: ''
+    trackingNumber: '',
+    dispatchNotes: '',
+    totalAmount: 0
   })
 
   useEffect(() => {
@@ -105,6 +108,7 @@ export default function TrackOrdersPage() {
           packedAt: order.packed_at,
           store: order.store
         }),
+        dispatchNotes: order.dispatch_notes || '',
         department: order.sales_channel || 'N/A'
       }))
       
@@ -921,7 +925,9 @@ export default function TrackOrdersPage() {
       customerContact: order.customerPhone,
       customerAddress: order.customerAddress,
       courier: order.courier || '',
-      trackingNumber: order.trackingNumber || ''
+      trackingNumber: order.trackingNumber || '',
+      dispatchNotes: order.dispatchNotes || '',
+      totalAmount: order.totalAmount || 0
     })
   }
 
@@ -938,7 +944,9 @@ export default function TrackOrdersPage() {
         customerContact: selectedOrder.customerPhone,
         customerAddress: selectedOrder.customerAddress,
         courier: selectedOrder.courier || '',
-        trackingNumber: selectedOrder.trackingNumber || ''
+        trackingNumber: selectedOrder.trackingNumber || '',
+        dispatchNotes: selectedOrder.dispatchNotes || '',
+        totalAmount: selectedOrder.totalAmount || 0
       })
     }
   }
@@ -957,7 +965,9 @@ export default function TrackOrdersPage() {
           customer_contact: editForm.customerContact,
           customer_address: editForm.customerAddress,
           courier: editForm.courier,
-          waybill: editForm.trackingNumber
+          waybill: editForm.trackingNumber,
+          dispatch_notes: editForm.dispatchNotes,
+          total: editForm.totalAmount
         }),
       })
 
@@ -1754,9 +1764,20 @@ export default function TrackOrdersPage() {
                 <div className="grid grid-cols-3 gap-4 pt-4">
                   <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
                     <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Total Amount</p>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      {formatCurrency(selectedOrder.totalAmount)}
-                    </p>
+                    {isEditMode ? (
+                      <Input
+                        type="number"
+                        value={editForm.totalAmount}
+                        onChange={(e) => setEditForm({...editForm, totalAmount: parseFloat(e.target.value) || 0})}
+                        className="text-2xl font-bold text-green-600 dark:text-green-400 h-12"
+                        min="0"
+                        step="0.01"
+                      />
+                    ) : (
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                        {formatCurrency(selectedOrder.totalAmount)}
+                      </p>
+                    )}
                   </div>
                   <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
                     <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Store</p>
@@ -1938,6 +1959,41 @@ export default function TrackOrdersPage() {
                   </div>
                 </div>
               )}
+
+              {/* Dispatch Notes Section - Always visible */}
+              <div className="bg-purple-50 dark:bg-purple-900/10 rounded-xl p-6 border border-purple-200 dark:border-purple-800">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                    <svg className="h-5 w-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Dispatch Notes
+                  </h4>
+                </div>
+                {isEditMode ? (
+                  <textarea
+                    value={editForm.dispatchNotes}
+                    onChange={(e) => setEditForm({...editForm, dispatchNotes: e.target.value})}
+                    rows={4}
+                    className="w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="Add any special instructions or notes for this order..."
+                  />
+                ) : (
+                  <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                    {selectedOrder.dispatchNotes ? (
+                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        {selectedOrder.dispatchNotes}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-slate-400 dark:text-slate-500 italic">
+                        No notes added for this order
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Notes - Enterprise Style with Timestamps */}
               {selectedOrder.notes && (

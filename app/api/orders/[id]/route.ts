@@ -13,7 +13,9 @@ export async function PATCH(
       customer_contact,
       customer_address,
       courier,
-      waybill
+      waybill,
+      dispatch_notes,
+      total
     } = body
 
     const { data, error } = await supabase
@@ -24,6 +26,8 @@ export async function PATCH(
         customer_address,
         courier,
         waybill,
+        dispatch_notes,
+        total,
         updated_at: new Date().toISOString()
       })
       .eq('id', params.id)

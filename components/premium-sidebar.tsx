@@ -6,21 +6,16 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   ShoppingCart,
-  BarChart3,
   Package,
   AlertTriangle,
   XCircle,
   TrendingUp,
   FileText,
   LogOut,
-  Warehouse,
   Users,
   Brain,
-  ChevronsLeft,
-  ChevronsRight,
   X,
   Settings,
-  User,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/hooks/use-accessibility"
@@ -31,7 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { getCurrentUser, hasPermission, clearCurrentUser, ROLES, type UserRole } from "@/lib/auth"
+import { getCurrentUser, hasPermission, clearCurrentUser } from "@/lib/auth"
 import { apiGet } from "@/lib/api-client"
 
 interface NavItem {
@@ -480,29 +475,41 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             </button>
           )}
 
-          {/* Collapse/Expand Button - Desktop Only - Aligned with Logout */}
+          {/* Collapse/Expand Button - Desktop Only - Inside Sidebar */}
           {!isMobile && (
             <button
               onClick={() => setCollapsed(!collapsed)}
               className={cn(
-                "absolute top-1/2 -translate-y-1/2 -right-2 z-50",
-                "w-4 h-4 flex items-center justify-center",
-                "bg-white dark:bg-slate-900",
-                "border border-fuchsia-400 dark:border-slate-800",
-                "rounded-full shadow-md",
+                "w-full flex items-center justify-center gap-2 rounded-lg",
+                "py-2.5 xl:py-3",
+                "bg-white/10 hover:bg-white/20 dark:bg-slate-800/50 dark:hover:bg-slate-800/80",
+                "text-white dark:text-white",
                 "transition-all duration-200",
-                "text-fuchsia-600 dark:text-slate-400",
-                "hover:text-fuchsia-700 dark:hover:text-blue-400",
-                "hover:bg-fuchsia-50 dark:hover:bg-slate-800",
-                "hover:border-fuchsia-500 dark:hover:border-blue-800",
-                "hover:shadow-lg hover:scale-110"
+                "hover:shadow-lg",
+                collapsed ? "px-0" : "px-3"
               )}
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
-              {collapsed ? (
-                <ChevronsRight className="h-3 w-3" strokeWidth={2.5} />
-              ) : (
-                <ChevronsLeft className="h-3 w-3" strokeWidth={2.5} />
+              {/* Hamburger/Vertical Lines Icon */}
+              <div className="flex flex-col gap-1 items-center justify-center">
+                {collapsed ? (
+                  // Vertical lines when collapsed
+                  <>
+                    <div className="w-1 h-1.5 bg-white rounded-full" />
+                    <div className="w-1 h-1.5 bg-white rounded-full" />
+                    <div className="w-1 h-1.5 bg-white rounded-full" />
+                  </>
+                ) : (
+                  // Horizontal lines (hamburger) when expanded
+                  <>
+                    <div className="w-4 h-0.5 bg-white rounded-full" />
+                    <div className="w-4 h-0.5 bg-white rounded-full" />
+                    <div className="w-4 h-0.5 bg-white rounded-full" />
+                  </>
+                )}
+              </div>
+              {!collapsed && (
+                <span className="text-xs xl:text-sm font-medium">Collapse</span>
               )}
             </button>
           )}

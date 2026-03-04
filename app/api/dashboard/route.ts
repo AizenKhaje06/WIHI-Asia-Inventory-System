@@ -6,7 +6,6 @@ import type { DashboardStats, InventoryItem } from "@/lib/types"
 import { 
   filterRevenueOrders, 
   calculateFinancialMetrics,
-  calculateBySalesChannel,
   getExcludedOrdersSummary,
   EXCLUDED_STATUSES 
 } from "@/lib/financial-utils"
@@ -38,7 +37,7 @@ function emptyDashboardStats(): DashboardStats {
     totalProducts: 0,
     stockPercentageByCategory: [],
     stocksCountByCategory: [],
-    stocksCountByStorageRoom: [],
+    stocksCountByStore: [],
     totalSales: 0,
     returnRate: 0,
     damagedReturnRate: 0,
@@ -119,6 +118,7 @@ export async function GET(request: Request) {
         id: o.id,
         qty: o.qty || 0,
         total: o.total || 0,
+        cogs: o.cogs || 0, // Use ACTUAL COGS from order
         parcel_status: o.parcel_status || 'PENDING',
         payment_status: o.payment_status || 'pending',
         sales_channel: o.sales_channel,
@@ -136,6 +136,7 @@ export async function GET(request: Request) {
         id: o.id,
         qty: o.qty || 0,
         total: o.total || 0,
+        cogs: o.cogs || 0, // Use ACTUAL COGS from order
         parcel_status: o.parcel_status || 'PENDING',
         payment_status: o.payment_status || 'pending',
         sales_channel: o.sales_channel,
@@ -285,31 +286,43 @@ export async function GET(request: Request) {
     }, {})
 
     const topProducts = Object.entries(productSales)
-      .sort(([, a], [, b]) => b.quantity - a.quantity)
+      .sort(([, a], [, b]) => (b as { quantity: number; revenue: number }).quantity - (a as { quantity: number; revenue: number }).quantity)
       .slice(0, 4)
-      .map(([name, data]) => ({
-        name,
-        sales: data.quantity,
-        revenue: data.revenue
-      }))
+      .map(([name, data]) => {
+        const typedData = data as { quantity: number; revenue: number }
+        return {
+          name,
+          sales: typedData.quantity,
+          revenue: typedData.revenue
+        }
+      })
 
     // Recent transactions (last 5 active orders)
     const recentTransactions = filteredOrders
       .filter(order => !EXCLUDED_STATUSES.includes(order.parcel_status))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 5)
-      .map(order => ({
-        id: order.id,
-        itemName: order.product || 'Unknown',
-        quantity: order.qty || 0,
-        totalRevenue: order.total || 0,
-        totalCost: (order.total || 0) * 0.6,
-        profit: (order.total || 0) * 0.4,
-        timestamp: order.date,
-        type: 'sale' as const,
-        transactionType: 'sale' as const,
-        status: order.parcel_status === 'DELIVERED' ? 'completed' : 'pending'
-      }))
+      .map(order => {
+        const actualCOGS = order.cogs || 0
+        const actualTotal = order.total || 0
+        const actualProfit = actualTotal - actualCOGS
+        
+        return {
+          id: order.id,
+          itemId: order.id, // Using order ID as itemId
+          itemName: order.product || 'Unknown',
+          quantity: order.qty || 0,
+          costPrice: actualCOGS / (order.qty || 1),
+          sellingPrice: actualTotal / (order.qty || 1),
+          totalCost: actualCOGS,
+          totalRevenue: actualTotal,
+          profit: actualProfit,
+          timestamp: order.date,
+          type: 'sale' as const,
+          transactionType: 'sale' as const,
+          status: (order.parcel_status === 'DELIVERED' ? 'completed' : 'pending') as 'completed' | 'pending'
+        }
+      })
 
     // Top categories (from inventory items)
     const categorySales = items.reduce((acc: { [key: string]: number }, item: InventoryItem) => {
@@ -354,12 +367,12 @@ export async function GET(request: Request) {
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
 
-    const stocksCountByStorageRoom = items.reduce((acc: { [key: string]: number }, item: InventoryItem) => {
-      acc[item.storageRoom] = (acc[item.storageRoom] || 0) + item.quantity
+    const stocksCountByStore = items.reduce((acc: { [key: string]: number }, item: InventoryItem) => {
+      acc[item.store] = (acc[item.store] || 0) + item.quantity
       return acc
     }, {})
 
-    const stocksCountByStorageRoomSorted = Object.entries(stocksCountByStorageRoom)
+    const stocksCountByStoreSorted = Object.entries(stocksCountByStore)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
 
@@ -377,7 +390,7 @@ export async function GET(request: Request) {
     // Supplier returns
     const supplierReturnsData = restockHistory
       .filter(r => r.reason === 'supplier-return')
-      .reduce((acc: { [key: string]: { quantity: number; value: number } }, r) => {
+      .reduce((acc: { [key: string]: { quantity: number; value: number } }, r: any) => {
         if (!acc[r.itemName]) {
           acc[r.itemName] = { quantity: 0, value: 0 }
         }
@@ -387,13 +400,16 @@ export async function GET(request: Request) {
       }, {})
 
     const topSupplierReturns = Object.entries(supplierReturnsData)
-      .sort(([, a], [, b]) => b.value - a.value)
+      .sort(([, a], [, b]) => (b as { quantity: number; value: number }).value - (a as { quantity: number; value: number }).value)
       .slice(0, 5)
-      .map(([name, data]) => ({
-        itemName: name,
-        quantity: data.quantity,
-        value: data.value
-      }))
+      .map(([name, data]) => {
+        const typedData = data as { quantity: number; value: number }
+        return {
+          itemName: name,
+          quantity: typedData.quantity,
+          value: typedData.value
+        }
+      })
 
     // Recent restocks
     const recentRestocks = restockHistory
@@ -403,7 +419,6 @@ export async function GET(request: Request) {
 
     // Cancelled orders metrics
     const cancelledOrders = filteredOrders.filter(o => o.parcel_status === 'CANCELLED')
-    const returnedOrders = filteredOrders.filter(o => o.parcel_status === 'RETURNED')
     
     const totalCancelledOrders = cancelledOrders.length
     const cancelledOrdersValue = cancelledOrders.reduce((sum, o) => sum + (o.total || 0), 0)
@@ -498,7 +513,7 @@ export async function GET(request: Request) {
       totalProducts,
       stockPercentageByCategory,
       stocksCountByCategory: stocksCountByCategorySorted,
-      stocksCountByStorageRoom: stocksCountByStorageRoomSorted,
+      stocksCountByStore: stocksCountByStoreSorted,
       totalSales: financialMetrics.totalQuantity,
       returnRate: Math.round(returnRate * 100) / 100,
       damagedReturnRate: Math.round(damagedReturnRate * 100) / 100,

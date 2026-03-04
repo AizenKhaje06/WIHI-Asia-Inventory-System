@@ -185,13 +185,40 @@ Implement automated API testing using Postman to ensure all inventory system end
      - All returned orders have status = 'Packed'
      - Response includes customer info, parcel status, payment status
 
-2. **Create new order**
-   - Request: `POST /api/orders` with order data
+2. **Create new order (RECENTLY MODIFIED - March 5, 2026)**
+   - Request: `POST /api/orders` with order data including new `notes` field:
+     ```json
+     {
+       "date": "2026-03-05",
+       "salesChannel": "Shopee",
+       "store": "Main Store",
+       "courier": "J&T Express",
+       "waybill": "JT123456789",
+       "qty": 2,
+       "cogs": 600.00,
+       "total": 1000.00,
+       "product": "Test Product",
+       "dispatchedBy": "Admin User",
+       "customerName": "John Doe",
+       "customerAddress": "123 Main St, City",
+       "customerContact": "09171234567",
+       "notes": "Handle with care - fragile items",
+       "orderItems": []
+     }
+     ```
    - Expected: 201 status, created order object
    - Validations:
-     - Order ID generated
+     - Order ID generated (format: ORD-{timestamp})
      - All required fields present
-     - Timestamps set correctly
+     - Optional `notes` field stored as `dispatch_notes` in database
+     - Customer information fields stored correctly
+     - Timestamps set correctly (created_at, updated_at)
+     - Status defaults to 'Pending'
+     - Parcel status defaults to 'Pending'
+   - **NEW**: `notes` field is now captured and stored as `dispatch_notes`
+     - Field is optional (can be null)
+     - Used for special delivery instructions or order notes
+     - Visible in Track Orders page and order details
 
 3. **Update order details (PATCH)**
    - Request: `PATCH /api/orders/[id]` with:
@@ -340,3 +367,11 @@ x-user-display-name: Admin User
   - Important: Verify cascade behavior with related tables (order_items)
   - Consider adding soft delete (deleted_at timestamp) instead of hard delete for audit trail
   - Test edge cases: non-existent orders, orders with related data, permission checks
+- **March 5, 2026 - Orders API Enhancement**: Added `notes` field to POST `/api/orders`
+  - New optional field for capturing order notes/special instructions
+  - Stored as `dispatch_notes` in the database
+  - Supports use cases like: delivery instructions, handling requirements, customer requests
+  - Field is nullable - orders can be created without notes
+  - Visible in Track Orders page and order detail views
+  - Test validation: Ensure notes are properly stored and retrieved
+  - Test edge cases: Empty notes, very long notes, special characters in notes

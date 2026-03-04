@@ -8,12 +8,17 @@
  * page (orders table with status='Packed') and EXCLUDE:
  * - CANCELLED orders
  * - RETURNED orders
+ * 
+ * CRITICAL: Use ACTUAL COGS from each order, NOT percentage-based calculations.
+ * The 'total' field in orders table is the FINAL amount customer will pay.
+ * The 'cogs' field in orders table is the ACTUAL cost of goods.
  */
 
 export interface Order {
   id: string
   qty: number
   total: number
+  cogs?: number // ACTUAL cost of goods sold (not calculated)
   parcel_status: string
   payment_status: string
   sales_channel?: string
@@ -86,18 +91,26 @@ export function filterRevenueOrders(
 /**
  * Calculate financial metrics from orders
  * 
+ * CRITICAL: Uses ACTUAL COGS from each order, not percentage-based calculation.
+ * This ensures accuracy when orders have:
+ * - Custom pricing
+ * - Discounts
+ * - Different product margins
+ * - Adjusted amounts
+ * 
  * @param orders - Array of orders (should be pre-filtered)
- * @param cogsPercentage - Cost of Goods Sold as percentage (default 60%)
- * @returns Financial metrics
+ * @returns Financial metrics based on actual order data
  */
 export function calculateFinancialMetrics(
-  orders: Order[],
-  cogsPercentage: number = 0.6
+  orders: Order[]
 ): FinancialMetrics {
   const totalOrders = orders.length
   const totalQuantity = orders.reduce((sum, order) => sum + (order.qty || 0), 0)
   const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0)
-  const totalCOGS = totalRevenue * cogsPercentage
+  
+  // Use ACTUAL COGS from each order, not percentage calculation
+  const totalCOGS = orders.reduce((sum, order) => sum + (order.cogs || 0), 0)
+  
   const totalProfit = totalRevenue - totalCOGS
   const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
 
@@ -116,19 +129,17 @@ export function calculateFinancialMetrics(
  */
 export function calculateStatusMetrics(
   orders: Order[],
-  status: string,
-  cogsPercentage: number = 0.6
+  status: string
 ): FinancialMetrics {
   const statusOrders = orders.filter(o => o.parcel_status === status)
-  return calculateFinancialMetrics(statusOrders, cogsPercentage)
+  return calculateFinancialMetrics(statusOrders)
 }
 
 /**
  * Calculate metrics grouped by sales channel
  */
 export function calculateBySalesChannel(
-  orders: Order[],
-  cogsPercentage: number = 0.6
+  orders: Order[]
 ): Record<string, FinancialMetrics> {
   const grouped: Record<string, Order[]> = {}
 
@@ -142,7 +153,7 @@ export function calculateBySalesChannel(
 
   const result: Record<string, FinancialMetrics> = {}
   Object.keys(grouped).forEach(channel => {
-    result[channel] = calculateFinancialMetrics(grouped[channel], cogsPercentage)
+    result[channel] = calculateFinancialMetrics(grouped[channel])
   })
 
   return result
@@ -152,8 +163,7 @@ export function calculateBySalesChannel(
  * Calculate metrics grouped by payment status
  */
 export function calculateByPaymentStatus(
-  orders: Order[],
-  cogsPercentage: number = 0.6
+  orders: Order[]
 ): Record<string, FinancialMetrics> {
   const grouped: Record<string, Order[]> = {}
 
@@ -167,7 +177,7 @@ export function calculateByPaymentStatus(
 
   const result: Record<string, FinancialMetrics> = {}
   Object.keys(grouped).forEach(status => {
-    result[status] = calculateFinancialMetrics(grouped[status], cogsPercentage)
+    result[status] = calculateFinancialMetrics(grouped[status])
   })
 
   return result

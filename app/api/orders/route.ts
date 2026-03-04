@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
       customerName,
       customerAddress,
       customerContact,
+      notes,
       orderItems = []
     } = body
     
@@ -91,6 +92,7 @@ export async function POST(request: NextRequest) {
         customer_name: customerName || null,
         customer_address: customerAddress || null,
         customer_contact: customerContact || null,
+        dispatch_notes: notes || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })

@@ -47,7 +47,8 @@ export default function POSPage() {
     dispatchedBy: '',
     customerName: '',
     customerAddress: '',
-    customerContact: ''
+    customerContact: '',
+    notes: ''
   })
 
   const total = useMemo(() => cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0), [cart])
@@ -134,7 +135,8 @@ export default function POSPage() {
       dispatchedBy: staffName,
       customerName: '',
       customerAddress: '',
-      customerContact: ''
+      customerContact: '',
+      notes: ''
     })
     
     setOrderFormOpen(true)
@@ -188,6 +190,7 @@ export default function POSPage() {
         customerName: orderForm.customerName,
         customerAddress: orderForm.customerAddress,
         customerContact: orderForm.customerContact,
+        notes: orderForm.notes,
         orderItems: orderItems
       })
 
@@ -236,7 +239,8 @@ export default function POSPage() {
         dispatchedBy: staffName,
         customerName: '',
         customerAddress: '',
-        customerContact: ''
+        customerContact: '',
+        notes: ''
       })
 
       toast.success('Order created successfully! Check Transaction History to mark as packed.')
@@ -745,13 +749,17 @@ export default function POSPage() {
               />
             </div>
 
-            {/* Total */}
+            {/* Total Amount - Now Editable */}
             <div>
-              <Label className="text-sm font-medium">Total Amount</Label>
+              <Label className="text-sm font-medium">Total Amount *</Label>
               <Input
-                value={formatCurrency(orderForm.total)}
-                readOnly
-                className="mt-1.5 bg-slate-50 dark:bg-slate-800 font-bold"
+                type="number"
+                value={orderForm.total}
+                onChange={(e) => setOrderForm({...orderForm, total: parseFloat(e.target.value) || 0})}
+                placeholder="Enter total amount"
+                className="mt-1.5 font-bold"
+                min="0"
+                step="0.01"
               />
             </div>
 
@@ -773,6 +781,18 @@ export default function POSPage() {
                 readOnly
                 rows={3}
                 className="mt-1.5 w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"
+              />
+            </div>
+
+            {/* Notes - Full Width */}
+            <div className="col-span-2">
+              <Label className="text-sm font-medium">Notes (Optional)</Label>
+              <textarea
+                value={orderForm.notes}
+                onChange={(e) => setOrderForm({...orderForm, notes: e.target.value})}
+                rows={3}
+                placeholder="Add any special instructions or notes for this order..."
+                className="mt-1.5 w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
 
