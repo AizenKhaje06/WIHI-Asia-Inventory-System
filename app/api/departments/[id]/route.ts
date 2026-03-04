@@ -1,7 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getTransactions } from "@/lib/supabase-db"
-import { getCachedData } from "@/lib/cache"
 import { requireAuth } from "@/lib/api-auth"
+import { supabase } from "@/lib/supabase"
+import { 
+  filterRevenueOrders, 
+  calculateFinancialMetrics,
+  EXCLUDED_STATUSES 
+} from "@/lib/financial-utils"
+
+/**
+ * Sales Channel Detail API - Accurate Financial Metrics
+ * 
+ * Data Source: orders table (Track Orders page)
+ * Revenue Recognition: Active orders only (excludes CANCELLED and RETURNED)
+ */
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +20,6 @@ export async function GET(
 ) {
   const authResult = requireAuth(request)
   if (authResult instanceof NextResponse) return authResult
-  const { user } = authResult
 
   try {
     const departmentName = decodeURIComponent(context.params.id)
@@ -17,114 +27,127 @@ export async function GET(
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
 
-    console.log('[Department Detail API] Department:', departmentName)
-    console.log('[Department Detail API] Date range:', { startDate, endDate })
+    console.log('[Sales Channel API] Channel:', departmentName)
+    console.log('[Sales Channel API] Date range:', { startDate, endDate })
 
-    // Get all transactions with caching
-    const allTransactions = await getCachedData(
-      'transactions',
-      () => getTransactions(),
-      2 * 60 * 1000 // 2 minutes
-    )
-    
-    // Filter by department and date range
-    let filteredTransactions = allTransactions.filter(t => {
-      if (!t.department) return false
-      
-      // Exclude cancelled and returned transactions
-      if (t.status && t.status !== 'completed') return false
-      
-      // Extract base department to determine type
-      const baseDepartment = t.department.split(' / ')[0]
-      
-      // Exclude non-sales transactions (demo, internal, warehouse)
-      if (['Demo/Display', 'Internal Use', 'Warehouse'].includes(baseDepartment)) {
-        return false
-      }
-      
-      // Extract sales channel (before " - ")
-      const salesChannel = t.department.split(' - ')[0]
-      
-      // Match by sales channel
-      return salesChannel === departmentName
-    })
-    
+    // Fetch orders from orders table
+    let ordersQuery = supabase
+      .from('orders')
+      .select('*')
+      .eq('status', 'Packed') // Only dispatched orders
+      .eq('sales_channel', departmentName)
+
+    // Apply date filters
     if (startDate) {
-      const start = new Date(startDate)
-      start.setHours(0, 0, 0, 0)
-      filteredTransactions = filteredTransactions.filter(t => new Date(t.timestamp) >= start)
+      ordersQuery = ordersQuery.gte('date', startDate)
     }
-    
     if (endDate) {
-      const end = new Date(endDate)
-      end.setHours(23, 59, 59, 999)
-      filteredTransactions = filteredTransactions.filter(t => new Date(t.timestamp) <= end)
+      ordersQuery = ordersQuery.lte('date', endDate)
     }
 
-    // Calculate metrics
-    const metrics = {
-      totalRevenue: filteredTransactions.reduce((sum, t) => sum + (t.totalRevenue || 0), 0),
-      totalCost: filteredTransactions.reduce((sum, t) => sum + (t.totalCost || 0), 0),
-      totalProfit: filteredTransactions.reduce((sum, t) => sum + (t.profit || 0), 0),
-      transactionCount: filteredTransactions.length,
-      totalQuantity: filteredTransactions.reduce((sum, t) => sum + (t.quantity || 0), 0),
-      profitMargin: 0
+    const { data: allOrders, error: ordersError } = await ordersQuery
+
+    if (ordersError) {
+      console.error('[Sales Channel API] Error fetching orders:', ordersError)
+      return NextResponse.json({ error: ordersError.message }, { status: 500 })
     }
 
-    if (metrics.totalRevenue > 0) {
-      metrics.profitMargin = (metrics.totalProfit / metrics.totalRevenue) * 100
+    const orders = allOrders || []
+
+    // Filter to active orders only (exclude CANCELLED and RETURNED)
+    const activeOrders = filterRevenueOrders(
+      orders.map(o => ({
+        id: o.id,
+        qty: o.qty || 0,
+        total: o.total || 0,
+        parcel_status: o.parcel_status || 'PENDING',
+        payment_status: o.payment_status || 'pending',
+        sales_channel: o.sales_channel,
+        date: o.date
+      })),
+      'active'
+    )
+
+    // Calculate overall metrics
+    const metrics = calculateFinancialMetrics(activeOrders)
+
+    // Parcel status counts (all orders, not just active)
+    const parcelStatusCounts = {
+      pending: orders.filter(o => o.parcel_status === 'PENDING').length,
+      inTransit: orders.filter(o => o.parcel_status === 'IN TRANSIT').length,
+      onDelivery: orders.filter(o => o.parcel_status === 'ON DELIVERY').length,
+      pickup: orders.filter(o => o.parcel_status === 'PICKUP').length,
+      delivered: orders.filter(o => o.parcel_status === 'DELIVERED').length,
+      cancelled: orders.filter(o => o.parcel_status === 'CANCELLED').length,
+      returned: orders.filter(o => o.parcel_status === 'RETURNED').length,
+      detained: orders.filter(o => o.parcel_status === 'DETAINED').length,
+      problematic: orders.filter(o => o.parcel_status === 'PROBLEMATIC').length,
+      total: orders.length,
+      deliveryRate: orders.length > 0 
+        ? (orders.filter(o => o.parcel_status === 'DELIVERED').length / orders.length) * 100 
+        : 0
     }
 
-    // Group by date for cash flow chart
+    // Cash flow data (daily aggregation)
     const cashFlowMap = new Map<string, { date: string; revenue: number; cost: number; profit: number }>()
-    
-    // Fill in all dates in the range with zero values first
+
+    // Fill in all dates in range with zero values
     if (startDate && endDate) {
       const start = new Date(startDate)
       const end = new Date(endDate)
-      
+
       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
         const dateStr = d.toISOString().split('T')[0]
         cashFlowMap.set(dateStr, { date: dateStr, revenue: 0, cost: 0, profit: 0 })
       }
     }
-    
-    // Now add actual transaction data
-    filteredTransactions.forEach(t => {
-      const date = new Date(t.timestamp).toISOString().split('T')[0]
-      
+
+    // Add actual order data (only active orders)
+    activeOrders.forEach(order => {
+      const date = new Date(order.date).toISOString().split('T')[0]
+
       if (!cashFlowMap.has(date)) {
         cashFlowMap.set(date, { date, revenue: 0, cost: 0, profit: 0 })
       }
-      
+
       const entry = cashFlowMap.get(date)!
-      entry.revenue += t.totalRevenue || 0
-      entry.cost += t.totalCost || 0
-      entry.profit += t.profit || 0
+      const revenue = order.total
+      const cost = order.total * 0.6
+      const profit = order.total * 0.4
+
+      entry.revenue += revenue
+      entry.cost += cost
+      entry.profit += profit
     })
 
     const cashFlow = Array.from(cashFlowMap.values())
       .sort((a, b) => a.date.localeCompare(b.date))
 
-    // Top products
-    const productMap = new Map<string, { name: string; quantity: number; revenue: number }>()
-    
-    filteredTransactions.forEach(t => {
-      if (!productMap.has(t.itemName)) {
-        productMap.set(t.itemName, { name: t.itemName, quantity: 0, revenue: 0 })
+    // Top products by revenue (only active orders)
+    const productMap = new Map<string, { name: string; quantity: number; revenue: number; orders: number }>()
+
+    orders.forEach(order => {
+      // Only count active orders for revenue
+      if (EXCLUDED_STATUSES.includes(order.parcel_status)) return
+
+      const productName = order.product || 'Unknown'
+
+      if (!productMap.has(productName)) {
+        productMap.set(productName, { name: productName, quantity: 0, revenue: 0, orders: 0 })
       }
-      
-      const product = productMap.get(t.itemName)!
-      product.quantity += t.quantity || 0
-      product.revenue += t.totalRevenue || 0
+
+      const product = productMap.get(productName)!
+      product.quantity += order.qty || 0
+      product.revenue += order.total || 0
+      product.orders += 1
     })
 
     const topProducts = Array.from(productMap.values())
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 10)
 
-    // Store/Warehouse breakdown
-    const storeMap = new Map<string, { 
+    // Store breakdown (only active orders)
+    const storeMap = new Map<string, {
       name: string
       revenue: number
       cost: number
@@ -132,13 +155,13 @@ export async function GET(
       transactions: number
       quantity: number
     }>()
-    
-    filteredTransactions.forEach(t => {
-      // Extract store/warehouse from department
-      // Example: "Physical Store - Warehouse 1" -> "Warehouse 1"
-      const parts = t.department?.split(' - ')
-      const storeName = parts && parts.length > 1 ? parts[1] : 'Main Store'
-      
+
+    orders.forEach(order => {
+      // Only count active orders
+      if (EXCLUDED_STATUSES.includes(order.parcel_status)) return
+
+      const storeName = order.store || 'Main Store'
+
       if (!storeMap.has(storeName)) {
         storeMap.set(storeName, {
           name: storeName,
@@ -149,50 +172,92 @@ export async function GET(
           quantity: 0
         })
       }
-      
+
       const store = storeMap.get(storeName)!
-      store.revenue += t.totalRevenue || 0
-      store.cost += t.totalCost || 0
-      store.profit += t.profit || 0
+      const revenue = order.total || 0
+      const cost = revenue * 0.6
+      const profit = revenue * 0.4
+
+      store.revenue += revenue
+      store.cost += cost
+      store.profit += profit
       store.transactions += 1
-      store.quantity += t.quantity || 0
+      store.quantity += order.qty || 0
     })
 
     const storeBreakdown = Array.from(storeMap.values())
       .sort((a, b) => b.revenue - a.revenue)
 
-    // Recent transactions
-    const recentTransactions = filteredTransactions
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    // Recent transactions (last 20, only active orders)
+    const recentTransactions = orders
+      .filter(order => !EXCLUDED_STATUSES.includes(order.parcel_status))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 20)
-      .map(t => ({
-        id: t.id,
-        itemName: t.itemName,
-        quantity: t.quantity,
-        revenue: t.totalRevenue,
-        cost: t.totalCost,
-        profit: t.profit,
-        timestamp: t.timestamp,
-        staffName: t.staffName,
-        notes: t.notes
+      .map(order => ({
+        id: order.id,
+        itemName: order.product || 'Unknown',
+        quantity: order.qty || 0,
+        revenue: order.total || 0,
+        cost: (order.total || 0) * 0.6,
+        profit: (order.total || 0) * 0.4,
+        timestamp: order.date,
+        staffName: order.dispatched_by || 'N/A',
+        notes: order.notes || '',
+        parcelStatus: order.parcel_status,
+        paymentStatus: order.payment_status
       }))
+
+    // Calculate excluded orders summary
+    const excludedOrders = orders.filter(o => EXCLUDED_STATUSES.includes(o.parcel_status))
+    const excludedRevenue = excludedOrders.reduce((sum, o) => sum + (o.total || 0), 0)
+
+    console.log('[Sales Channel API] Metrics Summary:', {
+      channel: departmentName,
+      totalOrders: orders.length,
+      activeOrders: activeOrders.length,
+      excludedOrders: excludedOrders.length,
+      revenue: metrics.totalRevenue,
+      profit: metrics.totalProfit,
+      margin: metrics.profitMargin
+    })
 
     return NextResponse.json({
       department: {
         name: departmentName,
-        metrics,
+        metrics: {
+          totalRevenue: metrics.totalRevenue,
+          totalCost: metrics.totalCOGS,
+          totalProfit: metrics.totalProfit,
+          transactionCount: metrics.totalOrders,
+          totalQuantity: metrics.totalQuantity,
+          profitMargin: metrics.profitMargin
+        },
+        parcelStatusCounts,
         cashFlow,
         topProducts,
         storeBreakdown,
-        recentTransactions
+        recentTransactions,
+        excludedSummary: {
+          count: excludedOrders.length,
+          revenue: excludedRevenue,
+          cancelled: orders.filter(o => o.parcel_status === 'CANCELLED').length,
+          returned: orders.filter(o => o.parcel_status === 'RETURNED').length
+        }
       },
       dateRange: {
         start: startDate || null,
         end: endDate || null
+      },
+      metadata: {
+        source: 'orders table',
+        revenueRecognition: 'active orders (excludes cancelled/returned)'
       }
     })
   } catch (error) {
-    console.error("[Department Detail API] Error:", error)
-    return NextResponse.json({ error: "Failed to fetch department details" }, { status: 500 })
+    console.error("[Sales Channel API] Error:", error)
+    return NextResponse.json({ 
+      error: "Failed to fetch sales channel details",
+      details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+    }, { status: 500 })
   }
 }

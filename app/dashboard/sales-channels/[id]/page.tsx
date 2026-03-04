@@ -42,6 +42,12 @@ interface DepartmentDetail {
     totalQuantity: number
     profitMargin: number
   }
+  parcelStatusCounts?: {
+    pending: number
+    inTransit: number
+    delivered: number
+    total: number
+  }
   cashFlow: Array<{
     date: string
     revenue: number
@@ -278,7 +284,7 @@ export default function SalesChannelDetailPage() {
           salesTransactions.forEach((row: any) => {
             salesData.push(columns.map(col => {
               const value = row[col.key]
-              return col.format ? col.format(value, row) : value
+              return col.format ? col.format(value) : value
             }))
           })
           salesData.push([])
@@ -298,7 +304,7 @@ export default function SalesChannelDetailPage() {
           cancelledTransactions.forEach((row: any) => {
             cancelledData.push(columns.map(col => {
               const value = row[col.key]
-              return col.format ? col.format(value, row) : value
+              return col.format ? col.format(value) : value
             }))
           })
           cancelledData.push([])
@@ -318,7 +324,7 @@ export default function SalesChannelDetailPage() {
           returnedTransactions.forEach((row: any) => {
             returnedData.push(columns.map(col => {
               const value = row[col.key]
-              return col.format ? col.format(value, row) : value
+              return col.format ? col.format(value) : value
             }))
           })
           returnedData.push([])
@@ -429,7 +435,7 @@ export default function SalesChannelDetailPage() {
           const salesTableData = salesTransactions.map((row: any) => 
             columns.map(col => {
               const value = row[col.key]
-              const formatted = col.format ? col.format(value, row) : String(value ?? '')
+              const formatted = col.format ? col.format(value) : String(value ?? '')
               return typeof formatted === 'string' ? formatted.replace(/₱/g, '') : formatted
             })
           )
@@ -462,7 +468,7 @@ export default function SalesChannelDetailPage() {
           const cancelledTableData = cancelledTransactions.map((row: any) => 
             columns.map(col => {
               const value = row[col.key]
-              const formatted = col.format ? col.format(value, row) : String(value ?? '')
+              const formatted = col.format ? col.format(value) : String(value ?? '')
               return typeof formatted === 'string' ? formatted.replace(/₱/g, '') : formatted
             })
           )
@@ -495,7 +501,7 @@ export default function SalesChannelDetailPage() {
           const returnedTableData = returnedTransactions.map((row: any) => 
             columns.map(col => {
               const value = row[col.key]
-              const formatted = col.format ? col.format(value, row) : String(value ?? '')
+              const formatted = col.format ? col.format(value) : String(value ?? '')
               return typeof formatted === 'string' ? formatted.replace(/₱/g, '') : formatted
             })
           )
@@ -704,6 +710,102 @@ export default function SalesChannelDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Parcel Status Cards */}
+      {data.parcelStatusCounts && (
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+            Parcel Status Overview
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-[5px] bg-amber-200 dark:bg-amber-700/50">
+                    <Package className="h-4 w-4 text-amber-700 dark:text-amber-300" />
+                  </div>
+                  <Badge className="bg-amber-200 text-amber-800 dark:bg-amber-700/50 dark:text-amber-200 border-0">
+                    Pending
+                  </Badge>
+                </div>
+                <div className="text-3xl font-bold text-amber-900 dark:text-amber-100 mb-1">
+                  {formatNumber(data.parcelStatusCounts.pending)}
+                </div>
+                <div className="text-xs text-amber-700 dark:text-amber-300">
+                  Awaiting Dispatch
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-[5px] bg-blue-200 dark:bg-blue-700/50">
+                    <TrendingUp className="h-4 w-4 text-blue-700 dark:text-blue-300" />
+                  </div>
+                  <Badge className="bg-blue-200 text-blue-800 dark:bg-blue-700/50 dark:text-blue-200 border-0">
+                    In Transit
+                  </Badge>
+                </div>
+                <div className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-1">
+                  {formatNumber(data.parcelStatusCounts.inTransit)}
+                </div>
+                <div className="text-xs text-blue-700 dark:text-blue-300">
+                  On the Way
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-md bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-[5px] bg-green-200 dark:bg-green-700/50">
+                    <ShoppingCart className="h-4 w-4 text-green-700 dark:text-green-300" />
+                  </div>
+                  <Badge className="bg-green-200 text-green-800 dark:bg-green-700/50 dark:text-green-200 border-0">
+                    Delivered
+                  </Badge>
+                </div>
+                <div className="text-3xl font-bold text-green-900 dark:text-green-100 mb-1">
+                  {formatNumber(data.parcelStatusCounts.delivered)}
+                </div>
+                <div className="text-xs text-green-700 dark:text-green-300">
+                  Successfully Delivered
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-md bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-700/50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-[5px] bg-slate-200 dark:bg-slate-600/50">
+                    <Package className="h-4 w-4 text-slate-700 dark:text-slate-300" />
+                  </div>
+                  <Badge className="bg-slate-200 text-slate-800 dark:bg-slate-600/50 dark:text-slate-200 border-0">
+                    Total
+                  </Badge>
+                </div>
+                <div className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+                  {formatNumber(data.parcelStatusCounts.total)}
+                </div>
+                <div className="text-xs text-slate-700 dark:text-slate-300">
+                  All Parcels
+                </div>
+                <div className="mt-2 pt-2 border-t border-slate-300 dark:border-slate-600">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-slate-600 dark:text-slate-400">Delivery Rate:</span>
+                    <span className="font-semibold text-green-600 dark:text-green-400">
+                      {data.parcelStatusCounts.total > 0 
+                        ? ((data.parcelStatusCounts.delivered / data.parcelStatusCounts.total) * 100).toFixed(1)
+                        : 0}%
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
       {/* Cash Flow Chart */}
       <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900">

@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import * as XLSX from 'xlsx'
 import { 
   Search, Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, 
   User, Phone, Mail, MapPin, AlertCircle, PackageCheck, Ban, AlertTriangle, RotateCcw,
-  FileSpreadsheet, FileDown, Download
+  FileSpreadsheet, FileDown, Download, Trash2
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -26,6 +27,7 @@ interface Order {
   customerPhone: string
   customerEmail?: string
   customerAddress: string
+  storeName?: string // Store name from notes
   itemName: string
   quantity: number
   totalAmount: number
@@ -52,6 +54,16 @@ export default function TrackOrdersPage() {
   const [endDate, setEndDate] = useState<Date | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [editForm, setEditForm] = useState({
+    customerName: '',
+    customerContact: '',
+    customerAddress: '',
+    courier: '',
+    trackingNumber: ''
+  })
 
   useEffect(() => {
     fetchOrders()
@@ -70,18 +82,19 @@ export default function TrackOrdersPage() {
       const transformedOrders: Order[] = data.map(order => ({
         id: order.id,
         orderNumber: order.id,
-        customerName: 'N/A', // Not tracked yet
-        customerPhone: 'N/A',
+        customerName: order.customer_name || 'N/A',
+        customerPhone: order.customer_contact || 'N/A',
         customerEmail: undefined,
-        customerAddress: order.store || 'N/A',
-        itemName: order.product ? order.product.replace(/\s*\(\d+\)$/, '') : 'N/A',
-        quantity: order.qty,
-        totalAmount: order.total,
+        customerAddress: order.customer_address || 'N/A',
+        storeName: order.store || 'N/A', // Store name
+        itemName: order.product || 'N/A', // Product name (keep full text with quantities)
+        quantity: order.qty || 0,
+        totalAmount: order.total || 0,
         orderStatus: order.status as 'Pending' | 'Packed',
         parcelStatus: (order.parcel_status || 'PENDING') as any,
         paymentStatus: (order.payment_status || 'pending') as any,
-        courier: order.courier,
-        trackingNumber: order.waybill,
+        courier: order.courier || '-',
+        trackingNumber: order.waybill || '-',
         orderDate: order.date,
         estimatedDelivery: undefined,
         deliveryDate: order.status === 'Delivered' ? order.updated_at : undefined,
@@ -89,9 +102,10 @@ export default function TrackOrdersPage() {
           dispatchedBy: order.dispatched_by,
           dispatchedAt: order.created_at,
           packedBy: order.packed_by,
-          packedAt: order.packed_at
+          packedAt: order.packed_at,
+          store: order.store
         }),
-        department: order.sales_channel
+        department: order.sales_channel || 'N/A'
       }))
       
       setOrders(transformedOrders)
@@ -346,7 +360,7 @@ export default function TrackOrdersPage() {
       const problematicFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC'))
       const returnedFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'RETURNED'))
 
-      // Create a simple, clean, enterprise-level printable HTML content
+      // Create a comprehensive printable HTML content
       const printContent = `
         <!DOCTYPE html>
         <html>
@@ -354,140 +368,228 @@ export default function TrackOrdersPage() {
           <title>Track Orders Report</title>
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            @page { margin: 1.5cm; size: auto; }
-            body { 
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-              padding: 20px; 
-              background: white;
-              color: #0f172a;
-              line-height: 1.5;
+            @page {
+              margin: 0;
+              size: auto;
             }
-            
-            /* Header - Clean & Minimal */
+            @media print {
+              @page { margin: 0; }
+              body { margin: 1.6cm; }
+            }
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              padding: 30px; 
+              background: white;
+              color: #1e293b;
+            }
             .header {
-              margin-bottom: 30px;
-              padding-bottom: 15px;
-              border-bottom: 2px solid #0f172a;
+              text-align: center;
+              margin-bottom: 40px;
+              padding-bottom: 25px;
+              border-bottom: 4px solid #ec540e;
             }
             .page-title {
-              font-size: 24px;
-              font-weight: 600;
-              color: #0f172a;
-              margin-bottom: 8px;
-              letter-spacing: -0.5px;
+              font-size: 32px;
+              font-weight: 700;
+              color: #1e293b;
+              margin-bottom: 20px;
+              letter-spacing: 0.5px;
+              text-transform: uppercase;
             }
             .meta { 
               color: #64748b; 
-              font-size: 12px;
-              line-height: 1.6;
+              font-size: 15px;
+              line-height: 1.8;
             }
-            .meta strong { color: #334155; font-weight: 600; }
+            .meta strong { color: #1e293b; font-weight: 700; }
             
-            /* Financial Summary - Simple Grid */
             .financial-summary {
               display: grid;
               grid-template-columns: repeat(5, 1fr);
-              gap: 12px;
-              margin-bottom: 25px;
-              padding: 20px;
-              background: #f8fafc;
-              border: 1px solid #e2e8f0;
+              gap: 15px;
+              margin-bottom: 35px;
+              padding: 25px;
+              background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+              border-radius: 12px;
+              border: 3px solid #f59e0b;
             }
             .financial-card {
               text-align: center;
-              padding: 12px;
+              padding: 15px;
+              background: white;
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
             .financial-card .label {
-              font-size: 10px;
+              font-size: 11px;
               color: #64748b;
-              font-weight: 600;
+              font-weight: 700;
               text-transform: uppercase;
               letter-spacing: 0.5px;
-              margin-bottom: 6px;
+              margin-bottom: 8px;
             }
             .financial-card .value {
-              font-size: 18px;
-              font-weight: 700;
-              color: #0f172a;
+              font-size: 24px;
+              font-weight: 800;
+              color: #1e293b;
+            }
+            .financial-card.profit .value {
+              color: #059669;
+            }
+            .financial-card.margin .value {
+              color: #0284c7;
             }
             
-            /* Status Breakdown - Clean Cards */
             .summary { 
               display: grid; 
               grid-template-columns: repeat(5, 1fr); 
-              gap: 10px; 
-              margin-bottom: 25px; 
+              gap: 12px; 
+              margin-bottom: 35px; 
             }
             .summary-card { 
-              background: white;
-              padding: 12px;
+              background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+              padding: 18px 12px;
+              border-radius: 10px;
               text-align: center;
-              border: 1px solid #e2e8f0;
+              border: 2px solid #e2e8f0;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }
             .summary-card .number { 
-              font-size: 24px; 
-              font-weight: 700; 
-              color: #0f172a;
-              margin-bottom: 4px;
+              font-size: 32px; 
+              font-weight: 800; 
+              color: #1e293b;
+              margin-bottom: 8px;
             }
             .summary-card .label { 
-              font-size: 10px; 
+              font-size: 11px; 
               color: #64748b; 
               font-weight: 600;
               text-transform: uppercase;
-              letter-spacing: 0.3px;
+              letter-spacing: 0.5px;
+              margin-bottom: 10px;
+            }
+            .summary-card .mini-stats {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 4px;
+              margin-top: 10px;
+              padding-top: 10px;
+              border-top: 1px solid #e2e8f0;
+            }
+            .summary-card .mini-stat {
+              font-size: 8px;
+              color: #94a3b8;
+              font-weight: 600;
+            }
+            .summary-card .mini-stat .mini-value {
+              font-size: 10px;
+              color: #475569;
+              font-weight: 700;
+              display: block;
+              margin-top: 2px;
             }
             
-            /* Table - Enterprise Clean */
+            .summary-row-2 {
+              display: grid; 
+              grid-template-columns: repeat(5, 1fr); 
+              gap: 12px; 
+              margin-bottom: 35px;
+            }
+            
             table { 
               width: 100%; 
-              border-collapse: collapse;
-              margin-top: 20px; 
-              font-size: 10px;
-              border: 1px solid #e2e8f0;
+              border-collapse: separate;
+              border-spacing: 0;
+              margin-top: 30px; 
+              font-size: 11px;
+              border: 1px solid #cbd5e1;
+              background: white;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
             thead {
-              background: #0f172a;
+              background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
             }
             th { 
               color: white; 
-              padding: 10px 8px; 
+              padding: 14px 12px; 
               text-align: left; 
-              font-size: 9px; 
-              font-weight: 600;
+              font-size: 10px; 
+              font-weight: 700;
               text-transform: uppercase;
               letter-spacing: 0.5px;
-              border-right: 1px solid rgba(255,255,255,0.1);
+              border-right: 1px solid rgba(255,255,255,0.15);
+              border-bottom: 2px solid #1e40af;
             }
             th:last-child { border-right: none; }
             td { 
-              padding: 8px; 
-              border-bottom: 1px solid #f1f5f9;
-              font-size: 10px;
+              padding: 12px; 
+              border-bottom: 1px solid #e2e8f0;
+              border-right: 1px solid #f1f5f9;
+              font-size: 11px;
               color: #334155;
+              line-height: 1.5;
+            }
+            td:last-child { border-right: none; }
+            tbody tr { 
+              transition: background-color 0.15s ease;
             }
             tbody tr:nth-child(even) { 
               background-color: #f8fafc; 
             }
+            tbody tr:hover { 
+              background-color: #eff6ff;
+              box-shadow: inset 0 0 0 1px #dbeafe;
+            }
             tbody tr:last-child td {
               border-bottom: none;
             }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            tr:hover { background-color: #f1f5f9; }
             
-            /* Footer - Minimal */
+            .badge { 
+              display: inline-block; 
+              padding: 3px 6px; 
+              border-radius: 4px; 
+              font-size: 7px; 
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.2px;
+              white-space: nowrap;
+            }
+            .badge-pending { background: #fef3c7; color: #92400e; }
+            .badge-paid { background: #d1fae5; color: #065f46; }
+            .badge-cod { background: #dbeafe; color: #1e40af; }
+            .badge-refunded { background: #f3f4f6; color: #374151; }
+            .badge-packed { background: #d1fae5; color: #065f46; }
+            .badge-delivered { background: #d1fae5; color: #065f46; }
+            .badge-transit { background: #dbeafe; color: #1e40af; }
+            .badge-on-delivery { background: #dbeafe; color: #1e40af; }
+            .badge-pickup { background: #e9d5ff; color: #6b21a8; }
+            .badge-cancelled { background: #fee2e2; color: #991b1b; }
+            .badge-detained { background: #fed7aa; color: #9a3412; }
+            .badge-problematic { background: #fce7f3; color: #9f1239; }
+            .badge-returned { background: #f1f5f9; color: #475569; }
+            
             .footer {
-              margin-top: 30px;
-              padding-top: 15px;
-              border-top: 1px solid #e2e8f0;
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 2px solid #e2e8f0;
               text-align: center;
               color: #94a3b8;
-              font-size: 10px;
+              font-size: 11px;
+            }
+            .footer strong {
+              color: #1e293b;
+              font-size: 13px;
             }
             
             @media print {
-              body { padding: 10px; }
-              .page-title { font-size: 20px; }
-              .financial-summary { padding: 15px; gap: 8px; }
+              body { padding: 15px; }
+              .page-title { font-size: 28px; }
               .summary { gap: 8px; }
+              .summary-card { padding: 12px 8px; }
+              .summary-card .number { font-size: 24px; }
+              .financial-summary { gap: 10px; padding: 20px; }
             }
           </style>
         </head>
@@ -501,8 +603,9 @@ export default function TrackOrdersPage() {
                 year: 'numeric', 
                 hour: '2-digit', 
                 minute: '2-digit' 
-              })} | 
-              <strong>Total Orders:</strong> ${filteredOrders.length}
+              })}<br>
+              <strong>Total Orders:</strong> ${filteredOrders.length} | 
+              <strong>Report Type:</strong> Comprehensive Track Orders
             </div>
           </div>
 
@@ -519,11 +622,11 @@ export default function TrackOrdersPage() {
               <div class="label">Total COGS</div>
               <div class="value">₱${totalCOGS.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
             </div>
-            <div class="financial-card">
+            <div class="financial-card profit">
               <div class="label">Total Profit</div>
               <div class="value">₱${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
             </div>
-            <div class="financial-card">
+            <div class="financial-card margin">
               <div class="label">Profit Margin</div>
               <div class="value">${totalProfitMargin.toFixed(2)}%</div>
             </div>
@@ -531,47 +634,107 @@ export default function TrackOrdersPage() {
           
           <div class="summary">
             <div class="summary-card">
+              <div class="number">${totalOrders}</div>
+              <div class="label">Total Orders</div>
+              <div class="mini-stats">
+                <div class="mini-stat">Qty: <span class="mini-value">${totalQuantity}</span></div>
+                <div class="mini-stat">Amt: <span class="mini-value">₱${totalAmount.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">Profit: <span class="mini-value">₱${totalProfit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">100.0%</span></div>
+              </div>
+            </div>
+            <div class="summary-card">
               <div class="number">${pendingOrders}</div>
               <div class="label">Pending</div>
+              <div class="mini-stats">
+                <div class="mini-stat">Qty: <span class="mini-value">${pendingFinancials.qty}</span></div>
+                <div class="mini-stat">Amt: <span class="mini-value">₱${pendingFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">Profit: <span class="mini-value">₱${pendingFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((pendingOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+              </div>
             </div>
             <div class="summary-card">
               <div class="number">${inTransitOrders}</div>
               <div class="label">In Transit</div>
+              <div class="mini-stats">
+                <div class="mini-stat">Qty: <span class="mini-value">${inTransitFinancials.qty}</span></div>
+                <div class="mini-stat">Amt: <span class="mini-value">₱${inTransitFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">Profit: <span class="mini-value">₱${inTransitFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((inTransitOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+              </div>
             </div>
             <div class="summary-card">
               <div class="number">${onDeliveryOrders}</div>
               <div class="label">On Delivery</div>
+              <div class="mini-stats">
+                <div class="mini-stat">Qty: <span class="mini-value">${onDeliveryFinancials.qty}</span></div>
+                <div class="mini-stat">Amt: <span class="mini-value">₱${onDeliveryFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">Profit: <span class="mini-value">₱${onDeliveryFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((onDeliveryOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+              </div>
             </div>
             <div class="summary-card">
               <div class="number">${pickupOrders}</div>
               <div class="label">Pickup</div>
-            </div>
-            <div class="summary-card">
-              <div class="number">${deliveredOrders}</div>
-              <div class="label">Delivered</div>
+              <div class="mini-stats">
+                <div class="mini-stat">Qty: <span class="mini-value">${pickupFinancials.qty}</span></div>
+                <div class="mini-stat">Amt: <span class="mini-value">₱${pickupFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">Profit: <span class="mini-value">₱${pickupFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((pickupOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+              </div>
             </div>
           </div>
 
-          <div class="summary">
+          <div class="summary-row-2">
+            <div class="summary-card">
+              <div class="number">${deliveredOrders}</div>
+              <div class="label">Delivered</div>
+              <div class="mini-stats">
+                <div class="mini-stat">Qty: <span class="mini-value">${deliveredFinancials.qty}</span></div>
+                <div class="mini-stat">Amt: <span class="mini-value">₱${deliveredFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">Profit: <span class="mini-value">₱${deliveredFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((deliveredOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+              </div>
+            </div>
             <div class="summary-card">
               <div class="number">${cancelledOrders}</div>
               <div class="label">Cancelled</div>
+              <div class="mini-stats">
+                <div class="mini-stat">Qty: <span class="mini-value">${cancelledFinancials.qty}</span></div>
+                <div class="mini-stat">Amt: <span class="mini-value">₱${cancelledFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">Profit: <span class="mini-value">₱${cancelledFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((cancelledOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+              </div>
             </div>
             <div class="summary-card">
               <div class="number">${detainedOrders}</div>
               <div class="label">Detained</div>
+              <div class="mini-stats">
+                <div class="mini-stat">Qty: <span class="mini-value">${detainedFinancials.qty}</span></div>
+                <div class="mini-stat">Amt: <span class="mini-value">₱${detainedFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">Profit: <span class="mini-value">₱${detainedFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((detainedOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+              </div>
             </div>
             <div class="summary-card">
               <div class="number">${problematicOrders}</div>
               <div class="label">Problematic</div>
+              <div class="mini-stats">
+                <div class="mini-stat">Qty: <span class="mini-value">${problematicFinancials.qty}</span></div>
+                <div class="mini-stat">Amt: <span class="mini-value">₱${problematicFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">Profit: <span class="mini-value">₱${problematicFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((problematicOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+              </div>
             </div>
             <div class="summary-card">
               <div class="number">${returnedOrders}</div>
               <div class="label">Returned</div>
-            </div>
-            <div class="summary-card">
-              <div class="number">${totalOrders}</div>
-              <div class="label">Total Orders</div>
+              <div class="mini-stats">
+                <div class="mini-stat">Qty: <span class="mini-value">${returnedFinancials.qty}</span></div>
+                <div class="mini-stat">Amt: <span class="mini-value">₱${returnedFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">Profit: <span class="mini-value">₱${returnedFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+                <div class="mini-stat">% of Total: <span class="mini-value">${totalOrders > 0 ? ((returnedOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+              </div>
             </div>
           </div>
 
@@ -585,6 +748,7 @@ export default function TrackOrdersPage() {
                 <th>Product</th>
                 <th style="text-align: center;">Qty</th>
                 <th style="text-align: right;">Amount</th>
+                <th style="text-align: right;">COGS</th>
                 <th>Courier</th>
                 <th>Waybill</th>
                 <th>Payment</th>
@@ -595,25 +759,27 @@ export default function TrackOrdersPage() {
             <tbody>
               ${filteredOrders.map(order => `
                 <tr>
-                  <td style="font-weight: 600;">#${order.id.slice(-6)}</td>
-                  <td>${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                  <td style="font-weight: 600;">${order.department || 'N/A'}</td>
-                  <td>${order.customerAddress || 'N/A'}</td>
-                  <td style="font-weight: 500;">${order.itemName}</td>
-                  <td style="text-align: center; font-weight: 600;">${order.quantity}</td>
-                  <td style="text-align: right; font-weight: 600;">₱${order.totalAmount.toLocaleString()}</td>
-                  <td>${order.courier || '-'}</td>
-                  <td style="font-size: 9px;">${order.trackingNumber || '-'}</td>
-                  <td>${order.paymentStatus.toUpperCase()}</td>
-                  <td>${order.orderStatus.toUpperCase()}</td>
-                  <td>${order.parcelStatus}</td>
+                  <td style="font-weight: 600; font-family: 'Courier New', monospace; color: #1e40af;">#${order.id.slice(-6)}</td>
+                  <td style="color: #64748b;">${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                  <td style="font-weight: 600; color: #0f172a;">${order.department || 'N/A'}</td>
+                  <td style="color: #475569;">${order.customerAddress || 'N/A'}</td>
+                  <td style="font-weight: 500; color: #0f172a;">${order.itemName}</td>
+                  <td style="text-align: center; font-weight: 700; color: #0f172a;">${order.quantity}</td>
+                  <td style="text-align: right; font-weight: 600; color: #059669;">₱${order.totalAmount.toLocaleString()}</td>
+                  <td style="text-align: right; font-weight: 500; color: #64748b;">₱${(order.totalAmount * 0.6).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                  <td style="color: #475569;">${order.courier || '-'}</td>
+                  <td style="font-family: 'Courier New', monospace; font-size: 10px; color: #64748b;">${order.trackingNumber || '-'}</td>
+                  <td style="font-weight: 600; color: #0f172a;">${order.paymentStatus.toUpperCase()}</td>
+                  <td style="font-weight: 600; color: #0f172a;">${order.orderStatus.toUpperCase()}</td>
+                  <td style="font-weight: 600; color: #0f172a;">${order.parcelStatus}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
 
           <div class="footer">
-            <p>Vertex Inventory Management System - Track Orders Report</p>
+            <p><strong>Vertex Professional Inventory Management System</strong></p>
+            <p>Track Orders Report - Confidential Document</p>
           </div>
         </body>
         </html>
@@ -748,6 +914,90 @@ export default function TrackOrdersPage() {
   const openDetailsModal = (order: Order) => {
     setSelectedOrder(order)
     setShowDetailsModal(true)
+    setIsEditMode(false)
+    // Initialize edit form with current order data
+    setEditForm({
+      customerName: order.customerName,
+      customerContact: order.customerPhone,
+      customerAddress: order.customerAddress,
+      courier: order.courier || '',
+      trackingNumber: order.trackingNumber || ''
+    })
+  }
+
+  const handleEditMode = () => {
+    setIsEditMode(true)
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditMode(false)
+    // Reset form to original values
+    if (selectedOrder) {
+      setEditForm({
+        customerName: selectedOrder.customerName,
+        customerContact: selectedOrder.customerPhone,
+        customerAddress: selectedOrder.customerAddress,
+        courier: selectedOrder.courier || '',
+        trackingNumber: selectedOrder.trackingNumber || ''
+      })
+    }
+  }
+
+  const handleSaveEdit = async () => {
+    if (!selectedOrder) return
+
+    try {
+      const response = await fetch(`/api/orders/${selectedOrder.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customer_name: editForm.customerName,
+          customer_contact: editForm.customerContact,
+          customer_address: editForm.customerAddress,
+          courier: editForm.courier,
+          waybill: editForm.trackingNumber
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update order')
+      }
+
+      toast.success('Order updated successfully')
+      setIsEditMode(false)
+      fetchOrders() // Refresh the list
+      setShowDetailsModal(false)
+    } catch (error) {
+      console.error('Error updating order:', error)
+      toast.error('Failed to update order')
+    }
+  }
+
+  const handleDeleteOrder = async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete order')
+      }
+
+      toast.success('Order deleted successfully')
+      fetchOrders() // Refresh the list
+      setShowDeleteDialog(false)
+      setOrderToDelete(null)
+    } catch (error) {
+      console.error('Error deleting order:', error)
+      toast.error('Failed to delete order')
+    }
+  }
+
+  const openDeleteDialog = (orderId: string) => {
+    setOrderToDelete(orderId)
+    setShowDeleteDialog(true)
   }
 
   const totalOrders = filteredOrders.length
@@ -760,6 +1010,27 @@ export default function TrackOrdersPage() {
   const detainedOrders = filteredOrders.filter(o => o.parcelStatus === 'DETAINED').length
   const problematicOrders = filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC').length
   const returnedOrders = filteredOrders.filter(o => o.parcelStatus === 'RETURNED').length
+
+  // Calculate financial metrics for each status
+  const getStatusFinancials = (orders: Order[]) => {
+    const qty = orders.reduce((sum, o) => sum + o.quantity, 0)
+    const amt = orders.reduce((sum, o) => sum + o.totalAmount, 0)
+    const cogs = amt * 0.6
+    const profit = amt - cogs
+    return { qty, amt, cogs, profit }
+  }
+
+  const totalFinancials = getStatusFinancials(filteredOrders)
+  const pendingFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'PENDING'))
+  const inTransitFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT'))
+  const onDeliveryFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'ON DELIVERY'))
+  const pickupFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'PICKUP'))
+  const deliveredFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'DELIVERED'))
+  const cancelledFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'CANCELLED'))
+  const detainedFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'DETAINED'))
+  const problematicFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'PROBLEMATIC'))
+  const returnedFinancials = getStatusFinancials(filteredOrders.filter(o => o.parcelStatus === 'RETURNED'))
+
 
   if (loading) {
     return (
@@ -804,153 +1075,333 @@ export default function TrackOrdersPage() {
       <div className="grid gap-3 grid-cols-5">
         {/* Row 1 */}
         {/* Total Orders */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-slate-100 dark:bg-slate-800">
-                <Package className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
+                <Package className="h-4 w-4 text-slate-600 dark:text-slate-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {totalOrders}
             </div>
-            <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Total Orders</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Total Orders</div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-200 dark:border-slate-700">
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{totalFinancials.qty}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Amt</div>
+                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">₱{totalFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Profit</div>
+                <div className="text-sm font-bold text-blue-600 dark:text-blue-400">₱{totalFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">% of Total</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-slate-300">100.0%</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Pending */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-yellow-100 dark:bg-yellow-900/30">
-                <Clock className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
+        <Card className="border-yellow-200 dark:border-yellow-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
+                <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {pendingOrders}
             </div>
-            <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Pending</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Pending</div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-yellow-200 dark:border-yellow-800">
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{pendingFinancials.qty}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Amt</div>
+                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">₱{pendingFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Profit</div>
+                <div className="text-sm font-bold text-blue-600 dark:text-blue-400">₱{pendingFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">% of Total</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{totalOrders > 0 ? ((pendingOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* In Transit */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-indigo-100 dark:bg-indigo-900/30">
-                <Truck className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+        <Card className="border-indigo-200 dark:border-indigo-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+                <Truck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {inTransitOrders}
             </div>
-            <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">In Transit</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">In Transit</div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-indigo-200 dark:border-indigo-800">
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{inTransitFinancials.qty}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Amt</div>
+                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">₱{inTransitFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Profit</div>
+                <div className="text-sm font-bold text-blue-600 dark:text-blue-400">₱{inTransitFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">% of Total</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{totalOrders > 0 ? ((inTransitOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* On Delivery */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-blue-100 dark:bg-blue-900/30">
-                <Truck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+        <Card className="border-blue-200 dark:border-blue-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <Truck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {onDeliveryOrders}
             </div>
-            <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">On Delivery</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">On Delivery</div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-blue-200 dark:border-blue-800">
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{onDeliveryFinancials.qty}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Amt</div>
+                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">₱{onDeliveryFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Profit</div>
+                <div className="text-sm font-bold text-blue-600 dark:text-blue-400">₱{onDeliveryFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">% of Total</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{totalOrders > 0 ? ((onDeliveryOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Pickup */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-purple-100 dark:bg-purple-900/30">
-                <Package className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+        <Card className="border-purple-200 dark:border-purple-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <Package className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {pickupOrders}
             </div>
-            <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Pickup</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Pickup</div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-purple-200 dark:border-purple-800">
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{pickupFinancials.qty}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Amt</div>
+                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">₱{pickupFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Profit</div>
+                <div className="text-sm font-bold text-blue-600 dark:text-blue-400">₱{pickupFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">% of Total</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{totalOrders > 0 ? ((pickupOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Row 2 */}
         {/* Delivered */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-green-100 dark:bg-green-900/30">
-                <CheckCircle className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+        <Card className="border-green-200 dark:border-green-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {deliveredOrders}
             </div>
-            <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Delivered</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Delivered</div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-green-200 dark:border-green-800">
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{deliveredFinancials.qty}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Amt</div>
+                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">₱{deliveredFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Profit</div>
+                <div className="text-sm font-bold text-blue-600 dark:text-blue-400">₱{deliveredFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">% of Total</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{totalOrders > 0 ? ((deliveredOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Cancelled */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-red-100 dark:bg-red-900/30">
-                <XCircle className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
+        <Card className="border-red-200 dark:border-red-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+                <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {cancelledOrders}
             </div>
-            <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Cancelled</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Cancelled</div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-red-200 dark:border-red-800">
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{cancelledFinancials.qty}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Amt</div>
+                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">₱{cancelledFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Profit</div>
+                <div className="text-sm font-bold text-blue-600 dark:text-blue-400">₱{cancelledFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">% of Total</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{totalOrders > 0 ? ((cancelledOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Detained */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-orange-100 dark:bg-orange-900/30">
-                <AlertCircle className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
+        <Card className="border-orange-200 dark:border-orange-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+                <Ban className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {detainedOrders}
             </div>
-            <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Detained</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Detained</div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-orange-200 dark:border-orange-800">
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{detainedFinancials.qty}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Amt</div>
+                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">₱{detainedFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Profit</div>
+                <div className="text-sm font-bold text-blue-600 dark:text-blue-400">₱{detainedFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">% of Total</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{totalOrders > 0 ? ((detainedOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Problematic */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-pink-100 dark:bg-pink-900/30">
-                <AlertTriangle className="h-3.5 w-3.5 text-pink-600 dark:text-pink-400" />
+        <Card className="border-pink-200 dark:border-pink-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 rounded-lg bg-pink-100 dark:bg-pink-900/30">
+                <AlertTriangle className="h-4 w-4 text-pink-600 dark:text-pink-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {problematicOrders}
             </div>
-            <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Problematic</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Problematic</div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-pink-200 dark:border-pink-800">
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{problematicFinancials.qty}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Amt</div>
+                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">₱{problematicFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Profit</div>
+                <div className="text-sm font-bold text-blue-600 dark:text-blue-400">₱{problematicFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">% of Total</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{totalOrders > 0 ? ((problematicOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Returned */}
-        <Card className="border-0 shadow-sm bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-slate-100 dark:bg-slate-800">
-                <RotateCcw className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
+        <Card className="border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
+                <RotateCcw className="h-4 w-4 text-slate-600 dark:text-slate-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {returnedOrders}
             </div>
-            <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Returned</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Returned</div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-200 dark:border-slate-700">
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{returnedFinancials.qty}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Amt</div>
+                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">₱{returnedFinancials.amt.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Profit</div>
+                <div className="text-sm font-bold text-blue-600 dark:text-blue-400">₱{returnedFinancials.profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">% of Total</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{totalOrders > 0 ? ((returnedOrders / totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -1036,17 +1487,17 @@ export default function TrackOrdersPage() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[100px]">Order #</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[110px]">Date</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[120px]">Channel</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[100px]">Store</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Product</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[100px]">Courier</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[130px]">Waybill</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[100px]">Payment</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[90px]">Status</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[130px]">Parcel Status</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider w-[100px]">Action</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[90px]">Order #</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[100px]">Date</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[110px]">Channel</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[180px]">Store</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 min-w-[250px]">Product</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[90px]">Courier</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[120px]">Waybill</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[95px]">Payment</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[85px]">Status</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[120px]">Parcel Status</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider w-[95px]">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1071,10 +1522,12 @@ export default function TrackOrdersPage() {
                         </Badge>
                       </td>
                       <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-[11px] text-slate-700 dark:text-slate-300 font-medium truncate">{order.customerAddress || 'N/A'}</div>
+                        <div className="text-[11px] text-slate-900 dark:text-white font-semibold whitespace-normal break-words" title={order.storeName}>
+                          {order.storeName}
+                        </div>
                       </td>
                       <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-[11px] text-slate-700 dark:text-slate-300 truncate max-w-[200px]" title={order.itemName}>
+                        <div className="text-[11px] text-slate-900 dark:text-white font-medium whitespace-normal break-words leading-relaxed" title={order.itemName}>
                           {order.itemName}
                         </div>
                       </td>
@@ -1202,8 +1655,58 @@ export default function TrackOrdersPage() {
       {/* Order Details Modal - Enterprise Grade */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-0 shadow-2xl">
-          <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
-            <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">Order Details</DialogTitle>
+          <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4 pr-12">
+            <div className="flex items-center justify-between gap-4">
+              <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">Order Details</DialogTitle>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {!isEditMode ? (
+                  <>
+                    <Button
+                      onClick={handleEditMode}
+                      variant="outline"
+                      size="sm"
+                      className="text-blue-600 border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-blue-900/30"
+                    >
+                      <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit Order
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        if (selectedOrder) {
+                          setShowDetailsModal(false)
+                          openDeleteDialog(selectedOrder.id)
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-600 hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900/30"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Order
+                    </Button>
+                  </>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleCancelEdit}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSaveEdit}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Save Changes
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
           </DialogHeader>
           {selectedOrder && (
             <div className="space-y-6 pt-2">
@@ -1258,7 +1761,14 @@ export default function TrackOrdersPage() {
                   <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
                     <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Store</p>
                     <p className="text-base font-bold text-slate-900 dark:text-white mb-1">
-                      {selectedOrder.customerAddress || 'N/A'}
+                      {(() => {
+                        try {
+                          const notesData = JSON.parse(selectedOrder.notes || '{}')
+                          return notesData.store || 'N/A'
+                        } catch {
+                          return 'N/A'
+                        }
+                      })()}
                     </p>
                     {selectedOrder.department && (
                       <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-xs font-semibold px-2 py-1">
@@ -1280,7 +1790,7 @@ export default function TrackOrdersPage() {
               </div>
 
               {/* Delivery Information - Enterprise Style */}
-              {(selectedOrder.courier || selectedOrder.trackingNumber) && (
+              {(selectedOrder.courier || selectedOrder.trackingNumber || isEditMode) && (
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
@@ -1291,21 +1801,139 @@ export default function TrackOrdersPage() {
                     </h4>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    {selectedOrder.courier && (
-                      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Courier</p>
-                        <p className="text-base font-bold text-slate-900 dark:text-white">
-                          {selectedOrder.courier}
-                        </p>
-                      </div>
+                    {isEditMode ? (
+                      <>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">Courier</label>
+                          <Input
+                            value={editForm.courier}
+                            onChange={(e) => setEditForm({...editForm, courier: e.target.value})}
+                            className="mt-1"
+                            placeholder="Enter courier name"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">Tracking Number</label>
+                          <Input
+                            value={editForm.trackingNumber}
+                            onChange={(e) => setEditForm({...editForm, trackingNumber: e.target.value})}
+                            className="mt-1"
+                            placeholder="Enter tracking number"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {selectedOrder.courier && (
+                          <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Courier</p>
+                            <p className="text-base font-bold text-slate-900 dark:text-white">
+                              {selectedOrder.courier}
+                            </p>
+                          </div>
+                        )}
+                        {selectedOrder.trackingNumber && (
+                          <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Tracking Number</p>
+                            <p className="text-base font-bold text-slate-900 dark:text-white font-mono">
+                              {selectedOrder.trackingNumber}
+                            </p>
+                          </div>
+                        )}
+                      </>
                     )}
-                    {selectedOrder.trackingNumber && (
-                      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Tracking Number</p>
-                        <p className="text-base font-bold text-slate-900 dark:text-white font-mono">
-                          {selectedOrder.trackingNumber}
-                        </p>
-                      </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Customer Information - Enterprise Style */}
+              {(selectedOrder.customerName !== 'N/A' || selectedOrder.customerPhone !== 'N/A' || selectedOrder.customerAddress !== 'N/A' || isEditMode) && (
+                <div className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                      <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h4 className="text-lg font-bold text-slate-900 dark:text-white">
+                      Customer Information
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    {isEditMode ? (
+                      <>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            Full Name
+                          </label>
+                          <Input
+                            value={editForm.customerName}
+                            onChange={(e) => setEditForm({...editForm, customerName: e.target.value})}
+                            className="mt-1"
+                            placeholder="Enter customer name"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-2">
+                            <Phone className="h-4 w-4" />
+                            Contact Number
+                          </label>
+                          <Input
+                            value={editForm.customerContact}
+                            onChange={(e) => setEditForm({...editForm, customerContact: e.target.value})}
+                            className="mt-1"
+                            placeholder="Enter contact number"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-2">
+                            <MapPin className="h-4 w-4" />
+                            Delivery Address
+                          </label>
+                          <textarea
+                            value={editForm.customerAddress}
+                            onChange={(e) => setEditForm({...editForm, customerAddress: e.target.value})}
+                            rows={3}
+                            className="mt-1 w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter delivery address"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {selectedOrder.customerName !== 'N/A' && (
+                          <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center gap-2 mb-2">
+                              <User className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Full Name</p>
+                            </div>
+                            <p className="text-base font-bold text-slate-900 dark:text-white">
+                              {selectedOrder.customerName}
+                            </p>
+                          </div>
+                        )}
+                        {selectedOrder.customerPhone !== 'N/A' && (
+                          <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Phone className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Contact Number</p>
+                            </div>
+                            <p className="text-base font-bold text-slate-900 dark:text-white font-mono">
+                              {selectedOrder.customerPhone}
+                            </p>
+                          </div>
+                        )}
+                        {selectedOrder.customerAddress !== 'N/A' && (
+                          <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center gap-2 mb-2">
+                              <MapPin className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Delivery Address</p>
+                            </div>
+                            <p className="text-base font-semibold text-slate-900 dark:text-white leading-relaxed">
+                              {selectedOrder.customerAddress}
+                            </p>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -1387,6 +2015,47 @@ export default function TrackOrdersPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog - Enterprise Grade */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="max-w-md bg-white dark:bg-slate-900 border-0 shadow-2xl">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 rounded-full bg-red-100 dark:bg-red-900/30">
+                <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <AlertDialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+                Delete Order
+              </AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="text-base text-slate-600 dark:text-slate-400 leading-relaxed pt-2">
+              Are you sure you want to delete this order? This action cannot be undone and will permanently remove the order from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-2 mt-6">
+            <AlertDialogCancel 
+              onClick={() => {
+                setShowDeleteDialog(false)
+                setOrderToDelete(null)
+              }}
+              className="bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white border-0 font-semibold"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (orderToDelete) {
+                  handleDeleteOrder(orderToDelete)
+                }
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

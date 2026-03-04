@@ -40,6 +40,14 @@ interface Department {
   profit: number
   transactions: number
   quantity: number
+  parcelStatus?: {
+    pending: number
+    inTransit: number
+    delivered: number
+    total: number
+  }
+  averageOrderValue?: number
+  fulfillmentRate?: number
 }
 
 interface DepartmentsData {
@@ -198,7 +206,7 @@ export default function SalesChannelsPage() {
         channelsWithMargin.forEach((row: any) => {
           channelsData.push(columns.map(col => {
             const value = row[col.key]
-            return col.format ? col.format(value, row) : value
+            return col.format ? col.format(value) : value
           }))
         })
 
@@ -274,7 +282,7 @@ export default function SalesChannelsPage() {
         const tableData = channelsWithMargin.map((row: any) => 
           columns.map(col => {
             const value = row[col.key]
-            const formatted = col.format ? col.format(value, row) : String(value ?? '')
+            const formatted = col.format ? col.format(value) : String(value ?? '')
             return typeof formatted === 'string' ? formatted.replace(/₱/g, '') : formatted
           })
         )
@@ -644,6 +652,21 @@ export default function SalesChannelsPage() {
 
                       <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
                         <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">COGS</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                            {formatCurrency(dept.cost)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">AOV</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                            {dept.transactions > 0 ? formatCurrency(dept.revenue / dept.transactions) : '₱0'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <div>
                           <p className="text-xs text-slate-500 dark:text-slate-400">Transactions</p>
                           <p className="text-sm font-semibold text-slate-900 dark:text-white">
                             {formatNumber(dept.transactions)}
@@ -656,6 +679,40 @@ export default function SalesChannelsPage() {
                           </p>
                         </div>
                       </div>
+
+                      {/* Parcel Status Indicators */}
+                      {dept.parcelStatus && dept.parcelStatus.total > 0 && (
+                        <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Parcel Status</p>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                                {dept.parcelStatus.pending}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                                {dept.parcelStatus.inTransit}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                                {dept.parcelStatus.delivered}
+                              </span>
+                            </div>
+                            <div className="ml-auto">
+                              <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-[10px] px-1.5 py-0">
+                                {dept.parcelStatus.total > 0 
+                                  ? `${((dept.parcelStatus.delivered / dept.parcelStatus.total) * 100).toFixed(0)}%`
+                                  : '0%'}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </button>
                 )

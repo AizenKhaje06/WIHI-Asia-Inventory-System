@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 // GET /api/orders - Get orders with optional status filter
 export async function GET(request: NextRequest) {
@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     
-    let query = supabaseAdmin
+    let query = supabase
       .from('orders')
       .select('*')
       .is('deleted_at', null)
@@ -32,7 +32,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data || [])
   } catch (error: any) {
     console.error('[API] Error in GET /api/orders:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ 
+      error: error.message || 'Failed to fetch orders',
+      details: error.toString()
+    }, { status: 500 })
   }
 }
 
@@ -51,6 +54,9 @@ export async function POST(request: NextRequest) {
       total,
       product,
       dispatchedBy,
+      customerName,
+      customerAddress,
+      customerContact,
       orderItems = []
     } = body
     
@@ -66,7 +72,7 @@ export async function POST(request: NextRequest) {
     const orderId = `ORD-${Date.now()}`
     
     // Insert order
-    const { data: order, error: orderError } = await supabaseAdmin
+    const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
         id: orderId,
@@ -82,6 +88,9 @@ export async function POST(request: NextRequest) {
         status: 'Pending',
         parcel_status: 'Pending',
         dispatched_by: dispatchedBy,
+        customer_name: customerName || null,
+        customer_address: customerAddress || null,
+        customer_contact: customerContact || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -108,7 +117,7 @@ export async function POST(request: NextRequest) {
         created_at: new Date().toISOString()
       }))
       
-      const { error: itemsError } = await supabaseAdmin
+      const { error: itemsError } = await supabase
         .from('order_items')
         .insert(orderItemsData)
       
@@ -121,6 +130,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(order, { status: 201 })
   } catch (error: any) {
     console.error('[API] Error in POST /api/orders:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ 
+      error: error.message || 'Failed to create order',
+      details: error.toString()
+    }, { status: 500 })
   }
 }

@@ -44,7 +44,10 @@ export default function POSPage() {
     total: 0,
     parcelStatus: 'Pending',
     product: '',
-    dispatchedBy: ''
+    dispatchedBy: '',
+    customerName: '',
+    customerAddress: '',
+    customerContact: ''
   })
 
   const total = useMemo(() => cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0), [cart])
@@ -128,15 +131,34 @@ export default function POSPage() {
       total: totalPrice,
       parcelStatus: 'Pending',
       product: productList,
-      dispatchedBy: staffName
+      dispatchedBy: staffName,
+      customerName: '',
+      customerAddress: '',
+      customerContact: ''
     })
     
     setOrderFormOpen(true)
   }
 
   async function handleSubmitOrder() {
+    // Validate required fields
+    if (!orderForm.salesChannel) {
+      toast.error('Please select a Sales Channel')
+      return
+    }
+    
+    if (!orderForm.store) {
+      toast.error('Please select a Store')
+      return
+    }
+    
     if (!orderForm.courier || !orderForm.waybill) {
-      alert('Please fill in Courier and Waybill')
+      toast.error('Please fill in Courier and Waybill')
+      return
+    }
+
+    if (!orderForm.customerName || !orderForm.customerAddress || !orderForm.customerContact) {
+      toast.error('Please fill in all customer information')
       return
     }
 
@@ -163,6 +185,9 @@ export default function POSPage() {
         total: orderForm.total,
         product: orderForm.product,
         dispatchedBy: orderForm.dispatchedBy,
+        customerName: orderForm.customerName,
+        customerAddress: orderForm.customerAddress,
+        customerContact: orderForm.customerContact,
         orderItems: orderItems
       })
 
@@ -208,13 +233,16 @@ export default function POSPage() {
         total: 0,
         parcelStatus: 'Pending',
         product: '',
-        dispatchedBy: staffName
+        dispatchedBy: staffName,
+        customerName: '',
+        customerAddress: '',
+        customerContact: ''
       })
 
       toast.success('Order created successfully! Check Transaction History to mark as packed.')
     } catch (error) {
       console.error("Error submitting order:", error)
-      alert("Failed to submit order")
+      toast.error("Failed to submit order. Please check all fields and try again.")
     } finally {
       setLoading(false)
     }
@@ -564,21 +592,47 @@ export default function POSPage() {
             {/* Sales Channel */}
             <div>
               <Label className="text-sm font-medium">Sales Channel</Label>
-              <Input
-                value={orderForm.salesChannel}
-                readOnly
-                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
-              />
+              <Select 
+                value={orderForm.salesChannel} 
+                onValueChange={(value) => setOrderForm({...orderForm, salesChannel: value})}
+              >
+                <SelectTrigger className="mt-1.5">
+                  <SelectValue placeholder="Select sales channel" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {Array.from(new Set(stores.map(s => s.sales_channel))).sort().map((channel) => (
+                    <SelectItem key={channel} value={channel}>
+                      {channel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Store */}
             <div>
               <Label className="text-sm font-medium">Store</Label>
-              <Input
-                value={orderForm.store}
-                readOnly
-                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
-              />
+              <Select 
+                value={orderForm.store} 
+                onValueChange={(value) => setOrderForm({...orderForm, store: value})}
+              >
+                <SelectTrigger className="mt-1.5">
+                  <SelectValue placeholder="Select store" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {stores
+                    .filter(s => !orderForm.salesChannel || s.sales_channel === orderForm.salesChannel)
+                    .sort((a, b) => a.store_name.localeCompare(b.store_name))
+                    .map((store) => (
+                      <SelectItem key={store.id} value={store.store_name}>
+                        {store.store_name}
+                        {orderForm.salesChannel && (
+                          <span className="text-xs text-slate-500 ml-2">({store.sales_channel})</span>
+                        )}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Courier - REQUIRED */}
@@ -623,6 +677,40 @@ export default function POSPage() {
                 onChange={(e) => setOrderForm({...orderForm, waybill: e.target.value})}
                 placeholder="Enter tracking number"
                 className="mt-1.5"
+              />
+            </div>
+
+            {/* Customer Name - REQUIRED */}
+            <div>
+              <Label className="text-sm font-medium">Customer Full Name *</Label>
+              <Input
+                value={orderForm.customerName}
+                onChange={(e) => setOrderForm({...orderForm, customerName: e.target.value})}
+                placeholder="Enter customer name"
+                className="mt-1.5"
+              />
+            </div>
+
+            {/* Customer Contact - REQUIRED */}
+            <div className="col-span-2">
+              <Label className="text-sm font-medium">Customer Contact Number *</Label>
+              <Input
+                value={orderForm.customerContact}
+                onChange={(e) => setOrderForm({...orderForm, customerContact: e.target.value})}
+                placeholder="Enter contact number (e.g., 09123456789)"
+                className="mt-1.5"
+              />
+            </div>
+
+            {/* Customer Address - REQUIRED - Full Width */}
+            <div className="col-span-2">
+              <Label className="text-sm font-medium">Customer Delivery Address *</Label>
+              <textarea
+                value={orderForm.customerAddress}
+                onChange={(e) => setOrderForm({...orderForm, customerAddress: e.target.value})}
+                placeholder="Enter complete delivery address"
+                rows={2}
+                className="mt-1.5 w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
 
@@ -709,7 +797,7 @@ export default function POSPage() {
             </Button>
             <Button
               onClick={handleSubmitOrder}
-              disabled={loading || !orderForm.courier || !orderForm.waybill}
+              disabled={loading || !orderForm.salesChannel || !orderForm.store || !orderForm.courier || !orderForm.waybill || !orderForm.customerName || !orderForm.customerAddress || !orderForm.customerContact}
               className="bg-blue-600 hover:bg-blue-700"
             >
               {loading ? "Submitting..." : "Submit Order"}
