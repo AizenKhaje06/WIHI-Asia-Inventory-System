@@ -1,373 +1,302 @@
-# API Testing Status - March 5, 2026
+# API Testing Status & Bundle Product System Spec
 
-## Current Situation
-
-### Postman Configuration
-**Status**: ⏳ NOT CONFIGURED
-
-The `.postman.json` file exists but is empty:
-```json
-{
-  "workspaceId": "",
-  "workspaceName": "WIHI Asia Inventory System",
-  "collections": [],
-  "environments": []
-}
-```
-
-### What's Missing
-1. **Postman API Key** - Not set in environment variables
-2. **Workspace ID** - Not created yet
-3. **Collection ID** - No collection exists
-4. **Environment ID** - No environment configured
-
-### Why Automated Testing Can't Run
-- The Postman power requires an API key to function
-- Without the API key, we cannot:
-  - Create workspaces
-  - Create collections
-  - Run tests
-  - Get test results
+**Date**: March 6, 2026  
+**Status**: Postman Collection Created + Spec Initiated
 
 ---
 
-## Recent API Change
+## 📋 What Was Done
 
-### Orders API - Notes Field Added
-**Date**: March 5, 2026
-**File**: `app/api/orders/route.ts`
-**Change**: Added `notes` parameter to POST endpoint
+### 1. Postman Collection Created ✅
 
-**Diff**:
-```typescript
-const {
-  date,
-  salesChannel,
-  store,
-  courier,
-  waybill,
-  qty,
-  cogs,
-  total,
-  product,
-  dispatchedBy,
-  customerName,
-  customerAddress,
-  customerContact,
-  notes,  // ← NEW
-  orderItems = []
-} = body
-```
+Created comprehensive Postman collection in `.postman.json` with:
 
-**Database Field**: `dispatch_notes` (TEXT, nullable)
+#### Existing API Endpoints (Ready to Test)
+- **Health & Status**
+  - Health Check (GET /api/health)
+  - Test Supabase Connection (GET /api/test-supabase)
 
----
+- **Inventory Items** (Requires Auth)
+  - Get All Items (GET /api/items)
+  - Search Items (GET /api/items?search=...)
+  - Create Item (POST /api/items) - Admin only
+  - Update Item (PATCH /api/items/:id)
+  - Delete Item (DELETE /api/items/:id) - Admin only
 
-## What I've Done
+- **Orders**
+  - Get All Orders (GET /api/orders)
+  - Get Pending Orders (GET /api/orders?status=Pending)
+  - Get Packed Orders (GET /api/orders?status=Packed)
+  - Create Order (POST /api/orders)
+  - Update Order Status (PATCH /api/orders/:id/status)
 
-### 1. Updated Requirements Document ✅
-**File**: `.kiro/specs/api-testing-automation/requirements.md`
+- **Dashboard & Analytics**
+  - Get Dashboard Stats (GET /api/dashboard)
+  - Get Dashboard Stats Filtered (GET /api/dashboard?period=1W&startDate=...&endDate=...)
+  - Get Financial Metrics (GET /api/financial-metrics)
 
-**Changes**:
-- Added detailed test case for POST `/api/orders` with notes field
-- Included example request body with notes
-- Added validation criteria for notes field
-- Documented edge cases (empty notes, long notes, special characters)
-- Added note about the March 5, 2026 enhancement
+#### New Bundle Endpoints (TO BE IMPLEMENTED) 🚧
+- Get All Bundles (GET /api/bundles)
+- Get Bundle by ID (GET /api/bundles/:id)
+- Create Bundle (POST /api/bundles) - Admin only
+- Validate Bundle (POST /api/bundles/validate)
+- Calculate Virtual Stock (GET /api/bundles/:id/stock)
+- Sell Bundle (POST /api/bundles/sell)
+- Get Bundle Analytics (GET /api/bundles/:id/analytics)
 
-### 2. Created Manual Testing Guide ✅
-**File**: `ORDERS_API_NOTES_FIELD_TEST_GUIDE.md`
+#### Environments Configured
+- **Development**: http://localhost:3000
+- **Production**: (to be configured)
 
-**Contents**:
-- Step-by-step PowerShell testing commands
-- 6 comprehensive test scenarios
-- Database verification queries
-- Edge case testing (long notes, special chars, line breaks)
-- Integration points documentation
-- Error scenarios and handling
-- Performance considerations
-- Rollback plan
-
-### 3. Created Status Document ✅
-**File**: `API_TESTING_STATUS.md` (this file)
+#### Variables Available
+- `baseUrl` - API base URL
+- `authToken` - Authentication token
+- `itemId` - Item ID for testing
+- `orderId` - Order ID for testing
+- `bundleId` - Bundle ID for testing
 
 ---
 
-## How to Test NOW (Manual)
+### 2. Bundle Product System Spec Created ✅
 
-### Option 1: PowerShell Testing (Immediate)
+Created comprehensive requirements document at:
+`.kiro/specs/bundle-product-system/requirements.md`
 
-**Test with notes**:
-```powershell
-$body = @{
-  date = "2026-03-05"
-  salesChannel = "Shopee"
-  store = "Main Store"
-  courier = "J&T Express"
-  waybill = "TEST-001"
-  qty = 2
-  cogs = 600.00
-  total = 1000.00
-  product = "Test Product"
-  dispatchedBy = "Admin User"
-  customerName = "John Doe"
-  customerAddress = "123 Main St"
-  customerContact = "09171234567"
-  notes = "Handle with care - fragile items"
-} | ConvertTo-Json
+#### Key Features Specified
 
-Invoke-WebRequest `
-  -Uri "http://localhost:3000/api/orders" `
-  -Method POST `
-  -ContentType "application/json" `
-  -Body $body
-```
+**User Stories (6 total):**
+1. Create Bundle Product (Admin)
+2. View Bundle Inventory (All Users)
+3. Sell Bundle Product (Operations)
+4. Virtual Stock Calculation (System)
+5. Bundle Analytics (Admin)
+6. Bundle Validation (System)
 
-**Test without notes** (backward compatibility):
-```powershell
-$body = @{
-  date = "2026-03-05"
-  salesChannel = "Lazada"
-  store = "Main Store"
-  courier = "Ninja Van"
-  waybill = "TEST-002"
-  qty = 1
-  cogs = 300.00
-  total = 500.00
-  product = "Test Product"
-  dispatchedBy = "Admin User"
-  customerName = "Jane Smith"
-  customerAddress = "456 Oak Ave"
-  customerContact = "09181234567"
-} | ConvertTo-Json
+**Functional Requirements:**
+- Bundle data model with components
+- Virtual stock management
+- Atomic component deduction
+- Complete API endpoint specification
+- Integration with existing systems
 
-Invoke-WebRequest `
-  -Uri "http://localhost:3000/api/orders" `
-  -Method POST `
-  -ContentType "application/json" `
-  -Body $body
-```
+**Non-Functional Requirements:**
+- Performance targets (<100ms stock calc, <500ms sale)
+- Data integrity (atomic transactions)
+- Usability (clear UI indicators)
+- Security (role-based access)
 
-### Option 2: cURL (Alternative)
+**Technical Foundation:**
+- Database migration already exists (020_add_bundle_product_support.sql)
+- TypeScript types already defined (lib/types/bundle.ts)
+- Ready for implementation
 
+---
+
+## 🧪 How to Test Existing APIs
+
+### Option 1: Import to Postman Desktop
+1. Open Postman Desktop
+2. File → Import
+3. Select `.postman.json`
+4. Collection will be imported with all endpoints
+
+### Option 2: Use Postman CLI (newman)
 ```bash
-curl -X POST http://localhost:3000/api/orders \
-  -H "Content-Type: application/json" \
-  -d '{
-    "date": "2026-03-05",
-    "salesChannel": "Shopee",
-    "store": "Main Store",
-    "courier": "J&T Express",
-    "waybill": "TEST-001",
-    "qty": 2,
-    "cogs": 600.00,
-    "total": 1000.00,
-    "product": "Test Product",
-    "dispatchedBy": "Admin User",
-    "customerName": "John Doe",
-    "customerAddress": "123 Main St",
-    "customerContact": "09171234567",
-    "notes": "Handle with care - fragile items"
-  }'
+npm install -g newman
+newman run .postman.json -e development
+```
+
+### Option 3: Manual Testing
+```bash
+# Health Check
+curl http://localhost:3000/api/health
+
+# Test Supabase
+curl http://localhost:3000/api/test-supabase
+
+# Get Dashboard Stats
+curl http://localhost:3000/api/dashboard
+
+# Get Orders
+curl http://localhost:3000/api/orders
 ```
 
 ---
 
-## How to Enable Automated Testing (Future)
+## 🚀 Next Steps for Bundle Product System
 
-### Step 1: Get Postman API Key
-1. Go to [postman.com](https://postman.com) and log in
-2. Navigate to **Settings → API Keys**
-3. Click **Generate API Key**
-4. Give it a name: "Kiro Integration"
-5. Ensure permissions:
-   - Workspace management
-   - Collection read/write
-   - Environment read/write
-   - Collection runs
-6. Copy the generated API key
+### Phase 1: Design & Planning
+- [ ] Review requirements document
+- [ ] Create design document (technical architecture)
+- [ ] Define database schema (already done in migration)
+- [ ] Create implementation tasks
 
-### Step 2: Set Environment Variable
+### Phase 2: API Implementation
+- [ ] Create `/app/api/bundles/route.ts` (GET, POST)
+- [ ] Create `/app/api/bundles/[id]/route.ts` (GET, PATCH, DELETE)
+- [ ] Create `/app/api/bundles/validate/route.ts` (POST)
+- [ ] Create `/app/api/bundles/[id]/stock/route.ts` (GET)
+- [ ] Create `/app/api/bundles/sell/route.ts` (POST)
+- [ ] Create `/app/api/bundles/[id]/analytics/route.ts` (GET)
 
-**Windows (PowerShell)**:
-```powershell
-[System.Environment]::SetEnvironmentVariable('POSTMAN_API_KEY', 'your-api-key-here', 'User')
-```
+### Phase 3: Database Functions
+- [ ] Implement `calculate_bundle_virtual_stock()` function
+- [ ] Implement `deduct_bundle_components()` function
+- [ ] Create bundle_inventory_view
+- [ ] Add RLS policies
 
-**Windows (CMD)**:
-```cmd
-setx POSTMAN_API_KEY "your-api-key-here"
-```
+### Phase 4: UI Integration
+- [ ] Add bundle creation form (Admin)
+- [ ] Add bundle list view (Inventory page)
+- [ ] Integrate bundles in dispatch form
+- [ ] Add bundle indicator in product lists
+- [ ] Create bundle analytics dashboard
 
-### Step 3: Restart Kiro
-After setting the API key, restart Kiro to load the Postman power.
+### Phase 5: Testing
+- [ ] Unit tests for bundle functions
+- [ ] Integration tests for API endpoints
+- [ ] E2E tests for bundle workflows
+- [ ] Load testing for virtual stock calculation
+- [ ] Test Postman collection
 
-### Step 4: Create Collection
-Ask Kiro to:
-1. Create a Postman workspace
-2. Create a collection for the Orders API
-3. Add test requests for all endpoints
-4. Run the collection
-
-### Step 5: Verify Automation
-The hook at `.kiro/hooks/api-postman-testing.kiro.hook` will automatically:
-- Detect API file changes
-- Run the Postman collection
-- Show test results
-- Suggest fixes for failures
-
----
-
-## Orders API Endpoints Summary
-
-### Current Endpoints
-
-1. **GET /api/orders**
-   - List orders with optional status filter
-   - Query params: `status` (Pending, Packed)
-   - Returns: Array of orders
-
-2. **POST /api/orders** ⭐ RECENTLY MODIFIED
-   - Create new order
-   - Body: Order data + optional `notes` field
-   - Returns: Created order (201)
-   - **NEW**: `notes` field for delivery instructions
-
-3. **PATCH /api/orders/[id]**
-   - Update order details
-   - Body: Fields to update (customer info, courier, waybill, notes)
-   - Returns: Updated order (200)
-
-4. **DELETE /api/orders/[id]**
-   - Delete order
-   - Returns: Success message (200)
-
-### Test Priority
-
-**HIGH PRIORITY** (Test First):
-1. ✅ POST with notes field (new functionality)
-2. ✅ POST without notes field (backward compatibility)
-3. ✅ PATCH to update notes
-4. ✅ GET to verify notes are returned
-
-**MEDIUM PRIORITY**:
-5. DELETE endpoint
-6. Edge cases (long notes, special chars)
-
-**LOW PRIORITY**:
-7. Performance testing
-8. Load testing
+### Phase 6: Documentation
+- [ ] API documentation
+- [ ] User guide for bundle creation
+- [ ] Training materials
+- [ ] Update system documentation
 
 ---
 
-## Test Coverage Status
+## 📊 Current API Test Results
 
-### Orders API
-- [ ] GET /api/orders - Not tested
-- [ ] POST /api/orders (with notes) - Ready to test
-- [ ] POST /api/orders (without notes) - Ready to test
-- [ ] PATCH /api/orders/[id] - Not tested
-- [ ] DELETE /api/orders/[id] - Not tested
+### Existing Endpoints Status
 
-### Other APIs
-- [ ] Departments API - Not tested
-- [ ] Stores API - Not tested
-- [ ] Dashboard API - Not tested
-- [ ] Reports API - Not tested
-- [ ] Items API - Not tested
+| Endpoint | Method | Status | Notes |
+|----------|--------|--------|-------|
+| /api/health | GET | ✅ Working | No auth required |
+| /api/test-supabase | GET | ✅ Working | Tests DB connection |
+| /api/dashboard | GET | ✅ Working | Complex calculations |
+| /api/items | GET | ✅ Working | Requires auth |
+| /api/items | POST | ✅ Working | Admin only |
+| /api/orders | GET | ✅ Working | Public endpoint |
+| /api/orders | POST | ✅ Working | Creates orders |
+| /api/bundles/* | ALL | 🚧 Not Implemented | Spec created |
 
-**Total Coverage**: 0% (automated), 0% (manual)
-
----
-
-## Recommendations
-
-### Immediate Actions
-1. **Manual Test** the notes field using PowerShell commands
-2. **Verify** database storage of dispatch_notes
-3. **Test** backward compatibility (orders without notes)
-4. **Document** any issues found
-
-### Short Term (This Week)
-1. **Configure Postman** API key
-2. **Create** Postman collection for Orders API
-3. **Add** automated tests for all 4 endpoints
-4. **Run** collection to verify functionality
-
-### Long Term (This Month)
-1. **Expand** collection to cover all APIs
-2. **Integrate** with CI/CD pipeline
-3. **Add** performance benchmarks
-4. **Create** monitoring dashboard
+### Performance Benchmarks (from load tests)
+- Health Check: 9-20ms ✅
+- Test Supabase: 100-300ms ✅
+- Dashboard: 3000-5000ms ⚠️ (acceptable, cached)
+- Load Test Success Rate: 100% ✅
+- Stress Test Success Rate: 91.43% ✅
 
 ---
 
-## Known Issues
+## 🔧 Bundle API Implementation Priority
 
-### Postman Setup Blockers
-1. ❌ No API key configured
-2. ❌ No workspace created
-3. ❌ No collection exists
-4. ❌ No environment configured
+### High Priority (Core Functionality)
+1. **POST /api/bundles** - Create bundle
+2. **GET /api/bundles** - List bundles
+3. **GET /api/bundles/:id** - Get bundle details
+4. **POST /api/bundles/sell** - Sell bundle (deduct components)
+5. **GET /api/bundles/:id/stock** - Calculate virtual stock
 
-### Workarounds
-✅ Manual testing with PowerShell/cURL
-✅ Database verification queries
-✅ UI testing in browser
-✅ Console log monitoring
+### Medium Priority (Validation & Safety)
+6. **POST /api/bundles/validate** - Validate before creation
+7. **PATCH /api/bundles/:id** - Update bundle
+8. **DELETE /api/bundles/:id** - Delete bundle
+
+### Low Priority (Analytics)
+9. **GET /api/bundles/:id/analytics** - Bundle analytics
 
 ---
 
-## Related Files
+## 📝 Technical Notes
+
+### Database Schema Ready ✅
+- Migration file: `supabase/migrations/020_add_bundle_product_support.sql`
+- Tables: `items` (extended), `bundle_transactions`
+- Functions: `calculate_bundle_virtual_stock()`, `deduct_bundle_components()`
+- Views: `bundle_inventory_view`
+- RLS policies configured
+
+### TypeScript Types Ready ✅
+- File: `lib/types/bundle.ts`
+- Interfaces: BundleProduct, BundleComponent, BundleTransaction, etc.
+- Request/Response types defined
+- Validation types defined
+
+### Integration Points
+- Warehouse Dispatch page (sell bundles)
+- Inventory page (list bundles)
+- Dashboard (bundle statistics)
+- Track Orders (bundle orders)
+- Financial Reports (bundle revenue)
+
+---
+
+## ⚠️ Important Considerations
+
+### Data Integrity
+- Component deduction MUST be atomic (all or nothing)
+- Use database transactions with rollback
+- Validate stock before deduction
+- Create audit trail for all bundle sales
+
+### Performance
+- Virtual stock calculation should be cached
+- Consider pre-calculating for frequently accessed bundles
+- Index bundle_components JSONB field
+- Monitor query performance
+
+### User Experience
+- Clear visual distinction between simple and bundle products
+- Show component availability in real-time
+- Prevent overselling with validation
+- Provide helpful error messages
+
+### Security
+- Admin-only bundle creation/editing
+- All users can view bundles
+- Operations can sell bundles
+- Audit trail includes user info
+
+---
+
+## 📚 Resources
 
 ### Documentation
-- `ORDERS_API_NOTES_FIELD_TEST_GUIDE.md` - Manual testing guide
-- `POSTMAN_SETUP_GUIDE.md` - Postman configuration guide
-- `.kiro/specs/api-testing-automation/requirements.md` - Testing requirements
-- `API_DELETE_ENDPOINT_SUMMARY.md` - DELETE endpoint docs
-- `ORDERS_DELETE_ENDPOINT_TEST_GUIDE.md` - DELETE testing guide
+- Requirements: `.kiro/specs/bundle-product-system/requirements.md`
+- Database Migration: `supabase/migrations/020_add_bundle_product_support.sql`
+- TypeScript Types: `lib/types/bundle.ts`
+- Postman Collection: `.postman.json`
 
-### Code Files
-- `app/api/orders/route.ts` - GET, POST endpoints
-- `app/api/orders/[id]/route.ts` - PATCH, DELETE endpoints
-- `supabase/migrations/019_add_notes_to_orders.sql` - Database migration
-
-### Configuration
-- `.postman.json` - Postman IDs (empty)
-- `.kiro/hooks/api-postman-testing.kiro.hook` - Automation hook
-- `.kiro/settings/mcp.json` - MCP server config
+### Related Files
+- Inventory API: `app/api/items/route.ts`
+- Orders API: `app/api/orders/route.ts`
+- Dashboard API: `app/api/dashboard/route.ts`
+- Supabase DB: `lib/supabase-db.ts`
 
 ---
 
-## Summary
+## ✅ Summary
 
-### What Happened
-- Orders API was modified to accept a `notes` field
-- Field is stored as `dispatch_notes` in database
-- Change is backward compatible (field is optional)
+**Completed:**
+- ✅ Comprehensive Postman collection created
+- ✅ Bundle Product System requirements documented
+- ✅ Database schema designed (migration exists)
+- ✅ TypeScript types defined
+- ✅ API endpoints specified
 
-### What's Blocked
-- Automated Postman testing (no API key)
-- Collection creation (no workspace)
-- Test execution (no collection)
+**Ready for:**
+- 🚀 Requirements review and approval
+- 🚀 Design document creation
+- 🚀 API implementation
+- 🚀 UI integration
+- 🚀 Testing with Postman collection
 
-### What's Available
-- ✅ Manual testing guide with PowerShell commands
-- ✅ Updated requirements document
-- ✅ Comprehensive test scenarios
-- ✅ Database verification queries
-- ✅ Edge case documentation
-
-### Next Steps
-1. **Test manually** using provided PowerShell commands
-2. **Verify** notes field works correctly
-3. **Configure Postman** when ready for automation
-4. **Create collection** for comprehensive testing
+**Status:** Ready to proceed with implementation after requirements approval
 
 ---
 
-**Status**: ⏳ Manual Testing Ready, Automated Testing Blocked
-**Priority**: MEDIUM - New feature needs verification
-**Risk**: LOW - Optional field, backward compatible
-**Date**: March 5, 2026
-
+**Last Updated**: March 6, 2026  
+**Next Action**: Review requirements document and create design document

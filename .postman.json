@@ -1,6 +1,557 @@
 {
-  "workspaceId": "",
+  "workspaceId": "wihi-asia-inventory",
   "workspaceName": "WIHI Asia Inventory System",
-  "collections": [],
-  "environments": []
+  "collections": [
+    {
+      "info": {
+        "name": "WIHI Asia Inventory API",
+        "description": "Complete API collection for WIHI Asia Inventory Management System",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+      },
+      "item": [
+        {
+          "name": "Health & Status",
+          "item": [
+            {
+              "name": "Health Check",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "health"]
+                },
+                "description": "Simple health check endpoint - no authentication required"
+              }
+            },
+            {
+              "name": "Test Supabase Connection",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/test-supabase",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "test-supabase"]
+                },
+                "description": "Test database connectivity"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inventory Items",
+          "item": [
+            {
+              "name": "Get All Items",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/items",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "items"]
+                },
+                "description": "Get all inventory items (requires authentication)"
+              }
+            },
+            {
+              "name": "Search Items",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/items?search=laptop",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "items"],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "laptop"
+                    }
+                  ]
+                },
+                "description": "Search items by name or category"
+              }
+            },
+            {
+              "name": "Create Item",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Test Product\",\n  \"category\": \"Electronics\",\n  \"store\": \"Main Warehouse\",\n  \"salesChannel\": \"Shopee\",\n  \"quantity\": 100,\n  \"costPrice\": 500,\n  \"sellingPrice\": 750,\n  \"reorderLevel\": 20\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/items",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "items"]
+                },
+                "description": "Create new inventory item (requires admin role)"
+              }
+            },
+            {
+              "name": "Update Item",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"quantity\": 150,\n  \"sellingPrice\": 800\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/items/{{itemId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "items", "{{itemId}}"]
+                },
+                "description": "Update existing item"
+              }
+            },
+            {
+              "name": "Delete Item",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/items/{{itemId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "items", "{{itemId}}"]
+                },
+                "description": "Delete item (requires admin role)"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Orders",
+          "item": [
+            {
+              "name": "Get All Orders",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/orders",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "orders"]
+                },
+                "description": "Get all orders"
+              }
+            },
+            {
+              "name": "Get Pending Orders",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/orders?status=Pending",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "orders"],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "Pending"
+                    }
+                  ]
+                },
+                "description": "Get orders with Pending status"
+              }
+            },
+            {
+              "name": "Get Packed Orders",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/orders?status=Packed",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "orders"],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "Packed"
+                    }
+                  ]
+                },
+                "description": "Get orders with Packed/Shipped/Delivered status"
+              }
+            },
+            {
+              "name": "Create Order",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"date\": \"2026-03-06\",\n  \"salesChannel\": \"Shopee\",\n  \"store\": \"Main Warehouse\",\n  \"courier\": \"J&T Express\",\n  \"waybill\": \"JT123456789\",\n  \"qty\": 2,\n  \"cogs\": 1000,\n  \"total\": 1500,\n  \"product\": \"Test Product x2\",\n  \"dispatchedBy\": \"Admin User\",\n  \"customerName\": \"John Doe\",\n  \"customerAddress\": \"123 Main St, Manila\",\n  \"customerContact\": \"09171234567\",\n  \"notes\": \"Handle with care\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/orders",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "orders"]
+                },
+                "description": "Create new order"
+              }
+            },
+            {
+              "name": "Update Order Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"parcel_status\": \"DELIVERED\",\n  \"payment_status\": \"paid\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/orders/{{orderId}}/status",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "orders", "{{orderId}}", "status"]
+                },
+                "description": "Update order status"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Dashboard & Analytics",
+          "item": [
+            {
+              "name": "Get Dashboard Stats",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dashboard",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "dashboard"]
+                },
+                "description": "Get comprehensive dashboard statistics"
+              }
+            },
+            {
+              "name": "Get Dashboard Stats (Filtered)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dashboard?period=1W&startDate=2026-03-01&endDate=2026-03-06",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "dashboard"],
+                  "query": [
+                    {
+                      "key": "period",
+                      "value": "1W"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "2026-03-01"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "2026-03-06"
+                    }
+                  ]
+                },
+                "description": "Get dashboard stats with date filters"
+              }
+            },
+            {
+              "name": "Get Financial Metrics",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/financial-metrics",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "financial-metrics"]
+                },
+                "description": "Get financial metrics"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bundles (NEW - TO BE IMPLEMENTED)",
+          "item": [
+            {
+              "name": "Get All Bundles",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/bundles",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bundles"]
+                },
+                "description": "Get all bundle products with virtual stock calculation"
+              }
+            },
+            {
+              "name": "Get Bundle by ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/bundles/{{bundleId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bundles", "{{bundleId}}"]
+                },
+                "description": "Get specific bundle with component details"
+              }
+            },
+            {
+              "name": "Create Bundle",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Gaming Bundle\",\n  \"sku\": \"BUNDLE-001\",\n  \"components\": [\n    {\n      \"item_id\": \"ITEM-123\",\n      \"quantity\": 1\n    },\n    {\n      \"item_id\": \"ITEM-456\",\n      \"quantity\": 2\n    }\n  ],\n  \"selling_price\": 5000,\n  \"sales_channel\": \"Shopee\",\n  \"store\": \"Main Warehouse\",\n  \"reorder_level\": 10,\n  \"is_virtual_stock\": true,\n  \"metadata\": {\n    \"discount_percentage\": 15,\n    \"description\": \"Complete gaming setup\",\n    \"tags\": [\"gaming\", \"bundle\", \"promo\"]\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/bundles",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bundles"]
+                },
+                "description": "Create new bundle product (requires admin role)"
+              }
+            },
+            {
+              "name": "Validate Bundle",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"components\": [\n    {\n      \"item_id\": \"ITEM-123\",\n      \"quantity\": 1\n    },\n    {\n      \"item_id\": \"ITEM-456\",\n      \"quantity\": 2\n    }\n  ],\n  \"selling_price\": 5000\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/bundles/validate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bundles", "validate"]
+                },
+                "description": "Validate bundle configuration before creation"
+              }
+            },
+            {
+              "name": "Calculate Virtual Stock",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/bundles/{{bundleId}}/stock",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bundles", "{{bundleId}}", "stock"]
+                },
+                "description": "Calculate available stock based on components"
+              }
+            },
+            {
+              "name": "Sell Bundle",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bundle_id\": \"{{bundleId}}\",\n  \"quantity\": 2,\n  \"staff_name\": \"Admin User\",\n  \"sales_channel\": \"Shopee\",\n  \"store\": \"Main Warehouse\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/bundles/sell",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bundles", "sell"]
+                },
+                "description": "Sell bundle and deduct component stock"
+              }
+            },
+            {
+              "name": "Get Bundle Analytics",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/bundles/{{bundleId}}/analytics",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bundles", "{{bundleId}}", "analytics"]
+                },
+                "description": "Get bundle sales analytics and component usage"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "environments": [
+    {
+      "name": "Development",
+      "values": [
+        {
+          "key": "baseUrl",
+          "value": "http://localhost:3000",
+          "enabled": true
+        },
+        {
+          "key": "authToken",
+          "value": "",
+          "enabled": true
+        },
+        {
+          "key": "itemId",
+          "value": "",
+          "enabled": true
+        },
+        {
+          "key": "orderId",
+          "value": "",
+          "enabled": true
+        },
+        {
+          "key": "bundleId",
+          "value": "",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "name": "Production",
+      "values": [
+        {
+          "key": "baseUrl",
+          "value": "https://your-production-url.com",
+          "enabled": true
+        },
+        {
+          "key": "authToken",
+          "value": "",
+          "enabled": true
+        },
+        {
+          "key": "itemId",
+          "value": "",
+          "enabled": true
+        },
+        {
+          "key": "orderId",
+          "value": "",
+          "enabled": true
+        },
+        {
+          "key": "bundleId",
+          "value": "",
+          "enabled": true
+        }
+      ]
+    }
+  ]
 }

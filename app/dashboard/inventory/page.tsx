@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import type { InventoryItem } from "@/lib/types"
 import { AddItemDialog } from "@/components/add-item-dialog"
 import { EditItemDialog } from "@/components/edit-item-dialog"
+import { CreateBundleModal } from "@/components/create-bundle-modal"
 import { formatNumber, formatCurrency, cn } from "@/lib/utils"
 import { showSuccess, showError } from "@/lib/toast-utils"
 import type { Store } from "@/lib/types"
@@ -84,6 +85,7 @@ export default function InventoryPage() {
   // Delete confirmation modal state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [itemToDelete, setItemToDelete] = useState<{id: string, name: string} | null>(null)
+  const [createBundleOpen, setCreateBundleOpen] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -465,6 +467,13 @@ export default function InventoryPage() {
             Add Product
           </Button>
           <Button
+            onClick={() => setCreateBundleOpen(true)}
+            className="flex-1 min-w-[140px] h-11 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg"
+          >
+            <Package className="h-4 w-4 mr-2" />
+            Create Bundle
+          </Button>
+          <Button
             onClick={() => setCategoryDialogOpen(true)}
             className="flex-1 min-w-[120px] h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg"
           >
@@ -693,6 +702,7 @@ export default function InventoryPage() {
                       const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
                       const isOutOfStock = item.quantity === 0
                       const isSelected = selectedItems.has(item.id)
+                      const isBundle = (item as any).product_type === 'bundle'
                       
                       return (
                         <Card
@@ -720,8 +730,17 @@ export default function InventoryPage() {
                             </Badge>
                           </div>
 
+                          {/* Bundle Badge - NEW */}
+                          {isBundle && (
+                            <div className="absolute top-3 left-3 z-10">
+                              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[10px] font-bold px-2 py-0.5 shadow-sm border border-purple-200 dark:border-purple-800">
+                                BUNDLE
+                              </Badge>
+                            </div>
+                          )}
+
                           {/* Status Badge - Fixed Position */}
-                          {(isOutOfStock || isLowStock) && (
+                          {(isOutOfStock || isLowStock) && !isBundle && (
                             <div className="absolute top-3 left-3 z-10">
                               <Badge className={cn(
                                 "text-[10px] font-bold px-2 py-0.5 shadow-sm",
@@ -1128,6 +1147,8 @@ export default function InventoryPage() {
       </Card>
 
       <AddItemDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} onSuccess={fetchItems} />
+
+      <CreateBundleModal open={createBundleOpen} onOpenChange={setCreateBundleOpen} onSuccess={fetchItems} />
 
       {selectedItem && (
         <EditItemDialog
