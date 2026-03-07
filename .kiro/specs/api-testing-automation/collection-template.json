@@ -1,0 +1,514 @@
+{
+  "info": {
+    "name": "Inventory API Tests",
+    "description": "Comprehensive API testing for WIHI Asia inventory management system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Departments",
+      "item": [
+        {
+          "name": "List Departments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "x-user-username", "value": "{{username}}"},
+              {"key": "x-user-role", "value": "{{role}}"},
+              {"key": "x-user-display-name", "value": "{{display_name}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/departments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "departments"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Each department has required fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        jsonData.forEach(dept => {",
+                  "            pm.expect(dept).to.have.property('name');",
+                  "            pm.expect(dept).to.have.property('totalRevenue');",
+                  "            pm.expect(dept).to.have.property('totalOrders');",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Department Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "x-user-username", "value": "{{username}}"},
+              {"key": "x-user-role", "value": "{{role}}"},
+              {"key": "x-user-display-name", "value": "{{display_name}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/departments/Shopee?startDate=2026-01-01&endDate=2026-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "departments", "Shopee"],
+              "query": [
+                {"key": "startDate", "value": "2026-01-01"},
+                {"key": "endDate", "value": "2026-12-31"}
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has metrics', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('metrics');",
+                  "    pm.expect(jsonData.metrics).to.have.property('totalRevenue');",
+                  "    pm.expect(jsonData.metrics).to.have.property('profitMargin');",
+                  "});",
+                  "",
+                  "pm.test('Profit margin calculation is correct', function () {",
+                  "    const data = pm.response.json();",
+                  "    if (data.metrics.totalRevenue > 0) {",
+                  "        const expectedMargin = (data.metrics.totalProfit / data.metrics.totalRevenue) * 100;",
+                  "        pm.expect(Math.abs(data.metrics.profitMargin - expectedMargin)).to.be.below(0.01);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Parcel status counts are valid', function () {",
+                  "    const data = pm.response.json();",
+                  "    if (data.parcelStatusCounts) {",
+                  "        pm.expect(data.parcelStatusCounts.pending).to.be.a('number');",
+                  "        pm.expect(data.parcelStatusCounts.inTransit).to.be.a('number');",
+                  "        pm.expect(data.parcelStatusCounts.delivered).to.be.a('number');",
+                  "        const total = data.parcelStatusCounts.pending + data.parcelStatusCounts.inTransit + data.parcelStatusCounts.delivered;",
+                  "        pm.expect(data.parcelStatusCounts.total).to.equal(total);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bundles",
+      "item": [
+        {
+          "name": "List Bundles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "x-user-username", "value": "{{username}}"},
+              {"key": "x-user-role", "value": "{{role}}"},
+              {"key": "x-user-display-name", "value": "{{display_name}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/bundles",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bundles"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Each bundle has required fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        jsonData.forEach(bundle => {",
+                  "            pm.expect(bundle).to.have.property('id');",
+                  "            pm.expect(bundle).to.have.property('name');",
+                  "            pm.expect(bundle).to.have.property('bundle_price');",
+                  "            pm.expect(bundle).to.have.property('regular_price');",
+                  "            pm.expect(bundle).to.have.property('savings');",
+                  "        });",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Bundle prices are valid numbers', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        jsonData.forEach(bundle => {",
+                  "            pm.expect(bundle.bundle_price).to.be.a('number');",
+                  "            pm.expect(bundle.regular_price).to.be.a('number');",
+                  "            pm.expect(bundle.bundle_price).to.be.above(0);",
+                  "        });",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Savings calculation is correct', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        jsonData.forEach(bundle => {",
+                  "            const expectedSavings = bundle.regular_price - bundle.bundle_price;",
+                  "            pm.expect(bundle.savings).to.equal(expectedSavings);",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Bundle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "x-user-username", "value": "{{username}}"},
+              {"key": "x-user-role", "value": "{{role}}"},
+              {"key": "x-user-display-name", "value": "{{display_name}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Bundle {{$timestamp}}\",\n  \"description\": \"Automated test bundle\",\n  \"category\": \"Bundles\",\n  \"store\": \"Main Store\",\n  \"salesChannel\": \"Shopee\",\n  \"bundlePrice\": 1500,\n  \"items\": [\n    {\"itemId\": \"ITEM-001\", \"quantity\": 2}\n  ],\n  \"sku\": \"TEST-BUNDLE-{{$timestamp}}\",\n  \"badge\": \"TEST\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/bundles",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bundles"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has bundle ID', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.id).to.match(/^BUNDLE-/);",
+                  "    pm.environment.set('test_bundle_id', jsonData.id);",
+                  "});",
+                  "",
+                  "pm.test('Bundle cost calculated correctly', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('bundle_cost');",
+                  "    pm.expect(jsonData.bundle_cost).to.be.a('number');",
+                  "    pm.expect(jsonData.bundle_cost).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Regular price calculated correctly', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('regular_price');",
+                  "    pm.expect(jsonData.regular_price).to.be.a('number');",
+                  "    pm.expect(jsonData.regular_price).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Savings calculated correctly', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const expectedSavings = jsonData.regular_price - jsonData.bundle_price;",
+                  "    pm.expect(jsonData.savings).to.equal(expectedSavings);",
+                  "});",
+                  "",
+                  "pm.test('Bundle price not below cost', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.bundle_price).to.be.at.least(jsonData.bundle_cost);",
+                  "});",
+                  "",
+                  "pm.test('Bundle is active by default', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.is_active).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "x-user-username", "value": "{{username}}"},
+              {"key": "x-user-role", "value": "{{role}}"},
+              {"key": "x-user-display-name", "value": "{{display_name}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Each order has required fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        jsonData.forEach(order => {",
+                  "            pm.expect(order).to.have.property('id');",
+                  "            pm.expect(order).to.have.property('customer_name');",
+                  "            pm.expect(order).to.have.property('total');",
+                  "            pm.expect(order).to.have.property('status');",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "x-user-username", "value": "{{username}}"},
+              {"key": "x-user-role", "value": "{{role}}"},
+              {"key": "x-user-display-name", "value": "{{display_name}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"{{$isoTimestamp}}\",\n  \"salesChannel\": \"Shopee\",\n  \"store\": \"Main Store\",\n  \"courier\": \"J&T Express\",\n  \"waybill\": \"JT{{$timestamp}}\",\n  \"qty\": 2,\n  \"cogs\": 600.00,\n  \"total\": 1000.00,\n  \"product\": \"Test Product\",\n  \"dispatchedBy\": \"{{display_name}}\",\n  \"customerName\": \"Test Customer\",\n  \"customerAddress\": \"123 Test St\",\n  \"customerContact\": \"09171234567\",\n  \"notes\": \"Test order - automated\",\n  \"orderItems\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has order ID', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.id).to.match(/^ORD-/);",
+                  "    pm.environment.set('test_order_id', jsonData.id);",
+                  "});",
+                  "",
+                  "pm.test('Notes field is stored', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('dispatch_notes');",
+                  "});",
+                  "",
+                  "pm.test('Customer info is stored', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('customer_name');",
+                  "    pm.expect(jsonData).to.have.property('customer_address');",
+                  "    pm.expect(jsonData).to.have.property('customer_contact');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Order",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "x-user-username", "value": "{{username}}"},
+              {"key": "x-user-role", "value": "{{role}}"},
+              {"key": "x-user-display-name", "value": "{{display_name}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{test_order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", "{{test_order_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response indicates success', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success');",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stores",
+      "item": [
+        {
+          "name": "List Stores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "x-user-username", "value": "{{username}}"},
+              {"key": "x-user-role", "value": "{{role}}"},
+              {"key": "x-user-display-name", "value": "{{display_name}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/stores",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stores"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Items",
+      "item": [
+        {
+          "name": "List Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "x-user-username", "value": "{{username}}"},
+              {"key": "x-user-role", "value": "{{role}}"},
+              {"key": "x-user-display-name", "value": "{{display_name}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/items",
+              "host": ["{{base_url}}"],
+              "path": ["api", "items"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "x-user-username", "value": "{{username}}"},
+              {"key": "x-user-role", "value": "{{role}}"},
+              {"key": "x-user-display-name", "value": "{{display_name}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has required metrics', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('totalRevenue');",
+                  "    pm.expect(jsonData).to.have.property('totalProfit');",
+                  "    pm.expect(jsonData).to.have.property('profitMargin');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
