@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import type { InventoryItem } from "@/lib/types"
 import { AddItemDialog } from "@/components/add-item-dialog"
 import { EditItemDialog } from "@/components/edit-item-dialog"
-import { CreateBundleModal } from "@/components/create-bundle-modal"
+import { CreateBundleDialog } from "@/components/create-bundle-dialog"
 import { formatNumber, formatCurrency, cn } from "@/lib/utils"
 import { showSuccess, showError } from "@/lib/toast-utils"
 import type { Store } from "@/lib/types"
@@ -1148,7 +1148,7 @@ export default function InventoryPage() {
 
       <AddItemDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} onSuccess={fetchItems} />
 
-      <CreateBundleModal open={createBundleOpen} onOpenChange={setCreateBundleOpen} onSuccess={fetchItems} />
+      <CreateBundleDialog open={createBundleOpen} onOpenChange={setCreateBundleOpen} onSuccess={fetchItems} />
 
       {selectedItem && (
         <EditItemDialog

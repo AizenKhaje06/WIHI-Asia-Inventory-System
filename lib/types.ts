@@ -16,6 +16,7 @@ export interface InventoryItem {
   discountEndDate?: string
   minPrice?: number // Minimum selling price (for profit protection)
   images?: string[]
+  productType?: 'regular' | 'bundle' // NEW: Identify if product is a bundle
 }
 
 export interface Transaction {

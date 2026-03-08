@@ -40,11 +40,9 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    category: '',
     store: '',
     salesChannel: '',
     bundlePrice: 0,
-    sku: '',
     badge: ''
   })
 
@@ -139,11 +137,6 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
       return
     }
     
-    if (!formData.category) {
-      toast.error('Please select a category')
-      return
-    }
-    
     if (!formData.store) {
       toast.error('Please select a store')
       return
@@ -170,7 +163,6 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
       console.log('Creating bundle with data:', {
         name: formData.name.trim(),
         description: formData.description.trim(),
-        category: formData.category,
         store: formData.store,
         salesChannel: formData.salesChannel || null,
         bundlePrice: formData.bundlePrice,
@@ -178,14 +170,12 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
           itemId: bi.itemId,
           quantity: bi.quantity
         })),
-        sku: formData.sku.trim() || null,
         badge: formData.badge.trim() || null
       })
 
       const response = await apiPost('/api/bundles', {
         name: formData.name.trim(),
         description: formData.description.trim(),
-        category: formData.category,
         store: formData.store,
         salesChannel: formData.salesChannel || null,
         bundlePrice: formData.bundlePrice,
@@ -193,7 +183,6 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
           itemId: bi.itemId,
           quantity: bi.quantity
         })),
-        sku: formData.sku.trim() || null,
         badge: formData.badge.trim() || null
       })
 
@@ -220,11 +209,9 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
     setFormData({
       name: '',
       description: '',
-      category: '',
       store: '',
       salesChannel: '',
       bundlePrice: 0,
-      sku: '',
       badge: ''
     })
     setBundleItems([])
@@ -232,8 +219,26 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
   }
 
   const totals = calculateTotals()
-  const categories = Array.from(new Set(items.map(i => i.category).filter(Boolean)))
-  const stores = Array.from(new Set(items.map(i => i.store).filter(Boolean)))
+  
+  // Fetch stores from API with sales_channel
+  const [storesData, setStoresData] = useState<Array<{id: string, store_name: string, sales_channel: string}>>([])
+  
+  useEffect(() => {
+    const fetchStores = async () => {
+      try {
+        const data = await apiGet<Array<{id: string, store_name: string, sales_channel: string}>>('/api/stores')
+        setStoresData(data)
+      } catch (error) {
+        console.error('Error fetching stores:', error)
+      }
+    }
+    if (open) fetchStores()
+  }, [open])
+  
+  // Filter stores based on selected sales channel
+  const filteredStores = formData.salesChannel && formData.salesChannel !== 'none'
+    ? storesData.filter(s => s.sales_channel === formData.salesChannel)
+    : storesData
 
   // Filter items for search
   const filteredItems = items.filter(item => 
@@ -284,19 +289,21 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Category *</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
+                  <Label className="text-sm font-semibold">Sales Channel *</Label>
+                  <Select value={formData.salesChannel || "none"} onValueChange={(value) => {
+                    const newChannel = value === "none" ? "" : value
+                    setFormData({...formData, salesChannel: newChannel, store: ''}) // Reset store when channel changes
+                  }}>
                     <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder="Select sales channel" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.length > 0 ? (
-                        categories.map(cat => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="default" disabled>No categories available</SelectItem>
-                      )}
+                      <SelectItem value="none">All Channels</SelectItem>
+                      <SelectItem value="Physical Store">Physical Store</SelectItem>
+                      <SelectItem value="Shopee">Shopee</SelectItem>
+                      <SelectItem value="Lazada">Lazada</SelectItem>
+                      <SelectItem value="Facebook">Facebook</SelectItem>
+                      <SelectItem value="TikTok">TikTok</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -308,12 +315,18 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
                       <SelectValue placeholder="Select store" />
                     </SelectTrigger>
                     <SelectContent>
-                      {stores.length > 0 ? (
-                        stores.map(store => (
-                          <SelectItem key={store} value={store}>{store}</SelectItem>
+                      {filteredStores.length > 0 ? (
+                        filteredStores.map(store => (
+                          <SelectItem key={store.id} value={store.store_name}>
+                            {store.store_name} {store.sales_channel && `(${store.sales_channel})`}
+                          </SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="default" disabled>No stores available</SelectItem>
+                        <SelectItem value="default" disabled>
+                          {formData.salesChannel && formData.salesChannel !== 'none' 
+                            ? `No stores for ${formData.salesChannel}` 
+                            : 'No stores available'}
+                        </SelectItem>
                       )}
                     </SelectContent>
                   </Select>

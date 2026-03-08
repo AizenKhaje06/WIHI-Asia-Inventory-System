@@ -46,8 +46,8 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
     id: item.id,
     name: item.name,
     category: item.category,
-    store: item.store, // Changed from storage_room
-    salesChannel: item.sales_channel, // NEW
+    store: item.store,
+    salesChannel: item.sales_channel,
     quantity: item.quantity,
     totalCOGS: item.total_cogs,
     costPrice: item.cost_price,
