@@ -113,12 +113,33 @@ export default function LogPage() {
     // Operation filter
     if (operationFilter !== "all") {
       filtered = filtered.filter(log => {
-        const logOp = log.operation?.toLowerCase().replace(/\s+/g, '-')
-        // Handle both 'transaction-cancelled' and 'transaction_cancelled' formats
-        if (operationFilter === 'transaction-cancelled') {
-          return logOp === 'transaction-cancelled' || logOp === 'transaction_cancelled' || log.operation?.toLowerCase().includes('cancelled')
+        // Use the same logic as getOperationBadge to determine actual operation
+        let actualOperation = log.operation?.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-') || 'other'
+        
+        // Check if it's a cancellation operation
+        if (actualOperation.includes('cancelled') || (log.details?.toLowerCase().includes('transaction') && log.details?.toLowerCase().includes('cancelled'))) {
+          actualOperation = 'transaction-cancelled'
         }
-        return logOp === operationFilter
+        
+        // Only override based on details if operation is still unclear
+        const explicitOperations = ['create', 'update', 'delete', 'restock', 'transaction-cancelled']
+        const isExplicitOperation = explicitOperations.includes(actualOperation)
+        
+        if (!isExplicitOperation) {
+          // Override based on details content for backward compatibility
+          const detailsLower = log.details?.toLowerCase() || ''
+          if (detailsLower.includes('demo/display') || detailsLower.includes('demo / display')) {
+            actualOperation = 'demo-display'
+          } else if (detailsLower.includes('internal use') || detailsLower.includes('internal-use')) {
+            actualOperation = 'internal-usage'
+          } else if (detailsLower.includes('warehouse') || detailsLower.includes('transferred')) {
+            actualOperation = 'warehouse'
+          } else if (detailsLower.includes('dispatched') && !detailsLower.includes('demo') && !detailsLower.includes('internal')) {
+            actualOperation = 'sale'
+          }
+        }
+        
+        return actualOperation === operationFilter
       })
     }
 
