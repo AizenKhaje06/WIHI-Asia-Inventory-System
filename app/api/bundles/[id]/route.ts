@@ -105,6 +105,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await context.params
+    console.log('[Bundles API DELETE] Attempting to delete bundle:', id)
     
     // Check if bundle exists
     const { data: existingBundle, error: fetchError } = await supabase
@@ -114,8 +115,11 @@ export async function DELETE(
       .single()
     
     if (fetchError || !existingBundle) {
+      console.log('[Bundles API DELETE] Bundle not found:', id, fetchError)
       return NextResponse.json({ error: 'Bundle not found' }, { status: 404 })
     }
+    
+    console.log('[Bundles API DELETE] Found bundle:', existingBundle.name)
     
     // Delete bundle items first
     const { error: itemsDeleteError } = await supabase
@@ -124,8 +128,11 @@ export async function DELETE(
       .eq('bundle_id', id)
     
     if (itemsDeleteError) {
-      console.error('[Bundles API] Error deleting bundle items:', itemsDeleteError)
+      console.error('[Bundles API DELETE] Error deleting bundle items:', itemsDeleteError)
+      return NextResponse.json({ error: `Failed to delete bundle items: ${itemsDeleteError.message}` }, { status: 500 })
     }
+    
+    console.log('[Bundles API DELETE] Bundle items deleted')
     
     // Delete bundle
     const { error: deleteError } = await supabase
@@ -134,14 +141,15 @@ export async function DELETE(
       .eq('id', id)
     
     if (deleteError) {
-      console.error('[Bundles API] Error deleting bundle:', deleteError)
-      return NextResponse.json({ error: 'Failed to delete bundle' }, { status: 500 })
+      console.error('[Bundles API DELETE] Error deleting bundle:', deleteError)
+      return NextResponse.json({ error: `Failed to delete bundle: ${deleteError.message}` }, { status: 500 })
     }
     
-    console.log('[Bundles API] Bundle deleted successfully:', id)
-    return NextResponse.json({ success: true }, { status: 200 })
+    console.log('[Bundles API DELETE] Bundle deleted successfully:', id)
+    return NextResponse.json({ success: true, message: 'Bundle deleted successfully' }, { status: 200 })
   } catch (error: any) {
-    console.error('[Bundles API] DELETE exception:', error)
-    return NextResponse.json({ error: 'Failed to delete bundle' }, { status: 500 })
+    console.error('[Bundles API DELETE] Exception:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to delete bundle'
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }

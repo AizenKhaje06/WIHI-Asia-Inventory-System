@@ -73,14 +73,20 @@ export async function DELETE(
 
   try {
     const { id } = await context.params
+    console.log('[API DELETE] Attempting to delete item:', id)
+    
     const items = await getInventoryItems()
     const item = items.find(i => i.id === id)
     
     if (!item) {
+      console.log('[API DELETE] Item not found:', id)
       return NextResponse.json({ error: "Item not found" }, { status: 404 })
     }
     
+    console.log('[API DELETE] Found item:', item.name)
     await deleteInventoryItem(id)
+    console.log('[API DELETE] Item deleted successfully')
+    
     invalidateCachePattern('inventory')
     
     await addLog({
@@ -90,9 +96,10 @@ export async function DELETE(
       details: `Deleted "${item.name}" by ${user.displayName}`
     })
     
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, message: 'Item deleted successfully' })
   } catch (error) {
-    console.error("[API] Error deleting item:", error)
-    return NextResponse.json({ error: "Failed to delete item" }, { status: 500 })
+    console.error("[API DELETE] Error deleting item:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to delete item'
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }

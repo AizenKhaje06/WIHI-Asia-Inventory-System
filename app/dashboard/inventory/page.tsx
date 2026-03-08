@@ -248,14 +248,36 @@ export default function InventoryPage() {
       const isBundle = id.startsWith('BUNDLE-')
       const endpoint = isBundle ? `/api/bundles/${id}` : `/api/items/${id}`
       
-      await fetch(endpoint, { method: "DELETE" })
-      fetchItems()
+      // Add authentication headers
+      const headers = new Headers({
+        'Content-Type': 'application/json'
+      })
+      
+      const username = localStorage.getItem('username')
+      const role = localStorage.getItem('userRole')
+      const displayName = localStorage.getItem('displayName')
+      
+      if (username) headers.set('x-user-username', username)
+      if (role) headers.set('x-user-role', role)
+      if (displayName) headers.set('x-user-display-name', displayName)
+      
+      const response = await fetch(endpoint, { 
+        method: "DELETE",
+        headers 
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to delete product' }))
+        throw new Error(errorData.error || 'Failed to delete product')
+      }
+      
+      await fetchItems()
       setDeleteDialogOpen(false)
       setItemToDelete(null)
       showSuccess("Product deleted successfully")
     } catch (error) {
       console.error("[Inventory] Error deleting item:", error)
-      showError("Failed to delete product")
+      showError(error instanceof Error ? error.message : "Failed to delete product")
     }
   }
   
