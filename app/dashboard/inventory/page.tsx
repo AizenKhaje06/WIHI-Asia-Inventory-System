@@ -210,7 +210,8 @@ export default function InventoryPage() {
 
   async function fetchItems() {
     try {
-      const data = await apiGet<InventoryItem[]>("/api/items")
+      // Fetch from unified products view (includes both inventory and bundles)
+      const data = await apiGet<InventoryItem[]>("/api/products")
       const itemsArray = Array.isArray(data) ? data : []
       setItems(itemsArray)
       setFilteredItems(itemsArray)
@@ -243,13 +244,17 @@ export default function InventoryPage() {
 
   async function handleDelete(id: string) {
     try {
-      await fetch(`/api/items/${id}`, { method: "DELETE" })
+      // Check if it's a bundle (bundles have ID starting with "BUNDLE-")
+      const isBundle = id.startsWith('BUNDLE-')
+      const endpoint = isBundle ? `/api/bundles/${id}` : `/api/items/${id}`
+      
+      await fetch(endpoint, { method: "DELETE" })
       fetchItems()
       setDeleteDialogOpen(false)
       setItemToDelete(null)
       showSuccess("Product deleted successfully")
     } catch (error) {
-      console.error("[v0] Error deleting item:", error)
+      console.error("[Inventory] Error deleting item:", error)
       showError("Failed to delete product")
     }
   }
@@ -933,6 +938,7 @@ export default function InventoryPage() {
                       const isOutOfStock = item.quantity === 0
                       const stockPercentage = Math.min((item.quantity / (item.reorderLevel * 2)) * 100, 100)
                       const isSelected = selectedRowId === item.id
+                      const isBundle = (item as any).productType === 'bundle' || (item as any).product_type === 'bundle'
                       
                       return (
                         <tr 

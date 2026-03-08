@@ -87,7 +87,8 @@ export default function POSPage() {
 
   async function fetchItems() {
     try {
-      const data = await apiGet<InventoryItem[]>("/api/items")
+      // Fetch from unified products view (includes both inventory and bundles)
+      const data = await apiGet<InventoryItem[]>("/api/products")
       const itemsArray = Array.isArray(data) ? data : []
       setItems(itemsArray)
     } catch (error) {

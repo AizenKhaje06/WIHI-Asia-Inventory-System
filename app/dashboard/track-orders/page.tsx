@@ -1087,15 +1087,15 @@ export default function TrackOrdersPage() {
         {/* Total Orders */}
         <Card className="border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow duration-200">
           <CardContent className="p-4">
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Total Orders</div>
             <div className="flex items-center justify-between mb-3">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                {totalOrders}
+              </div>
               <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
                 <Package className="h-4 w-4 text-slate-600 dark:text-slate-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {totalOrders}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Total Orders</div>
             <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-200 dark:border-slate-700">
               <div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
@@ -1120,15 +1120,15 @@ export default function TrackOrdersPage() {
         {/* Pending */}
         <Card className="border-yellow-200 dark:border-yellow-800 shadow-sm hover:shadow-md transition-shadow duration-200">
           <CardContent className="p-4">
+            <div className="text-xs text-yellow-700 dark:text-yellow-400 font-semibold uppercase tracking-wide mb-3">Pending</div>
             <div className="flex items-center justify-between mb-3">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                {pendingOrders}
+              </div>
               <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
                 <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {pendingOrders}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Pending</div>
             <div className="grid grid-cols-2 gap-2 pt-3 border-t border-yellow-200 dark:border-yellow-800">
               <div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
@@ -1153,15 +1153,15 @@ export default function TrackOrdersPage() {
         {/* In Transit */}
         <Card className="border-indigo-200 dark:border-indigo-800 shadow-sm hover:shadow-md transition-shadow duration-200">
           <CardContent className="p-4">
+            <div className="text-sm text-indigo-700 dark:text-indigo-400 font-bold uppercase tracking-wide mb-3">In Transit</div>
             <div className="flex items-center justify-between mb-3">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                {inTransitOrders}
+              </div>
               <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
                 <Truck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {inTransitOrders}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">In Transit</div>
             <div className="grid grid-cols-2 gap-2 pt-3 border-t border-indigo-200 dark:border-indigo-800">
               <div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
@@ -1186,15 +1186,15 @@ export default function TrackOrdersPage() {
         {/* On Delivery */}
         <Card className="border-blue-200 dark:border-blue-800 shadow-sm hover:shadow-md transition-shadow duration-200">
           <CardContent className="p-4">
+            <div className="text-sm text-blue-700 dark:text-blue-400 font-bold uppercase tracking-wide mb-3">On Delivery</div>
             <div className="flex items-center justify-between mb-3">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                {onDeliveryOrders}
+              </div>
               <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
                 <Truck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {onDeliveryOrders}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">On Delivery</div>
             <div className="grid grid-cols-2 gap-2 pt-3 border-t border-blue-200 dark:border-blue-800">
               <div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
@@ -1219,15 +1219,15 @@ export default function TrackOrdersPage() {
         {/* Pickup */}
         <Card className="border-purple-200 dark:border-purple-800 shadow-sm hover:shadow-md transition-shadow duration-200">
           <CardContent className="p-4">
+            <div className="text-sm text-purple-700 dark:text-purple-400 font-bold uppercase tracking-wide mb-3">Pickup</div>
             <div className="flex items-center justify-between mb-3">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                {pickupOrders}
+              </div>
               <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
                 <Package className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {pickupOrders}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Pickup</div>
             <div className="grid grid-cols-2 gap-2 pt-3 border-t border-purple-200 dark:border-purple-800">
               <div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
@@ -1253,15 +1253,15 @@ export default function TrackOrdersPage() {
         {/* Delivered */}
         <Card className="border-green-200 dark:border-green-800 shadow-sm hover:shadow-md transition-shadow duration-200">
           <CardContent className="p-4">
+            <div className="text-sm text-green-700 dark:text-green-400 font-bold uppercase tracking-wide mb-3">Delivered</div>
             <div className="flex items-center justify-between mb-3">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                {deliveredOrders}
+              </div>
               <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
                 <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {deliveredOrders}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Delivered</div>
             <div className="grid grid-cols-2 gap-2 pt-3 border-t border-green-200 dark:border-green-800">
               <div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
@@ -1286,15 +1286,15 @@ export default function TrackOrdersPage() {
         {/* Cancelled */}
         <Card className="border-red-200 dark:border-red-800 shadow-sm hover:shadow-md transition-shadow duration-200">
           <CardContent className="p-4">
+            <div className="text-sm text-red-700 dark:text-red-400 font-bold uppercase tracking-wide mb-3">Cancelled</div>
             <div className="flex items-center justify-between mb-3">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                {cancelledOrders}
+              </div>
               <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
                 <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {cancelledOrders}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Cancelled</div>
             <div className="grid grid-cols-2 gap-2 pt-3 border-t border-red-200 dark:border-red-800">
               <div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
@@ -1319,15 +1319,15 @@ export default function TrackOrdersPage() {
         {/* Detained */}
         <Card className="border-orange-200 dark:border-orange-800 shadow-sm hover:shadow-md transition-shadow duration-200">
           <CardContent className="p-4">
+            <div className="text-sm text-orange-700 dark:text-orange-400 font-bold uppercase tracking-wide mb-3">Detained</div>
             <div className="flex items-center justify-between mb-3">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                {detainedOrders}
+              </div>
               <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
                 <Ban className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {detainedOrders}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Detained</div>
             <div className="grid grid-cols-2 gap-2 pt-3 border-t border-orange-200 dark:border-orange-800">
               <div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
@@ -1352,15 +1352,15 @@ export default function TrackOrdersPage() {
         {/* Problematic */}
         <Card className="border-pink-200 dark:border-pink-800 shadow-sm hover:shadow-md transition-shadow duration-200">
           <CardContent className="p-4">
+            <div className="text-sm text-pink-700 dark:text-pink-400 font-bold uppercase tracking-wide mb-3">Problematic</div>
             <div className="flex items-center justify-between mb-3">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                {problematicOrders}
+              </div>
               <div className="p-2 rounded-lg bg-pink-100 dark:bg-pink-900/30">
                 <AlertTriangle className="h-4 w-4 text-pink-600 dark:text-pink-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {problematicOrders}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Problematic</div>
             <div className="grid grid-cols-2 gap-2 pt-3 border-t border-pink-200 dark:border-pink-800">
               <div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>
@@ -1385,15 +1385,15 @@ export default function TrackOrdersPage() {
         {/* Returned */}
         <Card className="border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200">
           <CardContent className="p-4">
+            <div className="text-sm text-slate-700 dark:text-slate-400 font-bold uppercase tracking-wide mb-3">Returned</div>
             <div className="flex items-center justify-between mb-3">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                {returnedOrders}
+              </div>
               <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
                 <RotateCcw className="h-4 w-4 text-slate-600 dark:text-slate-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-              {returnedOrders}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-3">Returned</div>
             <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-200 dark:border-slate-700">
               <div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Qty</div>

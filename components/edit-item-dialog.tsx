@@ -116,11 +116,16 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
     setLoading(true)
 
     try {
-      await apiPut(`/api/items/${item.id}`, formData)
+      // Use different API endpoint based on product type
+      if (isBundle) {
+        await apiPut(`/api/bundles/${item.id}`, formData)
+      } else {
+        await apiPut(`/api/items/${item.id}`, formData)
+      }
       onSuccess()
       onOpenChange(false)
     } catch (error) {
-      console.error("[v0] Error updating item:", error)
+      console.error("[EditItemDialog] Error updating item:", error)
     } finally {
       setLoading(false)
     }

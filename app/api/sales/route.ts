@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 // Using Supabase as primary database
 import { addTransaction, updateInventoryItem, getInventoryItems, addLog } from "@/lib/supabase-db"
 import { invalidateCachePattern } from "@/lib/cache"
+import { supabaseAdmin as supabase } from "@/lib/supabase"
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,6 +32,81 @@ export async function POST(request: NextRequest) {
 
     // Process items sequentially to avoid race conditions
     for (const saleItem of items) {
+      // Check if it's a bundle (ID starts with "BUNDLE-")
+      const isBundle = saleItem.itemId.startsWith('BUNDLE-')
+      
+      if (isBundle) {
+        // Handle bundle sale
+        const { data: bundle, error: bundleError } = await supabase
+          .from('bundles')
+          .select('*')
+          .eq('id', saleItem.itemId)
+          .single()
+        
+        if (bundleError || !bundle) {
+          return NextResponse.json({ error: `Bundle ${saleItem.itemId} not found` }, { status: 404 })
+        }
+        
+        if (bundle.quantity < saleItem.quantity) {
+          return NextResponse.json({ error: `Insufficient stock for bundle ${bundle.name}` }, { status: 400 })
+        }
+        
+        // Get bundle components
+        const { data: bundleItems } = await supabase
+          .from('bundle_items')
+          .select('*')
+          .eq('bundle_id', saleItem.itemId)
+        
+        // Deduct component items from inventory
+        for (const component of bundleItems || []) {
+          const inventoryItem = allItems.find(item => item.id === component.item_id)
+          if (inventoryItem) {
+            const deductQty = component.quantity * saleItem.quantity
+            await updateInventoryItem(inventoryItem.id, {
+              quantity: inventoryItem.quantity - deductQty
+            })
+          }
+        }
+        
+        // Update bundle quantity
+        await supabase
+          .from('bundles')
+          .update({ quantity: bundle.quantity - saleItem.quantity })
+          .eq('id', saleItem.itemId)
+        
+        // Record transaction
+        const totalCost = bundle.bundle_cost * saleItem.quantity
+        const totalRevenue = transactionType === 'sale' ? bundle.bundle_price * saleItem.quantity : 0
+        const profit = totalRevenue - totalCost
+        
+        const transaction = await addTransaction({
+          itemId: bundle.id,
+          itemName: bundle.name,
+          quantity: saleItem.quantity,
+          costPrice: bundle.bundle_cost,
+          sellingPrice: bundle.bundle_price,
+          totalCost,
+          totalRevenue,
+          profit,
+          type: "sale",
+          transactionType,
+          department,
+          staffName,
+          notes,
+        })
+        
+        await addLog({
+          operation: transactionType === 'sale' ? 'sale' : transactionType === 'demo' ? 'demo-display' : transactionType === 'internal' ? 'internal-usage' : 'warehouse',
+          itemId: bundle.id,
+          itemName: bundle.name,
+          details: `${transactionType === 'sale' ? 'Dispatched' : transactionType === 'demo' ? 'Demo/Display' : transactionType === 'internal' ? 'Internal Use' : 'Transferred'} bundle "${bundle.name}" - Qty: ${saleItem.quantity}, ${transactionType === 'sale' ? `Total: ₱${totalRevenue.toFixed(2)}, ` : ''}Department: ${department}, Staff: ${staffName || 'N/A'}`
+        })
+        
+        transactions.push(transaction)
+        continue
+      }
+      
+      // Regular item handling (existing code)
       const inventoryItem = allItems.find((item) => item.id === saleItem.itemId)
 
       if (!inventoryItem) {

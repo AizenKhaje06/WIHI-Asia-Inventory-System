@@ -34,7 +34,6 @@ const navigation: NavItem[] = [
   { name: "Inventory", href: "/dashboard/inventory", icon: Package },
   { name: "Warehouse Dispatch", href: "/dashboard/pos", icon: ShoppingCart },
   { name: "Sales Analytics", href: "/dashboard/sales", icon: TrendingUp },
-  { name: "Reports", href: "/dashboard/reports", icon: FileText },
   { name: "Business Insights", href: "/dashboard/insights", icon: Lightbulb },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Customers", href: "/dashboard/customers", icon: Users },

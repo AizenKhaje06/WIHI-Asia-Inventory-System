@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DateRangePicker } from "@/components/ui/date-range-picker"
 import { 
   Database, 
   Search, 
@@ -53,6 +54,8 @@ export default function LogPage() {
   const [operationFilter, setOperationFilter] = useState("all")
   const [sortBy, setSortBy] = useState("newest")
   const [currentPage, setCurrentPage] = useState(1)
+  const [startDate, setStartDate] = useState<Date | null>(null)
+  const [endDate, setEndDate] = useState<Date | null>(null)
 
   // Fetch logs
   useEffect(() => {
@@ -119,6 +122,16 @@ export default function LogPage() {
       })
     }
 
+    // Date filter
+    if (startDate || endDate) {
+      filtered = filtered.filter(log => {
+        const logDate = new Date(log.timestamp)
+        const matchesStart = !startDate || logDate >= startDate
+        const matchesEnd = !endDate || logDate <= endDate
+        return matchesStart && matchesEnd
+      })
+    }
+
     // Sort
     filtered.sort((a, b) => {
       const dateA = new Date(a.timestamp).getTime()
@@ -127,7 +140,7 @@ export default function LogPage() {
     })
 
     return filtered
-  }, [logs, searchQuery, operationFilter, sortBy])
+  }, [logs, searchQuery, operationFilter, sortBy, startDate, endDate])
 
   // Pagination
   const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE)
@@ -139,7 +152,7 @@ export default function LogPage() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, operationFilter, sortBy])
+  }, [searchQuery, operationFilter, sortBy, startDate, endDate])
 
   // Statistics
   const stats = useMemo(() => {
@@ -163,6 +176,8 @@ export default function LogPage() {
     setSearchQuery("")
     setOperationFilter("all")
     setSortBy("newest")
+    setStartDate(null)
+    setEndDate(null)
     setCurrentPage(1)
   }
 
@@ -205,7 +220,7 @@ export default function LogPage() {
     )
   }
 
-  const hasActiveFilters = searchQuery || operationFilter !== "all" || sortBy !== "newest"
+  const hasActiveFilters = searchQuery || operationFilter !== "all" || sortBy !== "newest" || startDate || endDate
 
   if (loading) {
     return (
@@ -329,7 +344,7 @@ export default function LogPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -359,6 +374,17 @@ export default function LogPage() {
               <SelectItem value="warehouse">Warehouse</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Date Range Filter */}
+          <DateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onDateChange={(start, end) => {
+              setStartDate(start)
+              setEndDate(end)
+            }}
+            className="h-10"
+          />
 
           {/* Sort */}
           <Select value={sortBy} onValueChange={setSortBy}>

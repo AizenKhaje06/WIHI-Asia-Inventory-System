@@ -245,8 +245,8 @@ export default function TransactionHistoryPage() {
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
                     <th className="py-3 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[40px]">#</th>
                     <th className="py-3 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[90px]">Date</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[100px]">Channel</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[120px]">Store</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[100px] max-w-[100px]">Channel</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[120px] max-w-[120px]">Store</th>
                     <th className="py-3 px-4 text-left text-[10px] font-bold text-white uppercase tracking-wider min-w-[200px]">Product</th>
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[100px]">Courier</th>
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[140px]">Waybill</th>
@@ -274,27 +274,27 @@ export default function TransactionHistoryPage() {
                           {new Date(order.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
                         </div>
                       </td>
-                      <td className="py-2 px-3">
-                        <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] font-semibold px-2 py-0.5 whitespace-nowrap">
+                      <td className="py-2 px-3 max-w-[100px] overflow-hidden">
+                        <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] font-semibold px-2 py-0.5 truncate block">
                           {order.sales_channel}
                         </Badge>
                       </td>
-                      <td className="py-2 px-3">
+                      <td className="py-2 px-3 max-w-[120px] overflow-hidden">
                         <div className="text-[11px] text-slate-700 dark:text-slate-300 font-medium truncate">{order.store}</div>
                       </td>
                       <td className="py-2 px-4">
-                        <div className="text-[11px] text-slate-700 dark:text-slate-300 font-medium" title={order.product}>
+                        <div className="text-[11px] text-slate-700 dark:text-slate-300 font-medium truncate max-w-[200px]" title={order.product}>
                           {order.product}
                         </div>
                       </td>
                       <td className="py-2 px-3">
-                        <div className="text-[11px] text-slate-700 dark:text-slate-300 truncate">{order.courier}</div>
+                        <div className="text-[11px] text-slate-700 dark:text-slate-300 truncate max-w-[100px]">{order.courier}</div>
                       </td>
                       <td className="py-2 px-3">
-                        <div className="text-[11px] font-mono text-slate-900 dark:text-white font-semibold truncate">{order.waybill}</div>
+                        <div className="text-[11px] font-mono text-slate-900 dark:text-white font-semibold truncate max-w-[140px]">{order.waybill}</div>
                       </td>
                       <td className="py-2 px-3 text-center">
-                        <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800 text-[9px] font-semibold px-2 py-0.5 whitespace-nowrap">
+                        <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800 text-[9px] font-semibold px-2 py-0.5 whitespace-nowrap max-w-[80px] truncate inline-block">
                           {order.status}
                         </Badge>
                       </td>
