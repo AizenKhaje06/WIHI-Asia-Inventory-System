@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     
     console.log("[Accounts API] Parsing request body")
     const body = await request.json()
-    const { action, username, password, role, displayName } = body
+    const { action, username, password, role, displayName, email, phone, targetUsername, newUsername } = body
     console.log("[Accounts API] Action:", action, "Username:", username)
 
     if (action === "validate") {
@@ -47,7 +47,9 @@ export async function POST(request: NextRequest) {
             account: {
               username: account.username,
               role: account.role,
-              displayName: account.displayName
+              displayName: account.displayName,
+              email: account.email || '',
+              phone: account.phone || ''
             }
           })
         } else {
@@ -104,7 +106,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { action, username: targetUsername, newUsername, password, displayName } = body
+    const { action, username: targetUsername, newUsername, password, displayName, email, phone } = body
 
     // Users can only update their own account unless they're admin
     if (role !== 'admin' && username !== targetUsername) {
@@ -117,6 +119,15 @@ export async function PUT(request: NextRequest) {
     } else if (action === 'updateDisplayName') {
       await updateAccount(targetUsername, { displayName })
       return NextResponse.json({ success: true, message: "Display name updated successfully" })
+    } else if (action === 'updateProfile') {
+      // Update display name, email, and phone
+      const updates: any = {}
+      if (displayName !== undefined) updates.displayName = displayName
+      if (email !== undefined) updates.email = email
+      if (phone !== undefined) updates.phone = phone
+      
+      await updateAccount(targetUsername, updates)
+      return NextResponse.json({ success: true, message: "Profile updated successfully" })
     } else if (action === 'updateUsername') {
       // Only admins can change usernames
       if (role !== 'admin') {

@@ -147,14 +147,49 @@ export default function SettingsPage() {
     const user = getCurrentUser()
     setCurrentUser(user)
     
-    if (user) {
-      setProfileForm({
-        displayName: user.displayName || '',
-        username: user.username || '',
-        email: '',
-        phone: ''
-      })
+    // Fetch fresh profile data from database
+    const fetchProfile = async () => {
+      if (!user) return
+      
+      try {
+        const headers = new Headers()
+        headers.set('x-user-username', user.username)
+        headers.set('x-user-role', user.role)
+        
+        const response = await fetch('/api/auth/profile', { headers })
+        
+        if (response.ok) {
+          const profile = await response.json()
+          setProfileForm({
+            displayName: profile.displayName || '',
+            username: profile.username || '',
+            email: profile.email || '',
+            phone: profile.phone || ''
+          })
+          
+          // Update localStorage with fresh data
+          const updatedUser = {
+            ...user,
+            displayName: profile.displayName,
+            email: profile.email,
+            phone: profile.phone
+          }
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser))
+          setCurrentUser(updatedUser)
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error)
+        // Fallback to localStorage data
+        setProfileForm({
+          displayName: user.displayName || '',
+          username: user.username || '',
+          email: user.email || '',
+          phone: user.phone || ''
+        })
+      }
     }
+    
+    fetchProfile()
 
     // Load saved settings from localStorage
     const savedSettings = localStorage.getItem('systemSettings')
@@ -272,12 +307,19 @@ export default function SettingsPage() {
 
     try {
       await apiPut('/api/accounts', {
-        action: 'updateDisplayName',
+        action: 'updateProfile',
         username: currentUser.username,
-        displayName: profileForm.displayName
+        displayName: profileForm.displayName,
+        email: profileForm.email,
+        phone: profileForm.phone
       })
 
-      const updatedUser = { ...currentUser, displayName: profileForm.displayName }
+      const updatedUser = { 
+        ...currentUser, 
+        displayName: profileForm.displayName,
+        email: profileForm.email,
+        phone: profileForm.phone
+      }
       localStorage.setItem('currentUser', JSON.stringify(updatedUser))
       setCurrentUser(updatedUser)
 

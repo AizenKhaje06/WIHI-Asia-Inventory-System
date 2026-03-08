@@ -6,6 +6,8 @@ export interface User {
   username: string
   role: UserRole
   displayName: string
+  email?: string
+  phone?: string
 }
 
 // Role definitions with better names

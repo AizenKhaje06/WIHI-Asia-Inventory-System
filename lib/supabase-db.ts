@@ -575,10 +575,12 @@ export async function validateCredentials(username: string, password: string): P
   }
 }
 
-export async function updateAccount(username: string, updates: { password?: string; displayName?: string }): Promise<void> {
+export async function updateAccount(username: string, updates: { password?: string; displayName?: string; email?: string; phone?: string }): Promise<void> {
   const updateData: any = {}
   if (updates.password !== undefined) updateData.password = updates.password
   if (updates.displayName !== undefined) updateData.display_name = updates.displayName
+  if (updates.email !== undefined) updateData.email = updates.email
+  if (updates.phone !== undefined) updateData.phone = updates.phone
 
   const { error } = await supabaseAdmin
     .from('users')

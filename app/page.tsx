@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { 
   Eye, EyeOff, Lock, User, Loader2, ArrowRight, AlertCircle, 
-  Shield, Building2, KeyRound, CheckCircle2, Info, ChevronsRight 
+  Shield, Building2, KeyRound, CheckCircle2, Info, ChevronsRight, Mail 
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
@@ -28,6 +29,10 @@ export default function EnterpriseLoginPage() {
   const [capsLockOn, setCapsLockOn] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState(0)
   const [mounted, setMounted] = useState(false)
+  const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false)
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("")
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false)
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false)
   const router = useRouter()
 
   const isDevelopment = process.env.NODE_ENV === 'development'
@@ -68,6 +73,45 @@ export default function EnterpriseLoginPage() {
     setCapsLockOn(e.getModifierState('CapsLock'))
   }
 
+  const handleForgotPassword = async () => {
+    if (!forgotPasswordEmail) {
+      setError("Please enter your email address")
+      return
+    }
+
+    setForgotPasswordLoading(true)
+    setError("")
+
+    try {
+      const response = await apiPost("/api/auth/forgot-password", {
+        email: forgotPasswordEmail
+      })
+
+      if (response.success) {
+        setForgotPasswordSuccess(true)
+        // In development, show the temp password
+        if (response.tempPassword) {
+          alert(`Temporary Password: ${response.tempPassword}\n\nPlease save this and change it after logging in.`)
+        }
+      } else {
+        setError(response.error || "Failed to send reset email")
+      }
+    } catch (error) {
+      console.error("Forgot password error:", error)
+      setError("Failed to send reset email. Please try again.")
+    } finally {
+      setForgotPasswordLoading(false)
+    }
+  }
+
+  const resetForgotPasswordDialog = () => {
+    setShowForgotPasswordDialog(false)
+    setForgotPasswordEmail("")
+    setForgotPasswordSuccess(false)
+    setForgotPasswordLoading(false)
+    setError("")
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -99,7 +143,9 @@ export default function EnterpriseLoginPage() {
             localStorage.setItem("currentUser", JSON.stringify({
               username: data.account.username,
               role: data.account.role,
-              displayName: data.account.displayName
+              displayName: data.account.displayName,
+              email: data.account.email || '',
+              phone: data.account.phone || ''
             }))
           } catch (error) {
             console.error('Error saving to localStorage:', error)
@@ -470,6 +516,15 @@ export default function EnterpriseLoginPage() {
                     Remember me
                   </Label>
                 </div>
+                {loginMode === "admin" && (
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPasswordDialog(true)}
+                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                )}
               </div>
 
               <Button
@@ -490,21 +545,6 @@ export default function EnterpriseLoginPage() {
                 )}
               </Button>
             </form>
-
-            {isDevelopment && (
-              <div className="mt-6 p-4 rounded-xl bg-blue-900/20 border border-blue-800">
-                <div className="flex items-start gap-2">
-                  <Info className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-xs text-blue-300">
-                    <span className="font-semibold">Development Mode:</span>
-                    <div className="mt-1 space-y-0.5">
-                      <div>Admin: admin / password123</div>
-                      <div>Staff: staff / staff123</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Footer */}
@@ -514,6 +554,102 @@ export default function EnterpriseLoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={showForgotPasswordDialog} onOpenChange={setShowForgotPasswordDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-blue-500" />
+              Reset Password
+            </DialogTitle>
+            <DialogDescription>
+              {forgotPasswordSuccess 
+                ? "Check your email for password reset instructions"
+                : "Enter your email address and we'll send you a password reset link"}
+            </DialogDescription>
+          </DialogHeader>
+
+          {forgotPasswordSuccess ? (
+            <div className="py-6">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-3">
+                  <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="font-medium text-slate-900 dark:text-white mb-1">
+                    Email Sent!
+                  </p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    We've sent password reset instructions to <span className="font-medium">{forgotPasswordEmail}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 py-4">
+              {error && (
+                <Alert className="border-red-800 bg-red-900/20">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
+                  <AlertDescription className="text-red-400 ml-2">
+                    {error}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="forgot-email">Email Address</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    placeholder="your.email@company.com"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    className="pl-10"
+                    disabled={forgotPasswordLoading}
+                  />
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Make sure this email is registered in your profile settings
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            {forgotPasswordSuccess ? (
+              <Button onClick={resetForgotPasswordDialog} className="w-full">
+                Close
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={resetForgotPasswordDialog}
+                  disabled={forgotPasswordLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleForgotPassword}
+                  disabled={forgotPasswordLoading || !forgotPasswordEmail}
+                >
+                  {forgotPasswordLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Send Reset Link"
+                  )}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Search, Pencil, Trash2, PackagePlus, Package, Filter, X, ArrowUpDown, AlertCircle, TrendingUp, Warehouse, Tag, Loader2, LayoutGrid, LayoutList, Eye, ShoppingCart, Check } from "lucide-react"
+import { Plus, Search, Pencil, Trash2, PackagePlus, Package, Filter, X, ArrowUpDown, AlertCircle, TrendingUp, Warehouse, Tag, Loader2, LayoutGrid, LayoutList, Eye, ShoppingCart, Check, Building2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -30,10 +30,7 @@ export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
   const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
   const [search, setSearch] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [priceFilter, setPriceFilter] = useState("all")
-  const [stockRoomFilter, setStockRoomFilter] = useState("all")
-  const [stockStatusFilter, setStockStatusFilter] = useState("all")
+  const [salesChannelFilter, setSalesChannelFilter] = useState("all")
   const [sortBy, setSortBy] = useState("name-asc")
   const [loading, setLoading] = useState(true)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
@@ -158,36 +155,13 @@ export default function InventoryPage() {
       filtered = filtered.filter(
         (item) =>
           item.name.toLowerCase().includes(searchLower) ||
-          item.category.toLowerCase().includes(searchLower),
+          item.category.toLowerCase().includes(searchLower) ||
+          item.store.toLowerCase().includes(searchLower)
       )
     }
 
-    if (categoryFilter && categoryFilter !== "all") {
-      filtered = filtered.filter((item) => item.category === categoryFilter)
-    }
-
-    if (priceFilter && priceFilter !== "all") {
-      if (priceFilter === "low") {
-        filtered = filtered.filter((item) => item.sellingPrice < 100)
-      } else if (priceFilter === "medium") {
-        filtered = filtered.filter((item) => item.sellingPrice >= 100 && item.sellingPrice < 500)
-      } else if (priceFilter === "high") {
-        filtered = filtered.filter((item) => item.sellingPrice >= 500)
-      }
-    }
-
-    if (stockRoomFilter && stockRoomFilter !== "all") {
-      filtered = filtered.filter((item) => item.store === stockRoomFilter)
-    }
-
-    if (stockStatusFilter && stockStatusFilter !== "all") {
-      if (stockStatusFilter === "in-stock") {
-        filtered = filtered.filter((item) => item.quantity > item.reorderLevel)
-      } else if (stockStatusFilter === "low-stock") {
-        filtered = filtered.filter((item) => item.quantity <= item.reorderLevel && item.quantity > 0)
-      } else if (stockStatusFilter === "out-of-stock") {
-        filtered = filtered.filter((item) => item.quantity === 0)
-      }
+    if (salesChannelFilter && salesChannelFilter !== "all") {
+      filtered = filtered.filter((item) => item.salesChannel === salesChannelFilter)
     }
 
     // Apply sorting
@@ -206,7 +180,7 @@ export default function InventoryPage() {
     }
 
     setFilteredItems(filtered)
-  }, [search, categoryFilter, priceFilter, stockRoomFilter, stockStatusFilter, sortBy, items])
+  }, [search, salesChannelFilter, sortBy, items])
 
   async function fetchItems() {
     try {
@@ -455,19 +429,13 @@ export default function InventoryPage() {
   const categoryNames = categories.map(cat => cat.name)
 
   const activeFiltersCount = [
-    categoryFilter !== "all",
-    priceFilter !== "all",
-    stockRoomFilter !== "all",
-    stockStatusFilter !== "all",
+    salesChannelFilter !== "all",
     search !== ""
   ].filter(Boolean).length
 
   const clearAllFilters = () => {
     setSearch("")
-    setCategoryFilter("all")
-    setPriceFilter("all")
-    setStockRoomFilter("all")
-    setStockStatusFilter("all")
+    setSalesChannelFilter("all")
     setSortBy("name-asc")
   }
 
@@ -483,158 +451,116 @@ export default function InventoryPage() {
         </p>
       </div>
 
-      {/* Action Buttons - Mobile Optimized */}
-      {getCurrentUser()?.role === 'admin' && (
-        <div className="mb-4 px-4 flex flex-wrap gap-2">
-          <Button
-            onClick={() => setAddDialogOpen(true)}
-            className="flex-1 min-w-[140px] h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Product
-          </Button>
-          <Button
-            onClick={() => setCreateBundleOpen(true)}
-            className="flex-1 min-w-[140px] h-11 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg"
-          >
-            <Package className="h-4 w-4 mr-2" />
-            Create Bundle
-          </Button>
-          <Button
-            onClick={() => setCategoryDialogOpen(true)}
-            className="flex-1 min-w-[120px] h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg"
-          >
-            <Tag className="h-4 w-4 mr-2" />
-            Categories
-          </Button>
-          <Button
-            onClick={() => setStoreDialogOpen(true)}
-            className="flex-1 min-w-[110px] h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg"
-          >
-            <Warehouse className="h-4 w-4 mr-2" />
-            Stores
-          </Button>
-        </div>
-      )}
-
       <div className="px-4">
-      <Card className="mb-4 border-slate-200 dark:border-slate-800 shadow-sm">
-        <CardContent className="p-4">
-          {/* Compact Filter Layout */}
-          <div className="space-y-3">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder="Search products..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-11 h-12 text-sm border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-800 transition-colors"
-              />
-            </div>
-
-            {/* Filters Grid - 2 columns on mobile, 5 columns on desktop */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5">
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categoryNames.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                </SelectContent>
-              </Select>
-
-              <Select value={priceFilter} onValueChange={setPriceFilter}>
-                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <SelectValue placeholder="Price" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Prices</SelectItem>
-                  <SelectItem value="low">Low (&lt; ₱100)</SelectItem>
-                  <SelectItem value="medium">Medium (₱100-₱499)</SelectItem>
-                  <SelectItem value="high">High (≥ ₱500)</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
-                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <SelectValue placeholder="Store" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Stores</SelectItem>
-                  {stores.map((store) => (
-                    <SelectItem key={store.id} value={store.store_name}>
-                      {store.store_name} ({store.sales_channel})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={stockStatusFilter} onValueChange={setStockStatusFilter}>
-                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="in-stock">In Stock</SelectItem>
-                  <SelectItem value="low-stock">Low Stock</SelectItem>
-                  <SelectItem value="out-of-stock">Out of Stock</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <div className="flex items-center gap-2">
-                    <ArrowUpDown className="h-4 w-4 text-slate-500" />
-                    <SelectValue placeholder="Sort by" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                  <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                  <SelectItem value="price-asc">Price (Low-High)</SelectItem>
-                  <SelectItem value="price-desc">Price (High-Low)</SelectItem>
-                  <SelectItem value="stock-asc">Stock (Low-High)</SelectItem>
-                  <SelectItem value="stock-desc">Stock (High-Low)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Active Filters + Results - Enhanced */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-2">
-                {activeFiltersCount > 0 ? (
-                  <>
-                    <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-xs px-2.5 py-1 font-medium">
-                      {activeFiltersCount} active
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearAllFilters}
-                      className="h-8 px-3 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg font-medium"
-                    >
-                      <X className="h-3.5 w-3.5 mr-1" />
-                      Clear all
-                    </Button>
-                  </>
-                ) : (
-                  <span className="text-xs text-slate-500 dark:text-slate-500 font-medium">No filters</span>
-                )}
+      {/* Redesigned Filter Section - 2 Cards Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr,auto] gap-4 mb-4">
+        {/* Left Card - Search and Filter */}
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Input
+                  placeholder="Search products..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-11 h-11 text-sm border-slate-300 dark:border-slate-700 rounded-lg"
+                />
               </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">
-                <span className="font-bold text-slate-900 dark:text-white">{filteredItems.length}</span>
-                <span className="mx-1 text-slate-400">of</span>
-                <span className="font-semibold">{items.length}</span>
-              </div>
+
+              {/* Sales Channel Filter */}
+              <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
+                <SelectTrigger className="h-11 w-full sm:w-[200px] text-sm rounded-lg border-slate-300 dark:border-slate-700">
+                  <SelectValue placeholder="Sales Channel" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Channels</SelectItem>
+                  <SelectItem value="Shopee">Shopee</SelectItem>
+                  <SelectItem value="Lazada">Lazada</SelectItem>
+                  <SelectItem value="Facebook">Facebook</SelectItem>
+                  <SelectItem value="TikTok">TikTok</SelectItem>
+                  <SelectItem value="Physical Store">Physical Store</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        {/* Right Card - Action Buttons (2x2 Grid) */}
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+          <CardContent className="p-4">
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                onClick={() => setAddDialogOpen(true)}
+                className="h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md text-sm"
+              >
+                <Plus className="h-4 w-4 mr-1.5" />
+                Add Product
+              </Button>
+              
+              <Button
+                onClick={() => setCreateBundleOpen(true)}
+                className="h-11 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md text-sm"
+              >
+                <Package className="h-4 w-4 mr-1.5" />
+                Create Bundle
+              </Button>
+              
+              <Button
+                onClick={() => setCategoryDialogOpen(true)}
+                className="h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md text-sm"
+              >
+                <Tag className="h-4 w-4 mr-1.5" />
+                Categories
+              </Button>
+              
+              <Button
+                onClick={() => setStoreDialogOpen(true)}
+                className="h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md text-sm"
+              >
+                <Building2 className="h-4 w-4 mr-1.5" />
+                Stores
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <Card className="border-slate-200 dark:border-slate-800 shadow-lg rounded-none md:rounded-lg md:mx-4 overflow-hidden">
+      {/* Active Filters + Results */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {activeFiltersCount > 0 ? (
+              <>
+                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-xs px-2.5 py-1 font-medium">
+                  {activeFiltersCount} active
+                </Badge>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="h-8 px-3 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg font-medium"
+                >
+                  <X className="h-3.5 w-3.5 mr-1" />
+                  Clear all
+                </Button>
+              </>
+            ) : (
+              <span className="text-xs text-slate-500 dark:text-slate-500 font-medium">No filters</span>
+            )}
+          </div>
+          <div className="text-xs text-slate-600 dark:text-slate-400">
+            <span className="font-bold text-slate-900 dark:text-white">{filteredItems.length}</span>
+            <span className="mx-1 text-slate-400">of</span>
+            <span className="font-semibold">{items.length}</span>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div className="px-4">
+      <Card className="border-slate-200 dark:border-slate-800 shadow-lg rounded-none md:rounded-lg overflow-hidden">
         <CardHeader className="pb-5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
           <div className="flex flex-col gap-4 px-4 md:px-6">
             {/* Title Row */}
@@ -706,7 +632,7 @@ export default function InventoryPage() {
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No products found</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
-                {search || categoryFilter !== "all" || priceFilter !== "all" || stockRoomFilter !== "all" || stockStatusFilter !== "all"
+                {search || salesChannelFilter !== "all"
                   ? "Try adjusting your filters or search terms"
                   : "Get started by adding your first product"}
               </p>
@@ -1173,6 +1099,7 @@ export default function InventoryPage() {
           )}
         </CardContent>
       </Card>
+      </div>
 
       <AddItemDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} onSuccess={fetchItems} />
 
