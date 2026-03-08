@@ -1,267 +1,137 @@
-/**
- * =====================================================
- * BUNDLE PRODUCTS API
- * Enterprise-Grade REST API Endpoint
- * =====================================================
- */
+﻿import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { supabaseAdmin as supabase } from '@/lib/supabase'
 
-import { type NextRequest, NextResponse } from 'next/server'
-import { withAuth } from '@/lib/api-helpers'
-import { supabase } from '@/lib/supabase'
-import type {
-  CreateBundleRequest,
-  BundleProduct,
-  BundleValidation
-} from '@/lib/types/bundle'
-import {
-  validateBundleCreation,
-  calculateBundleCost,
-  calculateVirtualStock,
-  generateBundleSKU
-} from '@/lib/bundle-utils'
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
-/**
- * GET /api/bundles
- * Retrieve all bundle products with optional filtering
- */
-export const GET = withAuth(async (request, { user }) => {
+export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const salesChannel = searchParams.get('salesChannel')
+    const { searchParams } = new URL(request.url)
     const store = searchParams.get('store')
-    const includeComponents = searchParams.get('includeComponents') === 'true'
+    const activeOnly = searchParams.get('activeOnly') !== 'false'
     
-    // Build query
-    let query = supabase
-      .from('inventory')
-      .select('*')
-      .eq('product_type', 'bundle')
-      .order('created_at', { ascending: false })
+    let query = supabase.from('bundles').select('*').order('created_at', { ascending: false })
     
-    // Apply filters
-    if (salesChannel) {
-      query = query.eq('sales_channel', salesChannel)
-    }
+    if (activeOnly) query = query.eq('is_active', true)
+    if (store) query = query.eq('store', store)
     
-    if (store) {
-      query = query.eq('store', store)
-    }
-    
-    const { data: bundles, error } = await query
+    const { data, error } = await query
     
     if (error) {
-      console.error('[Bundles API] Error fetching bundles:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch bundles' },
-        { status: 500 }
-      )
+      console.error('[Bundles API] GET error:', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
     
-    // If includeComponents, fetch component details
-    if (includeComponents && bundles && bundles.length > 0) {
-      // Get all unique component IDs
-      const componentIds = new Set<string>()
-      bundles.forEach(bundle => {
-        if (bundle.bundle_components) {
-          bundle.bundle_components.forEach((comp: any) => {
-            componentIds.add(comp.item_id)
-          })
-        }
-      })
-      
-      // Fetch component items
-      const { data: componentItems } = await supabase
-        .from('inventory')
-        .select('id, name, cost_price, selling_price, quantity')
-        .in('id', Array.from(componentIds))
-      
-      // Enrich bundles with component details
-      bundles.forEach(bundle => {
-        if (bundle.bundle_components) {
-          bundle.bundle_components = bundle.bundle_components.map((comp: any) => {
-            const item = componentItems?.find(i => i.id === comp.item_id)
-            return {
-              ...comp,
-              item_name: item?.name,
-              item_cost: item?.cost_price,
-              item_price: item?.selling_price,
-              available_stock: item?.quantity
-            }
-          })
-        }
-        
-        // Calculate virtual stock if enabled
-        if (bundle.is_virtual_stock && componentItems) {
-          const enrichedComponents = bundle.bundle_components.map((comp: any) => {
-            const item = componentItems.find((i: any) => i.id === comp.item_id)
-            return {
-              ...comp,
-              itemId: comp.item_id,
-              quantity: comp.quantity,
-              currentStock: item?.quantity || 0
-            }
-          })
-          const virtualStock = calculateVirtualStock(enrichedComponents)
-          bundle.available_stock = virtualStock
-        }
-      })
-    }
-    
-    return NextResponse.json({
-      bundles,
-      count: bundles?.length || 0
-    })
-  } catch (error) {
-    console.error('[Bundles API] Unexpected error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json(data || [], { status: 200 })
+  } catch (error: any) {
+    console.error('[Bundles API] GET exception:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
-})
+}
 
-/**
- * POST /api/bundles
- * Create a new bundle product
- */
-export const POST = withAuth(async (request, { user }) => {
+export async function POST(request: NextRequest) {
   try {
-    const body: CreateBundleRequest = await request.json()
+    const body = await request.json()
+    console.log('[Bundles API] Received request body:', JSON.stringify(body, null, 2))
     
-    // Validate required fields
-    if (!body.name || !body.components || !body.selling_price || !body.store) {
-      return NextResponse.json(
-        { error: 'Missing required fields: name, components, selling_price, store' },
-        { status: 400 }
-      )
+    const { name, description, store, salesChannel, bundlePrice, items, badge } = body
+    
+    if (!name || !store || !bundlePrice || !items?.length) {
+      console.log('[Bundles API] Validation failed:', {
+        hasName: !!name,
+        hasStore: !!store,
+        hasBundlePrice: !!bundlePrice,
+        hasItems: !!items?.length,
+        receivedFields: Object.keys(body)
+      })
+      return NextResponse.json({ 
+        error: 'Missing required fields',
+        details: {
+          name: !!name,
+          store: !!store,
+          bundlePrice: !!bundlePrice,
+          items: !!items?.length
+        }
+      }, { status: 400 })
     }
     
-    // Fetch component items for validation
-    const componentIds = body.components.map(c => c.item_id)
-    const { data: componentItems, error: fetchError } = await supabase
+    const itemIds = items.map((i: any) => i.itemId)
+    const { data: itemsData, error: itemsError } = await supabase
       .from('inventory')
-      .select('*')
-      .in('id', componentIds)
+      .select('id, cost_price, selling_price')
+      .in('id', itemIds)
     
-    if (fetchError || !componentItems) {
-      return NextResponse.json(
-        { error: 'Failed to fetch component items' },
-        { status: 500 }
-      )
+    if (itemsError || !itemsData?.length) {
+      return NextResponse.json({ error: 'Failed to fetch items' }, { status: 500 })
     }
     
-    // Validate bundle
-    const validation = validateBundleCreation(
-      body.name,
-      body.components,
-      body.selling_price,
-      componentItems as any
-    )
+    let bundleCost = 0
+    let regularPrice = 0
     
-    if (!validation.is_valid) {
-      return NextResponse.json(
-        {
-          error: 'Bundle validation failed',
-          validation_errors: validation.errors,
-          validation_warnings: validation.warnings
-        },
-        { status: 400 }
-      )
-    }
-    
-    // Calculate bundle cost from component items
-    const componentsWithCost = body.components.map(c => {
-      const item = componentItems.find((i: any) => i.id === c.item_id)
-      return {
-        ...c,
-        itemId: c.item_id,
-        costPrice: item?.cost_price || 0,
-        currentStock: item?.quantity || 0
+    items.forEach((bundleItem: any) => {
+      const item = itemsData.find(i => i.id === bundleItem.itemId)
+      if (item) {
+        bundleCost += item.cost_price * bundleItem.quantity
+        regularPrice += item.selling_price * bundleItem.quantity
       }
     })
     
-    const calculatedCost = calculateBundleCost(componentsWithCost)
-    
-    // Calculate profit margin
-    const profitMargin = body.selling_price > 0 
-      ? ((body.selling_price - calculatedCost) / body.selling_price) * 100 
-      : 0
-    
-    // Generate SKU if not provided
-    const sku = body.sku || generateBundleSKU(body.name, body.components)
-    
-    // Prepare bundle metadata
-    const metadata = {
-      ...body.metadata,
-      profit_margin: profitMargin,
-      created_by: user.username || user.displayName,
-      created_at: new Date().toISOString()
+    if (bundlePrice < bundleCost) {
+      return NextResponse.json({ error: 'Price below cost' }, { status: 400 })
     }
     
-    // Calculate initial virtual stock
-    const virtualStock = calculateVirtualStock(componentsWithCost)
+    const bundleId = 'BUNDLE-' + Date.now()
     
-    // Generate unique ID for bundle
-    const bundleId = `BDL-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    
-    // Prepare insert data - minimal required fields only
-    const insertData: any = {
-      id: bundleId,  // ← ADD THIS!
-      name: body.name,
-      sku,
-      cost_price: calculatedCost,
-      selling_price: body.selling_price,
-      quantity: virtualStock,
-      reorder_level: body.reorder_level || 5,
-      last_updated: new Date().toISOString(),
-      category: body.category || 'Bundle'
+    const bundleData: any = {
+      id: bundleId,
+      name: name.trim(),
+      store,
+      bundle_price: bundlePrice,
+      bundle_cost: bundleCost,
+      regular_price: regularPrice,
+      savings: regularPrice - bundlePrice,
+      is_active: true,
+      quantity: 0,
+      reorder_level: 5
     }
     
-    // Add bundle-specific fields only if migration was run
-    try {
-      insertData.product_type = 'bundle'
-      insertData.bundle_components = body.components
-      insertData.is_virtual_stock = body.is_virtual_stock !== false
-      insertData.bundle_metadata = metadata
-    } catch (e) {
-      console.warn('[Bundles API] Bundle fields not available, using basic fields only')
-    }
+    if (description?.trim()) bundleData.description = description.trim()
+    if (salesChannel) bundleData.sales_channel = salesChannel
+    if (badge?.trim()) bundleData.badge = badge.trim()
     
-    // Add store field (your schema uses 'store' not 'storage_room')
-    insertData.store = body.store
-    
-    // Add sales_channel if provided
-    if (body.sales_channel) {
-      insertData.sales_channel = body.sales_channel
-    }
-    
-    // Create bundle product
-    const { data: bundle, error: createError } = await supabase
-      .from('inventory')
-      .insert(insertData)
+    const { data: bundle, error: bundleError } = await supabase
+      .from('bundles')
+      .insert(bundleData)
       .select()
       .single()
     
-    if (createError) {
-      console.error('[Bundles API] Error creating bundle:', createError)
-      return NextResponse.json(
-        { error: 'Failed to create bundle', details: createError.message },
-        { status: 500 }
-      )
+    if (bundleError) {
+      console.error('[Bundles API] Error creating bundle:', bundleError)
+      return NextResponse.json({ error: 'Failed to create bundle' }, { status: 500 })
     }
     
-    return NextResponse.json({
-      success: true,
-      bundle,
-      validation,
-      message: `Bundle "${body.name}" created successfully`
-    }, { status: 201 })
+    const bundleItemsData = items.map((item: any, index: number) => ({
+      id: 'BITEM-' + Date.now() + '-' + index,
+      bundle_id: bundleId,
+      item_id: item.itemId,
+      quantity: item.quantity
+    }))
     
-  } catch (error) {
-    console.error('[Bundles API] Unexpected error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    const { error: itemsInsertError } = await supabase
+      .from('bundle_items')
+      .insert(bundleItemsData)
+    
+    if (itemsInsertError) {
+      console.error('[Bundles API] Error inserting items:', itemsInsertError)
+      await supabase.from('bundles').delete().eq('id', bundleId)
+      return NextResponse.json({ error: 'Failed to add items' }, { status: 500 })
+    }
+    
+    console.log('[Bundles API] Success:', bundleId)
+    return NextResponse.json(bundle, { status: 201 })
+  } catch (error: any) {
+    console.error('[Bundles API] Exception:', error)
+    return NextResponse.json({ error: 'Failed to create bundle' }, { status: 500 })
   }
-})
+}

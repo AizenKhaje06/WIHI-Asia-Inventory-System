@@ -78,6 +78,10 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
   const fetchItems = async () => {
     try {
       const data = await apiGet<InventoryItem[]>('/api/items')
+      console.log('[Fetch Items] Received items:', data?.length || 0)
+      if (data && data.length > 0) {
+        console.log('[Fetch Items] Sample item:', data[0])
+      }
       setItems(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching items:', error)
@@ -94,6 +98,8 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
       toast.warning('Item already added to bundle')
       return
     }
+
+    console.log('[Add Bundle Item]', item.name, '- Stock:', item.quantity)
 
     setBundleItems([...bundleItems, {
       itemId: item.id,
@@ -119,6 +125,32 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
     setBundleItems(bundleItems.filter(bi => bi.itemId !== itemId))
   }
 
+  // Calculate how many bundles can be made based on available stock
+  const calculateVirtualStock = () => {
+    if (bundleItems.length === 0) return 0
+    
+    const possibleBundles = bundleItems.map(bi => {
+      const item = items.find(i => i.id === bi.itemId)
+      if (!item) {
+        console.warn('[Virtual Stock] Item not found:', bi.itemId)
+        return 0
+      }
+      if (!item.quantity && item.quantity !== 0) {
+        console.warn('[Virtual Stock] Item has no quantity field:', item)
+        return 0
+      }
+      if (item.quantity === 0) return 0
+      
+      const canMake = Math.floor(item.quantity / bi.quantity)
+      console.log('[Virtual Stock]', bi.itemName, '- Stock:', item.quantity, 'Need:', bi.quantity, 'Can make:', canMake)
+      return canMake
+    })
+    
+    const result = Math.min(...possibleBundles)
+    console.log('[Virtual Stock] Final result:', result, 'from:', possibleBundles)
+    return result
+  }
+
   const calculateTotals = () => {
     const regularPrice = bundleItems.reduce((sum, bi) => sum + (bi.unitPrice * bi.quantity), 0)
     const bundleCost = bundleItems.reduce((sum, bi) => sum + (bi.unitCost * bi.quantity), 0)
@@ -126,8 +158,9 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
     const savingsPercent = regularPrice > 0 ? (savings / regularPrice) * 100 : 0
     const profit = formData.bundlePrice - bundleCost
     const profitMargin = formData.bundlePrice > 0 ? (profit / formData.bundlePrice) * 100 : 0
+    const virtualStock = calculateVirtualStock()
 
-    return { regularPrice, bundleCost, savings, savingsPercent, profit, profitMargin }
+    return { regularPrice, bundleCost, savings, savingsPercent, profit, profitMargin, virtualStock }
   }
 
   const handleSubmit = async () => {
@@ -160,12 +193,34 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
 
     setLoading(true)
     try {
+      const virtualStock = totals.virtualStock
+      
+      console.log('[Create Bundle] ===== DEBUG START =====')
+      console.log('[Create Bundle] totals object:', totals)
+      console.log('[Create Bundle] virtualStock value:', virtualStock)
+      console.log('[Create Bundle] virtualStock type:', typeof virtualStock)
+      console.log('[Create Bundle] virtualStock is undefined?', virtualStock === undefined)
+      console.log('[Create Bundle] virtualStock is null?', virtualStock === null)
+      console.log('[Create Bundle] ===== DEBUG END =====')
+      
+      console.log('[Create Bundle] Virtual stock calculated:', virtualStock)
+      console.log('[Create Bundle] Bundle items:', bundleItems.map(bi => {
+        const item = items.find(i => i.id === bi.itemId)
+        return {
+          name: bi.itemName,
+          quantity: bi.quantity,
+          availableStock: item?.quantity || 0,
+          canMake: item ? Math.floor(item.quantity / bi.quantity) : 0
+        }
+      }))
+      
       console.log('Creating bundle with data:', {
         name: formData.name.trim(),
         description: formData.description.trim(),
         store: formData.store,
         salesChannel: formData.salesChannel || null,
         bundlePrice: formData.bundlePrice,
+        quantity: virtualStock,
         items: bundleItems.map(bi => ({
           itemId: bi.itemId,
           quantity: bi.quantity
@@ -179,6 +234,7 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
         store: formData.store,
         salesChannel: formData.salesChannel || null,
         bundlePrice: formData.bundlePrice,
+        quantity: virtualStock,
         items: bundleItems.map(bi => ({
           itemId: bi.itemId,
           quantity: bi.quantity
@@ -521,58 +577,134 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
               </div>
 
               {/* Bundle Contents */}
-              <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-4 bg-slate-50/50 dark:bg-slate-900/50" style={{ minHeight: '400px' }}>
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-bold text-sm flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4" />
-                    Bundle Contents
-                  </h4>
-                  <Badge variant="outline" className="font-semibold">
-                    {bundleItems.length} {bundleItems.length === 1 ? 'item' : 'items'}
-                  </Badge>
-                </div>
-                
-                {bundleItems.length === 0 ? (
-                  <div className="text-center py-16">
-                    <div className="inline-flex p-4 rounded-full bg-slate-200 dark:bg-slate-800 mb-4">
-                      <Package className="h-10 w-10 text-slate-400" />
-                    </div>
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">No items added yet</p>
-                    <p className="text-xs text-slate-500">Search and select products to add to this bundle</p>
+              <div className="space-y-3">
+                <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-4 bg-slate-50/50 dark:bg-slate-900/50" style={{ minHeight: '300px' }}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-bold text-sm flex items-center gap-2">
+                      <ShoppingCart className="h-4 w-4" />
+                      Bundle Contents
+                    </h4>
+                    <Badge variant="outline" className="font-semibold">
+                      {bundleItems.length} {bundleItems.length === 1 ? 'item' : 'items'}
+                    </Badge>
                   </div>
-                ) : (
-                  <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
-                    {bundleItems.map((bi, index) => (
-                      <div key={bi.itemId} className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                          <span className="text-xs font-bold text-purple-600 dark:text-purple-400">{index + 1}</span>
+                  
+                  {bundleItems.length === 0 ? (
+                    <div className="text-center py-16">
+                      <div className="inline-flex p-4 rounded-full bg-slate-200 dark:bg-slate-800 mb-4">
+                        <Package className="h-10 w-10 text-slate-400" />
+                      </div>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">No items added yet</p>
+                      <p className="text-xs text-slate-500">Search and select products to add to this bundle</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-[280px] overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+                      {bundleItems.map((bi, index) => (
+                        <div key={bi.itemId} className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                            <span className="text-xs font-bold text-purple-600 dark:text-purple-400">{index + 1}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold truncate text-slate-900 dark:text-slate-100">{bi.itemName}</p>
+                            <p className="text-xs text-slate-500">₱{bi.unitPrice.toFixed(2)} each</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              value={bi.quantity}
+                              onChange={(e) => updateQuantity(bi.itemId, parseInt(e.target.value) || 1)}
+                              className="w-16 h-9 text-center font-semibold"
+                              min="1"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(bi.itemId)}
+                              className="h-9 w-9 p-0 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="text-right min-w-[80px]">
+                            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">₱{(bi.unitPrice * bi.quantity).toFixed(2)}</p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate text-slate-900 dark:text-slate-100">{bi.itemName}</p>
-                          <p className="text-xs text-slate-500">₱{bi.unitPrice.toFixed(2)} each</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Virtual Stock Card - Separate */}
+                {bundleItems.length > 0 && (
+                  <div className={cn(
+                    "rounded-xl p-4 border-2",
+                    totals.virtualStock === 0 
+                      ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+                      : totals.virtualStock < 5
+                      ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
+                      : "bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800"
+                  )}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "w-12 h-12 rounded-xl flex items-center justify-center",
+                          totals.virtualStock === 0 
+                            ? "bg-red-100 dark:bg-red-900/40"
+                            : totals.virtualStock < 5
+                            ? "bg-yellow-100 dark:bg-yellow-900/40"
+                            : "bg-purple-100 dark:bg-purple-900/40"
+                        )}>
+                          <Package className={cn(
+                            "h-6 w-6",
+                            totals.virtualStock === 0 
+                              ? "text-red-600 dark:text-red-400"
+                              : totals.virtualStock < 5
+                              ? "text-yellow-600 dark:text-yellow-400"
+                              : "text-purple-600 dark:text-purple-400"
+                          )} />
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="number"
-                            value={bi.quantity}
-                            onChange={(e) => updateQuantity(bi.itemId, parseInt(e.target.value) || 1)}
-                            className="w-16 h-9 text-center font-semibold"
-                            min="1"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeItem(bi.itemId)}
-                            className="h-9 w-9 p-0 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="text-right min-w-[80px]">
-                          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">₱{(bi.unitPrice * bi.quantity).toFixed(2)}</p>
+                        <div>
+                          <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
+                            Virtual Stock
+                          </p>
+                          <p className={cn(
+                            "text-2xl font-bold",
+                            totals.virtualStock === 0 
+                              ? "text-red-600 dark:text-red-400"
+                              : totals.virtualStock < 5
+                              ? "text-yellow-600 dark:text-yellow-400"
+                              : "text-purple-600 dark:text-purple-400"
+                          )}>
+                            {totals.virtualStock} {totals.virtualStock === 1 ? 'bundle' : 'bundles'}
+                          </p>
                         </div>
                       </div>
-                    ))}
+                      <div className="text-right">
+                        {totals.virtualStock === 0 ? (
+                          <Badge variant="destructive" className="font-semibold">
+                            Out of Stock
+                          </Badge>
+                        ) : totals.virtualStock < 5 ? (
+                          <Badge variant="outline" className="font-semibold border-yellow-600 text-yellow-600 dark:border-yellow-400 dark:text-yellow-400">
+                            Low Stock
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="font-semibold border-purple-600 text-purple-600 dark:border-purple-400 dark:text-purple-400">
+                            Available
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    {totals.virtualStock === 0 && (
+                      <p className="text-xs text-red-600 dark:text-red-400 mt-3 font-medium">
+                        ⚠️ Insufficient stock to create any bundles
+                      </p>
+                    )}
+                    {totals.virtualStock > 0 && totals.virtualStock < 5 && (
+                      <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-3 font-medium">
+                        ⚠️ Limited stock - only {totals.virtualStock} bundle{totals.virtualStock !== 1 ? 's' : ''} can be made
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

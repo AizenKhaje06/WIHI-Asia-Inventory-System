@@ -14,7 +14,6 @@ import type { InventoryItem, Store } from "@/lib/types"
 import { apiGet, apiPut } from "@/lib/api-client"
 import { getCurrentUser } from "@/lib/auth"
 import { formatCurrency, cn } from "@/lib/utils"
-import { calculateBundleCost, calculateVirtualStock } from "@/lib/bundle-utils"
 
 const SALES_CHANNELS = ['Shopee', 'Lazada', 'Facebook', 'TikTok', 'Physical Store'] as const
 
