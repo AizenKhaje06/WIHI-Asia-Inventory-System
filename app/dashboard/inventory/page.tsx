@@ -452,27 +452,26 @@ export default function InventoryPage() {
       </div>
 
       <div className="px-4">
-      {/* Redesigned Filter Section - 2 Cards Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr,auto] gap-4 mb-4">
-        {/* Left Card - Search and Filter */}
+      {/* Redesigned Filter Section - Horizontal Layout */}
+      <div className="mb-4">
         <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
           <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              {/* Search */}
-              <div className="relative flex-1">
+            <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center">
+              {/* Search - Left */}
+              <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   placeholder="Search products..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-11 h-11 text-sm border-slate-300 dark:border-slate-700 rounded-lg"
+                  className="pl-11 h-11 text-sm border-slate-300 dark:border-slate-700 rounded-lg w-full"
                 />
               </div>
 
               {/* Sales Channel Filter */}
               <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-                <SelectTrigger className="h-11 w-full sm:w-[200px] text-sm rounded-lg border-slate-300 dark:border-slate-700">
-                  <SelectValue placeholder="Sales Channel" />
+                <SelectTrigger className="h-11 w-full lg:w-[180px] text-sm rounded-lg border-slate-300 dark:border-slate-700">
+                  <SelectValue placeholder="All Channels" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Channels</SelectItem>
@@ -483,45 +482,41 @@ export default function InventoryPage() {
                   <SelectItem value="Physical Store">Physical Store</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Right Card - Action Buttons (2x2 Grid) */}
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
-          <CardContent className="p-4">
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                onClick={() => setAddDialogOpen(true)}
-                className="h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md text-sm"
-              >
-                <Plus className="h-4 w-4 mr-1.5" />
-                Add Product
-              </Button>
-              
-              <Button
-                onClick={() => setCreateBundleOpen(true)}
-                className="h-11 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md text-sm"
-              >
-                <Package className="h-4 w-4 mr-1.5" />
-                Create Bundle
-              </Button>
-              
-              <Button
-                onClick={() => setCategoryDialogOpen(true)}
-                className="h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md text-sm"
-              >
-                <Tag className="h-4 w-4 mr-1.5" />
-                Categories
-              </Button>
-              
-              <Button
-                onClick={() => setStoreDialogOpen(true)}
-                className="h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md text-sm"
-              >
-                <Building2 className="h-4 w-4 mr-1.5" />
-                Stores
-              </Button>
+              {/* Action Buttons - Right (Horizontal) */}
+              <div className="flex gap-2 flex-wrap lg:flex-nowrap">
+                <Button
+                  onClick={() => setCreateBundleOpen(true)}
+                  className="flex-1 lg:flex-none h-11 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md text-sm whitespace-nowrap"
+                >
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  Create Bundle
+                </Button>
+
+                <Button
+                  onClick={() => setAddDialogOpen(true)}
+                  className="flex-1 lg:flex-none h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md text-sm whitespace-nowrap"
+                >
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  Add Product
+                </Button>
+                
+                <Button
+                  onClick={() => setCategoryDialogOpen(true)}
+                  className="flex-1 lg:flex-none h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md text-sm whitespace-nowrap"
+                >
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  Categories
+                </Button>
+                
+                <Button
+                  onClick={() => setStoreDialogOpen(true)}
+                  className="flex-1 lg:flex-none h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md text-sm whitespace-nowrap"
+                >
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  Stores
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -649,7 +644,7 @@ export default function InventoryPage() {
               {viewMode === 'grid' ? (
                 /* Grid View - Enterprise Grade */
                 <div className="p-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                     {filteredItems.map((item) => {
                       const profitMargin = item.sellingPrice > 0 ? ((item.sellingPrice - item.costPrice) / item.sellingPrice * 100) : 0
                       const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0

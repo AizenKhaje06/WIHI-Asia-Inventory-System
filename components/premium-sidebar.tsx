@@ -404,6 +404,37 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           ))}
         </nav>
 
+        {/* External Links Section - Supabase */}
+        <div className="p-2.5 xl:p-3 border-t flex-shrink-0 border-white/10 dark:border-slate-800/60 relative">
+          <a
+            href="https://supabase.com/dashboard/project/rsvzbmhuckwndvqfhzml/editor/22406?schema=public"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(
+              "flex items-center justify-center rounded-lg group relative overflow-hidden w-full",
+              reducedMotion ? "" : "transition-all duration-200",
+              "hover:opacity-80 hover:scale-105",
+              "py-2 xl:py-2.5"
+            )}
+            aria-label="Open Supabase Table Editor"
+            title="Open Supabase Table Editor"
+          >
+            {/* Supabase Logo - Light Mode - Wordmark has wider aspect ratio */}
+            <img
+              src="/supabase-logo-wordmark--light.png"
+              alt="Supabase"
+              className="h-9 xl:h-11 w-auto object-contain dark:hidden"
+            />
+            
+            {/* Supabase Logo - Dark Mode - Wordmark has wider aspect ratio */}
+            <img
+              src="/supabase-logo-wordmark--dark.png"
+              alt="Supabase"
+              className="h-9 xl:h-11 w-auto object-contain hidden dark:block"
+            />
+          </a>
+        </div>
+
         {/* Logout & Collapse Button Container */}
         <div className="p-2.5 xl:p-3 border-t flex-shrink-0 border-white/10 dark:border-slate-800/60 relative">
           {collapsed ? (
