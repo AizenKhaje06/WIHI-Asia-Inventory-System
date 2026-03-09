@@ -89,16 +89,14 @@ export default function EnterpriseLoginPage() {
 
       if (response.success) {
         setForgotPasswordSuccess(true)
-        // In development, show the temp password
-        if (response.tempPassword) {
-          alert(`Temporary Password: ${response.tempPassword}\n\nPlease save this and change it after logging in.`)
-        }
       } else {
-        setError(response.error || "Failed to send reset email")
+        setError(response.error || "Failed to send reset email. Please try again.")
       }
     } catch (error) {
       console.error("Forgot password error:", error)
-      setError("Failed to send reset email. Please try again.")
+      // Extract error message from the error
+      const errorMessage = error instanceof Error ? error.message : "Failed to send reset email. Please try again."
+      setError(errorMessage)
     } finally {
       setForgotPasswordLoading(false)
     }

@@ -75,6 +75,7 @@
     "react-window": "^2.2.5",
     "recharts": "2.15.4",
     "regression": "^2.0.1",
+    "resend": "^6.9.3",
     "sileo": "^0.1.5",
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.5.5",

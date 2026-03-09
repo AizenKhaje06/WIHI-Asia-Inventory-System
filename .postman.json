@@ -325,6 +325,80 @@
           ]
         },
         {
+          "name": "Authentication",
+          "item": [
+            {
+              "name": "Forgot Password - Valid Email",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/forgot-password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "forgot-password"]
+                },
+                "description": "Request password reset for valid admin email"
+              }
+            },
+            {
+              "name": "Forgot Password - Invalid Email",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"nonexistent@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/forgot-password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "forgot-password"]
+                },
+                "description": "Request password reset for non-existent email (should return 404)"
+              }
+            },
+            {
+              "name": "Forgot Password - Missing Email",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/forgot-password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "forgot-password"]
+                },
+                "description": "Request password reset without email (should return 400)"
+              }
+            }
+          ]
+        },
+        {
           "name": "Bundles (NEW - TO BE IMPLEMENTED)",
           "item": [
             {

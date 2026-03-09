@@ -26,6 +26,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { getCurrentUser, hasPermission, clearCurrentUser } from "@/lib/auth"
 import { apiGet } from "@/lib/api-client"
 
@@ -110,6 +119,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
   const [lowStockCount, setLowStockCount] = useState(0)
   const [outOfStockCount, setOutOfStockCount] = useState(0)
   const [currentUser, setCurrentUser] = useState<ReturnType<typeof getCurrentUser>>(null)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   // Get current user
   useEffect(() => {
@@ -175,6 +185,11 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
     if (isMobile) {
       onMobileClose?.()
     }
+  }
+
+  const handleLogout = () => {
+    clearCurrentUser()
+    window.location.href = "/"
   }
 
   // Prevent body scroll when mobile menu is open
@@ -414,24 +429,26 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
               "flex items-center justify-center rounded-lg group relative overflow-hidden w-full",
               reducedMotion ? "" : "transition-all duration-200",
               "hover:opacity-80 hover:scale-105",
-              "py-2 xl:py-2.5"
+              collapsed ? "py-2.5 xl:py-3" : "py-2 xl:py-2.5"
             )}
             aria-label="Open Supabase Table Editor"
             title="Open Supabase Table Editor"
           >
-            {/* Supabase Logo - Light Mode - Wordmark has wider aspect ratio */}
-            <img
-              src="/supabase-logo-wordmark--light.png"
-              alt="Supabase"
-              className="h-9 xl:h-11 w-auto object-contain dark:hidden"
-            />
-            
-            {/* Supabase Logo - Dark Mode - Wordmark has wider aspect ratio */}
-            <img
-              src="/supabase-logo-wordmark--dark.png"
-              alt="Supabase"
-              className="h-9 xl:h-11 w-auto object-contain hidden dark:block"
-            />
+            {collapsed ? (
+              // Icon version when collapsed
+              <img
+                src="/supabase-logo-icon.png"
+                alt="Supabase"
+                className="h-5 xl:h-6 w-auto object-contain"
+              />
+            ) : (
+              // Wordmark version when expanded
+              <img
+                src="/supabase-logo-wordmark--dark.png"
+                alt="Supabase"
+                className="h-7 xl:h-8 w-auto object-contain"
+              />
+            )}
           </a>
         </div>
 
@@ -442,10 +459,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <button
-                    onClick={() => {
-                      clearCurrentUser()
-                      window.location.href = "/"
-                    }}
+                    onClick={() => setShowLogoutConfirm(true)}
                     className={cn(
                       "flex items-center justify-center rounded-lg w-full group relative overflow-hidden",
                       "py-2.5 xl:py-3",
@@ -483,10 +497,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             </TooltipProvider>
           ) : (
             <button
-              onClick={() => {
-                clearCurrentUser()
-                window.location.href = "/"
-              }}
+              onClick={() => setShowLogoutConfirm(true)}
               className={cn(
                 "flex items-center gap-1.5 xl:gap-2 px-1.5 xl:px-2 py-1.5 xl:py-2 rounded-lg w-full",
                 reducedMotion ? "" : "transition-colors duration-200",
@@ -545,6 +556,29 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           )}
         </div>
       </aside>
+
+      {/* Logout Confirmation Modal */}
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-slate-900 dark:text-white">Confirm Logout</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-600 dark:text-slate-400">
+              Are you sure you want to log out? You'll need to sign in again to access your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex gap-3 justify-end">
+            <AlertDialogCancel className="bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white border-0">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white border-0"
+            >
+              Logout
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

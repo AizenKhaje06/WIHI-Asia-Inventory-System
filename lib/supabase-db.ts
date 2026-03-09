@@ -563,11 +563,21 @@ export async function validateCredentials(username: string, password: string): P
     const account = await getAccountByUsername(username)
     console.log("[v0] Account found:", !!account)
     
-    if (account && account.password === password) {
+    if (!account) {
+      console.log("[v0] Account not found")
+      return null
+    }
+
+    // Use bcrypt to compare password with hash
+    const { verifyPassword } = await import("@/lib/password-hash")
+    const isPasswordValid = await verifyPassword(password, account.password)
+    
+    if (isPasswordValid) {
       console.log("[v0] Password match successful")
       return account
     }
-    console.log("[v0] Password match failed or account not found")
+    
+    console.log("[v0] Password match failed")
     return null
   } catch (error) {
     console.error("[v0] Error in validateCredentials:", error)
@@ -577,7 +587,13 @@ export async function validateCredentials(username: string, password: string): P
 
 export async function updateAccount(username: string, updates: { password?: string; displayName?: string; email?: string; phone?: string }): Promise<void> {
   const updateData: any = {}
-  if (updates.password !== undefined) updateData.password = updates.password
+  
+  // Hash password if being updated
+  if (updates.password !== undefined) {
+    const { hashPassword } = await import("@/lib/password-hash")
+    updateData.password = await hashPassword(updates.password)
+  }
+  
   if (updates.displayName !== undefined) updateData.display_name = updates.displayName
   if (updates.email !== undefined) updateData.email = updates.email
   if (updates.phone !== undefined) updateData.phone = updates.phone
@@ -621,12 +637,16 @@ export async function addAccount(account: Omit<Account, "id" | "createdAt">): Pr
   const id = generateId('USER')
   const createdAt = formatTimestamp()
 
+  // Hash the password
+  const { hashPassword } = await import("@/lib/password-hash")
+  const hashedPassword = await hashPassword(account.password)
+
   const { data, error } = await supabaseAdmin
     .from('users')
     .insert({
       id,
       username: account.username,
-      password: account.password,
+      password: hashedPassword,
       role: account.role,
       display_name: account.displayName,
       created_at: createdAt,
@@ -642,7 +662,7 @@ export async function addAccount(account: Omit<Account, "id" | "createdAt">): Pr
   return {
     id,
     username: account.username,
-    password: account.password,
+    password: hashedPassword,
     role: account.role,
     displayName: account.displayName,
     createdAt,
