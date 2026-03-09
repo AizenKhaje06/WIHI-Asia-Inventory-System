@@ -67,7 +67,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
       role="banner"
     >
       <div className="h-full px-6 lg:px-8 flex items-center justify-between gap-4 min-w-0">
-        {/* Left: Mobile Menu only */}
+        {/* Left: Mobile Menu + Supabase Link */}
         <div className="flex items-center gap-4 min-w-0 lg:flex-1">
           <button
             onClick={onMobileMenuToggle}
@@ -77,6 +77,52 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           >
             <Menu className="h-5 w-5" />
           </button>
+
+          {/* Supabase Link - Desktop Only */}
+          <a
+            href="https://supabase.com/dashboard/project/rsvzbmhuckwndvqfhzml/editor/22406?schema=public"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden lg:flex items-center justify-center p-2 rounded-lg transition-all hover:opacity-80 hover:scale-105 flex-shrink-0"
+            aria-label="Open Supabase Table Editor"
+            title="Open Supabase Table Editor"
+          >
+            {/* Light Mode */}
+            <img
+              src="/supabase-logo-wordmark--light.png"
+              alt="Supabase"
+              className="h-5 xl:h-6 w-auto object-contain dark:hidden"
+            />
+            {/* Dark Mode */}
+            <img
+              src="/supabase-logo-wordmark--dark.png"
+              alt="Supabase"
+              className="h-5 xl:h-6 w-auto object-contain hidden dark:block"
+            />
+          </a>
+
+          {/* Resend Link - Desktop Only */}
+          <a
+            href="https://resend.com/api-keys"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden lg:flex items-center justify-center p-2 rounded-lg transition-all hover:opacity-80 hover:scale-105 flex-shrink-0"
+            aria-label="Open Resend API Keys"
+            title="Open Resend API Keys"
+          >
+            {/* Light Mode - use black */}
+            <img
+              src="/resend-wordmark-black.png"
+              alt="Resend"
+              className="h-4 xl:h-5 w-auto object-contain dark:hidden"
+            />
+            {/* Dark Mode - use white */}
+            <img
+              src="/resend-wordmark-white.png"
+              alt="Resend"
+              className="h-4 xl:h-5 w-auto object-contain hidden dark:block"
+            />
+          </a>
         </div>
 
         {/* Center: Command Palette Search */}
