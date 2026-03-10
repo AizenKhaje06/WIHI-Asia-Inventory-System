@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
   Eye, EyeOff, Lock, User, Loader2, ArrowRight, AlertCircle, 
   Shield, Building2, KeyRound, CheckCircle2, Info, ChevronsRight, Mail 
@@ -15,8 +16,15 @@ import {
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { apiPost } from "@/lib/api-client"
+import { setTeamLeaderSession } from "@/lib/team-leader-auth"
 
 type LoginMode = "admin" | "staff"
+
+interface Channel {
+  id: string
+  name: string
+  label: string
+}
 
 export default function EnterpriseLoginPage() {
   const [username, setUsername] = useState("")
@@ -33,6 +41,12 @@ export default function EnterpriseLoginPage() {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("")
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false)
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false)
+  
+  // Staff/Team Leader specific states
+  const [channels, setChannels] = useState<Channel[]>([])
+  const [selectedChannel, setSelectedChannel] = useState<string>("")
+  const [channelsLoading, setChannelsLoading] = useState(false)
+  
   const router = useRouter()
 
   const isDevelopment = process.env.NODE_ENV === 'development'
@@ -41,7 +55,63 @@ export default function EnterpriseLoginPage() {
     setMounted(true)
     if (typeof window !== 'undefined') {
       try {
-        localStorage.removeItem("isLoggedIn")
+        // Check if user is already logged in
+        const isAdminLoggedIn = localStorage.getItem("isLoggedIn") === "true"
+        const teamLeaderSession = localStorage.getItem("teamLeaderSession")
+        const teamLeaderRole = localStorage.getItem("x-team-leader-role")
+        
+        console.log('[Login Page] Checking existing session...')
+        console.log('[Login Page] Admin logged in:', isAdminLoggedIn)
+        console.log('[Login Page] Team leader session exists:', !!teamLeaderSession)
+        console.log('[Login Page] Team leader role:', teamLeaderRole)
+        
+        // Validate admin session
+        if (isAdminLoggedIn) {
+          const username = localStorage.getItem("username")
+          const userRole = localStorage.getItem("userRole")
+          
+          // Only redirect if we have valid session data
+          if (username && userRole) {
+            console.log('[Login Page] Valid admin session, redirecting to /dashboard')
+            router.push('/dashboard')
+            return
+          } else {
+            // Invalid session, clear it
+            console.log('[Login Page] Invalid admin session, clearing...')
+            localStorage.removeItem("isLoggedIn")
+            localStorage.removeItem("username")
+            localStorage.removeItem("userRole")
+            localStorage.removeItem("displayName")
+          }
+        }
+        
+        // Validate team leader session
+        if (teamLeaderSession && teamLeaderRole === 'team_leader') {
+          try {
+            const session = JSON.parse(teamLeaderSession)
+            // Check if session has required fields and is not expired
+            if (session.userId && session.assignedChannel) {
+              console.log('[Login Page] Valid team leader session, redirecting to /team-leader/dashboard')
+              router.push('/team-leader/dashboard')
+              return
+            } else {
+              // Invalid session, clear it
+              console.log('[Login Page] Invalid team leader session, clearing...')
+              localStorage.removeItem('teamLeaderSession')
+              localStorage.removeItem('x-team-leader-user-id')
+              localStorage.removeItem('x-team-leader-channel')
+              localStorage.removeItem('x-team-leader-role')
+            }
+          } catch (error) {
+            // Corrupted session data, clear it
+            console.log('[Login Page] Corrupted team leader session, clearing...')
+            localStorage.removeItem('teamLeaderSession')
+            localStorage.removeItem('x-team-leader-user-id')
+            localStorage.removeItem('x-team-leader-channel')
+            localStorage.removeItem('x-team-leader-role')
+          }
+        }
+        
         const rememberedUsername = localStorage.getItem("rememberedUsername")
         if (rememberedUsername) {
           setUsername(rememberedUsername)
@@ -52,6 +122,29 @@ export default function EnterpriseLoginPage() {
       }
     }
   }, [])
+
+  // Fetch channels when staff mode is selected
+  useEffect(() => {
+    if (loginMode === 'staff') {
+      const fetchChannels = async () => {
+        setChannelsLoading(true)
+        try {
+          const response = await fetch('/api/auth/channels')
+          const data = await response.json()
+          
+          if (data.success) {
+            setChannels(data.channels)
+          }
+        } catch (error) {
+          console.error('Error fetching channels:', error)
+        } finally {
+          setChannelsLoading(false)
+        }
+      }
+
+      fetchChannels()
+    }
+  }, [loginMode])
 
   // Password strength calculator
   useEffect(() => {
@@ -116,6 +209,60 @@ export default function EnterpriseLoginPage() {
     setError("")
 
     try {
+      // Staff/Team Leader login
+      if (loginMode === 'staff') {
+        if (!selectedChannel) {
+          setError("Please select a sales channel")
+          setLoading(false)
+          return
+        }
+
+        const response = await fetch('/api/auth/team-leader-login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            channel: selectedChannel,
+            password: password
+          })
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          setError(data.error || 'Invalid channel or credentials')
+          setLoading(false)
+          return
+        }
+
+        // Store team leader session
+        console.log('[Login] Storing team leader session:', data.sessionData)
+        setTeamLeaderSession(data.sessionData)
+
+        // Store auth headers for API requests
+        localStorage.setItem('x-team-leader-user-id', data.user.id)
+        localStorage.setItem('x-team-leader-channel', data.user.assignedChannel)
+        localStorage.setItem('x-team-leader-role', data.user.role)
+
+        console.log('[Login] Session stored, verifying...')
+        
+        // Verify session was stored before redirecting
+        const storedSession = localStorage.getItem('teamLeaderSession')
+        const storedRole = localStorage.getItem('x-team-leader-role')
+        console.log('[Login] Verification - Session exists:', !!storedSession, 'Role:', storedRole)
+        
+        // Small delay to ensure localStorage is fully written
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        console.log('[Login] Redirecting to /dashboard')
+        
+        // Redirect to dashboard (same as admin, page will detect role)
+        router.push('/dashboard')
+        return
+      }
+
+      // Admin login
       const data = await apiPost("/api/accounts", {
         action: "validate",
         username,
@@ -378,6 +525,7 @@ export default function EnterpriseLoginPage() {
                   setLoginMode("staff")
                   setUsername("")
                   setPassword("")
+                  setSelectedChannel("")
                   setError("")
                 }}
                 className={cn(
@@ -415,24 +563,44 @@ export default function EnterpriseLoginPage() {
                 </Alert>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="username" className="text-slate-300 font-medium">
-                  Username
-                </Label>
-                <div className="relative group">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="pl-12 h-12 bg-slate-800 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-white"
-                    required
-                    autoComplete="username"
-                  />
+              {loginMode === 'admin' ? (
+                <div className="space-y-2">
+                  <Label htmlFor="username" className="text-slate-300 font-medium">
+                    Username
+                  </Label>
+                  <div className="relative group">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Enter your username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="pl-12 h-12 bg-slate-800 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-white"
+                      required
+                      autoComplete="username"
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="channel" className="text-slate-300 font-medium">
+                    Sales Channel
+                  </Label>
+                  <Select value={selectedChannel} onValueChange={setSelectedChannel} disabled={channelsLoading}>
+                    <SelectTrigger className="h-12 bg-slate-800 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-white">
+                      <SelectValue placeholder={channelsLoading ? "Loading channels..." : "Select your sales channel"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {channels.map((channel) => (
+                        <SelectItem key={channel.id} value={channel.name}>
+                          {channel.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-slate-300 font-medium">

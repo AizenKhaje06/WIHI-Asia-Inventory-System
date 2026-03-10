@@ -216,21 +216,21 @@ export default function TeamLeaderDashboard() {
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
-              <Link href="/team-leader/track-orders">
+              <Link href="/dashboard/track-orders">
                 <ShoppingCart className="h-3 w-3 mr-1" />
                 Track Orders
               </Link>
             </Button>
             <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
-              <Link href="/team-leader/packing-queue">
+              <Link href="/dashboard/packing-queue">
                 <Package className="h-3 w-3 mr-1" />
                 Packing Queue
               </Link>
             </Button>
             <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
-              <Link href="/team-leader/dispatch">
+              <Link href="/dashboard/pos">
                 <TrendingUp className="h-3 w-3 mr-1" />
-                Dispatch
+                Warehouse Dispatch
               </Link>
             </Button>
             <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>

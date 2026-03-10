@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -29,8 +30,10 @@ import { BrandLoader } from "@/components/ui/brand-loader"
 import { apiGet } from "@/lib/api-client"
 import { formatChartData, calculatePeriodComparison } from "@/lib/dashboard-utils"
 import { getCurrentUser } from "@/lib/auth"
+import { getCurrentUserRole } from "@/lib/role-utils"
 
 export default function DashboardPage() {
+  const router = useRouter()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [lowStockItems, setLowStockItems] = useState<InventoryItem[]>([])
   const [outOfStockItems, setOutOfStockItems] = useState<InventoryItem[]>([])
@@ -39,8 +42,28 @@ export default function DashboardPage() {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("ID")
   const currentUser = getCurrentUser()
 
+  // Redirect team leaders to their dashboard (different KPIs)
+  useEffect(() => {
+    console.log('[Dashboard] Checking user role...')
+    const role = getCurrentUserRole()
+    console.log('[Dashboard] Current role:', role)
+    
+    if (role === 'team_leader') {
+      console.log('[Dashboard] Team leader detected, redirecting to /team-leader/dashboard')
+      router.push('/team-leader/dashboard')
+    } else {
+      console.log('[Dashboard] Not a team leader, staying on admin dashboard')
+    }
+  }, [router])
+
   const fetchData = async () => {
     try {
+      // Don't fetch if team leader (they'll be redirected)
+      const role = getCurrentUserRole()
+      if (role === 'team_leader') {
+        return
+      }
+
       setRefreshing(true)
       console.log('[Dashboard] Fetching data for period:', timePeriod)
       

@@ -7,16 +7,31 @@
 
 /**
  * Add authentication headers to fetch requests
+ * Supports both admin and team leader authentication
  */
 function getAuthHeaders(): HeadersInit {
   if (typeof window === 'undefined') return {}
 
   try {
+    const headers: Record<string, string> = {}
+
+    // Check for team leader authentication first
+    const teamLeaderRole = localStorage.getItem('x-team-leader-role')
+    if (teamLeaderRole === 'team_leader') {
+      const userId = localStorage.getItem('x-team-leader-user-id')
+      const channel = localStorage.getItem('x-team-leader-channel')
+      
+      if (userId) headers['x-team-leader-user-id'] = userId
+      if (channel) headers['x-team-leader-channel'] = channel
+      if (teamLeaderRole) headers['x-team-leader-role'] = teamLeaderRole
+      
+      return headers
+    }
+
+    // Otherwise, use admin authentication
     const username = localStorage.getItem('username')
     const role = localStorage.getItem('userRole')
     const displayName = localStorage.getItem('displayName')
-
-    const headers: Record<string, string> = {}
 
     if (username) headers['x-user-username'] = username
     if (role) headers['x-user-role'] = role

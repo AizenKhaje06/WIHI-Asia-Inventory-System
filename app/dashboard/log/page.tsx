@@ -52,6 +52,7 @@ export default function LogPage() {
   // Filter states
   const [searchQuery, setSearchQuery] = useState("")
   const [operationFilter, setOperationFilter] = useState("all")
+  const [salesChannelFilter, setSalesChannelFilter] = useState("all")
   const [sortBy, setSortBy] = useState("newest")
   const [currentPage, setCurrentPage] = useState(1)
   const [startDate, setStartDate] = useState<Date | null>(null)
@@ -143,6 +144,15 @@ export default function LogPage() {
       })
     }
 
+    // Sales Channel filter - check if details contains the channel name
+    if (salesChannelFilter !== "all") {
+      filtered = filtered.filter(log => {
+        const detailsLower = log.details?.toLowerCase() || ''
+        const channelLower = salesChannelFilter.toLowerCase()
+        return detailsLower.includes(channelLower)
+      })
+    }
+
     // Date filter
     if (startDate || endDate) {
       filtered = filtered.filter(log => {
@@ -161,7 +171,7 @@ export default function LogPage() {
     })
 
     return filtered
-  }, [logs, searchQuery, operationFilter, sortBy, startDate, endDate])
+  }, [logs, searchQuery, operationFilter, salesChannelFilter, sortBy, startDate, endDate])
 
   // Pagination
   const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE)
@@ -173,7 +183,7 @@ export default function LogPage() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, operationFilter, sortBy, startDate, endDate])
+  }, [searchQuery, operationFilter, salesChannelFilter, sortBy, startDate, endDate])
 
   // Statistics
   const stats = useMemo(() => {
@@ -196,6 +206,7 @@ export default function LogPage() {
   const clearFilters = () => {
     setSearchQuery("")
     setOperationFilter("all")
+    setSalesChannelFilter("all")
     setSortBy("newest")
     setStartDate(null)
     setEndDate(null)
@@ -241,7 +252,7 @@ export default function LogPage() {
     )
   }
 
-  const hasActiveFilters = searchQuery || operationFilter !== "all" || sortBy !== "newest" || startDate || endDate
+  const hasActiveFilters = searchQuery || operationFilter !== "all" || salesChannelFilter !== "all" || sortBy !== "newest" || startDate || endDate
 
   if (loading) {
     return (
@@ -393,6 +404,21 @@ export default function LogPage() {
               <SelectItem value="internal-usage">Internal Usage</SelectItem>
               <SelectItem value="demo-display">Demo/Display</SelectItem>
               <SelectItem value="warehouse">Warehouse</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Sales Channel Filter */}
+          <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="All Channels" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Channels</SelectItem>
+              <SelectItem value="Shopee">Shopee</SelectItem>
+              <SelectItem value="Lazada">Lazada</SelectItem>
+              <SelectItem value="Facebook">Facebook</SelectItem>
+              <SelectItem value="TikTok">TikTok</SelectItem>
+              <SelectItem value="Physical Store">Physical Store</SelectItem>
             </SelectContent>
           </Select>
 

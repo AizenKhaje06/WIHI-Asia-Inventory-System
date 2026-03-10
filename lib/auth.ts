@@ -1,6 +1,6 @@
 // Role-based access control system
 
-export type UserRole = 'admin' | 'operations'
+export type UserRole = 'admin' | 'team_leader' | 'operations'
 
 export interface User {
   username: string
@@ -8,6 +8,7 @@ export interface User {
   displayName: string
   email?: string
   phone?: string
+  sales_channel?: string
 }
 
 // Role definitions with better names
@@ -17,6 +18,12 @@ export const ROLES = {
     name: 'Administrator',
     description: 'Full system access - Analytics, Reports, Settings',
     icon: '👔'
+  },
+  team_leader: {
+    id: 'team_leader' as const,
+    name: 'Team Leader',
+    description: 'Sales channel management, team oversight, view-only tracking',
+    icon: '👨‍💼'
   },
   operations: {
     id: 'operations' as const,
@@ -45,6 +52,20 @@ export const ROLE_PERMISSIONS = {
     '/dashboard/settings',
     '/dashboard/log'
   ],
+  team_leader: [
+    '/team-leader/dashboard', // Team Leader Dashboard
+    '/dashboard/pos', // Warehouse Dispatch
+    '/dashboard/packing-queue', // Packing Queue
+    '/dashboard/track-orders', // Track Orders
+    '/dashboard/inventory/**', // All Inventory pages (Products, Low Stock, Out of Stock)
+    '/dashboard/sales-channels/**', // Sales Channels
+    '/dashboard/analytics', // Sales Analytics
+    '/dashboard/insights', // Business Insights
+    '/dashboard/customers', // Customers
+    '/dashboard/internal-usage', // Internal Usage
+    '/dashboard/log' // Activity Logs
+    // Settings is excluded - admin only
+  ],
   operations: [
     '/dashboard/operations',
     '/dashboard/pos',
@@ -60,6 +81,7 @@ export const ROLE_PERMISSIONS = {
 // Default passwords per role
 export const DEFAULT_PASSWORDS: Record<UserRole, string> = {
   admin: 'admin123',
+  team_leader: 'leader456',
   operations: 'ops456'
 }
 
@@ -104,6 +126,9 @@ export function getDefaultRoute(role: UserRole): string {
   if (role === 'operations') {
     return '/dashboard/operations'
   }
+  if (role === 'team_leader') {
+    return '/team-leader/dashboard'
+  }
   return '/dashboard'
 }
 
@@ -111,6 +136,23 @@ export function getCurrentUser(): User | null {
   if (typeof window === 'undefined') return null
   
   try {
+    // Check for team leader session first
+    const teamLeaderRole = localStorage.getItem('x-team-leader-role')
+    if (teamLeaderRole === 'team_leader') {
+      const teamLeaderSession = localStorage.getItem('teamLeaderSession')
+      if (teamLeaderSession) {
+        const session = JSON.parse(teamLeaderSession)
+        return {
+          username: session.username,
+          role: 'team_leader' as UserRole,
+          displayName: session.displayName,
+          email: session.email,
+          sales_channel: session.assignedChannel
+        }
+      }
+    }
+    
+    // Check for admin/operations session
     const isLoggedIn = localStorage.getItem('isLoggedIn')
     const username = localStorage.getItem('username')
     const role = localStorage.getItem('userRole') as UserRole
@@ -160,11 +202,45 @@ export function clearCurrentUser(): void {
   if (typeof window === 'undefined') return
   
   try {
+    // Clear admin/operations session
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('username')
     localStorage.removeItem('userRole')
     localStorage.removeItem('displayName')
+    localStorage.removeItem('currentUser')
+    
+    // Clear team leader session
+    localStorage.removeItem('teamLeaderSession')
+    localStorage.removeItem('x-team-leader-user-id')
+    localStorage.removeItem('x-team-leader-channel')
+    localStorage.removeItem('x-team-leader-role')
   } catch (error) {
     console.error('Error clearing user from localStorage:', error)
   }
+}
+
+/**
+ * Check if current user can edit tracking/packing status
+ * Only admins can edit, team leaders can only view
+ */
+export function canEditTracking(): boolean {
+  const user = getCurrentUser()
+  return user?.role === 'admin'
+}
+
+/**
+ * Check if current user can edit warehouse dispatch
+ * Both admins and team leaders can edit
+ */
+export function canEditWarehouseDispatch(): boolean {
+  const user = getCurrentUser()
+  return user?.role === 'admin' || user?.role === 'team_leader'
+}
+
+/**
+ * Check if current user is a team leader
+ */
+export function isTeamLeader(): boolean {
+  const user = getCurrentUser()
+  return user?.role === 'team_leader'
 }

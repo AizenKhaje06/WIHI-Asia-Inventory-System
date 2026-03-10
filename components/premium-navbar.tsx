@@ -6,6 +6,7 @@ import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/hooks/use-accessibility"
 import { CommandPaletteSearch } from "@/components/command-palette-search"
+import { getCurrentUser } from "@/lib/auth"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,11 +27,13 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
   const [mounted, setMounted] = useState(false)
   const [username, setUsername] = useState("Admin User")
   const [userRole, setUserRole] = useState("Administrator")
+  const [currentUser, setCurrentUser] = useState(getCurrentUser())
   const reducedMotion = useReducedMotion()
 
   // Prevent hydration mismatch
   React.useEffect(() => {
     setMounted(true)
+    setCurrentUser(getCurrentUser())
     
     // Get user info from localStorage
     if (typeof window !== 'undefined') {
@@ -78,51 +81,55 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
             <Menu className="h-5 w-5" />
           </button>
 
-          {/* Supabase Link - Desktop Only */}
-          <a
-            href="https://supabase.com/dashboard/project/rsvzbmhuckwndvqfhzml/editor/22406?schema=public"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden lg:flex items-center justify-center p-2 rounded-lg transition-all hover:opacity-80 hover:scale-105 flex-shrink-0"
-            aria-label="Open Supabase Table Editor"
-            title="Open Supabase Table Editor"
-          >
-            {/* Light Mode */}
-            <img
-              src="/supabase-logo-wordmark--light.png"
-              alt="Supabase"
-              className="h-5 xl:h-6 w-auto object-contain dark:hidden"
-            />
-            {/* Dark Mode */}
-            <img
-              src="/supabase-logo-wordmark--dark.png"
-              alt="Supabase"
-              className="h-5 xl:h-6 w-auto object-contain hidden dark:block"
-            />
-          </a>
+          {/* Supabase Link - Desktop Only - Admin Only */}
+          {currentUser?.role === 'admin' && (
+            <a
+              href="https://supabase.com/dashboard/project/rsvzbmhuckwndvqfhzml/editor/22406?schema=public"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:flex items-center justify-center p-2 rounded-lg transition-all hover:opacity-80 hover:scale-105 flex-shrink-0"
+              aria-label="Open Supabase Table Editor"
+              title="Open Supabase Table Editor"
+            >
+              {/* Light Mode */}
+              <img
+                src="/supabase-logo-wordmark--light.png"
+                alt="Supabase"
+                className="h-5 xl:h-6 w-auto object-contain dark:hidden"
+              />
+              {/* Dark Mode */}
+              <img
+                src="/supabase-logo-wordmark--dark.png"
+                alt="Supabase"
+                className="h-5 xl:h-6 w-auto object-contain hidden dark:block"
+              />
+            </a>
+          )}
 
-          {/* Resend Link - Desktop Only */}
-          <a
-            href="https://resend.com/api-keys"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden lg:flex items-center justify-center p-2 rounded-lg transition-all hover:opacity-80 hover:scale-105 flex-shrink-0"
-            aria-label="Open Resend API Keys"
-            title="Open Resend API Keys"
-          >
-            {/* Light Mode - use black */}
-            <img
-              src="/resend-wordmark-black.png"
-              alt="Resend"
-              className="h-4 xl:h-5 w-auto object-contain dark:hidden"
-            />
-            {/* Dark Mode - use white */}
-            <img
-              src="/resend-wordmark-white.png"
-              alt="Resend"
-              className="h-4 xl:h-5 w-auto object-contain hidden dark:block"
-            />
-          </a>
+          {/* Resend Link - Desktop Only - Admin Only */}
+          {currentUser?.role === 'admin' && (
+            <a
+              href="https://resend.com/api-keys"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:flex items-center justify-center p-2 rounded-lg transition-all hover:opacity-80 hover:scale-105 flex-shrink-0"
+              aria-label="Open Resend API Keys"
+              title="Open Resend API Keys"
+            >
+              {/* Light Mode - use black */}
+              <img
+                src="/resend-wordmark-black.png"
+                alt="Resend"
+                className="h-4 xl:h-5 w-auto object-contain dark:hidden"
+              />
+              {/* Dark Mode - use white */}
+              <img
+                src="/resend-wordmark-white.png"
+                alt="Resend"
+                className="h-4 xl:h-5 w-auto object-contain hidden dark:block"
+              />
+            </a>
+          )}
         </div>
 
         {/* Center: Command Palette Search */}

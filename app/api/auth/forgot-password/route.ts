@@ -3,7 +3,8 @@ import { supabaseAdmin } from "@/lib/supabase"
 import { hashPassword } from "@/lib/password-hash"
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Initialize Resend only if API key is available
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,13 +53,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to reset password" }, { status: 200 })
     }
 
-    // Send email with temporary password using Resend
+    // Send email with temporary password using Resend (if configured)
     try {
+      // If Resend is not configured, just log the password and return success
+      if (!resend) {
+        console.log('[Forgot Password] ⚠️ Resend not configured - Temporary password:', tempPassword)
+        console.log('[Forgot Password] User:', user.username, 'Email:', email)
+        
+        return NextResponse.json({ 
+          success: true,
+          message: "Password reset successfully. Check server logs for temporary password.",
+          tempPassword: process.env.NODE_ENV === 'development' ? tempPassword : undefined
+        })
+      }
+
       console.log('[Forgot Password] Sending email to:', email)
-      console.log('[Forgot Password] API Key exists:', !!process.env.RESEND_API_KEY)
+      
+      // Use Resend's test email for development, or your verified domain for production
+      const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"
       
       const emailResult = await resend.emails.send({
-        from: "onboarding@resend.dev",
+        from: fromEmail,
         to: email,
         subject: "Your Temporary Password - Vertex Inventory System",
         html: `

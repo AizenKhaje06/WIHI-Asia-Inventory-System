@@ -16,7 +16,18 @@ export const GET = withAuth(async (request, { user }) => {
       .select('*')
       .order('name', { ascending: true })
 
-    // Apply filters
+    // Filter by sales channel for team leaders
+    if (user.role === 'team_leader') {
+      const channel = request.headers.get('x-team-leader-channel')
+      console.log('[Products API] Team leader detected, filtering by channel:', channel)
+      
+      if (channel) {
+        // Use salesChannel (camelCase) as defined in the view
+        query = query.eq('salesChannel', channel)
+      }
+    }
+
+    // Apply other filters
     if (search) {
       query = query.or(`name.ilike.%${search}%,category.ilike.%${search}%,sku.ilike.%${search}%`)
     }
@@ -40,7 +51,8 @@ export const GET = withAuth(async (request, { user }) => {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    console.log('[Products API] Sample item:', data?.[0])
+    console.log('[Products API] Fetched products count:', data?.length)
+    console.log('[Products API] User role:', user.role)
 
     return NextResponse.json(data || [])
   } catch (error) {

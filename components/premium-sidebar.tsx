@@ -56,11 +56,12 @@ const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0): 
     section: "Main",
     items: [
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, // Admin only
+      { name: "Dashboard", href: "/team-leader/dashboard", icon: LayoutDashboard }, // Team Leader only
       { name: "Operations Dashboard", href: "/dashboard/operations", icon: LayoutDashboard }, // Operations only
-      { name: "Warehouse Dispatch", href: "/dashboard/pos", icon: ShoppingCart }, // Operations only
-      { name: "Packing Queue", href: "/dashboard/operations/transaction-history", icon: FileText }, // Orders waiting to be packed
-      { name: "Track Orders", href: "/dashboard/track-orders", icon: Package }, // Track customer orders
-      { name: "Internal Usage", href: "/dashboard/internal-usage", icon: Users }, // Track Demo & Internal Use (Admin only)
+      { name: "Warehouse Dispatch", href: "/dashboard/pos", icon: ShoppingCart },
+      { name: "Packing Queue", href: "/dashboard/packing-queue", icon: Package },
+      { name: "Track Orders", href: "/dashboard/track-orders", icon: ShoppingCart },
+      { name: "Internal Usage", href: "/dashboard/internal-usage", icon: Users },
     ],
   },
   {
@@ -99,7 +100,7 @@ const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0): 
     section: "System",
     items: [
       { name: "Activity Logs", href: "/dashboard/log", icon: FileText },
-      { name: "Settings", href: "/dashboard/settings", icon: Settings },
+      { name: "Settings", href: "/dashboard/settings", icon: Settings }, // Admin only
     ],
   },
 ]
@@ -131,10 +132,16 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
     onCollapsedChange?.(collapsed)
   }, [collapsed, onCollapsedChange])
 
-  // Fetch inventory counts for badges
+  // Fetch inventory counts for badges (admin only)
   useEffect(() => {
     const fetchInventoryCounts = async () => {
       try {
+        // Skip for team leaders - they don't have access to /api/items
+        const teamLeaderRole = localStorage.getItem('x-team-leader-role')
+        if (teamLeaderRole === 'team_leader') {
+          return
+        }
+
         const items = await apiGet<any[]>('/api/items')
         const lowStock = items.filter((item: any) => item.quantity > 0 && item.quantity <= item.reorderLevel).length
         const outOfStock = items.filter((item: any) => item.quantity === 0).length
@@ -303,7 +310,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                   const isActive = pathname === item.href
                   const NavLink = (
                     <Link
-                      key={item.name}
+                      key={item.href}
                       href={item.href}
                       onClick={handleNavClick}
                       className={cn(

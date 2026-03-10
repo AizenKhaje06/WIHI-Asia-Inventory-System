@@ -62,18 +62,73 @@ export default function InventoryPage() {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid') // Add view mode toggle
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set()) // Bulk selection
   
-  // Resizable columns state
+  // Calculate initial column widths based on viewport
+  const getInitialColumnWidths = () => {
+    if (typeof window === 'undefined') {
+      return {
+        product: 280,
+        category: 200,
+        status: 110,
+        stock: 110,
+        salesChannel: 150,
+        store: 180,
+        cost: 120,
+        price: 120,
+        margin: 110,
+        actions: 150
+      }
+    }
+    
+    // Get available width (viewport - sidebar - scrollbar)
+    const viewportWidth = window.innerWidth
+    const sidebarWidth = 192 // Sidebar width (w-48 = 192px)
+    const scrollbarWidth = 17 // Typical scrollbar width
+    const availableWidth = viewportWidth - sidebarWidth - scrollbarWidth
+    
+    // Base ratios for proportional distribution
+    const ratios = {
+      product: 280,
+      category: 200,
+      status: 110,
+      stock: 110,
+      salesChannel: 150,
+      store: 180,
+      cost: 120,
+      price: 120,
+      margin: 110,
+      actions: 150
+    }
+    
+    const totalRatio = Object.values(ratios).reduce((a, b) => a + b, 0)
+    const scale = availableWidth / totalRatio
+    
+    // Calculate widths and distribute any remainder to avoid dead space
+    const widths = Object.entries(ratios).reduce((acc, [key, ratio], index, arr) => {
+      if (index === arr.length - 1) {
+        // Last column gets the remainder to fill exactly
+        const usedWidth = Object.values(acc).reduce((a, b) => a + b, 0)
+        acc[key] = availableWidth - usedWidth
+      } else {
+        acc[key] = Math.floor(ratio * scale)
+      }
+      return acc
+    }, {} as Record<string, number>)
+    
+    return widths as typeof ratios
+  }
+  
+  // Resizable columns state - Optimized for full width, no dead space
   const [columnWidths, setColumnWidths] = useState({
-    product: 220,
-    category: 180,
-    status: 90,
-    stock: 100,
-    salesChannel: 120,
-    store: 120,
-    cost: 100,
-    price: 100,
-    margin: 90,
-    actions: 140
+    product: 319,
+    category: 175,
+    status: 96,
+    stock: 96,
+    salesChannel: 131,
+    store: 157,
+    cost: 105,
+    price: 105,
+    margin: 102,
+    actions: 150
   })
   const [resizing, setResizing] = useState<string | null>(null)
   const [startX, setStartX] = useState(0)
@@ -554,7 +609,6 @@ export default function InventoryPage() {
       </div>
       </div>
 
-      <div className="px-4">
       <Card className="border-slate-200 dark:border-slate-800 shadow-lg rounded-none md:rounded-lg overflow-hidden">
         <CardHeader className="pb-5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
           <div className="flex flex-col gap-4 px-4 md:px-6">
@@ -801,74 +855,87 @@ export default function InventoryPage() {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-sm" style={{ minWidth: Object.values(columnWidths).reduce((a, b) => a + b, 0) }}>
-                  <thead className="bg-slate-50 dark:bg-slate-800/50 sticky top-0 z-10">
-                    <tr className="border-b border-slate-200 dark:border-slate-700">
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.product }}>
+                <table className="text-sm" style={{ 
+                  width: `${
+                    columnWidths.product + 
+                    columnWidths.category + 
+                    columnWidths.status + 
+                    columnWidths.stock + 
+                    columnWidths.salesChannel + 
+                    columnWidths.store + 
+                    columnWidths.cost + 
+                    columnWidths.price + 
+                    columnWidths.margin + 
+                    (getCurrentUser()?.role === 'admin' ? columnWidths.actions : 0)
+                  }px` 
+                }}>
+                  <thead className="sticky top-0 z-10">
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.product }}>
                         Product
                         <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'product')}
                         />
                       </th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.category }}>
+                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.category }}>
                         Category
                         <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'category')}
                         />
                       </th>
-                      <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.status }}>
+                      <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.status }}>
                         Status
                         <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'status')}
                         />
                       </th>
-                      <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.stock }}>
+                      <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.stock }}>
                         Stock
                         <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'stock')}
                         />
                       </th>
-                      <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.salesChannel }}>
+                      <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.salesChannel }}>
                         Sales Channel
                         <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'salesChannel')}
                         />
                       </th>
-                      <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.store }}>
+                      <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.store }}>
                         Store
                         <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'store')}
                         />
                       </th>
-                      <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.cost }}>
+                      <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.cost }}>
                         Cost
                         <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'cost')}
                         />
                       </th>
-                      <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.price }}>
+                      <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.price }}>
                         Price
                         <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'price')}
                         />
                       </th>
-                      <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.margin }}>
+                      <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.margin }}>
                         Margin
                         <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'margin')}
                         />
                       </th>
                       {getCurrentUser()?.role === 'admin' && (
-                        <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider" style={{ width: columnWidths.actions }}>
+                        <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider" style={{ width: columnWidths.actions }}>
                           Actions
                         </th>
                       )}
@@ -1094,7 +1161,8 @@ export default function InventoryPage() {
           )}
         </CardContent>
       </Card>
-      </div>
+
+      {/* Dialogs */}
 
       <AddItemDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} onSuccess={fetchItems} />
 

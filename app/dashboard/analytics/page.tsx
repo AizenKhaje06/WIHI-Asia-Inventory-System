@@ -25,6 +25,7 @@ export default function AnalyticsPage() {
   const [view, setView] = useState<'daily' | 'monthly'>('daily')
   const [chartType, setChartType] = useState<'bar' | 'line' | 'area'>('bar')
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [salesChannelFilter, setSalesChannelFilter] = useState("all")
 
   useEffect(() => {
     async function fetchData() {
@@ -42,6 +43,9 @@ export default function AnalyticsPage() {
         url.searchParams.append('startDate', startDateStr)
         url.searchParams.append('endDate', endDateStr)
         url.searchParams.append('view', view)
+        if (salesChannelFilter && salesChannelFilter !== 'all') {
+          url.searchParams.append('salesChannel', salesChannelFilter)
+        }
 
         const reportRes = await fetch(url)
 
@@ -62,7 +66,7 @@ export default function AnalyticsPage() {
     }
 
     fetchData()
-  }, [view, currentMonth])
+  }, [view, currentMonth, salesChannelFilter])
 
   const prevMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
@@ -275,7 +279,7 @@ export default function AnalyticsPage() {
       <Card className="mb-4 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
         <CardContent className="p-4">
           <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">View Type</Label>
                 <div className="flex gap-2">
@@ -298,6 +302,23 @@ export default function AnalyticsPage() {
                     Monthly
                   </Button>
                 </div>
+              </div>
+
+              <div>
+                <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Sales Channel</Label>
+                <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
+                  <SelectTrigger className="h-9 border-slate-200 dark:border-slate-700">
+                    <SelectValue placeholder="All Channels" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Channels</SelectItem>
+                    <SelectItem value="Shopee">Shopee</SelectItem>
+                    <SelectItem value="Lazada">Lazada</SelectItem>
+                    <SelectItem value="Facebook">Facebook</SelectItem>
+                    <SelectItem value="TikTok">TikTok</SelectItem>
+                    <SelectItem value="Physical Store">Physical Store</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {view === 'monthly' && (

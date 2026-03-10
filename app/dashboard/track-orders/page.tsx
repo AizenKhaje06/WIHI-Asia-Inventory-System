@@ -19,6 +19,7 @@ import { toast } from 'sonner'
 import { apiGet } from '@/lib/api-client'
 import { BrandLoader } from '@/components/ui/brand-loader'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
+import { getCurrentUserRole, getAuthHeaders } from '@/lib/role-utils'
 
 interface Order {
   id: string
@@ -68,6 +69,10 @@ export default function TrackOrdersPage() {
     totalAmount: 0
   })
 
+  // Role detection
+  const userRole = getCurrentUserRole()
+  const isTeamLeader = userRole === 'team_leader'
+
   useEffect(() => {
     fetchOrders()
   }, [])
@@ -78,7 +83,54 @@ export default function TrackOrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      // Fetch only packed orders (ready for tracking)
+      // Team leaders use their own API endpoint
+      if (isTeamLeader) {
+        const headers = getAuthHeaders()
+        const response = await fetch('/api/team-leader/orders', {
+          headers: {
+            ...headers,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch orders')
+        }
+
+        // Transform team leader orders to match Order interface
+        const transformedOrders: Order[] = (data.orders || []).map((order: any) => ({
+          id: order.id,
+          orderNumber: order.orderNumber,
+          customerName: order.customerName,
+          customerPhone: order.customerPhone,
+          customerEmail: order.customerEmail,
+          customerAddress: order.customerAddress,
+          storeName: order.channel,
+          itemName: order.itemName,
+          quantity: order.quantity,
+          totalAmount: order.totalAmount,
+          orderStatus: order.orderStatus === 'pending' ? 'Pending' : 'Packed',
+          parcelStatus: (order.parcelStatus || order.parcel_status || 'PENDING') as any, // Use parcelStatus from API
+          paymentStatus: order.paymentStatus as any,
+          courier: order.courier || '-',
+          trackingNumber: order.trackingNumber || '-',
+          orderDate: order.orderDate,
+          estimatedDelivery: order.estimatedDelivery,
+          deliveryDate: order.deliveryDate,
+          notes: order.notes,
+          dispatchNotes: '',
+          department: order.channel
+        }))
+
+        setOrders(transformedOrders)
+        setFilteredOrders(transformedOrders)
+        setLoading(false)
+        return
+      }
+
+      // Admin: Fetch only packed orders (ready for tracking)
       const data = await apiGet<any[]>('/api/orders?status=Packed')
       
       // Transform data to match Order interface
@@ -124,6 +176,42 @@ export default function TrackOrdersPage() {
 
   const updateOrderStatus = async (orderId: string, status?: string, parcelStatus?: string, paymentStatus?: string) => {
     try {
+      // Optimistic update - update UI immediately
+      if (parcelStatus) {
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order.id === orderId 
+              ? { ...order, parcelStatus: parcelStatus as any }
+              : order
+          )
+        )
+        setFilteredOrders(prevOrders => 
+          prevOrders.map(order => 
+            order.id === orderId 
+              ? { ...order, parcelStatus: parcelStatus as any }
+              : order
+          )
+        )
+      }
+
+      if (paymentStatus) {
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order.id === orderId 
+              ? { ...order, paymentStatus: paymentStatus as any }
+              : order
+          )
+        )
+        setFilteredOrders(prevOrders => 
+          prevOrders.map(order => 
+            order.id === orderId 
+              ? { ...order, paymentStatus: paymentStatus as any }
+              : order
+          )
+        )
+      }
+
+      // Update in background
       const response = await fetch(`/api/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: {
@@ -137,11 +225,15 @@ export default function TrackOrdersPage() {
       })
 
       if (!response.ok) {
+        // Revert optimistic update on error
+        await fetchOrders()
         throw new Error('Failed to update status')
       }
 
+      const updatedOrder = await response.json()
+      console.log('[Track Orders] Order updated:', updatedOrder)
+
       toast.success('Status updated successfully')
-      fetchOrders() // Refresh the list
     } catch (error) {
       console.error('Error updating status:', error)
       toast.error('Failed to update status')

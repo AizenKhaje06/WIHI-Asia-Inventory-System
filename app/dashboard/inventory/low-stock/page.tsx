@@ -22,6 +22,7 @@ export default function LowStockPage() {
   const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
+  const [salesChannelFilter, setSalesChannelFilter] = useState("all")
   const [priceFilter, setPriceFilter] = useState("all")
   const [stockRoomFilter, setStockRoomFilter] = useState("all")
   const [urgencyFilter, setUrgencyFilter] = useState("all")
@@ -114,6 +115,10 @@ export default function LowStockPage() {
       filtered = filtered.filter((item) => item.category === categoryFilter)
     }
 
+    if (salesChannelFilter && salesChannelFilter !== "all") {
+      filtered = filtered.filter((item) => item.salesChannel === salesChannelFilter)
+    }
+
     if (priceFilter && priceFilter !== "all") {
       if (priceFilter === "low") {
         filtered = filtered.filter((item) => item.sellingPrice < 100)
@@ -149,7 +154,7 @@ export default function LowStockPage() {
     }
 
     setFilteredItems(filtered)
-  }, [search, categoryFilter, priceFilter, stockRoomFilter, urgencyFilter, sortBy, items])
+  }, [search, categoryFilter, salesChannelFilter, priceFilter, stockRoomFilter, urgencyFilter, sortBy, items])
 
   async function fetchItems() {
     try {
@@ -228,6 +233,7 @@ export default function LowStockPage() {
   function clearAllFilters() {
     setSearch("")
     setCategoryFilter("all")
+    setSalesChannelFilter("all")
     setPriceFilter("all")
     setStockRoomFilter("all")
     setUrgencyFilter("all")
@@ -257,6 +263,7 @@ export default function LowStockPage() {
 
   const activeFiltersCount = [
     categoryFilter !== "all",
+    salesChannelFilter !== "all",
     priceFilter !== "all",
     stockRoomFilter !== "all",
     urgencyFilter !== "all",
@@ -349,7 +356,7 @@ export default function LowStockPage() {
             </div>
 
             {/* Filters Grid - 2 columns on mobile, 5 columns on desktop */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-2.5">
               <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
                 <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                   <SelectValue placeholder="Urgency" />
@@ -368,6 +375,20 @@ export default function LowStockPage() {
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                </SelectContent>
+              </Select>
+
+              <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
+                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                  <SelectValue placeholder="Sales Channel" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Channels</SelectItem>
+                  <SelectItem value="Shopee">Shopee</SelectItem>
+                  <SelectItem value="Lazada">Lazada</SelectItem>
+                  <SelectItem value="Facebook">Facebook</SelectItem>
+                  <SelectItem value="TikTok">TikTok</SelectItem>
+                  <SelectItem value="Physical Store">Physical Store</SelectItem>
                 </SelectContent>
               </Select>
 
