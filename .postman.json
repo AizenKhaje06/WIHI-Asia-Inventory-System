@@ -328,6 +328,98 @@
           "name": "Authentication",
           "item": [
             {
+              "name": "Team Leader Login - Valid",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"channel\": \"Shopee\",\n  \"password\": \"team_leader_password\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/team-leader-login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "team-leader-login"]
+                },
+                "description": "Team leader login with valid channel and password (Requirements: 1.2, 1.3, 1.6)"
+              }
+            },
+            {
+              "name": "Team Leader Login - Invalid Password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"channel\": \"Shopee\",\n  \"password\": \"wrong_password\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/team-leader-login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "team-leader-login"]
+                },
+                "description": "Team leader login with invalid password (should return 401)"
+              }
+            },
+            {
+              "name": "Team Leader Login - Missing Channel",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"password\": \"team_leader_password\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/team-leader-login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "team-leader-login"]
+                },
+                "description": "Team leader login without channel (should return 400)"
+              }
+            },
+            {
+              "name": "Team Leader Login - Missing Password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"channel\": \"Shopee\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/team-leader-login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "team-leader-login"]
+                },
+                "description": "Team leader login without password (should return 400)"
+              }
+            },
+            {
               "name": "Forgot Password - Valid Email",
               "request": {
                 "method": "POST",
