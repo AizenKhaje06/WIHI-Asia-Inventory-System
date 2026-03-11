@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        video { width: 100%; max-width: 500px; border: 2px solid #000; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px 0; }
+        .error { color: red; margin: 10px 0; }
+        .success { color: green; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Camera Permission Test</h1>
+    <button onclick="testCamera()">Test Camera</button>
+    <div id="status"></div>
+    <video id="video" autoplay playsinline></video>
+
+    <script>
+        async function testCamera() {
+            const status = document.getElementById('status');
+            const video = document.getElementById('video');
+            
+            status.innerHTML = 'Requesting camera...';
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }
+                });
+                
+                video.srcObject = stream;
+                status.innerHTML = '<div class="success">✅ Camera access granted!</div>';
+                
+            } catch (error) {
+                console.error('Camera error:', error);
+                
+                let message = '';
+                if (error.name === 'NotAllowedError') {
+                    message = '❌ Permission denied. Check browser/system settings.';
+                } else if (error.name === 'NotFoundError') {
+                    message = '❌ No camera found.';
+                } else if (error.name === 'NotReadableError') {
+                    message = '❌ Camera in use by another app.';
+                } else {
+                    message = '❌ Error: ' + error.message;
+                }
+                
+                status.innerHTML = '<div class="error">' + message + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>
