@@ -27,6 +27,9 @@ export default function InsightsPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("abc")
   
+  // Global Sales Channel Filter
+  const [salesChannelFilter, setSalesChannelFilter] = useState("all")
+  
   // Filter states
   const [abcSearch, setAbcSearch] = useState("")
   const [abcCategoryFilter, setAbcCategoryFilter] = useState("all")
@@ -63,7 +66,7 @@ export default function InsightsPage() {
 
   useEffect(() => {
     fetchAnalytics()
-  }, [])
+  }, [salesChannelFilter])
   
   // Detect scroll overflow for gradient indicators
   useEffect(() => {
@@ -89,10 +92,28 @@ export default function InsightsPage() {
   async function fetchAnalytics() {
     setLoading(true)
     try {
+      // Build query params
+      const params = new URLSearchParams()
+      params.append('type', 'all')
+      if (salesChannelFilter && salesChannelFilter !== 'all') {
+        params.append('salesChannel', salesChannelFilter)
+      }
+
+      const forecastParams = new URLSearchParams()
+      forecastParams.append('type', 'forecast')
+      if (salesChannelFilter && salesChannelFilter !== 'all') {
+        forecastParams.append('salesChannel', salesChannelFilter)
+      }
+
+      const itemsParams = new URLSearchParams()
+      if (salesChannelFilter && salesChannelFilter !== 'all') {
+        itemsParams.append('salesChannel', salesChannelFilter)
+      }
+
       const [analyticsData, forecastData, itemsData] = await Promise.all([
-        apiGet<any>("/api/analytics?type=all"),
-        apiGet<PredictiveAnalytics[]>("/api/analytics?type=forecast"),
-        apiGet<any[]>("/api/items")
+        apiGet<any>(`/api/analytics?${params}`),
+        apiGet<PredictiveAnalytics[]>(`/api/analytics?${forecastParams}`),
+        apiGet<any[]>(`/api/items${itemsParams.toString() ? '?' + itemsParams : ''}`)
       ])
 
       setAbcAnalysis(analyticsData.abc || [])
@@ -277,19 +298,32 @@ export default function InsightsPage() {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
       {/* Header with Actions */}
-      <div className="flex items-center justify-between mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <div>
           <h1 className="text-3xl font-bold gradient-text">Business Insights</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">
             AI-powered analytics and strategic recommendations for data-driven decisions
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
+            <SelectTrigger className="h-9 w-full sm:w-[180px] border-slate-300 dark:border-slate-700">
+              <SelectValue placeholder="All Channels" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Channels</SelectItem>
+              <SelectItem value="Shopee">Shopee</SelectItem>
+              <SelectItem value="Lazada">Lazada</SelectItem>
+              <SelectItem value="Facebook">Facebook</SelectItem>
+              <SelectItem value="TikTok">TikTok</SelectItem>
+              <SelectItem value="Physical Store">Physical Store</SelectItem>
+            </SelectContent>
+          </Select>
           <Button
             onClick={fetchAnalytics}
             variant="outline"
             size="sm"
-            className="gap-2"
+            className="gap-2 flex-shrink-0"
           >
             <RefreshCw className="h-4 w-4" />
             Refresh

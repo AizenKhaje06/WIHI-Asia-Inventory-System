@@ -312,7 +312,7 @@ export default function PackingQueuePage() {
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800">
                     <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Order #
+                      Waybill No.
                     </th>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
                       Date
@@ -347,7 +347,7 @@ export default function PackingQueuePage() {
                     >
                       <td className="py-3 px-4 text-sm">
                         <span className="font-mono text-slate-900 dark:text-white">
-                          #{(order.orderNumber || order.id).slice(-6)}
+                          {order.waybill || order.id || 'N/A'}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400">

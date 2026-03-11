@@ -11,14 +11,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
   Eye, EyeOff, Lock, User, Loader2, ArrowRight, AlertCircle, 
-  Shield, Building2, KeyRound, CheckCircle2, Info, ChevronsRight, Mail 
+  Shield, Building2, KeyRound, CheckCircle2, Info, ChevronsRight, Mail, Package 
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { apiPost } from "@/lib/api-client"
 import { setTeamLeaderSession } from "@/lib/team-leader-auth"
 
-type LoginMode = "admin" | "staff"
+type LoginMode = "admin" | "staff" | "packer"
 
 interface Channel {
   id: string
@@ -34,6 +34,7 @@ export default function EnterpriseLoginPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [loginMode, setLoginMode] = useState<LoginMode>("admin")
+  const [packerUsername, setPackerUsername] = useState("")
   const [capsLockOn, setCapsLockOn] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState(0)
   const [mounted, setMounted] = useState(false)
@@ -53,75 +54,134 @@ export default function EnterpriseLoginPage() {
 
   useEffect(() => {
     setMounted(true)
-    if (typeof window !== 'undefined') {
-      try {
-        // Check if user is already logged in
-        const isAdminLoggedIn = localStorage.getItem("isLoggedIn") === "true"
-        const teamLeaderSession = localStorage.getItem("teamLeaderSession")
-        const teamLeaderRole = localStorage.getItem("x-team-leader-role")
+    
+    // Only run session check once on mount
+    if (typeof window === 'undefined') return
+    
+    try {
+      // IMPORTANT: When on login page, we should NOT have any active sessions
+      // If we're here, it means user either logged out or session expired
+      // So we need to be very strict about validation
+      
+      const isAdminLoggedIn = localStorage.getItem("isLoggedIn") === "true"
+      const teamLeaderSession = localStorage.getItem("teamLeaderSession")
+      const teamLeaderRole = localStorage.getItem("x-team-leader-role")
+      
+      console.log('[Login Page] Checking existing session...')
+      console.log('[Login Page] Admin logged in:', isAdminLoggedIn)
+      console.log('[Login Page] Team leader session exists:', !!teamLeaderSession)
+      console.log('[Login Page] Team leader role:', teamLeaderRole)
+      
+      let hasValidSession = false
+      
+      // Validate admin session
+      if (isAdminLoggedIn) {
+        const username = localStorage.getItem("username")
+        const userRole = localStorage.getItem("userRole")
         
-        console.log('[Login Page] Checking existing session...')
-        console.log('[Login Page] Admin logged in:', isAdminLoggedIn)
-        console.log('[Login Page] Team leader session exists:', !!teamLeaderSession)
-        console.log('[Login Page] Team leader role:', teamLeaderRole)
-        
-        // Validate admin session
-        if (isAdminLoggedIn) {
-          const username = localStorage.getItem("username")
-          const userRole = localStorage.getItem("userRole")
+        // Only redirect if we have ALL required fields
+        if (username && userRole && (userRole === 'admin' || userRole === 'operations' || userRole === 'packer')) {
+          console.log('[Login Page] Valid admin session found, redirecting...')
+          hasValidSession = true
           
-          // Only redirect if we have valid session data
-          if (username && userRole) {
-            console.log('[Login Page] Valid admin session, redirecting to /dashboard')
-            router.push('/dashboard')
-            return
+          // Redirect based on role
+          if (userRole === 'packer') {
+            router.push('/packer/dashboard')
           } else {
-            // Invalid session, clear it
-            console.log('[Login Page] Invalid admin session, clearing...')
-            localStorage.removeItem("isLoggedIn")
-            localStorage.removeItem("username")
-            localStorage.removeItem("userRole")
-            localStorage.removeItem("displayName")
+            router.push('/dashboard')
           }
+          return
+        } else {
+          // Invalid or incomplete session, clear it
+          console.log('[Login Page] Invalid admin session, clearing...')
+          localStorage.removeItem("isLoggedIn")
+          localStorage.removeItem("username")
+          localStorage.removeItem("userRole")
+          localStorage.removeItem("displayName")
+          localStorage.removeItem("currentUser")
         }
-        
-        // Validate team leader session
-        if (teamLeaderSession && teamLeaderRole === 'team_leader') {
-          try {
-            const session = JSON.parse(teamLeaderSession)
-            // Check if session has required fields and is not expired
-            if (session.userId && session.assignedChannel) {
-              console.log('[Login Page] Valid team leader session, redirecting to /team-leader/dashboard')
-              router.push('/team-leader/dashboard')
-              return
-            } else {
-              // Invalid session, clear it
-              console.log('[Login Page] Invalid team leader session, clearing...')
+      }
+      
+      // Validate team leader session
+      if (teamLeaderSession && teamLeaderRole === 'team_leader') {
+        try {
+          const session = JSON.parse(teamLeaderSession)
+          
+          // Strict validation: Check ALL required fields
+          if (session.userId && session.assignedChannel && session.username && session.timestamp) {
+            // Check session expiry (24 hours)
+            const now = Date.now()
+            const twentyFourHours = 24 * 60 * 60 * 1000
+            
+            if (now - session.timestamp > twentyFourHours) {
+              console.log('[Login Page] Team leader session expired, clearing...')
               localStorage.removeItem('teamLeaderSession')
               localStorage.removeItem('x-team-leader-user-id')
               localStorage.removeItem('x-team-leader-channel')
               localStorage.removeItem('x-team-leader-role')
+            } else {
+              console.log('[Login Page] Valid team leader session found, redirecting to /team-leader/dashboard')
+              hasValidSession = true
+              router.push('/team-leader/dashboard')
+              return
             }
-          } catch (error) {
-            // Corrupted session data, clear it
-            console.log('[Login Page] Corrupted team leader session, clearing...')
+          } else {
+            // Invalid session structure, clear it
+            console.log('[Login Page] Invalid team leader session structure, clearing...')
             localStorage.removeItem('teamLeaderSession')
             localStorage.removeItem('x-team-leader-user-id')
             localStorage.removeItem('x-team-leader-channel')
             localStorage.removeItem('x-team-leader-role')
           }
+        } catch (error) {
+          // Corrupted session data, clear it
+          console.log('[Login Page] Corrupted team leader session, clearing...', error)
+          localStorage.removeItem('teamLeaderSession')
+          localStorage.removeItem('x-team-leader-user-id')
+          localStorage.removeItem('x-team-leader-channel')
+          localStorage.removeItem('x-team-leader-role')
+        }
+      }
+      
+      // If we reach here, no valid session was found
+      // Clear any remaining session fragments
+      if (!hasValidSession) {
+        console.log('[Login Page] No valid session found, ensuring clean state...')
+        
+        // Clear any orphaned session data
+        if (localStorage.getItem('teamLeaderSession') || localStorage.getItem('x-team-leader-role')) {
+          console.log('[Login Page] Clearing orphaned team leader session data...')
+          localStorage.removeItem('teamLeaderSession')
+          localStorage.removeItem('x-team-leader-user-id')
+          localStorage.removeItem('x-team-leader-channel')
+          localStorage.removeItem('x-team-leader-role')
         }
         
+        if (localStorage.getItem('isLoggedIn')) {
+          console.log('[Login Page] Clearing orphaned admin session data...')
+          localStorage.removeItem("isLoggedIn")
+          localStorage.removeItem("username")
+          localStorage.removeItem("userRole")
+          localStorage.removeItem("displayName")
+          localStorage.removeItem("currentUser")
+        }
+      }
+      
+      // Load remembered username (only if no active session)
+      if (!hasValidSession) {
         const rememberedUsername = localStorage.getItem("rememberedUsername")
         if (rememberedUsername) {
           setUsername(rememberedUsername)
           setRememberMe(true)
         }
-      } catch (error) {
-        console.error('Error accessing localStorage:', error)
       }
+    } catch (error) {
+      console.error('[Login Page] Error accessing localStorage:', error)
+      // Clear all sessions on error to prevent infinite loops
+      console.log('[Login Page] Clearing all localStorage due to error...')
+      localStorage.clear()
     }
-  }, [])
+  }, [router])
 
   // Fetch channels when staff mode is selected
   useEffect(() => {
@@ -209,6 +269,48 @@ export default function EnterpriseLoginPage() {
     setError("")
 
     try {
+      // Packer login
+      if (loginMode === 'packer') {
+        if (!packerUsername) {
+          setError("Please enter your username")
+          setLoading(false)
+          return
+        }
+
+        // Validate packer credentials
+        const data = await apiPost("/api/accounts", {
+          action: "validate",
+          username: packerUsername,
+          password: password
+        })
+
+        if (data.success && data.account && data.account.role === 'packer') {
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem("isLoggedIn", "true")
+              localStorage.setItem("username", data.account.username)
+              localStorage.setItem("userRole", "packer")
+              localStorage.setItem("displayName", data.account.displayName)
+              
+              localStorage.setItem("currentUser", JSON.stringify({
+                username: data.account.username,
+                role: "packer",
+                displayName: data.account.displayName
+              }))
+            } catch (error) {
+              console.error('Error saving to localStorage:', error)
+            }
+          }
+          
+          router.push('/packer/dashboard')
+          return
+        } else {
+          setError("Invalid packer credentials")
+          setLoading(false)
+          return
+        }
+      }
+
       // Staff/Team Leader login
       if (loginMode === 'staff') {
         if (!selectedChannel) {
@@ -238,7 +340,14 @@ export default function EnterpriseLoginPage() {
 
         // Store team leader session
         console.log('[Login] Storing team leader session:', data.sessionData)
-        setTeamLeaderSession(data.sessionData)
+        
+        // Ensure timestamp is set
+        const sessionWithTimestamp = {
+          ...data.sessionData,
+          timestamp: data.sessionData.timestamp || Date.now()
+        }
+        
+        setTeamLeaderSession(sessionWithTimestamp)
 
         // Store auth headers for API requests
         localStorage.setItem('x-team-leader-user-id', data.user.id)
@@ -255,10 +364,10 @@ export default function EnterpriseLoginPage() {
         // Small delay to ensure localStorage is fully written
         await new Promise(resolve => setTimeout(resolve, 100))
         
-        console.log('[Login] Redirecting to /dashboard')
+        console.log('[Login] Redirecting to /team-leader/dashboard')
         
-        // Redirect to dashboard (same as admin, page will detect role)
-        router.push('/dashboard')
+        // Redirect team leaders directly to their dashboard
+        router.push('/team-leader/dashboard')
         return
       }
 
@@ -538,6 +647,24 @@ export default function EnterpriseLoginPage() {
                 <User className="w-4 h-4" />
                 <span>Staff</span>
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginMode("packer")
+                  setPackerUsername("")
+                  setPassword("")
+                  setError("")
+                }}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200",
+                  loginMode === "packer"
+                    ? "bg-slate-700 text-blue-400 shadow-md"
+                    : "text-slate-400 hover:text-slate-200"
+                )}
+              >
+                <Package className="w-4 h-4" />
+                <span>Packer</span>
+              </button>
             </div>
 
             {/* Header */}
@@ -548,7 +675,9 @@ export default function EnterpriseLoginPage() {
               <p className="text-slate-400">
                 {loginMode === "admin" 
                   ? "Sign in to access admin dashboard" 
-                  : "Sign in to access warehouse operations"}
+                  : loginMode === "staff"
+                  ? "Sign in to access warehouse operations"
+                  : "Sign in to access packer dashboard"}
               </p>
             </div>
 
@@ -576,6 +705,25 @@ export default function EnterpriseLoginPage() {
                       placeholder="Enter your username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
+                      className="pl-12 h-12 bg-slate-800 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-white"
+                      required
+                      autoComplete="username"
+                    />
+                  </div>
+                </div>
+              ) : loginMode === 'packer' ? (
+                <div className="space-y-2">
+                  <Label htmlFor="packerUsername" className="text-slate-300 font-medium">
+                    Packer Username
+                  </Label>
+                  <div className="relative group">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                    <Input
+                      id="packerUsername"
+                      type="text"
+                      placeholder="Enter your packer username"
+                      value={packerUsername}
+                      onChange={(e) => setPackerUsername(e.target.value)}
                       className="pl-12 h-12 bg-slate-800 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-white"
                       required
                       autoComplete="username"

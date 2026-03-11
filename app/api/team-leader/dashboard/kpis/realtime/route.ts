@@ -5,6 +5,7 @@ import { requireTeamLeaderRole } from '@/lib/team-leader-middleware'
 /**
  * GET /api/team-leader/dashboard/kpis/realtime
  * Get real-time dashboard KPIs for team leader's channel
+ * Enhanced with admin-level metrics, all filtered by sales channel
  * 
  * Requirements: 4.4
  */
@@ -17,8 +18,12 @@ export const GET = async (request: NextRequest) => {
 
     const context = authResult as any
     const channel = context.channel
+    
+    // Get time period from query params
+    const { searchParams } = new URL(request.url)
+    const period = searchParams.get('period') || 'ID'
 
-    // Query latest orders for the channel (with timestamp filter for real-time)
+    // Query orders for the channel
     const { data: orders, error: ordersError } = await supabaseAdmin
       .from('orders')
       .select('*')
@@ -31,6 +36,16 @@ export const GET = async (request: NextRequest) => {
         { error: 'Failed to fetch dashboard data' },
         { status: 500 }
       )
+    }
+
+    // Query inventory items for the channel
+    const { data: items, error: itemsError } = await supabaseAdmin
+      .from('items')
+      .select('*')
+      .eq('sales_channel', channel)
+
+    if (itemsError) {
+      console.error('[Dashboard KPIs Realtime] Items query error:', itemsError)
     }
 
     // Calculate KPIs
@@ -52,19 +67,49 @@ export const GET = async (request: NextRequest) => {
 
     const revenueToday = todayOrders.reduce((sum: number, order: any) => sum + (order.total || 0), 0)
     const itemsSoldToday = todayOrders.reduce((sum: number, order: any) => sum + (order.qty || 0), 0)
+    const recentSales = todayOrders.length
+
+    // Calculate return metrics
+    const returnOrders = orders?.filter((order: any) => order.status === 'returned') || []
+    const returnValue = returnOrders.reduce((sum: number, order: any) => sum + (order.total || 0), 0)
+    const returnRate = totalOrders > 0 ? ((returnOrders.length / totalOrders) * 100) : 0
+    
+    const damagedReturns = returnOrders.filter((order: any) => order.return_reason === 'damaged')
+    const supplierReturns = returnOrders.filter((order: any) => order.return_reason === 'supplier')
+    const damagedReturnRate = totalOrders > 0 ? ((damagedReturns.length / totalOrders) * 100) : 0
+    const supplierReturnRate = totalOrders > 0 ? ((supplierReturns.length / totalOrders) * 100) : 0
+
+    // Calculate inventory metrics
+    const totalItems = items?.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0) || 0
+    const totalValue = items?.reduce((sum: number, item: any) => sum + ((item.quantity || 0) * (item.cost_price || 0)), 0) || 0
 
     return NextResponse.json({
       success: true,
       kpis: {
+        // Core metrics
         totalRevenue,
         totalCost,
         totalProfit,
         profitMargin,
         itemsSold,
         totalOrders,
+        channel,
+        
+        // Today's metrics
         revenueToday,
         itemsSoldToday,
-        channel,
+        recentSales,
+        
+        // Return metrics
+        returnValue,
+        returnRate,
+        damagedReturnRate,
+        supplierReturnRate,
+        
+        // Inventory metrics
+        totalItems,
+        totalValue,
+        
         timestamp: new Date().toISOString()
       }
     }, { status: 200 })

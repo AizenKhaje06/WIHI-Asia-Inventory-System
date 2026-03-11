@@ -1,33 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { requireTeamLeaderRole } from '@/lib/team-leader-middleware'
 
 /**
- * GET /api/team-leader/packing-queue
- * Get unpacked orders for team leader's channel
- * 
- * Requirements: 6.1, 6.2, 6.4
+ * GET /api/packer/queue
+ * Get all unpacked orders for packer
  */
-export const GET = async (request: NextRequest) => {
+export async function GET(request: NextRequest) {
   try {
-    const authResult = requireTeamLeaderRole(request)
-    if (authResult instanceof NextResponse) {
-      return authResult
-    }
-
-    const context = authResult as any
-    const channel = context.channel
-
-    // Query unpacked orders for the channel
+    // Query unpacked orders (status != 'Packed')
     const { data: orders, error: ordersError } = await supabaseAdmin
       .from('orders')
       .select('*')
-      .eq('sales_channel', channel)
       .neq('status', 'Packed')
       .order('created_at', { ascending: true })
 
     if (ordersError) {
-      console.error('[Packing Queue] Query error:', ordersError)
+      console.error('[Packer Queue] Query error:', ordersError)
       return NextResponse.json(
         { error: 'Failed to fetch packing queue' },
         { status: 500 }
@@ -38,7 +26,7 @@ export const GET = async (request: NextRequest) => {
     const transformedOrders = orders?.map((order: any) => ({
       id: order.id,
       orderNumber: order.id,
-      waybill: order.waybill || order.id, // Add waybill field
+      waybill: order.waybill || order.id,
       customerName: order.customer_name || 'N/A',
       customerPhone: order.customer_contact || 'N/A',
       customerAddress: order.customer_address || 'N/A',
@@ -61,7 +49,7 @@ export const GET = async (request: NextRequest) => {
     }, { status: 200 })
 
   } catch (error) {
-    console.error('[Packing Queue] Error:', error)
+    console.error('[Packer Queue] Error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch packing queue' },
       { status: 500 }

@@ -1,6 +1,6 @@
 // Role-based access control system
 
-export type UserRole = 'admin' | 'team_leader' | 'operations'
+export type UserRole = 'admin' | 'team_leader' | 'operations' | 'packer'
 
 export interface User {
   username: string
@@ -29,6 +29,12 @@ export const ROLES = {
     id: 'operations' as const,
     name: 'Operations Staff',
     description: 'POS, Inventory, and Customer Management',
+    icon: '📦'
+  },
+  packer: {
+    id: 'packer' as const,
+    name: 'Packer',
+    description: 'Packing queue and order fulfillment',
     icon: '📦'
   }
 } as const
@@ -75,6 +81,9 @@ export const ROLE_PERMISSIONS = {
     '/dashboard/customers',
     '/dashboard/log',
     '/dashboard/reports'
+  ],
+  packer: [
+    '/packer/dashboard'
   ]
 } as const
 
@@ -82,7 +91,8 @@ export const ROLE_PERMISSIONS = {
 export const DEFAULT_PASSWORDS: Record<UserRole, string> = {
   admin: 'admin123',
   team_leader: 'leader456',
-  operations: 'ops456'
+  operations: 'ops456',
+  packer: 'pack789'
 }
 
 // Auth helpers
@@ -129,6 +139,9 @@ export function getDefaultRoute(role: UserRole): string {
   if (role === 'team_leader') {
     return '/team-leader/dashboard'
   }
+  if (role === 'packer') {
+    return '/packer/dashboard'
+  }
   return '/dashboard'
 }
 
@@ -141,13 +154,38 @@ export function getCurrentUser(): User | null {
     if (teamLeaderRole === 'team_leader') {
       const teamLeaderSession = localStorage.getItem('teamLeaderSession')
       if (teamLeaderSession) {
-        const session = JSON.parse(teamLeaderSession)
-        return {
-          username: session.username,
-          role: 'team_leader' as UserRole,
-          displayName: session.displayName,
-          email: session.email,
-          sales_channel: session.assignedChannel
+        try {
+          const session = JSON.parse(teamLeaderSession)
+          
+          // Validate session has required fields
+          if (!session.userId || !session.assignedChannel) {
+            console.warn('[Auth] Invalid team leader session structure, clearing...')
+            clearCurrentUser()
+            return null
+          }
+          
+          // Check session expiry (24 hours)
+          const sessionTimestamp = session.timestamp || 0
+          const now = Date.now()
+          const twentyFourHours = 24 * 60 * 60 * 1000
+          
+          if (now - sessionTimestamp > twentyFourHours) {
+            console.warn('[Auth] Team leader session expired, clearing...')
+            clearCurrentUser()
+            return null
+          }
+          
+          return {
+            username: session.username,
+            role: 'team_leader' as UserRole,
+            displayName: session.displayName,
+            email: session.email,
+            sales_channel: session.assignedChannel
+          }
+        } catch (error) {
+          console.error('[Auth] Error parsing team leader session:', error)
+          clearCurrentUser()
+          return null
         }
       }
     }
@@ -159,10 +197,18 @@ export function getCurrentUser(): User | null {
     const displayName = localStorage.getItem('displayName')
     
     if (isLoggedIn === 'true' && username && role) {
+      // Validate role is valid
+      if (!['admin', 'team_leader', 'operations', 'packer'].includes(role)) {
+        console.warn('[Auth] Invalid role in session, clearing...')
+        clearCurrentUser()
+        return null
+      }
+      
       return { username, role, displayName: displayName || username }
     }
   } catch (error) {
-    console.error('Error reading user from localStorage:', error)
+    console.error('[Auth] Error reading user from localStorage:', error)
+    clearCurrentUser()
   }
   
   return null

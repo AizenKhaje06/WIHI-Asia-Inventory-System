@@ -4,18 +4,30 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   
-  // Skip middleware for public routes and API routes
+  // Public routes that don't require authentication
+  const publicRoutes = [
+    '/',
+    '/api/auth/login',
+    '/api/auth/team-leader-login',
+    '/api/auth/channels',
+    '/api/auth/forgot-password'
+  ]
+  
+  // Skip middleware for public routes, API routes, and static files
   if (
-    pathname === '/' ||
+    publicRoutes.includes(pathname) ||
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
-    pathname.startsWith('/static/')
+    pathname.startsWith('/static/') ||
+    pathname.startsWith('/public/')
   ) {
     return NextResponse.next()
   }
 
-  // Check if user is logged in (client-side check will be more robust)
-  // This is a basic check - the real protection happens client-side
+  // Protected routes - require authentication
+  // Note: Actual session validation happens client-side
+  // This middleware just ensures proper routing structure
+  
   return NextResponse.next()
 }
 

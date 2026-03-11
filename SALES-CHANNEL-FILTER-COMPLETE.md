@@ -1,6 +1,6 @@
 # Sales Channel Filter Implementation - COMPLETE
 
-## ✅ COMPLETED (6/7 Pages)
+## ✅ ALL COMPLETE (8/8 Pages)
 
 ### 1. Low Stocks Page ✅
 **File**: `app/dashboard/inventory/low-stock/page.tsx`
@@ -47,31 +47,40 @@
 **Status**: NO CHANGES NEEDED
 **Reason**: Customers can purchase from multiple channels - they're not tied to a specific channel
 
----
-
-## ⏳ REMAINING (1/7 Pages)
-
-### 7. Business Insights Page
+### 7. Business Insights Page ✅
 **File**: `app/dashboard/insights/page.tsx`
-**Status**: NOT IMPLEMENTED (Very Complex)
-**Complexity**: This page has 8 different tabs, each with its own data and filtering:
-1. ABC Analysis Tab
-2. Inventory Turnover Tab
-3. Fast Moving Items Tab
-4. Slow Moving Items Tab
-5. Dead Stock Tab
-6. Profit Margin Tab
-7. Forecasts Tab
-8. Returns Analytics Tab
+- Added `salesChannelFilter` state variable (global for all tabs)
+- Added Sales Channel dropdown in page header (next to Refresh button)
+- Updated `fetchAnalytics` to pass `salesChannel` parameter to all API calls:
+  - `/api/analytics?type=all&salesChannel=X`
+  - `/api/analytics?type=forecast&salesChannel=X`
+  - `/api/items?salesChannel=X`
+- Added `salesChannelFilter` to useEffect dependencies
+- Filter applies to ALL 8 tabs:
+  1. ABC Analysis
+  2. Inventory Turnover
+  3. Fast Moving Items
+  4. Slow Moving Items
+  5. Dead Stock
+  6. Profit Margin
+  7. Forecasts
+  8. Returns Analytics
 
-**Why Complex**:
-- Each tab fetches data from different API endpoints
-- Each tab has its own search and filter states
-- Would need to add sales channel filter to ALL 8 tabs
-- API endpoints (`/api/analytics`) would need to support sales channel parameter
-- Estimated 2-3 hours of work to implement properly
+### 8. Internal Usage Page ✅
+**File**: `app/dashboard/internal-usage/page.tsx`
+- Added `filterSalesChannel` state variable
+- Added Sales Channel dropdown next to Type filter
+- Extracts channel from `department` field (format: "Type / Purpose / Channel")
+- Filters transactions by sales channel
+- Updated analytics calculations to use `filteredTransactions` instead of `transactions`
+- All stats (Total Cost, Demo Cost, Internal Cost, Transfer Cost) now respect the filter
+- Sales channel breakdown also uses filtered data
 
 ---
+
+## ✅ STATUS: 100% COMPLETE
+
+All 8 pages have been successfully updated with sales channel filtering!
 
 ## How It Works
 
@@ -146,12 +155,40 @@ function clearAllFilters() {
 4. Try other channels
 5. Click "Clear Filters" to reset
 
+### 5. Business Insights Page
+1. Go to `/dashboard/insights`
+2. Select "Shopee" from Sales Channel dropdown (top right, next to Refresh button)
+3. Verify all tabs update with Shopee-only data:
+   - ABC Analysis tab
+   - Inventory Turnover tab
+   - Fast Moving Items tab
+   - Slow Moving Items tab
+   - Dead Stock tab
+   - Profit Margin tab
+   - Forecasts tab
+   - Returns Analytics tab
+4. Switch between tabs and verify filter persists
+5. Try other channels
+6. Select "All Channels" to see all data again
+
+### 6. Internal Usage Page
+1. Go to `/dashboard/internal-usage`
+2. Go to "Transaction History" tab
+3. Select "Lazada" from Sales Channel dropdown (next to Type filter)
+4. Verify only transactions with "Lazada" in department are shown
+5. Verify stats update:
+   - Total Cost shows only Lazada transactions
+   - Demo/Internal/Transfer costs update
+   - Sales channel breakdown updates
+6. Try other channels
+7. Select "All Channels" to see all data again
+
 ---
 
 ## Summary
 
-✅ **6 out of 7 pages** have been successfully updated with sales channel filtering
-⏳ **1 page remaining** (Business Insights) - requires significant additional work
-🎯 **All critical pages** (Low Stocks, Out of Stocks, Analytics, Logs) are now working
+✅ **8 out of 8 pages** have been successfully updated with sales channel filtering
+🎯 **ALL pages** (Low Stocks, Out of Stocks, Analytics, Logs, Business Insights, Internal Usage) are now working
+✨ **100% COMPLETE** - All inventory, analytics, insights, and operations pages now support sales channel filtering
 
-The filtering is now consistent across all inventory and analytics pages, allowing users to view data specific to each sales channel.
+The filtering is now consistent across all pages, allowing users to view data specific to each sales channel. The Business Insights page uses a global filter that applies to all 8 tabs simultaneously. The Internal Usage page filters transactions by extracting the channel from the department field.

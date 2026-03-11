@@ -28,6 +28,7 @@ export default function InternalUsagePage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [searchTable, setSearchTable] = useState("")
   const [filterType, setFilterType] = useState<string>("all")
+  const [filterSalesChannel, setFilterSalesChannel] = useState<string>("all")
   const [activeTab, setActiveTab] = useState("overview")
   
   // Dispatch Modal
@@ -63,6 +64,14 @@ export default function InternalUsagePage() {
       if (filterType === "transfer" && transaction.transactionType !== "transfer") return false
     }
     
+    // Filter by sales channel
+    if (filterSalesChannel !== "all") {
+      // Extract sales channel from department field (format: "Demo / Display / Shopee")
+      const parts = transaction.department?.split(' / ') || []
+      const channel = parts.length > 1 ? parts[parts.length - 1] : ''
+      if (channel !== filterSalesChannel) return false
+    }
+    
     // Filter by search
     if (!searchTable) return true
     const searchLower = searchTable.toLowerCase()
@@ -71,18 +80,18 @@ export default function InternalUsagePage() {
            transaction.staffName?.toLowerCase().includes(searchLower)
   })
 
-  // Analytics calculations
-  const totalCost = transactions.reduce((sum, t) => sum + t.totalCost, 0)
-  const demoTransactions = transactions.filter(t => t.transactionType === 'demo')
-  const internalTransactions = transactions.filter(t => t.transactionType === 'internal')
-  const transferTransactions = transactions.filter(t => t.transactionType === 'transfer')
+  // Analytics calculations - use filtered transactions
+  const totalCost = filteredTransactions.reduce((sum, t) => sum + t.totalCost, 0)
+  const demoTransactions = filteredTransactions.filter(t => t.transactionType === 'demo')
+  const internalTransactions = filteredTransactions.filter(t => t.transactionType === 'internal')
+  const transferTransactions = filteredTransactions.filter(t => t.transactionType === 'transfer')
   
   const demoCost = demoTransactions.reduce((sum, t) => sum + t.totalCost, 0)
   const internalCost = internalTransactions.reduce((sum, t) => sum + t.totalCost, 0)
   const transferCost = transferTransactions.reduce((sum, t) => sum + t.totalCost, 0)
   
-  // Sales channel breakdown
-  const salesChannelData = transactions.reduce((acc, t) => {
+  // Sales channel breakdown - use filtered transactions
+  const salesChannelData = filteredTransactions.reduce((acc, t) => {
     if (t.department && (t.transactionType === 'demo' || t.transactionType === 'internal')) {
       const parts = t.department.split(' / ')
       if (parts.length > 1) {
@@ -102,6 +111,11 @@ export default function InternalUsagePage() {
     if (currentUser) {
       const name = currentUser.displayName || currentUser.username || 'Unknown User'
       setStaffName(name)
+      
+      // Auto-set sales channel filter for team leaders
+      if (currentUser.role === 'team_leader' && currentUser.sales_channel) {
+        setFilterSalesChannel(currentUser.sales_channel)
+      }
     } else {
       setStaffName('Unknown User')
     }
@@ -428,7 +442,7 @@ export default function InternalUsagePage() {
                     <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Loading transactions...</p>
                   </div>
                 </div>
-              ) : transactions.length === 0 ? (
+              ) : filteredTransactions.length === 0 ? (
                 <div className="text-center py-12">
                   <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
                   <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">No transactions yet</p>
@@ -438,7 +452,7 @@ export default function InternalUsagePage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {transactions.slice(0, 5).map((transaction) => (
+                  {filteredTransactions.slice(0, 5).map((transaction) => (
                     <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
@@ -730,6 +744,21 @@ export default function InternalUsagePage() {
                     <SelectItem value="transfer">Warehouse Transfer</SelectItem>
                   </SelectContent>
                 </Select>
+                {getCurrentUser()?.role === 'admin' && (
+                  <Select value={filterSalesChannel} onValueChange={setFilterSalesChannel}>
+                    <SelectTrigger className="w-full sm:w-[200px] h-11">
+                      <SelectValue placeholder="Sales Channel" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Channels</SelectItem>
+                      <SelectItem value="Shopee">Shopee</SelectItem>
+                      <SelectItem value="Lazada">Lazada</SelectItem>
+                      <SelectItem value="Facebook">Facebook</SelectItem>
+                      <SelectItem value="TikTok">TikTok</SelectItem>
+                      <SelectItem value="Physical Store">Physical Store</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </CardContent>
           </Card>
