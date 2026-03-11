@@ -35,7 +35,6 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
   const startScanning = async () => {
     try {
       setError(null)
-      setScanning(true)
 
       // Check if element exists
       const element = document.getElementById(readerId)
@@ -43,15 +42,44 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
         throw new Error('Scanner element not found. Please try again.')
       }
 
+      console.log('[Scanner] Requesting camera permission...')
+
+      // Request camera permission FIRST using getUserMedia
+      // This will trigger the browser's permission prompt
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment' } 
+        })
+        console.log('[Scanner] Camera permission granted')
+        // Stop the stream immediately - we just needed permission
+        stream.getTracks().forEach(track => track.stop())
+      } catch (permError: any) {
+        console.error('[Scanner] Permission error:', permError)
+        if (permError.name === 'NotAllowedError') {
+          throw new Error('Camera permission denied. Please allow camera access and try again.')
+        } else if (permError.name === 'NotFoundError') {
+          throw new Error('No camera found on this device.')
+        } else if (permError.name === 'NotReadableError') {
+          throw new Error('Camera is already in use by another application.')
+        } else {
+          throw new Error('Failed to access camera: ' + permError.message)
+        }
+      }
+
+      setScanning(true)
+
       // Initialize scanner
       if (!scannerRef.current) {
         scannerRef.current = new Html5Qrcode(readerId)
       }
 
       // Get cameras
+      console.log('[Scanner] Getting available cameras...')
       const cameras = await Html5Qrcode.getCameras()
+      console.log('[Scanner] Cameras found:', cameras.length)
+      
       if (!cameras || cameras.length === 0) {
-        throw new Error('No cameras found on this device')
+        throw new Error('No cameras found on this device.')
       }
 
       // Use back camera if available, otherwise use first camera
@@ -59,6 +87,9 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
         cam.label.toLowerCase().includes('back') || 
         cam.label.toLowerCase().includes('rear')
       )?.id || cameras[0].id
+
+      console.log('[Scanner] Using camera:', cameraId)
+      console.log('[Scanner] Starting scanner...')
 
       // Start scanning
       await scannerRef.current.start(
@@ -70,6 +101,7 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
         },
         (decodedText) => {
           // Successfully scanned
+          console.log('[Scanner] Barcode scanned:', decodedText)
           onScan(decodedText)
           stopScanning()
         },
@@ -77,8 +109,10 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
           // Scanning error (ignore, happens frequently)
         }
       )
+      
+      console.log('[Scanner] Scanner started successfully')
     } catch (err: any) {
-      console.error('Scanner error:', err)
+      console.error('[Scanner] Error:', err)
       setError(err.message || 'Failed to start camera')
       setScanning(false)
     }
