@@ -17,11 +17,14 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
   const [scanning, setScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const scannerRef = useRef<Html5Qrcode | null>(null)
-  const readerIdRef = useRef('barcode-reader')
+  const readerId = 'barcode-reader'
 
   useEffect(() => {
     if (open && !scanning) {
-      startScanning()
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        startScanning()
+      }, 100)
     }
 
     return () => {
@@ -34,9 +37,15 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
       setError(null)
       setScanning(true)
 
+      // Check if element exists
+      const element = document.getElementById(readerId)
+      if (!element) {
+        throw new Error('Scanner element not found. Please try again.')
+      }
+
       // Initialize scanner
       if (!scannerRef.current) {
-        scannerRef.current = new Html5Qrcode(readerIdRef.current)
+        scannerRef.current = new Html5Qrcode(readerId)
       }
 
       // Get cameras
@@ -112,7 +121,7 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
           )}
 
           <div className="relative bg-slate-900 rounded-lg overflow-hidden">
-            <div id={readerIdRef.current} className="w-full" />
+            <div id={readerId} className="w-full" />
             {!scanning && !error && (
               <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
                 <div className="text-center text-white">
