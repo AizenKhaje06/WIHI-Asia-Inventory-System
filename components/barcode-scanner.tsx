@@ -5,7 +5,7 @@ import { Html5Qrcode } from 'html5-qrcode'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Camera, X, AlertCircle, Keyboard } from 'lucide-react'
+import { Camera, X, AlertCircle, Keyboard, Search } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface BarcodeScannerProps {
@@ -159,27 +159,36 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Camera className="h-5 w-5" />
-            Scan Waybill Barcode
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            {manualMode ? (
+              <>
+                <Keyboard className="h-6 w-6 text-blue-600" />
+                Manual Input
+              </>
+            ) : (
+              <>
+                <Camera className="h-6 w-6 text-blue-600" />
+                Barcode Scanner
+              </>
+            )}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {error && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className="border-red-200 dark:border-red-800">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {error}
+              <AlertDescription className="flex items-center justify-between">
+                <span>{error}</span>
                 <Button
                   variant="link"
                   size="sm"
-                  className="ml-2 h-auto p-0 text-red-600 hover:text-red-700"
+                  className="ml-2 h-auto p-0 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                   onClick={switchToManualMode}
                 >
-                  Switch to manual input
+                  Switch to manual →
                 </Button>
               </AlertDescription>
             </Alert>
@@ -188,27 +197,30 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
           {manualMode ? (
             // Manual Input Mode
             <div className="space-y-4">
-              <div className="text-center py-8">
-                <Keyboard className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                  Enter waybill number manually or use USB barcode scanner
+              <div className="text-center py-10 bg-gradient-to-br from-blue-50 to-slate-50 dark:from-blue-950/20 dark:to-slate-900/20 rounded-lg border-2 border-dashed border-blue-200 dark:border-blue-800">
+                <Keyboard className="h-16 w-16 mx-auto mb-4 text-blue-500 dark:text-blue-400" />
+                <p className="text-sm text-slate-700 dark:text-slate-300 font-medium mb-2">
+                  Enter waybill number manually
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Or use USB barcode scanner for instant input
                 </p>
               </div>
 
               <form onSubmit={handleManualSubmit} className="space-y-4">
                 <Input
-                  placeholder="Enter waybill number..."
+                  placeholder="Type or scan waybill number..."
                   value={manualInput}
                   onChange={(e) => setManualInput(e.target.value)}
                   autoFocus
-                  className="text-center font-mono text-lg"
+                  className="text-center font-mono text-lg h-12 border-2 focus:border-blue-500"
                 />
 
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   <Button
                     type="button"
                     variant="outline"
-                    className="flex-1"
+                    className="h-11"
                     onClick={() => {
                       setManualMode(false)
                       setManualInput('')
@@ -220,9 +232,10 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
                   </Button>
                   <Button
                     type="submit"
-                    className="flex-1"
+                    className="h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
                     disabled={!manualInput.trim()}
                   >
+                    <Search className="h-4 w-4 mr-2" />
                     Search
                   </Button>
                 </div>
@@ -231,36 +244,42 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
           ) : (
             // Camera Scanning Mode
             <>
-              <div className="relative bg-slate-900 rounded-lg overflow-hidden">
-                <div id={readerId} className="w-full" />
+              <div className="relative bg-slate-900 rounded-lg overflow-hidden border-2 border-slate-700">
+                <div id={readerId} className="w-full min-h-[300px]" />
                 {!scanning && !error && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
                     <div className="text-center text-white">
-                      <Camera className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Initializing camera...</p>
+                      <Camera className="h-16 w-16 mx-auto mb-4 opacity-50 animate-pulse" />
+                      <p className="text-sm font-medium">Initializing camera...</p>
+                      <p className="text-xs text-slate-400 mt-2">Please wait</p>
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="text-center text-sm text-slate-600 dark:text-slate-400">
-                Position the barcode within the frame to scan
+              <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-900 dark:text-blue-100 font-medium">
+                  📦 Position barcode within the frame
+                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                  Scanner will detect automatically
+                </p>
               </div>
 
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full h-11"
                 onClick={switchToManualMode}
               >
                 <Keyboard className="h-4 w-4 mr-2" />
-                Enter Manually
+                Switch to Manual Input
               </Button>
             </>
           )}
 
           <Button
-            variant="outline"
-            className="w-full"
+            variant="ghost"
+            className="w-full h-11 hover:bg-slate-100 dark:hover:bg-slate-800"
             onClick={handleClose}
           >
             <X className="h-4 w-4 mr-2" />
