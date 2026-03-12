@@ -100,7 +100,7 @@ const nextConfig = {
         },
         {
           key: 'Permissions-Policy',
-          value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()',
+          value: 'camera=(self), microphone=(), geolocation=(), payment=(), usb=(self), magnetometer=(), gyroscope=(), accelerometer=()',
         },
         {
           key: 'Content-Security-Policy',
