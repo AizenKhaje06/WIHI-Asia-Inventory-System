@@ -22,6 +22,33 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const readerId = 'barcode-reader'
 
+  // Success sound function
+  const playSuccessSound = () => {
+    try {
+      // Create audio context for beep sound
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+      
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      
+      // Configure beep sound
+      oscillator.frequency.value = 1000 // 1000 Hz frequency
+      oscillator.type = 'sine'
+      
+      // Volume control
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2)
+      
+      // Play beep
+      oscillator.start(audioContext.currentTime)
+      oscillator.stop(audioContext.currentTime + 0.2)
+    } catch (error) {
+      console.log('[Scanner] Could not play sound:', error)
+    }
+  }
+
   useEffect(() => {
     if (open && !scanning) {
       // Small delay to ensure DOM is ready
@@ -98,17 +125,26 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
       await scannerRef.current.start(
         cameraId,
         {
-          fps: 10,
+          fps: 20, // Increased from 10 to 20 for faster scanning
           qrbox: { width: 250, height: 250 },
           aspectRatio: 1.0
         },
         (decodedText) => {
           // Successfully scanned
           console.log('[Scanner] Barcode scanned:', decodedText)
+          
+          // Haptic feedback (vibration)
+          if (navigator.vibrate) {
+            navigator.vibrate(200) // Vibrate for 200ms
+          }
+          
+          // Play success sound
+          playSuccessSound()
+          
           onScan(decodedText)
           stopScanning()
         },
-        (errorMessage) => {
+        () => {
           // Scanning error (ignore, happens frequently)
         }
       )

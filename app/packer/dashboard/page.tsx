@@ -47,30 +47,53 @@ export default function PackerDashboard() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedChannel, setSelectedChannel] = useState<string>('All')
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [scannerOpen, setScannerOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showOrderDetails, setShowOrderDetails] = useState(false)
-  const [showConfirmPack, setShowConfirmPack] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [packedOrderDetails, setPackedOrderDetails] = useState<Order | null>(null)
   const [packing, setPacking] = useState(false)
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
 
-  // Performance metrics
+  // Get unique channels
+  const channels = useMemo(() => {
+    const uniqueChannels = Array.from(new Set(pendingOrders.map(o => o.channel)))
+    return ['All', ...uniqueChannels.sort()]
+  }, [pendingOrders])
+
+  // Performance metrics - filtered by channel
   const todayPacked = useMemo(() => {
+    const today = new Date().toDateString()
     return packedHistory.filter(p => {
       const packedDate = new Date(p.packedAt).toDateString()
-      const today = new Date().toDateString()
       return packedDate === today
     })
   }, [packedHistory])
 
+  // Filtered packed history by channel
+  const filteredPackedHistory = useMemo(() => {
+    if (selectedChannel === 'All') return packedHistory
+    
+    // We need to match waybills with pending orders to get channel info
+    // For packed orders, we'll show all if channel filter is active
+    // since we don't store channel in packed history
+    return packedHistory
+  }, [packedHistory, selectedChannel])
+
+  // Pending count filtered by channel
+  const pendingCount = useMemo(() => {
+    if (selectedChannel === 'All') return pendingOrders.length
+    return pendingOrders.filter(o => o.channel === selectedChannel).length
+  }, [pendingOrders, selectedChannel])
+
   const avgPackingTime = useMemo(() => {
     if (todayPacked.length < 2) return 0
-    // Estimate based on time between packs
     const times = todayPacked.slice(0, 10).map(p => new Date(p.packedAt).getTime())
     const diffs = times.slice(1).map((t, i) => t - times[i])
     const avg = diffs.reduce((a, b) => a + b, 0) / diffs.length
-    return Math.round(avg / 1000) // Convert to seconds
+    return Math.round(avg / 1000)
   }, [todayPacked])
 
   const packsPerHour = useMemo(() => {
@@ -94,7 +117,7 @@ export default function PackerDashboard() {
 
   useEffect(() => {
     filterOrders()
-  }, [searchTerm, pendingOrders])
+  }, [searchTerm, selectedChannel, pendingOrders])
 
   const fetchData = async (silent = false) => {
     try {
@@ -135,22 +158,27 @@ export default function PackerDashboard() {
   }
 
   const filterOrders = () => {
-    if (!searchTerm) {
-      setFilteredPending(pendingOrders)
-      return
+    let filtered = pendingOrders
+
+    // Filter by channel
+    if (selectedChannel !== 'All') {
+      filtered = filtered.filter(order => order.channel === selectedChannel)
     }
 
-    const filtered = pendingOrders.filter(order =>
-      order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.waybill.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(order =>
+        order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.waybill.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
 
     setFilteredPending(filtered)
   }
 
-  const handleScan = (waybill: string) => {
+  const handleScan = async (waybill: string) => {
     // Find order by waybill
     const order = pendingOrders.find(o => 
       o.waybill.toLowerCase() === waybill.toLowerCase()
@@ -161,10 +189,8 @@ export default function PackerDashboard() {
       return
     }
 
-    // Show order details
-    setSelectedOrder(order)
-    setShowOrderDetails(true)
-    toast.success('Order found!')
+    // Auto-pack immediately after scan
+    await handleAutoPackOrder(order)
   }
 
   const handleViewOrder = (order: Order) => {
@@ -172,18 +198,14 @@ export default function PackerDashboard() {
     setShowOrderDetails(true)
   }
 
-  const handleConfirmPack = () => {
-    setShowOrderDetails(false)
-    setShowConfirmPack(true)
-  }
-
-  const handleMarkAsPacked = async () => {
-    if (!selectedOrder || !currentUser) return
+  const handleAutoPackOrder = async (order: Order) => {
+    if (!currentUser) return
 
     try {
       setPacking(true)
+      setScannerOpen(false) // Close scanner
 
-      const response = await fetch(`/api/packer/pack/${selectedOrder.id}`, {
+      const response = await fetch(`/api/packer/pack/${order.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -199,23 +221,32 @@ export default function PackerDashboard() {
         throw new Error(data.error || 'Failed to pack order')
       }
 
-      toast.success('Order packed successfully!')
-      setShowConfirmPack(false)
-      setSelectedOrder(null)
+      // Show success modal with order details
+      setPackedOrderDetails(order)
+      setShowSuccessModal(true)
       
       // Refresh data immediately
       await fetchData(true)
 
-      // Reopen scanner for next order after short delay
+      // Auto-close success modal and reopen scanner after 3 seconds
       setTimeout(() => {
+        setShowSuccessModal(false)
+        setPackedOrderDetails(null)
         setScannerOpen(true)
-      }, 800)
+      }, 3000)
     } catch (error) {
       console.error('Error packing order:', error)
       toast.error('Failed to pack order')
+      setScannerOpen(true) // Reopen scanner on error
     } finally {
       setPacking(false)
     }
+  }
+
+  const handleConfirmPack = async () => {
+    if (!selectedOrder) return
+    setShowOrderDetails(false)
+    await handleAutoPackOrder(selectedOrder)
   }
 
   if (loading) {
@@ -266,22 +297,21 @@ export default function PackerDashboard() {
         </div>
       </div>
 
-      {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Enhanced Stats Cards - 2 cards only */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <Card className="border-l-4 border-l-orange-500">
           <CardHeader className="pb-2 sm:pb-3">
             <CardTitle className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-1 sm:gap-2">
               <Package className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Pending Orders</span>
-              <span className="sm:hidden">Pending</span>
+              <span>Pending</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-3 sm:pb-4">
             <div className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400">
-              <AnimatedNumber value={pendingOrders.length} />
+              <AnimatedNumber value={pendingCount} />
             </div>
             <p className="text-[10px] sm:text-xs text-slate-500 mt-1">
-              {pendingOrders.length === 0 ? 'All caught up!' : 'Ready to pack'}
+              {pendingCount === 0 ? 'All caught up!' : 'Ready to pack'}
             </p>
           </CardContent>
         </Card>
@@ -290,8 +320,7 @@ export default function PackerDashboard() {
           <CardHeader className="pb-2 sm:pb-3">
             <CardTitle className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-1 sm:gap-2">
               <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Packed Today</span>
-              <span className="sm:hidden">Today</span>
+              <span>Today</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-3 sm:pb-4">
@@ -303,103 +332,93 @@ export default function PackerDashboard() {
             </p>
           </CardContent>
         </Card>
-
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader className="pb-2 sm:pb-3">
-            <CardTitle className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-1 sm:gap-2">
-              <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span>Avg. Time</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-3 sm:pb-4">
-            <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">
-              {avgPackingTime > 0 ? `${avgPackingTime}s` : '--'}
-            </div>
-            <p className="text-[10px] sm:text-xs text-slate-500 mt-1">
-              {avgPackingTime > 0 ? 'Per order' : 'No data yet'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-purple-500">
-          <CardHeader className="pb-2 sm:pb-3">
-            <CardTitle className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-1 sm:gap-2">
-              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span>Rate</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-3 sm:pb-4">
-            <div className="text-2xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400">
-              {packsPerHour > 0 ? packsPerHour : '--'}
-            </div>
-            <p className="text-[10px] sm:text-xs text-slate-500 mt-1">
-              {packsPerHour > 0 ? 'Orders/hr' : 'No data yet'}
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Packing Queue */}
       <Card className="shadow-lg">
-        <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 sm:p-6">
+        <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-3 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-lg">
                 <Target className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                 Packing Queue
               </CardTitle>
               <CardDescription className="mt-1 text-xs sm:text-sm">
-                {filteredPending.length} {filteredPending.length === 1 ? 'order' : 'orders'} ready to pack
+                {filteredPending.length} {filteredPending.length === 1 ? 'order' : 'orders'} ready
               </CardDescription>
             </div>
-            <Badge variant="outline" className="text-xs sm:text-sm w-fit">
-              {searchTerm ? 'Filtered' : 'All Orders'}
-            </Badge>
+            <div className="flex gap-2 flex-wrap">
+              {selectedChannel !== 'All' && (
+                <Badge variant="secondary" className="text-xs">
+                  {selectedChannel}
+                </Badge>
+              )}
+              {searchTerm && (
+                <Badge variant="outline" className="text-xs">
+                  Searching
+                </Badge>
+              )}
+              {!searchTerm && selectedChannel === 'All' && (
+                <Badge variant="outline" className="text-xs">
+                  All Orders
+                </Badge>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-3 sm:p-6">
-          {/* Search */}
-          <div className="mb-4 sm:mb-6">
-            <div className="relative">
+          {/* Filters */}
+          <div className="mb-3 sm:mb-4 space-y-2 sm:space-y-0 sm:flex sm:gap-3">
+            {/* Channel Filter */}
+            <div className="sm:w-48">
+              <select
+                value={selectedChannel}
+                onChange={(e) => setSelectedChannel(e.target.value)}
+                className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-800 rounded-md bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {channels.map(channel => (
+                  <option key={channel} value={channel}>
+                    {channel === 'All' ? 'All Channels' : channel}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Search */}
+            <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Search order, waybill, product..."
+                placeholder="Search order, waybill..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 sm:h-11 text-sm"
+                className="pl-10 h-10 text-sm"
               />
             </div>
           </div>
 
           {/* Table */}
           {filteredPending.length === 0 ? (
-            <div className="text-center py-12 sm:py-16 bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed">
-              <Package className="h-12 w-12 sm:h-16 sm:w-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-600 dark:text-slate-400 font-medium text-base sm:text-lg">
-                {searchTerm ? 'No matching orders found' : 'No orders in queue'}
+            <div className="text-center py-12 bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed">
+              <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">
+                {searchTerm ? 'No matching orders' : 'No orders in queue'}
               </p>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-500 mt-2">
-                {searchTerm ? 'Try a different search term' : 'All orders have been packed! 🎉'}
+              <p className="text-xs text-slate-500 mt-1">
+                {searchTerm ? 'Try different search' : 'All packed! 🎉'}
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto -mx-3 sm:mx-0 rounded-lg border">
-              <table className="w-full min-w-[600px]">
+            <div className="overflow-hidden rounded-lg border">
+              <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 text-white">
-                    <th className="text-left py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-[11px] font-bold tracking-wider border-r border-slate-700/50">
-                      ORDER NO.
+                    <th className="text-left py-3 px-3 text-[10px] sm:text-xs font-bold tracking-wider border-r border-slate-700/50">
+                      WAYBILL NO.
                     </th>
-                    <th className="text-left py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-[11px] font-bold tracking-wider border-r border-slate-700/50">
-                      WAYBILL
+                    <th className="text-left py-3 px-3 text-[10px] sm:text-xs font-bold tracking-wider border-r border-slate-700/50">
+                      CHANNEL
                     </th>
-                    <th className="text-left py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-[11px] font-bold tracking-wider border-r border-slate-700/50 hidden md:table-cell">
-                      PRODUCT
-                    </th>
-                    <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-[11px] font-bold tracking-wider border-r border-slate-700/50 hidden sm:table-cell">
-                      QTY
-                    </th>
-                    <th className="text-right py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-[11px] font-bold tracking-wider">
+                    <th className="text-center py-3 px-3 text-[10px] sm:text-xs font-bold tracking-wider">
                       ACTION
                     </th>
                   </tr>
@@ -412,35 +431,24 @@ export default function PackerDashboard() {
                         index % 2 === 0 ? 'bg-white dark:bg-slate-950' : 'bg-slate-50/50 dark:bg-slate-900/50'
                       }`}
                     >
-                      <td className="py-3 sm:py-4 px-2 sm:px-4">
-                        <span className="font-mono text-xs sm:text-sm font-semibold text-slate-900 dark:text-white block truncate max-w-[100px] sm:max-w-none">
-                          {order.orderNumber}
-                        </span>
-                      </td>
-                      <td className="py-3 sm:py-4 px-2 sm:px-4">
-                        <span className="font-mono text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 block truncate max-w-[100px] sm:max-w-none">
+                      <td className="py-3 px-3">
+                        <span className="font-mono text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 block">
                           {order.waybill}
                         </span>
                       </td>
-                      <td className="py-3 sm:py-4 px-2 sm:px-4 hidden md:table-cell">
-                        <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 block truncate max-w-[200px]">
-                          {order.itemName}
-                        </span>
-                      </td>
-                      <td className="py-3 sm:py-4 px-2 sm:px-4 text-center hidden sm:table-cell">
-                        <Badge variant="secondary" className="font-mono text-xs">
-                          {order.quantity}
+                      <td className="py-3 px-3">
+                        <Badge variant="secondary" className="text-[10px] sm:text-xs">
+                          {order.channel}
                         </Badge>
                       </td>
-                      <td className="py-3 sm:py-4 px-2 sm:px-4 text-right">
+                      <td className="py-3 px-3 text-center">
                         <Button
                           size="sm"
-                          variant="outline"
                           onClick={() => handleViewOrder(order)}
-                          className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 h-8 px-2 sm:px-3 text-xs"
+                          className="h-9 px-4 text-sm bg-blue-600 hover:bg-blue-700 gap-2 font-medium"
                         >
-                          <Eye className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-                          <span className="hidden sm:inline">View</span>
+                          <Eye className="h-4 w-4" />
+                          <span>View Details</span>
                         </Button>
                       </td>
                     </tr>
@@ -454,78 +462,62 @@ export default function PackerDashboard() {
 
       {/* Packed History */}
       <Card className="shadow-lg">
-        <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 sm:p-6">
+        <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-3 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-lg">
                 <Award className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                 Packed History
               </CardTitle>
               <CardDescription className="mt-1 text-xs sm:text-sm">
-                Recent packing activity
+                Recent activity
               </CardDescription>
             </div>
-            <Badge variant="secondary" className="text-xs sm:text-sm w-fit">
+            <Badge variant="secondary" className="text-xs w-fit">
               Last {packedHistory.length > 20 ? '20' : packedHistory.length}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="p-3 sm:p-6">
-          {packedHistory.length === 0 ? (
-            <div className="text-center py-12 sm:py-16 bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed">
-              <Clock className="h-12 w-12 sm:h-16 sm:w-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-600 dark:text-slate-400 font-medium text-base sm:text-lg">No packed orders yet</p>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-500 mt-2">
-                Start packing to see your history here
+          {filteredPackedHistory.length === 0 ? (
+            <div className="text-center py-12 bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed">
+              <Clock className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">No packed orders yet</p>
+              <p className="text-xs text-slate-500 mt-1">
+                Start packing to see history
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto -mx-3 sm:mx-0 rounded-lg border">
-              <table className="w-full min-w-[600px]">
+            <div className="overflow-hidden rounded-lg border">
+              <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 text-white">
-                    <th className="text-left py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-[11px] font-bold tracking-wider border-r border-slate-700/50">
-                      WAYBILL
+                    <th className="text-left py-3 px-3 text-[10px] sm:text-xs font-bold tracking-wider border-r border-slate-700/50">
+                      WAYBILL NO.
                     </th>
-                    <th className="text-left py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-[11px] font-bold tracking-wider border-r border-slate-700/50 hidden md:table-cell">
-                      PRODUCT
-                    </th>
-                    <th className="text-center py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-[11px] font-bold tracking-wider border-r border-slate-700/50 hidden sm:table-cell">
-                      QTY
-                    </th>
-                    <th className="text-left py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-[11px] font-bold tracking-wider border-r border-slate-700/50">
+                    <th className="text-left py-3 px-3 text-[10px] sm:text-xs font-bold tracking-wider border-r border-slate-700/50">
                       PACKED AT
                     </th>
-                    <th className="text-left py-3 sm:py-4 px-2 sm:px-4 text-[10px] sm:text-[11px] font-bold tracking-wider hidden lg:table-cell">
+                    <th className="text-left py-3 px-3 text-[10px] sm:text-xs font-bold tracking-wider">
                       PACKED BY
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {packedHistory.slice(0, 20).map((order, index) => (
+                  {filteredPackedHistory.slice(0, 20).map((order, index) => (
                     <tr
                       key={order.id}
                       className={`border-b border-slate-100 dark:border-slate-800 ${
                         index % 2 === 0 ? 'bg-white dark:bg-slate-950' : 'bg-slate-50/50 dark:bg-slate-900/50'
                       }`}
                     >
-                      <td className="py-3 sm:py-4 px-2 sm:px-4">
-                        <span className="font-mono text-xs sm:text-sm font-semibold text-green-600 dark:text-green-400 block truncate max-w-[100px] sm:max-w-none">
+                      <td className="py-3 px-3">
+                        <span className="font-mono text-xs sm:text-sm font-semibold text-green-600 dark:text-green-400 block">
                           {order.waybill}
                         </span>
                       </td>
-                      <td className="py-3 sm:py-4 px-2 sm:px-4 hidden md:table-cell">
-                        <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 block truncate max-w-[200px]">
-                          {order.itemName}
-                        </span>
-                      </td>
-                      <td className="py-3 sm:py-4 px-2 sm:px-4 text-center hidden sm:table-cell">
-                        <Badge variant="secondary" className="font-mono text-xs">
-                          {order.quantity}
-                        </Badge>
-                      </td>
-                      <td className="py-3 sm:py-4 px-2 sm:px-4">
-                        <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 block">
+                      <td className="py-3 px-3">
+                        <span className="text-xs text-slate-600 dark:text-slate-400">
                           {new Date(order.packedAt).toLocaleString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -534,8 +526,8 @@ export default function PackerDashboard() {
                           })}
                         </span>
                       </td>
-                      <td className="py-3 sm:py-4 px-2 sm:px-4 hidden lg:table-cell">
-                        <Badge variant="outline" className="font-medium text-xs">
+                      <td className="py-3 px-3">
+                        <Badge variant="outline" className="text-[10px]">
                           {order.packedBy}
                         </Badge>
                       </td>
@@ -555,96 +547,214 @@ export default function PackerDashboard() {
         onScan={handleScan}
       />
 
-      {/* Order Details Dialog */}
+      {/* Order Details Dialog (for View button) - Enterprise Level */}
       <AlertDialog open={showOrderDetails} onOpenChange={setShowOrderDetails}>
-        <AlertDialogContent className="max-w-[95vw] sm:max-w-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg">Order Details</AlertDialogTitle>
+        <AlertDialogContent className="max-w-[95vw] sm:max-w-2xl border-t-4 border-t-blue-600">
+          <AlertDialogHeader className="border-b pb-4">
+            <AlertDialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              Order Details
+            </AlertDialogTitle>
           </AlertDialogHeader>
           {selectedOrder && (
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Order No:</div>
-                  <div className="font-mono font-semibold break-all">{selectedOrder.orderNumber}</div>
+            <div className="space-y-6 max-h-[60vh] overflow-y-auto py-2">
+              {/* Waybill Highlight Section */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 rounded-xl border-2 border-blue-200 dark:border-blue-800">
+                <div className="text-center space-y-2">
+                  <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                    Waybill Number
+                  </div>
+                  <div className="font-mono text-3xl sm:text-4xl font-bold text-blue-700 dark:text-blue-300 break-all">
+                    {selectedOrder.waybill}
+                  </div>
                 </div>
-                
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Waybill:</div>
-                  <div className="font-mono font-semibold break-all text-blue-600 dark:text-blue-400">{selectedOrder.waybill}</div>
+              </div>
+
+              {/* Order Information Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Order Number */}
+                <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                    Order Number
+                  </div>
+                  <div className="font-mono text-sm font-bold text-slate-900 dark:text-slate-100 break-all">
+                    {selectedOrder.orderNumber}
+                  </div>
                 </div>
-                
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Product:</div>
-                  <div className="font-semibold">{selectedOrder.itemName}</div>
+
+                {/* Channel */}
+                <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                    Sales Channel
+                  </div>
+                  <Badge variant="secondary" className="text-sm font-semibold">
+                    {selectedOrder.channel}
+                  </Badge>
                 </div>
-                
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Quantity:</div>
-                  <div className="font-semibold">{selectedOrder.quantity}</div>
+              </div>
+
+              {/* Product Information */}
+              <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="flex items-start gap-3">
+                  <div className="h-12 w-12 rounded-lg bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center flex-shrink-0">
+                    <Package className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                      Product
+                    </div>
+                    <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 break-words">
+                      {selectedOrder.itemName}
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Quantity:</span>
+                      <Badge variant="outline" className="font-bold">
+                        {selectedOrder.quantity} {selectedOrder.quantity === 1 ? 'pc' : 'pcs'}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Customer:</div>
-                  <div className="font-semibold">{selectedOrder.customerName}</div>
+              </div>
+
+              {/* Customer Information */}
+              <div className="space-y-3">
+                <div className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                  <div className="h-1 w-1 rounded-full bg-slate-400"></div>
+                  Customer Information
                 </div>
-                
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Phone:</div>
-                  <div className="font-semibold break-all">{selectedOrder.customerPhone}</div>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-20 flex-shrink-0 pt-1">
+                      Name
+                    </div>
+                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 break-words flex-1">
+                      {selectedOrder.customerName}
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-20 flex-shrink-0 pt-1">
+                      Phone
+                    </div>
+                    <div className="text-sm font-mono font-semibold text-slate-900 dark:text-slate-100 break-all flex-1">
+                      {selectedOrder.customerPhone}
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-20 flex-shrink-0 pt-1">
+                      Address
+                    </div>
+                    <div className="text-sm text-slate-900 dark:text-slate-100 break-words flex-1">
+                      {selectedOrder.customerAddress}
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Channel:</div>
-                  <div><Badge variant="outline" className="text-xs">{selectedOrder.channel}</Badge></div>
+              </div>
+
+              {/* Store & Courier */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                    Store
+                  </div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {selectedOrder.store}
+                  </div>
                 </div>
-                
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Store:</div>
-                  <div className="font-semibold">{selectedOrder.store}</div>
+                <div className="p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                    Courier
+                  </div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {selectedOrder.courier}
+                  </div>
                 </div>
               </div>
             </div>
           )}
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="w-full sm:w-auto m-0">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmPack} className="w-full sm:w-auto m-0">
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Mark as Packed
+          <AlertDialogFooter className="flex-col sm:flex-row gap-3 pt-4 border-t">
+            <AlertDialogCancel className="w-full sm:w-auto m-0 h-11 text-base" disabled={packing}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmPack} 
+              disabled={packing} 
+              className="w-full sm:w-auto m-0 h-11 text-base bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 font-semibold"
+            >
+              {packing ? (
+                <>
+                  <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                  Packing...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Mark as Packed
+                </>
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Confirm Pack Dialog */}
-      <AlertDialog open={showConfirmPack} onOpenChange={setShowConfirmPack}>
-        <AlertDialogContent className="max-w-[95vw] sm:max-w-lg">
+      {/* Success Modal - Auto-closes after 3 seconds */}
+      <AlertDialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <AlertDialogContent className="max-w-[95vw] sm:max-w-lg border-2 border-green-500">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg">Confirm Packing</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
-              Are you sure you want to mark this order as packed?
-              <br />
-              <span className="font-mono font-semibold text-blue-600 dark:text-blue-400 break-all block mt-2">
-                Waybill: {selectedOrder?.waybill}
-              </span>
-            </AlertDialogDescription>
+            <AlertDialogTitle className="text-base sm:text-lg flex items-center gap-2 text-green-600">
+              <CheckCircle className="h-5 w-5" />
+              Successfully Packed!
+            </AlertDialogTitle>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel disabled={packing} className="w-full sm:w-auto m-0">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleMarkAsPacked} disabled={packing} className="w-full sm:w-auto m-0">
-              {packing ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Packing...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Confirm
-                </>
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
+          {packedOrderDetails && (
+            <div className="space-y-4">
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="text-center space-y-2">
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Waybill Number</div>
+                  <div className="font-mono text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400 break-all">
+                    {packedOrderDetails.waybill}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                <div className="flex flex-col sm:contents">
+                  <div className="text-slate-600 dark:text-slate-400 font-medium">Product:</div>
+                  <div className="font-semibold">{packedOrderDetails.itemName}</div>
+                </div>
+                
+                <div className="flex flex-col sm:contents">
+                  <div className="text-slate-600 dark:text-slate-400 font-medium">Quantity:</div>
+                  <div className="font-semibold">{packedOrderDetails.quantity}</div>
+                </div>
+                
+                <div className="flex flex-col sm:contents">
+                  <div className="text-slate-600 dark:text-slate-400 font-medium">Customer:</div>
+                  <div className="font-semibold">{packedOrderDetails.customerName}</div>
+                </div>
+                
+                <div className="flex flex-col sm:contents">
+                  <div className="text-slate-600 dark:text-slate-400 font-medium">Channel:</div>
+                  <div><Badge variant="outline" className="text-xs">{packedOrderDetails.channel}</Badge></div>
+                </div>
+
+                <div className="flex flex-col sm:contents">
+                  <div className="text-slate-600 dark:text-slate-400 font-medium">Store:</div>
+                  <div className="font-semibold">{packedOrderDetails.store}</div>
+                </div>
+
+                <div className="flex flex-col sm:contents">
+                  <div className="text-slate-600 dark:text-slate-400 font-medium">Packed By:</div>
+                  <div className="font-semibold">{currentUser?.displayName || currentUser?.username}</div>
+                </div>
+              </div>
+
+              <div className="text-center text-xs text-slate-500 pt-2 border-t">
+                Auto-closing in 3 seconds...
+              </div>
+            </div>
+          )}
         </AlertDialogContent>
       </AlertDialog>
     </div>
