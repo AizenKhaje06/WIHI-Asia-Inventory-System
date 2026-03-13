@@ -717,17 +717,17 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Stock by Storage Room Chart - NEW */}
+        {/* Stock by Store Chart - NEW */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-4">
             <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
               <Package className="h-5 w-5 text-blue-600" />
-              Stock by Storage Room
+              Stock by Store
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={stocksCountByStorageRoomData} margin={{ top: 10, bottom: 20, left: 0, right: 10 }}>
+              <BarChart data={stocksCountByStoreData} margin={{ top: 10, bottom: 20, left: 0, right: 10 }}>
                 <defs>
                   <linearGradient id="storageGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.9}/>
