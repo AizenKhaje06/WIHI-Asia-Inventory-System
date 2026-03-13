@@ -2556,3 +2556,26 @@ pre code {
 .animate-rotate {
   animation: theme-rotate var(--animation-duration, 400ms) ease-in-out;
 }
+
+/* ============================================
+   LOGIN PAGE ANIMATIONS
+   ============================================ */
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Login Page - Force white text for Welcome back */
+.login-welcome-text {
+  color: #f1f5f9 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}

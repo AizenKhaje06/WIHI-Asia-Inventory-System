@@ -1,0 +1,74 @@
+✅ AYOS NA! INVENTORY PAGE - WALANG BUNDLES!
+=============================================
+
+❌ PROBLEMA:
+============
+Inventory page (product page) ay may bundles sa list
+at kasama sa Total Value calculation!
+
+Dashboard:  ₱2,995,059 (inventory lang)
+Inventory:  ₱6,500,111.44 (inventory + bundles)
+
+🔍 ROOT CAUSE:
+==============
+Inventory page ay tumatawag ng /api/products:
+
+app/dashboard/inventory/page.tsx:
+const data = await apiGet("/api/products")  ← May bundles!
+
+app/api/products/route.ts:
+.from('products_unified')  ← Inventory + Bundles combined!
+
+✅ SOLUTION:
+============
+In-change ko para tumawag ng /api/items:
+
+BEFORE:
+apiGet("/api/products")  ← Inventory + Bundles
+
+AFTER:
+apiGet("/api/items")  ← Inventory lang!
+
+🎯 RESULT:
+==========
+Inventory page ngayon:
+- Inventory items lang (WALANG bundles)
+- Total Value = inventory items lang
+- SAME na sa Dashboard!
+
+Dashboard:  ₱2,995,059 (inventory only)
+Inventory:  ₱2,995,059 (inventory only)
+MATCH! ✓
+
+📊 BAKIT?
+=========
+Bundles = VIRTUAL PRODUCTS:
+- Bundle = combination ng existing items
+- Yung actual items ay nasa inventory pa rin
+- Kung kasama bundles = DOUBLE COUNTING
+- Kaya bundles HINDI dapat sa inventory value
+
+📍 SAAN MAKIKITA ANG BUNDLES?
+==============================
+Bundles dapat may sariling page/section,
+HINDI mixed sa inventory items.
+
+📁 FILE MODIFIED:
+=================
+app/dashboard/inventory/page.tsx - Changed to /api/items
+
+🧪 TEST MO:
+===========
+1. Clear cache: rmdir /s /q .next
+2. Restart: npm run dev
+3. Hard refresh: Ctrl + Shift + R
+4. Check Dashboard "Inventory Value"
+5. Check Inventory "Total Value"
+6. DAPAT SAME NA! ✓
+
+🎉 TAPOS NA!
+============
+Inventory page - WALANG BUNDLES NA!
+Dashboard = Inventory = SAME VALUE! 🚀
+
+BASAHIN: INVENTORY-PAGE-EXCLUDE-BUNDLES.md

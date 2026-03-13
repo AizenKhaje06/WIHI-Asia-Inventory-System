@@ -41,6 +41,9 @@ export default function InventoryPage() {
   const [restockAmount, setRestockAmount] = useState(0)
   const [restockReason, setRestockReason] = useState("")
   
+  // Get current user for role-based features
+  const currentUser = getCurrentUser()
+  
   // Category Management
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
   const [categories, setCategories] = useState<Array<{id: string, name: string, createdAt: string}>>([])
@@ -239,8 +242,9 @@ export default function InventoryPage() {
 
   async function fetchItems() {
     try {
-      // Fetch from unified products view (includes both inventory and bundles)
-      const data = await apiGet<InventoryItem[]>("/api/products")
+      // Fetch from inventory table only (NOT bundles)
+      // Bundles are virtual products - their items are already in inventory
+      const data = await apiGet<InventoryItem[]>("/api/items")
       const itemsArray = Array.isArray(data) ? data : []
       setItems(itemsArray)
       setFilteredItems(itemsArray)
@@ -656,19 +660,72 @@ export default function InventoryPage() {
               </div>
             </div>
             
-            {/* Stats Row */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-100 dark:border-green-800">
-                <p className="text-xs font-semibold text-green-600 dark:text-green-400 mb-1 uppercase tracking-wide">Total Value</p>
-                <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
-                  {formatCurrency(Array.isArray(filteredItems) ? filteredItems.reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0) : 0)}
-                </p>
+            {/* Stats Row - 3 Cards with Professional Corporate Design */}
+            <div className={cn(
+              "grid gap-3 sm:gap-4",
+              currentUser?.role === 'admin' ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"
+            )}>
+              {/* Total Value - Green Gradient */}
+              <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                      <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    </div>
+                  </div>
+                  <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Value</p>
+                  <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent tabular-nums mb-2">
+                    {formatCurrency(Array.isArray(items) ? items.reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0) : 0)}
+                  </p>
+                  {(search || salesChannelFilter !== "all") && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Filtered: {formatCurrency(Array.isArray(filteredItems) ? filteredItems.reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0) : 0)}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-100 dark:border-purple-800">
-                <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1 uppercase tracking-wide">Avg Price</p>
-                <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
-                  {formatCurrency(Array.isArray(filteredItems) && filteredItems.length > 0 ? filteredItems.reduce((sum, item) => sum + item.sellingPrice, 0) / filteredItems.length : 0)}
-                </p>
+
+              {/* Total COGS - Orange Gradient (Admin Only) */}
+              {currentUser?.role === 'admin' && (
+                <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-full -mr-16 -mt-16" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+                        <Package className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                      </div>
+                    </div>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total COGS</p>
+                    <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-orange-600 to-orange-700 bg-clip-text text-transparent tabular-nums mb-2">
+                      {formatCurrency(Array.isArray(items) ? items.reduce((sum, item) => sum + (item.totalCOGS || (item.costPrice * item.quantity)), 0) : 0)}
+                    </p>
+                    {(search || salesChannelFilter !== "all") && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Filtered: {formatCurrency(Array.isArray(filteredItems) ? filteredItems.reduce((sum, item) => sum + (item.totalCOGS || (item.costPrice * item.quantity)), 0) : 0)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Avg Price - Purple Gradient */}
+              <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                      <Tag className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                    </div>
+                  </div>
+                  <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Avg Price</p>
+                  <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent tabular-nums mb-2">
+                    {formatCurrency(Array.isArray(filteredItems) && filteredItems.length > 0 ? filteredItems.reduce((sum, item) => sum + item.sellingPrice, 0) / filteredItems.length : 0)}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

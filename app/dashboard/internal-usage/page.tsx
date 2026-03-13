@@ -318,107 +318,87 @@ export default function InternalUsagePage() {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          {/* Stats Cards - Enterprise Premium */}
+          {/* Stats Cards - Professional Corporate Design */}
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             {/* Total Cost Card */}
-            <Card className="border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Total Cost
-                  </CardTitle>
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4 text-white" />
+            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-slate-500/10 to-slate-600/5 rounded-full -mr-16 -mt-16" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800/50">
+                    <TrendingUp className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Cost</p>
+                <p className="text-2xl font-bold bg-gradient-to-br from-slate-600 to-slate-700 bg-clip-text text-transparent tabular-nums mb-2">
                   {formatCurrency(totalCost)}
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 flex items-center gap-1">
-                  <span className="inline-flex items-center gap-0.5 text-slate-600 dark:text-slate-400">
-                    <Package className="h-3 w-3" />
-                    {transactions.length} total
-                  </span>
                 </p>
-              </CardContent>
-            </Card>
+                <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                  <Package className="h-3 w-3" />
+                  {transactions.length} total
+                </p>
+              </div>
+            </div>
 
             {/* Demo/Display Card */}
-            <Card className="border-amber-200 dark:border-amber-800 shadow-sm hover:shadow-md transition-shadow duration-200 bg-gradient-to-br from-amber-50/50 to-white dark:from-amber-950/20 dark:to-slate-900">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                    Demo/Display
-                  </CardTitle>
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
-                    <Monitor className="h-4 w-4 text-white" />
+            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                    <Monitor className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-amber-700 dark:text-amber-400 tabular-nums">
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Demo/Display</p>
+                <p className="text-2xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums mb-2">
                   {formatCurrency(demoCost)}
-                </div>
-                <p className="text-[11px] text-amber-600 dark:text-amber-500 mt-1.5 flex items-center gap-1">
-                  <span className="inline-flex items-center gap-0.5">
-                    <ArrowUpRight className="h-3 w-3" />
-                    {demoTransactions.length} transactions
-                  </span>
                 </p>
-              </CardContent>
-            </Card>
+                <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1">
+                  <ArrowUpRight className="h-3 w-3" />
+                  {demoTransactions.length} transactions
+                </p>
+              </div>
+            </div>
 
             {/* Internal Use Card */}
-            <Card className="border-blue-200 dark:border-blue-800 shadow-sm hover:shadow-md transition-shadow duration-200 bg-gradient-to-br from-blue-50/50 to-white dark:from-blue-950/20 dark:to-slate-900">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-[10px] font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
-                    Internal Use
-                  </CardTitle>
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                    <Users className="h-4 w-4 text-white" />
+            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                    <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-700 dark:text-blue-400 tabular-nums">
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Internal Use</p>
+                <p className="text-2xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums mb-2">
                   {formatCurrency(internalCost)}
-                </div>
-                <p className="text-[11px] text-blue-600 dark:text-blue-500 mt-1.5 flex items-center gap-1">
-                  <span className="inline-flex items-center gap-0.5">
-                    <ArrowUpRight className="h-3 w-3" />
-                    {internalTransactions.length} transactions
-                  </span>
                 </p>
-              </CardContent>
-            </Card>
+                <p className="text-xs text-blue-600 dark:text-blue-500 flex items-center gap-1">
+                  <ArrowUpRight className="h-3 w-3" />
+                  {internalTransactions.length} transactions
+                </p>
+              </div>
+            </div>
 
             {/* Warehouse Transfer Card */}
-            <Card className="border-indigo-200 dark:border-indigo-800 shadow-sm hover:shadow-md transition-shadow duration-200 bg-gradient-to-br from-indigo-50/50 to-white dark:from-indigo-950/20 dark:to-slate-900">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-[10px] font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-                    Warehouse Transfer
-                  </CardTitle>
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center">
-                    <Package className="h-4 w-4 text-white" />
+            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 rounded-full -mr-16 -mt-16" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+                    <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 tabular-nums">
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Warehouse Transfer</p>
+                <p className="text-2xl font-bold bg-gradient-to-br from-indigo-600 to-indigo-700 bg-clip-text text-transparent tabular-nums mb-2">
                   {formatCurrency(transferCost)}
-                </div>
-                <p className="text-[11px] text-indigo-600 dark:text-indigo-500 mt-1.5 flex items-center gap-1">
-                  <span className="inline-flex items-center gap-0.5">
-                    <ArrowUpRight className="h-3 w-3" />
-                    {transferTransactions.length} transactions
-                  </span>
                 </p>
-              </CardContent>
-            </Card>
+                <p className="text-xs text-indigo-600 dark:text-indigo-500 flex items-center gap-1">
+                  <ArrowUpRight className="h-3 w-3" />
+                  {transferTransactions.length} transactions
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Recent Transactions - Enterprise Design */}
@@ -538,24 +518,24 @@ export default function InternalUsagePage() {
           </Card>
         </TabsContent>
 
-        {/* Cost Analysis Tab - Enterprise Design */}
+        {/* Cost Analysis Tab - Professional Corporate Design */}
         <TabsContent value="cost-analysis" className="space-y-6">
           {/* Cost Cards Grid */}
           <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-            <Card className="border-amber-200 dark:border-amber-800 shadow-sm bg-gradient-to-br from-amber-50/50 to-white dark:from-amber-950/20 dark:to-slate-900">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                    Demo/Display Cost
-                  </CardTitle>
-                  <Monitor className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            {/* Demo/Display Cost */}
+            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                    <Monitor className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-amber-700 dark:text-amber-400 tabular-nums mb-2">
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Demo/Display Cost</p>
+                <p className="text-2xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums mb-2">
                   {formatCurrency(demoCost)}
-                </div>
-                <div className="flex items-center justify-between text-[10px]">
+                </p>
+                <div className="flex items-center justify-between text-xs">
                   <span className="text-amber-600 dark:text-amber-500">
                     {((demoCost / totalCost) * 100 || 0).toFixed(1)}% of total
                   </span>
@@ -563,23 +543,23 @@ export default function InternalUsagePage() {
                     {demoTransactions.length} txns
                   </span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card className="border-blue-200 dark:border-blue-800 shadow-sm bg-gradient-to-br from-blue-50/50 to-white dark:from-blue-950/20 dark:to-slate-900">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-[10px] font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
-                    Internal Use Cost
-                  </CardTitle>
-                  <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            {/* Internal Use Cost */}
+            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                    <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-700 dark:text-blue-400 tabular-nums mb-2">
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Internal Use Cost</p>
+                <p className="text-2xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums mb-2">
                   {formatCurrency(internalCost)}
-                </div>
-                <div className="flex items-center justify-between text-[10px]">
+                </p>
+                <div className="flex items-center justify-between text-xs">
                   <span className="text-blue-600 dark:text-blue-500">
                     {((internalCost / totalCost) * 100 || 0).toFixed(1)}% of total
                   </span>
@@ -587,23 +567,23 @@ export default function InternalUsagePage() {
                     {internalTransactions.length} txns
                   </span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card className="border-indigo-200 dark:border-indigo-800 shadow-sm bg-gradient-to-br from-indigo-50/50 to-white dark:from-indigo-950/20 dark:to-slate-900">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-[10px] font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
-                    Transfer Cost
-                  </CardTitle>
-                  <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            {/* Transfer Cost */}
+            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 rounded-full -mr-16 -mt-16" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+                    <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 tabular-nums mb-2">
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Transfer Cost</p>
+                <p className="text-2xl font-bold bg-gradient-to-br from-indigo-600 to-indigo-700 bg-clip-text text-transparent tabular-nums mb-2">
                   {formatCurrency(transferCost)}
-                </div>
-                <div className="flex items-center justify-between text-[10px]">
+                </p>
+                <div className="flex items-center justify-between text-xs">
                   <span className="text-indigo-600 dark:text-indigo-500">
                     {((transferCost / totalCost) * 100 || 0).toFixed(1)}% of total
                   </span>
@@ -611,8 +591,8 @@ export default function InternalUsagePage() {
                     {transferTransactions.length} txns
                   </span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* Cost Breakdown Chart */}

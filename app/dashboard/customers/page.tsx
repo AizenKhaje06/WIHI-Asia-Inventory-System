@@ -404,107 +404,101 @@ export default function CustomersPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* Total Customers - Blue */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
                 <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
-              <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0">
-                Total
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Customers</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">
               {stats.total}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Customers</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* New This Month - Emerald */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-emerald-100 dark:bg-emerald-900/30">
+              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
                 <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
-                New
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">New This Month</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-emerald-600 to-emerald-700 bg-clip-text text-transparent tabular-nums">
               {stats.newThisMonth}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">This Month</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* VIP Customers - Purple */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-purple-100 dark:bg-purple-900/30">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
                 <Award className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
-              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-0">
-                VIP
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">VIP Customers</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent tabular-nums">
               {stats.vip}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">VIP Customers</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* Total Revenue - Green */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-green-100 dark:bg-green-900/30">
+              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
                 <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
-              <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0">
-                Revenue
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Revenue</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent tabular-nums">
               {formatCurrency(stats.totalRevenue)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Total Revenue</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* Avg Spent - Orange */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-orange-100 dark:bg-orange-900/30">
+              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
                 <ShoppingBag className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               </div>
-              <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border-0">
-                Avg
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Avg Spent</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-orange-600 to-orange-700 bg-clip-text text-transparent tabular-nums">
               {formatCurrency(stats.avgSpent)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Avg Spent</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* Avg Orders - Indigo */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-indigo-100 dark:bg-indigo-900/30">
+              <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
                 <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <Badge className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border-0">
-                Avg
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Avg Orders</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-indigo-600 to-indigo-700 bg-clip-text text-transparent tabular-nums">
               {stats.avgPurchases.toFixed(1)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Avg Purchases</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}

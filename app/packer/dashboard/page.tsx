@@ -264,72 +264,195 @@ export default function PackerDashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-8 px-2 sm:px-0">
-      {/* Header with Performance Metrics */}
-      <div className="flex flex-col gap-3 sm:gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Packer Dashboard</h1>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
-              <Activity className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span>Real-time order packing system</span>
-            </p>
+      {/* Professional Corporate Header */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          {/* Title Section with Branding */}
+          <div className="flex items-start gap-4">
+            <div className="hidden sm:flex h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 items-center justify-center shadow-lg shadow-blue-500/30 flex-shrink-0">
+              <Package className="h-7 w-7 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
+                Packer Dashboard
+              </h1>
+              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1.5 flex items-center gap-2 flex-wrap font-medium">
+                <Activity className="h-4 w-4 text-blue-600" />
+                <span>Real-time Order Fulfillment System</span>
+                {currentUser && (
+                  <>
+                    <span className="hidden sm:inline text-slate-400">•</span>
+                    <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                      {currentUser.displayName || currentUser.username}
+                    </span>
+                  </>
+                )}
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2">
+
+          {/* Action Buttons - Professional Layout */}
+          <div className="flex gap-3">
             <Button 
               onClick={() => setScannerOpen(true)} 
               size="lg" 
-              className="flex-1 sm:flex-none gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 h-11 sm:h-12"
+              className="flex-1 lg:flex-none gap-2.5 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 h-12 px-6 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 font-semibold"
             >
-              <Camera className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="hidden xs:inline">Scan Barcode</span>
-              <span className="xs:hidden">Scan</span>
+              <Camera className="h-5 w-5" strokeWidth={2.5} />
+              <span className="hidden sm:inline">Scan Barcode</span>
+              <span className="sm:hidden">Scan</span>
             </Button>
             <Button 
               onClick={() => fetchData()} 
               variant="outline" 
               size="lg"
               disabled={refreshing}
-              className="h-11 sm:h-12 px-3 sm:px-4"
+              className="h-12 px-4 border-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300"
             >
-              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} strokeWidth={2.5} />
             </Button>
           </div>
         </div>
+
+        {/* Quick Stats Bar - Professional Metrics */}
+        <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-2 text-sm">
+            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="font-semibold text-slate-700 dark:text-slate-300">System Active</span>
+          </div>
+          <div className="h-4 w-px bg-slate-300 dark:bg-slate-600" />
+          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+            <Clock className="h-4 w-4" />
+            <span className="font-medium">
+              {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+          {selectedChannel !== 'All' && (
+            <>
+              <div className="h-4 w-px bg-slate-300 dark:bg-slate-600" />
+              <Badge variant="secondary" className="font-semibold">
+                {selectedChannel}
+              </Badge>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Enhanced Stats Cards - 2 cards only */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <Card className="border-l-4 border-l-orange-500">
-          <CardHeader className="pb-2 sm:pb-3">
-            <CardTitle className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-1 sm:gap-2">
-              <Package className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span>Pending</span>
+      {/* Enhanced Stats Cards - Professional 4-Card Layout */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Pending Orders */}
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-full -mr-16 -mt-16" />
+          <CardHeader className="pb-2 sm:pb-3 relative">
+            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+                <Package className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              </div>
+              <span>Pending Queue</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pb-3 sm:pb-4">
-            <div className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400">
+          <CardContent className="pb-4 relative">
+            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-orange-600 to-orange-700 bg-clip-text text-transparent">
               <AnimatedNumber value={pendingCount} />
             </div>
-            <p className="text-[10px] sm:text-xs text-slate-500 mt-1">
-              {pendingCount === 0 ? 'All caught up!' : 'Ready to pack'}
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              {pendingCount === 0 ? '✨ All caught up!' : `${pendingCount} ${pendingCount === 1 ? 'order' : 'orders'} ready`}
             </p>
+            <div className="mt-3 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-500"
+                style={{ width: `${Math.min((pendingCount / 50) * 100, 100)}%` }}
+              />
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-green-500">
-          <CardHeader className="pb-2 sm:pb-3">
-            <CardTitle className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-1 sm:gap-2">
-              <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span>Today</span>
+        {/* Today's Packed */}
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
+          <CardHeader className="pb-2 sm:pb-3 relative">
+            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+              </div>
+              <span>Today's Progress</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pb-3 sm:pb-4">
-            <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
+          <CardContent className="pb-4 relative">
+            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent">
               <AnimatedNumber value={todayPacked.length} />
             </div>
-            <p className="text-[10px] sm:text-xs text-slate-500 mt-1">
-              {todayPacked.length > 0 ? 'Great progress!' : 'Start packing'}
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              {todayPacked.length > 0 ? `🎯 ${todayPacked.length} packed today` : 'Start packing'}
             </p>
+            <div className="mt-3 flex items-center gap-2">
+              <TrendingUp className="h-3 w-3 text-green-600" />
+              <span className="text-xs font-semibold text-green-600">
+                {todayPacked.length > 0 ? '+' : ''}{todayPacked.length} today
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Avg Packing Time */}
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
+          <CardHeader className="pb-2 sm:pb-3 relative">
+            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <Timer className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <span>Avg Time</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pb-4 relative">
+            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent">
+              {avgPackingTime > 0 ? (
+                <><AnimatedNumber value={avgPackingTime} />s</>
+              ) : (
+                '--'
+              )}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              {avgPackingTime > 0 ? 'Per order' : 'No data yet'}
+            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <Zap className="h-3 w-3 text-blue-600" />
+              <span className="text-xs font-semibold text-blue-600">
+                {avgPackingTime > 0 && avgPackingTime < 60 ? 'Fast!' : avgPackingTime >= 60 ? 'Good pace' : 'Start packing'}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Packs Per Hour */}
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
+          <CardHeader className="pb-2 sm:pb-3 relative">
+            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <Target className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              </div>
+              <span>Productivity</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pb-4 relative">
+            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent">
+              {packsPerHour > 0 ? (
+                <><AnimatedNumber value={packsPerHour} />/h</>
+              ) : (
+                '--'
+              )}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              {packsPerHour > 0 ? 'Orders per hour' : 'No data yet'}
+            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <Award className="h-3 w-3 text-purple-600" />
+              <span className="text-xs font-semibold text-purple-600">
+                {packsPerHour >= 30 ? 'Excellent!' : packsPerHour >= 20 ? 'Great!' : packsPerHour > 0 ? 'Good!' : 'Start packing'}
+              </span>
+            </div>
           </CardContent>
         </Card>
       </div>

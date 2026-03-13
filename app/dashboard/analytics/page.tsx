@@ -150,129 +150,125 @@ export default function AnalyticsPage() {
 
       {/* Sales Performance Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* Total Revenue - Blue */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
                 <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
-              <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                Total
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Revenue</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">
               {formatCurrency(report?.totalRevenue || 0)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Total Revenue</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* Total Cost - Purple */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-purple-100 dark:bg-purple-900/30">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
                 <TrendingDown className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
-              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-0">
-                Cost
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Cost</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent tabular-nums">
               {formatCurrency(report?.totalCost || 0)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Total Cost</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* Net Profit - Emerald */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-emerald-100 dark:bg-emerald-900/30">
+              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
                 <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
-                {profitMarginTrend === 'up' ? (
-                  <ArrowUpRight className="h-3 w-3 mr-1" />
-                ) : (
-                  <ArrowDownRight className="h-3 w-3 mr-1" />
-                )}
-                Profit
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Net Profit</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-emerald-600 to-emerald-700 bg-clip-text text-transparent tabular-nums">
               {formatCurrency(report?.totalProfit || 0)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Net Profit</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* Profit Margin - Amber */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-amber-100 dark:bg-amber-900/30">
+              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
                 <Percent className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
-              <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0">
-                Margin
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Profit Margin</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums">
               {(report?.profitMargin || 0).toFixed(1)}%
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Profit Margin</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Additional Insights */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
+        {/* Avg Daily Revenue - Blue */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
                 <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">Avg Daily Revenue</div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Avg Daily Revenue</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">
               {formatCurrency(avgDailyRevenue)}
-            </div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-[5px] bg-emerald-100 dark:bg-emerald-900/30">
+        {/* Total Transactions - Emerald */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
                 <ShoppingCart className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">Total Transactions</div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Transactions</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-emerald-600 to-emerald-700 bg-clip-text text-transparent tabular-nums">
               {formatNumber(totalTransactions)}
-            </div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-[5px] bg-amber-100 dark:bg-amber-900/30">
+        {/* Highest Sale Day - Amber */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
                 <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">Highest Sale Day</div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Highest Sale Day</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums">
               {highestSaleDay ? formatCurrency(highestSaleDay.revenue) : '₱0.00'}
-            </div>
+            </p>
             {highestSaleDay && (
-              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {new Date(highestSaleDay.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </div>
+              </p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Filter and Controls */}

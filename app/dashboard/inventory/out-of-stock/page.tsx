@@ -263,49 +263,55 @@ export default function OutOfStockPage() {
         </p>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Professional Corporate Design */}
       <div className="grid gap-4 md:grid-cols-3 mb-4 px-4">
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-4">
+        {/* Total Out of Stock */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
                 <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Out of Stock</p>
+            <p className="text-2xl font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent tabular-nums">
               {outOfStockItems.length}
-            </div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">Total Out of Stock</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-4">
+        {/* High Value Items */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
                 <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">High Value Items</p>
+            <p className="text-2xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums">
               {highValueItems}
-            </div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">High Value Items</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-4">
+        {/* Potential Lost Revenue */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
                 <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Potential Lost Revenue</p>
+            <p className="text-2xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">
               {formatCurrency(totalLostRevenue)}
-            </div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">Potential Lost Revenue</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}

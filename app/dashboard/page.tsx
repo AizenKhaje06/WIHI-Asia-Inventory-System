@@ -131,124 +131,129 @@ export default function DashboardPage() {
       </div>
 
 
-      {/* Key Metrics - 5 Primary KPIs */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      {/* Key Metrics - 5 Primary KPIs - Professional Corporate Design */}
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         {/* Total Revenue */}
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-shadow">
-          <CardContent className="p-4">
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
+          <CardContent className="p-3 sm:p-4 relative">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
                 <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent mb-1">
               ₱<AnimatedNumber value={stats?.totalRevenue || 0} duration={1500} />
             </div>
-            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Total Revenue</div>
-            {stats?.revenueToday !== undefined && stats.revenueToday > 0 && (
-              <div className="flex items-center gap-0.5">
-                <ArrowUpRight className="h-2.5 w-2.5 text-green-600 dark:text-green-400" />
-                <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 font-medium">Total Revenue</div>
+            {stats?.revenueToday !== undefined && stats.revenueToday > 0 ? (
+              <div className="flex items-center gap-1">
+                <ArrowUpRight className="h-3 w-3 text-green-600 dark:text-green-400" />
+                <span className="text-xs text-green-600 dark:text-green-400 font-semibold">
                   ₱{formatNumber(stats.revenueToday)} today
                 </span>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                No sales today yet
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Net Profit (after returns) */}
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-shadow">
-          <CardContent className="p-4">
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
+          <CardContent className="p-3 sm:p-4 relative">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
                 <DollarSign className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent mb-1">
               ₱<AnimatedNumber value={netProfit} duration={1500} />
             </div>
-            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Net Profit</div>
-            {stats?.returnValue !== undefined && stats.returnValue > 0 && (
-              <div className="flex items-center gap-0.5">
-                <ArrowDownRight className="h-2.5 w-2.5 text-red-600 dark:text-red-400" />
-                <span className="text-xs text-red-600 dark:text-red-400 font-medium">
+            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 font-medium">Net Profit</div>
+            {stats?.returnValue !== undefined && stats.returnValue > 0 ? (
+              <div className="flex items-center gap-1">
+                <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />
+                <span className="text-xs text-red-600 dark:text-red-400 font-semibold">
                   ₱{formatNumber(stats.returnValue)} returns
                 </span>
+              </div>
+            ) : (
+              <div className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
+                No returns
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Total Sold */}
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-shadow">
-          <CardContent className="p-4">
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
+          <CardContent className="p-3 sm:p-4 relative">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
                 <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent mb-1">
               <AnimatedNumber value={stats?.totalSales || 0} duration={1500} />
             </div>
-            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Total Sold</div>
-            {stats?.totalSales !== undefined && (
-              <div className="flex items-center gap-0.5">
-                <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                  All-time quantity sold
-                </span>
-              </div>
-            )}
+            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 font-medium">Total Sold</div>
+            <div className="flex items-center gap-1">
+              <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                All-time quantity
+              </span>
+            </div>
           </CardContent>
         </Card>
 
         {/* Profit Margin */}
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-shadow">
-          <CardContent className="p-4">
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
+          <CardContent className="p-3 sm:p-4 relative">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
                 <Percent className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent mb-1">
               <AnimatedNumber value={stats?.profitMargin || 0} decimals={1} duration={1500} />%
             </div>
-            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Profit Margin</div>
-            {stats?.profitMargin !== undefined && (
-              <div className="flex items-center gap-0.5">
-                <span className={cn(
-                  "text-xs font-medium",
-                  (stats.profitMargin || 0) >= 30 ? "text-green-600 dark:text-green-400" :
-                  (stats.profitMargin || 0) >= 15 ? "text-amber-600 dark:text-amber-400" :
-                  "text-red-600 dark:text-red-400"
-                )}>
-                  {(stats.profitMargin || 0) >= 30 ? "Excellent" :
-                   (stats.profitMargin || 0) >= 15 ? "Good" : "Needs improvement"}
-                </span>
-              </div>
-            )}
+            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 font-medium">Profit Margin</div>
+            <div className="flex items-center gap-1">
+              {(stats?.profitMargin || 0) >= 30 ? (
+                <span className="text-xs font-semibold text-green-600 dark:text-green-400">🏆 Excellent!</span>
+              ) : (stats?.profitMargin || 0) >= 15 ? (
+                <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">✓ Good</span>
+              ) : (
+                <span className="text-xs font-semibold text-red-600 dark:text-red-400">⚠ Improve</span>
+              )}
+            </div>
           </CardContent>
         </Card>
 
         {/* Inventory Value */}
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-shadow">
-          <CardContent className="p-4">
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 rounded-full -mr-16 -mt-16" />
+          <CardContent className="p-3 sm:p-4 relative">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
                 <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-indigo-600 to-indigo-700 bg-clip-text text-transparent mb-1">
               ₱<AnimatedNumber value={stats?.totalValue || 0} duration={1500} />
             </div>
-            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Inventory Value</div>
-            {stats?.totalItems !== undefined && (
-              <div className="flex items-center gap-1">
-                <Package className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
-                <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-                  {stats.totalItems} items
-                </span>
-              </div>
-            )}
+            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 font-medium">Inventory Value</div>
+            <div className="flex items-center gap-1">
+              <Package className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+              <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
+                {stats?.totalItems || 0} items
+              </span>
+            </div>
           </CardContent>
         </Card>
       </div>

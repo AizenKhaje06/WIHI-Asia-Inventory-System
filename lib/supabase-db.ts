@@ -32,6 +32,8 @@ const generateId = (prefix: string) => `${prefix}-${Date.now()}`
 // ==================== INVENTORY ====================
 
 export async function getInventoryItems(): Promise<InventoryItem[]> {
+  // Only fetch from inventory table (NOT bundles)
+  // Bundles are virtual products - their items are already in inventory
   const { data, error } = await supabaseAdmin
     .from('inventory')
     .select('*')

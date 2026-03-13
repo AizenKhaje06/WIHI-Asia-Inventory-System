@@ -4,13 +4,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Command as CommandPrimitive } from 'cmdk'
 import {
-  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from '@/components/ui/command'
 import {
   LayoutDashboard,

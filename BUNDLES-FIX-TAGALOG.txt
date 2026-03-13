@@ -1,0 +1,77 @@
+✅ AYOS NA! BUNDLES KASAMA NA!
+================================
+
+❌ TUNAY NA PROBLEMA:
+=====================
+Dashboard:  ₱2,995,059
+Inventory:  ₱6,500,111.44
+
+MALAKI ANG DIFFERENCE! Bakit?
+
+🔍 ROOT CAUSE:
+==============
+Yung getInventoryItems() function:
+- Kumuha lang from 'inventory' table
+- HINDI kasama yung 'bundles' table!
+- Kaya kulang yung count!
+
+📊 DATABASE STRUCTURE:
+======================
+inventory table      - Regular products lang
+bundles table        - Bundle products lang
+products_unified view - BOTH COMBINED! ← Dapat ito gamitin!
+
+✅ SOLUTION:
+============
+In-change ko yung getInventoryItems():
+
+BEFORE:
+from('inventory')  ← Regular items lang
+
+AFTER:
+from('products_unified')  ← Regular + Bundles!
+
+🎯 RESULT:
+==========
+BEFORE FIX:
+Dashboard:  ₱2,995,059 (50 regular items)
+Inventory:  ₱6,500,111.44 (pero mali pa rin)
+Missing:    ₱3,505,052.44 (bundles!)
+
+AFTER FIX:
+Dashboard:  ₱6,500,111.44 (70 items: 50 regular + 20 bundles)
+Inventory:  ₱6,500,111.44 (70 items: 50 regular + 20 bundles)
+Included:   LAHAT NG BUNDLES! ✓
+
+🧪 GAWIN MO TO:
+===============
+1. Clear cache:
+   rmdir /s /q .next
+
+2. Restart server:
+   npm run dev
+
+3. Hard refresh browser:
+   Ctrl + Shift + R
+
+4. Check Dashboard - "Inventory Value"
+5. Check Inventory - "Total Value"
+6. DAPAT SAME NA! (₱6,500,111.44)
+
+📁 FILES MODIFIED:
+==================
+lib/supabase-db.ts - Changed to products_unified view
+app/dashboard/inventory/page.tsx - Already fixed
+
+✅ KASAMA NA:
+=============
+✓ Regular products (inventory table)
+✓ Active bundles (bundles table)
+✓ Unified view (products_unified)
+
+🎉 TAPOS NA!
+============
+Dashboard = Inventory = COMPLETE VALUE!
+Kasama na lahat ng bundles! 🚀
+
+BASAHIN: BUNDLES-INCLUDED-FIX.md

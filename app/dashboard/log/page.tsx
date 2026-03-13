@@ -285,77 +285,89 @@ export default function LogPage() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
-              <Database className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+        {/* Total Logs - Blue */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <Database className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Total Logs</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Total Logs</p>
+              <p className="text-xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">{stats.total}</p>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-[5px] bg-green-100 dark:bg-green-900/30">
-              <Activity className="h-5 w-5 text-green-600 dark:text-green-400" />
+        {/* Today - Green */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+              <Activity className="h-4 w-4 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Today</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.today}</p>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Today</p>
+              <p className="text-xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent tabular-nums">{stats.today}</p>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-[5px] bg-purple-100 dark:bg-purple-900/30">
-              <Plus className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+        {/* Creates - Purple */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+              <Plus className="h-4 w-4 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Creates</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.creates}</p>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Creates</p>
+              <p className="text-xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent tabular-nums">{stats.creates}</p>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-[5px] bg-orange-100 dark:bg-orange-900/30">
-              <Edit className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+        {/* Updates - Orange */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+              <Edit className="h-4 w-4 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Updates</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.updates}</p>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Updates</p>
+              <p className="text-xl font-bold bg-gradient-to-br from-orange-600 to-orange-700 bg-clip-text text-transparent tabular-nums">{stats.updates}</p>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-[5px] bg-red-100 dark:bg-red-900/30">
-              <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
+        {/* Deletes - Red */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Deletes</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.deletes}</p>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Deletes</p>
+              <p className="text-xl font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent tabular-nums">{stats.deletes}</p>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-[5px] bg-amber-100 dark:bg-amber-900/30">
-              <X className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+        {/* Cancelled - Amber */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+              <X className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Cancelled</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.cancelled}</p>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Cancelled</p>
+              <p className="text-xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums">{stats.cancelled}</p>
             </div>
           </div>
-        </Card>
+        </div>
       </div>
 
       {/* Filters Card */}

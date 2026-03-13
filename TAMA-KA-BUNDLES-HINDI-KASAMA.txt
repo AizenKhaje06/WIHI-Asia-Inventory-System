@@ -1,0 +1,84 @@
+✅ TAMA KA! BUNDLES HINDI DAPAT KASAMA!
+========================================
+
+🎯 BAKIT?
+=========
+Bundles = VIRTUAL PRODUCTS lang!
+- Bundle ay combination ng existing items
+- Yung actual items ay nasa inventory pa rin
+- Kaya HINDI dapat kasama sa total value
+- Para walang DOUBLE COUNTING!
+
+📊 EXAMPLE:
+===========
+INVENTORY:
+- Item A: 10 pcs × ₱100 = ₱1,000
+- Item B: 20 pcs × ₱50  = ₱1,000
+TOTAL: ₱2,000
+
+BUNDLE:
+- "Bundle AB" = 1× Item A + 2× Item B
+- Price: ₱180
+- Qty: 5 pcs
+
+❌ MALI (kung kasama bundles):
+Inventory: ₱2,000
+Bundles:   ₱900 (5 × ₱180)
+TOTAL:     ₱2,900 ← DOUBLE COUNTED!
+
+✅ TAMA (inventory lang):
+Inventory: ₱2,000
+Bundles:   NOT counted
+TOTAL:     ₱2,000 ← CORRECT!
+
+🔧 GINAWA KO:
+=============
+Binawi ko yung change!
+Balik sa inventory table lang:
+
+lib/supabase-db.ts:
+.from('inventory')  ← Inventory items only ✓
+
+HINDI:
+.from('products_unified')  ← Would include bundles ✗
+
+🔍 BAKIT MAGKAIBA PA RIN?
+==========================
+Dashboard:  ₱2,995,059
+Inventory:  ₱6,500,111.44
+
+Possible reasons:
+1. Cache issue - Old data
+2. Filter issue - May filter sa inventory page
+3. Data mismatch - Different sources
+4. Calculation error - Different formula
+
+🧪 DEBUG:
+=========
+Run DEBUG-INVENTORY-VALUE.sql sa Supabase SQL Editor
+para makita yung actual values sa database.
+
+Tapos compare sa:
+- Dashboard "Inventory Value"
+- Inventory page "Total Value"
+
+✅ CORRECT BEHAVIOR:
+====================
+Dashboard:  Inventory items only (NOT bundles)
+Inventory:  Inventory items only (NOT bundles)
+Bundles:    Shown separately pero NOT counted
+
+📁 FILES:
+=========
+- lib/supabase-db.ts - Reverted to inventory only
+- DEBUG-INVENTORY-VALUE.sql - Debug queries
+- BALIK-SA-DATI-INVENTORY-ONLY.md - Full explanation
+
+🎯 NEXT:
+========
+1. Run DEBUG-INVENTORY-VALUE.sql
+2. Check actual database values
+3. Compare with pages
+4. Find real cause ng difference
+
+TAMA KA! Bundles HINDI dapat kasama! ✓

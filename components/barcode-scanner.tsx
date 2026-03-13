@@ -195,33 +195,38 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            {manualMode ? (
-              <>
-                <Keyboard className="h-6 w-6 text-blue-600" />
-                Manual Input
-              </>
-            ) : (
-              <>
-                <Camera className="h-6 w-6 text-blue-600" />
-                Barcode Scanner
-              </>
-            )}
+      <DialogContent className="sm:max-w-[600px] border-t-4 border-t-blue-600 p-0 gap-0 overflow-hidden">
+        {/* Professional Header */}
+        <DialogHeader className="px-6 pt-6 pb-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-b">
+          <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/30">
+              {manualMode ? (
+                <Keyboard className="h-6 w-6 text-white" strokeWidth={2.5} />
+              ) : (
+                <Camera className="h-6 w-6 text-white" strokeWidth={2.5} />
+              )}
+            </div>
+            <div>
+              <div className="bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                {manualMode ? 'Manual Input' : 'Barcode Scanner'}
+              </div>
+              <p className="text-xs font-normal text-slate-600 dark:text-slate-400 mt-1">
+                {manualMode ? 'Type or scan waybill number' : 'Scan order waybill barcode'}
+              </p>
+            </div>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="p-6 space-y-5">
           {error && (
-            <Alert variant="destructive" className="border-red-200 dark:border-red-800">
-              <AlertCircle className="h-4 w-4" />
+            <Alert variant="destructive" className="border-2 border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
+              <AlertCircle className="h-5 w-5" />
               <AlertDescription className="flex items-center justify-between">
-                <span>{error}</span>
+                <span className="font-medium">{error}</span>
                 <Button
                   variant="link"
                   size="sm"
-                  className="ml-2 h-auto p-0 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                  className="ml-2 h-auto p-0 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold"
                   onClick={switchToManualMode}
                 >
                   Switch to manual →
@@ -231,94 +236,118 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
           )}
 
           {manualMode ? (
-            // Manual Input Mode
-            <div className="space-y-4">
-              <div className="text-center py-10 bg-gradient-to-br from-blue-50 to-slate-50 dark:from-blue-950/20 dark:to-slate-900/20 rounded-lg border-2 border-dashed border-blue-200 dark:border-blue-800">
-                <Keyboard className="h-16 w-16 mx-auto mb-4 text-blue-500 dark:text-blue-400" />
-                <p className="text-sm text-slate-700 dark:text-slate-300 font-medium mb-2">
-                  Enter waybill number manually
+            // Professional Manual Input Mode
+            <div className="space-y-5">
+              <div className="text-center py-12 bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-50 dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-slate-900/30 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-700">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 shadow-lg shadow-blue-500/30 mb-4">
+                  <Keyboard className="h-10 w-10 text-white" strokeWidth={2.5} />
+                </div>
+                <p className="text-base text-slate-800 dark:text-slate-200 font-bold mb-2">
+                  Enter Waybill Number
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Or use USB barcode scanner for instant input
+                <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
+                  Type manually or use USB barcode scanner for instant input
                 </p>
               </div>
 
               <form onSubmit={handleManualSubmit} className="space-y-4">
-                <Input
-                  placeholder="Type or scan waybill number..."
-                  value={manualInput}
-                  onChange={(e) => setManualInput(e.target.value)}
-                  autoFocus
-                  className="text-center font-mono text-lg h-12 border-2 focus:border-blue-500"
-                />
+                <div className="relative">
+                  <Input
+                    placeholder="Type or scan waybill number..."
+                    value={manualInput}
+                    onChange={(e) => setManualInput(e.target.value)}
+                    autoFocus
+                    className="text-center font-mono text-xl h-14 border-2 border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 rounded-xl shadow-sm"
+                  />
+                  {manualInput && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                    </div>
+                  )}
+                </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-11"
+                    className="h-12 border-2 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold"
                     onClick={() => {
                       setManualMode(false)
                       setManualInput('')
                       startScanning()
                     }}
                   >
-                    <Camera className="h-4 w-4 mr-2" />
+                    <Camera className="h-5 w-5 mr-2" />
                     Use Camera
                   </Button>
                   <Button
                     type="submit"
-                    className="h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                    className="h-12 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 shadow-lg shadow-blue-500/30 font-semibold"
                     disabled={!manualInput.trim()}
                   >
-                    <Search className="h-4 w-4 mr-2" />
-                    Search
+                    <Search className="h-5 w-5 mr-2" />
+                    Search Order
                   </Button>
                 </div>
               </form>
             </div>
           ) : (
-            // Camera Scanning Mode
+            // Professional Camera Scanning Mode
             <>
-              <div className="relative bg-slate-900 rounded-lg overflow-hidden border-2 border-slate-700">
-                <div id={readerId} className="w-full min-h-[300px]" />
+              <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl overflow-hidden border-2 border-slate-700 shadow-2xl">
+                <div id={readerId} className="w-full min-h-[350px]" />
                 {!scanning && !error && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
                     <div className="text-center text-white">
-                      <Camera className="h-16 w-16 mx-auto mb-4 opacity-50 animate-pulse" />
-                      <p className="text-sm font-medium">Initializing camera...</p>
-                      <p className="text-xs text-slate-400 mt-2">Please wait</p>
+                      <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 shadow-lg shadow-blue-500/50 mb-4 animate-pulse">
+                        <Camera className="h-10 w-10 text-white" strokeWidth={2.5} />
+                      </div>
+                      <p className="text-base font-bold mb-2">Initializing Camera</p>
+                      <p className="text-sm text-slate-400">Please wait a moment...</p>
+                      <div className="flex items-center justify-center gap-1 mt-4">
+                        <div className="h-2 w-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="h-2 w-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="h-2 w-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <p className="text-sm text-blue-900 dark:text-blue-100 font-medium">
-                  📦 Position barcode within the frame
-                </p>
-                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                  Scanner will detect automatically
+              <div className="text-center p-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border-2 border-blue-200 dark:border-blue-800">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center">
+                    <span className="text-white text-lg">📦</span>
+                  </div>
+                  <p className="text-base text-blue-900 dark:text-blue-100 font-bold">
+                    Position Barcode Within Frame
+                  </p>
+                </div>
+                <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                  Scanner will detect and process automatically
                 </p>
               </div>
 
               <Button
                 variant="outline"
-                className="w-full h-11"
+                className="w-full h-12 border-2 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold"
                 onClick={switchToManualMode}
               >
-                <Keyboard className="h-4 w-4 mr-2" />
+                <Keyboard className="h-5 w-5 mr-2" />
                 Switch to Manual Input
               </Button>
             </>
           )}
+        </div>
 
+        {/* Professional Footer */}
+        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900 border-t">
           <Button
             variant="ghost"
-            className="w-full h-11 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="w-full h-12 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-slate-700 dark:text-slate-300"
             onClick={handleClose}
           >
-            <X className="h-4 w-4 mr-2" />
+            <X className="h-5 w-5 mr-2" />
             Cancel
           </Button>
         </div>

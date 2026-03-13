@@ -2,23 +2,19 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
-  Eye, EyeOff, Lock, User, Loader2, ArrowRight, AlertCircle, 
-  Shield, Building2, KeyRound, CheckCircle2, Info, ChevronsRight, Mail, Package 
+  Loader2, Mail, CheckCircle2, AlertCircle
 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import Image from "next/image"
 import { apiPost } from "@/lib/api-client"
 import { setTeamLeaderSession } from "@/lib/team-leader-auth"
-
-type LoginMode = "admin" | "staff" | "packer"
+import { RoleSelector, type UserRole } from "@/components/auth/role-selector"
+import { LoginForm, type LoginFormData } from "@/components/auth/login-form"
+import { SecurityIndicator } from "@/components/auth/security-indicator"
 
 interface Channel {
   id: string
@@ -27,21 +23,13 @@ interface Channel {
 }
 
 export default function EnterpriseLoginPage() {
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [loginMode, setLoginMode] = useState<LoginMode>("admin")
-  const [packerUsername, setPackerUsername] = useState("")
-  const [capsLockOn, setCapsLockOn] = useState(false)
-  const [passwordStrength, setPasswordStrength] = useState(0)
+  const [selectedRole, setSelectedRole] = useState<UserRole>("admin")
   const [mounted, setMounted] = useState(false)
   const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false)
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("")
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false)
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false)
+  const [error, setError] = useState("")
   
   // Staff/Team Leader specific states
   const [channels, setChannels] = useState<Channel[]>([])
@@ -166,15 +154,6 @@ export default function EnterpriseLoginPage() {
           localStorage.removeItem("currentUser")
         }
       }
-      
-      // Load remembered username (only if no active session)
-      if (!hasValidSession) {
-        const rememberedUsername = localStorage.getItem("rememberedUsername")
-        if (rememberedUsername) {
-          setUsername(rememberedUsername)
-          setRememberMe(true)
-        }
-      }
     } catch (error) {
       console.error('[Login Page] Error accessing localStorage:', error)
       // Clear all sessions on error to prevent infinite loops
@@ -183,9 +162,9 @@ export default function EnterpriseLoginPage() {
     }
   }, [router])
 
-  // Fetch channels when staff mode is selected
+  // Fetch channels when staff role is selected
   useEffect(() => {
-    if (loginMode === 'staff') {
+    if (selectedRole === 'staff') {
       const fetchChannels = async () => {
         setChannelsLoading(true)
         try {
@@ -204,27 +183,7 @@ export default function EnterpriseLoginPage() {
 
       fetchChannels()
     }
-  }, [loginMode])
-
-  // Password strength calculator
-  useEffect(() => {
-    if (!password) {
-      setPasswordStrength(0)
-      return
-    }
-    let strength = 0
-    if (password.length >= 8) strength += 25
-    if (password.length >= 12) strength += 25
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25
-    if (/[0-9]/.test(password)) strength += 15
-    if (/[^a-zA-Z0-9]/.test(password)) strength += 10
-    setPasswordStrength(Math.min(strength, 100))
-  }, [password])
-
-  // Caps lock detection
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    setCapsLockOn(e.getModifierState('CapsLock'))
-  }
+  }, [selectedRole])
 
   const handleForgotPassword = async () => {
     if (!forgotPasswordEmail) {
@@ -263,60 +222,47 @@ export default function EnterpriseLoginPage() {
     setError("")
   }
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+  const handleLogin = async (formData: LoginFormData) => {
     setError("")
 
     try {
       // Packer login
-      if (loginMode === 'packer') {
-        if (!packerUsername) {
-          setError("Please enter your username")
-          setLoading(false)
-          return
-        }
-
-        // Validate packer credentials
+      if (formData.role === 'packer') {
         const data = await apiPost("/api/accounts", {
           action: "validate",
-          username: packerUsername,
-          password: password
+          username: formData.username,
+          password: formData.password
         })
 
         if (data.success && data.account && data.account.role === 'packer') {
           if (typeof window !== 'undefined') {
-            try {
-              localStorage.setItem("isLoggedIn", "true")
-              localStorage.setItem("username", data.account.username)
-              localStorage.setItem("userRole", "packer")
-              localStorage.setItem("displayName", data.account.displayName)
-              
-              localStorage.setItem("currentUser", JSON.stringify({
-                username: data.account.username,
-                role: "packer",
-                displayName: data.account.displayName
-              }))
-            } catch (error) {
-              console.error('Error saving to localStorage:', error)
+            localStorage.setItem("isLoggedIn", "true")
+            localStorage.setItem("username", data.account.username)
+            localStorage.setItem("userRole", "packer")
+            localStorage.setItem("displayName", data.account.displayName)
+            
+            localStorage.setItem("currentUser", JSON.stringify({
+              username: data.account.username,
+              role: "packer",
+              displayName: data.account.displayName
+            }))
+
+            if (formData.rememberDevice) {
+              localStorage.setItem("rememberedUsername", formData.username)
             }
           }
           
           router.push('/packer/dashboard')
           return
         } else {
-          setError("Invalid packer credentials")
-          setLoading(false)
-          return
+          throw new Error("Invalid packer credentials")
         }
       }
 
       // Staff/Team Leader login
-      if (loginMode === 'staff') {
+      if (formData.role === 'staff') {
         if (!selectedChannel) {
-          setError("Please select a sales channel")
-          setLoading(false)
-          return
+          throw new Error("Please select a sales channel")
         }
 
         const response = await fetch('/api/auth/team-leader-login', {
@@ -326,22 +272,16 @@ export default function EnterpriseLoginPage() {
           },
           body: JSON.stringify({
             channel: selectedChannel,
-            password: password
+            password: formData.password
           })
         })
 
         const data = await response.json()
 
         if (!response.ok) {
-          setError(data.error || 'Invalid channel or credentials')
-          setLoading(false)
-          return
+          throw new Error(data.error || 'Invalid channel or credentials')
         }
 
-        // Store team leader session
-        console.log('[Login] Storing team leader session:', data.sessionData)
-        
-        // Ensure timestamp is set
         const sessionWithTimestamp = {
           ...data.sessionData,
           timestamp: data.sessionData.timestamp || Date.now()
@@ -349,24 +289,12 @@ export default function EnterpriseLoginPage() {
         
         setTeamLeaderSession(sessionWithTimestamp)
 
-        // Store auth headers for API requests
         localStorage.setItem('x-team-leader-user-id', data.user.id)
         localStorage.setItem('x-team-leader-channel', data.user.assignedChannel)
         localStorage.setItem('x-team-leader-role', data.user.role)
 
-        console.log('[Login] Session stored, verifying...')
-        
-        // Verify session was stored before redirecting
-        const storedSession = localStorage.getItem('teamLeaderSession')
-        const storedRole = localStorage.getItem('x-team-leader-role')
-        console.log('[Login] Verification - Session exists:', !!storedSession, 'Role:', storedRole)
-        
-        // Small delay to ensure localStorage is fully written
         await new Promise(resolve => setTimeout(resolve, 100))
         
-        console.log('[Login] Redirecting to /team-leader/dashboard')
-        
-        // Redirect team leaders directly to their dashboard
         router.push('/team-leader/dashboard')
         return
       }
@@ -374,61 +302,41 @@ export default function EnterpriseLoginPage() {
       // Admin login
       const data = await apiPost("/api/accounts", {
         action: "validate",
-        username,
-        password
+        username: formData.username,
+        password: formData.password
       })
 
       if (data.success && data.account) {
         if (typeof window !== 'undefined') {
-          try {
-            if (rememberMe) {
-              localStorage.setItem("rememberedUsername", username)
-            } else {
-              localStorage.removeItem("rememberedUsername")
-            }
-            
-            // Save individual fields (for backward compatibility)
-            localStorage.setItem("isLoggedIn", "true")
-            localStorage.setItem("username", data.account.username)
-            localStorage.setItem("userRole", data.account.role)
-            localStorage.setItem("displayName", data.account.displayName)
-            
-            // Save complete user object (for getCurrentUser function)
-            localStorage.setItem("currentUser", JSON.stringify({
-              username: data.account.username,
-              role: data.account.role,
-              displayName: data.account.displayName,
-              email: data.account.email || '',
-              phone: data.account.phone || ''
-            }))
-          } catch (error) {
-            console.error('Error saving to localStorage:', error)
+          if (formData.rememberDevice) {
+            localStorage.setItem("rememberedUsername", formData.username)
+          } else {
+            localStorage.removeItem("rememberedUsername")
           }
+          
+          localStorage.setItem("isLoggedIn", "true")
+          localStorage.setItem("username", data.account.username)
+          localStorage.setItem("userRole", data.account.role)
+          localStorage.setItem("displayName", data.account.displayName)
+          
+          localStorage.setItem("currentUser", JSON.stringify({
+            username: data.account.username,
+            role: data.account.role,
+            displayName: data.account.displayName,
+            email: data.account.email || '',
+            phone: data.account.phone || ''
+          }))
         }
         
         const redirectPath = data.account.role === "admin" ? "/dashboard" : "/dashboard/operations"
         router.push(redirectPath)
       } else {
-        setError(data.error || "Invalid username or password. Please try again.")
+        throw new Error(data.error || "Invalid username or password. Please try again.")
       }
     } catch (error) {
       console.error("Login error:", error)
-      setError("Login failed. Please check your connection and try again.")
-    } finally {
-      setLoading(false)
+      throw error
     }
-  }
-
-  const getPasswordStrengthColor = () => {
-    if (passwordStrength < 40) return "bg-red-500"
-    if (passwordStrength < 70) return "bg-amber-500"
-    return "bg-green-500"
-  }
-
-  const getPasswordStrengthText = () => {
-    if (passwordStrength < 40) return "Weak"
-    if (passwordStrength < 70) return "Medium"
-    return "Strong"
   }
 
   // Prevent hydration mismatch by not rendering until mounted
@@ -437,434 +345,88 @@ export default function EnterpriseLoginPage() {
   }
 
   return (
-    <div className="dark min-h-screen flex relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Animated Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-      </div>
+    <div className="min-h-screen flex relative overflow-hidden bg-white">
+      {/* Left Panel - Hero Section */}
+      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center p-8 bg-white">
+        <div className="relative z-10 w-full max-w-2xl space-y-4 animate-in fade-in-0 slide-in-from-left-10 duration-1000">
+          {/* Logo Icon */}
+          <div className="animate-in fade-in-0 zoom-in-95 duration-700">
+            <img 
+              src="/Vertex-icon.png" 
+              alt="Vertex" 
+              className="h-16 w-auto object-contain"
+              loading="eager"
+            />
+          </div>
 
-      {/* Left Panel - Live Inventory Preview */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center p-12 bg-gradient-to-br from-orange-900 via-orange-950 to-red-950">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        
-        <div className="relative z-10 max-w-2xl w-full text-white space-y-6">
-          {/* Header */}
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold leading-tight text-white">
-              All-in-One Inventory Platform
+          {/* Build-up Text - ENHANCED TYPOGRAPHY */}
+          <div className="space-y-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-1000 delay-150">
+            <h1 className="text-5xl font-bold leading-tight text-slate-900 tracking-tight">
+              Manage your inventory<br />
+              <span className="text-blue-600">with ease.</span>
             </h1>
-            <p className="text-orange-50 text-lg">
-              Simplify your daily operations and grow your business — Easily manage inventory, sales, analytics, and operations — everything you need in one smart system.
+            <p className="text-lg text-slate-600 leading-relaxed max-w-lg">
+              Track stock, manage warehouses, and streamline fulfillment in one powerful platform.
             </p>
           </div>
 
-          {/* Dashboard Preview Card */}
-          <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl p-6 space-y-6 border border-white/20">
-            {/* Overview Stats */}
-            <div>
-              <h3 className="text-sm font-semibold text-slate-600 mb-3">Overview</h3>
-              <div className="grid grid-cols-4 gap-3">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 border border-blue-200">
-                  <div className="text-xs text-blue-600 mb-1">Income</div>
-                  <div className="text-lg font-bold text-blue-900">₱12,153.80</div>
-                </div>
-                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-3 border border-green-200">
-                  <div className="text-xs text-green-600 mb-1">Expense</div>
-                  <div className="text-lg font-bold text-green-900">₱2,153.80</div>
-                </div>
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-3 border border-purple-200">
-                  <div className="text-xs text-purple-600 mb-1">Total Amount</div>
-                  <div className="text-lg font-bold text-purple-900">₱12,153.80</div>
-                </div>
-                <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-3 border border-amber-200 relative overflow-hidden">
-                  <div className="text-xs text-amber-600 mb-1">This Month</div>
-                  <div className="text-lg font-bold text-amber-900">₱25K</div>
-                  <div className="absolute -right-2 -bottom-2">
-                    <svg width="60" height="60" viewBox="0 0 100 100" className="text-amber-300">
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="75 25" transform="rotate(-90 50 50)" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Revenue Analytics */}
-            <div>
-              <h3 className="text-sm font-semibold text-slate-600 mb-3">Revenue Analytics</h3>
-              <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200">
-                <div className="text-2xl font-bold text-slate-900 mb-1">₱79,556.65</div>
-                <div className="text-xs text-slate-500 mb-4">Total revenue from inventory turnover</div>
-                {/* Mini Bar Chart */}
-                <div className="flex items-end justify-between gap-2 h-20">
-                  <div className="flex-1 bg-orange-200 rounded-t" style={{ height: '40%' }}></div>
-                  <div className="flex-1 bg-orange-200 rounded-t" style={{ height: '30%' }}></div>
-                  <div className="flex-1 bg-orange-300 rounded-t" style={{ height: '55%' }}></div>
-                  <div className="flex-1 bg-orange-400 rounded-t" style={{ height: '75%' }}></div>
-                  <div className="flex-1 bg-orange-500 rounded-t" style={{ height: '90%' }}></div>
-                  <div className="flex-1 bg-orange-400 rounded-t" style={{ height: '70%' }}></div>
-                  <div className="flex-1 bg-orange-300 rounded-t" style={{ height: '50%' }}></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Cost Analytics with Pie Chart */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-slate-600 mb-3">Today Transaction</h3>
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-600">Outbound</span>
-                    <span className="font-semibold text-slate-900">125</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-600">Inbound</span>
-                    <span className="font-semibold text-slate-900">89</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-600">High</span>
-                    <span className="font-semibold text-green-600">₱892</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-600">Low</span>
-                    <span className="font-semibold text-red-600">₱245</span>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-slate-600 mb-3">Cost Analytics</h3>
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-                  <div className="relative w-24 h-24 mx-auto mb-2">
-                    <svg viewBox="0 0 100 100" className="transform -rotate-90">
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" strokeWidth="12" />
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="#ef4444" strokeWidth="12" strokeDasharray="75 25" />
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="#3b82f6" strokeWidth="12" strokeDasharray="50 50" strokeDashoffset="-75" />
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="#10b981" strokeWidth="12" strokeDasharray="25 75" strokeDashoffset="-125" />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-slate-900">₱79K</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                        <span className="text-slate-600">Salary</span>
-                      </div>
-                      <span className="font-semibold text-slate-900">35%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                        <span className="text-slate-600">Transport</span>
-                      </div>
-                      <span className="font-semibold text-slate-900">25%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <span className="text-slate-600">Others</span>
-                      </div>
-                      <span className="font-semibold text-slate-900">15%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Balance */}
-            <div className="flex justify-between items-center pt-4 border-t border-slate-200">
-              <span className="text-sm font-semibold text-slate-600">Balance</span>
-              <span className="text-2xl font-bold text-slate-900">₱25,80.80</span>
-            </div>
-          </div>
-
-          {/* Bottom Branding */}
-          <div className="flex items-center justify-center gap-8 text-white/60 text-sm">
-            <span>Vertex</span>
-            <span>•</span>
-            <span>Inventory Management</span>
+          {/* Hero Image - EAGER LOADED */}
+          <div className="relative animate-in fade-in-0 zoom-in-95 duration-1000 delay-300 mt-4">
+            <img 
+              src="/Log-in-Image.png" 
+              alt="Inventory Management Dashboard" 
+              className="w-full h-auto"
+              loading="eager"
+            />
           </div>
         </div>
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 relative z-10">
-        <div className="w-full max-w-md">
-          {/* Enterprise Logo - Large & Centered */}
-          <div className="mb-3 text-center">
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 relative z-10 bg-white">
+        <div className="w-full max-w-[440px] animate-in fade-in-0 slide-in-from-right-10 duration-1000">
+          {/* Mobile Logo */}
+          <div className="lg:hidden mb-8 text-center animate-in fade-in-0 zoom-in-95 duration-700">
             <div className="inline-flex items-center justify-center">
-              {/* Always use dark mode logo */}
               <img 
-                src="/Vertex-icon-2.png" 
+                src="/Vertex-icon.png" 
                 alt="Vertex" 
-                className="h-24 lg:h-32 w-auto object-contain"
+                className="h-16 w-auto object-contain"
+                loading="eager"
               />
             </div>
           </div>
 
-          {/* Login Card */}
-          <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-800/50 p-8 lg:p-10">
-            {/* Mode Selector */}
-            <div className="flex gap-2 p-1 bg-slate-800/50 rounded-xl mb-8">
-              <button
-                type="button"
-                onClick={() => {
-                  setLoginMode("admin")
-                  setUsername("")
-                  setPassword("")
-                  setError("")
-                }}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200",
-                  loginMode === "admin"
-                    ? "bg-slate-700 text-blue-400 shadow-md"
-                    : "text-slate-400 hover:text-slate-200"
-                )}
-              >
-                <Shield className="w-4 h-4" />
-                <span>Admin</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setLoginMode("staff")
-                  setUsername("")
-                  setPassword("")
-                  setSelectedChannel("")
-                  setError("")
-                }}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200",
-                  loginMode === "staff"
-                    ? "bg-slate-700 text-blue-400 shadow-md"
-                    : "text-slate-400 hover:text-slate-200"
-                )}
-              >
-                <User className="w-4 h-4" />
-                <span>Staff</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setLoginMode("packer")
-                  setPackerUsername("")
-                  setPassword("")
-                  setError("")
-                }}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200",
-                  loginMode === "packer"
-                    ? "bg-slate-700 text-blue-400 shadow-md"
-                    : "text-slate-400 hover:text-slate-200"
-                )}
-              >
-                <Package className="w-4 h-4" />
-                <span>Packer</span>
-              </button>
+          {/* Login Card - ENHANCED */}
+          <div className="bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8 lg:p-10 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200 transition-all">
+            {/* Role Selector */}
+            <RoleSelector 
+              selectedRole={selectedRole}
+              onRoleChange={setSelectedRole}
+            />
+
+            {/* Login Form */}
+            <div className="mt-6">
+              <LoginForm
+                role={selectedRole}
+                onSubmit={handleLogin}
+                onForgotPassword={() => setShowForgotPasswordDialog(true)}
+                channels={channels}
+                selectedChannel={selectedChannel}
+                onChannelChange={setSelectedChannel}
+                channelsLoading={channelsLoading}
+              />
             </div>
 
-            {/* Header */}
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-white mb-2">
-                Welcome back
-              </h2>
-              <p className="text-slate-400">
-                {loginMode === "admin" 
-                  ? "Sign in to access admin dashboard" 
-                  : loginMode === "staff"
-                  ? "Sign in to access warehouse operations"
-                  : "Sign in to access packer dashboard"}
-              </p>
+            {/* Security Indicator */}
+            <div className="mt-8">
+              <SecurityIndicator />
             </div>
-
-            {/* Form */}
-            <form onSubmit={handleLogin} className="space-y-5">
-              {error && (
-                <Alert className="border-red-800 bg-red-900/20">
-                  <AlertCircle className="h-4 w-4 text-red-400" />
-                  <AlertDescription className="text-red-400 ml-2">
-                    {error}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {loginMode === 'admin' ? (
-                <div className="space-y-2">
-                  <Label htmlFor="username" className="text-slate-300 font-medium">
-                    Username
-                  </Label>
-                  <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                    <Input
-                      id="username"
-                      type="text"
-                      placeholder="Enter your username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      className="pl-12 h-12 bg-slate-800 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-white"
-                      required
-                      autoComplete="username"
-                    />
-                  </div>
-                </div>
-              ) : loginMode === 'packer' ? (
-                <div className="space-y-2">
-                  <Label htmlFor="packerUsername" className="text-slate-300 font-medium">
-                    Packer Username
-                  </Label>
-                  <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                    <Input
-                      id="packerUsername"
-                      type="text"
-                      placeholder="Enter your packer username"
-                      value={packerUsername}
-                      onChange={(e) => setPackerUsername(e.target.value)}
-                      className="pl-12 h-12 bg-slate-800 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-white"
-                      required
-                      autoComplete="username"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="channel" className="text-slate-300 font-medium">
-                    Sales Channel
-                  </Label>
-                  <Select value={selectedChannel} onValueChange={setSelectedChannel} disabled={channelsLoading}>
-                    <SelectTrigger className="h-12 bg-slate-800 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-white">
-                      <SelectValue placeholder={channelsLoading ? "Loading channels..." : "Select your sales channel"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {channels.map((channel) => (
-                        <SelectItem key={channel.id} value={channel.name}>
-                          {channel.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-300 font-medium">
-                  Password
-                </Label>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    onKeyUp={handleKeyPress}
-                    className="pl-12 pr-16 h-12 bg-slate-800 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 font-mono text-sm tracking-wide text-white"
-                    required
-                    autoComplete="current-password"
-                    style={{ 
-                      textOverflow: 'ellipsis',
-                      overflow: 'hidden',
-                      whiteSpace: 'nowrap'
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg text-slate-400 hover:text-slate-300 hover:bg-slate-700 transition-all duration-200 z-10"
-                    tabIndex={-1}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-
-                {/* Password Strength Indicator */}
-                {password && (
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-400">Password strength</span>
-                      <span className={cn(
-                        "font-medium",
-                        passwordStrength < 40 && "text-red-600",
-                        passwordStrength >= 40 && passwordStrength < 70 && "text-amber-600",
-                        passwordStrength >= 70 && "text-green-600"
-                      )}>
-                        {getPasswordStrengthText()}
-                      </span>
-                    </div>
-                    <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                      <div 
-                        className={cn("h-full transition-all duration-300 rounded-full", getPasswordStrengthColor())}
-                        style={{ width: `${passwordStrength}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Caps Lock Warning */}
-                {capsLockOn && (
-                  <div className="flex items-center gap-2 text-xs text-amber-400">
-                    <Info className="h-3.5 w-3.5" />
-                    <span>Caps Lock is on</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="remember" 
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                  />
-                  <Label 
-                    htmlFor="remember" 
-                    className="text-sm text-slate-400 cursor-pointer font-normal"
-                  >
-                    Remember me
-                  </Label>
-                </div>
-                {loginMode === "admin" && (
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotPasswordDialog(true)}
-                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-                  >
-                    Forgot password?
-                  </button>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 group"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  <>
-                    Sign In
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </Button>
-            </form>
           </div>
 
           {/* Footer */}
-          <div className="mt-8 text-center text-sm text-slate-400">
+          <div className="mt-8 text-center text-sm text-slate-400 animate-in fade-in-0 duration-1000 delay-500">
             <p>© 2026 Vertex. All rights reserved.</p>
-            <p className="mt-1">Secured by 256-bit SSL encryption</p>
           </div>
         </div>
       </div>

@@ -333,73 +333,69 @@ export default function InsightsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* Analyzed Items - Blue */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
                 <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
-              <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0">
-                Total
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Analyzed Items</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">
               {formatNumber(totalItems)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Analyzed Items</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* High Value Items - Emerald */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-emerald-100 dark:bg-emerald-900/30">
+              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
                 <Target className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
-                Category A
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">High Value Items</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-emerald-600 to-emerald-700 bg-clip-text text-transparent tabular-nums">
               {formatNumber(categoryAItems)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">High Value Items</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* Turnover Ratio - Purple */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-purple-100 dark:bg-purple-900/30">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
                 <TrendingUpIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
-              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-0">
-                Avg
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Turnover Ratio</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent tabular-nums">
               {avgTurnoverRatio.toFixed(2)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Turnover Ratio</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
+        {/* Dead Stock Value - Red */}
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-[5px] bg-red-100 dark:bg-red-900/30">
+              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
                 <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
               </div>
-              <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0">
-                Dead Stock
-              </Badge>
             </div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Value at Risk</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent tabular-nums">
               {formatCurrency(totalDeadStockValue)}
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Value at Risk</div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">

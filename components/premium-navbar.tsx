@@ -25,8 +25,13 @@ interface PremiumNavbarProps {
 export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggle }: PremiumNavbarProps) {
   const [username, setUsername] = useState("Admin User")
   const [userRole, setUserRole] = useState("Administrator")
-  const [currentUser, setCurrentUser] = useState(getCurrentUser())
+  const [currentUser, setCurrentUser] = useState<ReturnType<typeof getCurrentUser>>(null)
   const reducedMotion = useReducedMotion()
+
+  // Get current user only on client side to avoid hydration errors
+  React.useEffect(() => {
+    setCurrentUser(getCurrentUser())
+  }, [])
 
   // Get user info from localStorage
   React.useEffect(() => {
