@@ -50,10 +50,12 @@ export const ROLE_PERMISSIONS = {
     '/dashboard/reports',
     '/dashboard/operations/transaction-history',
     '/dashboard/track-orders',
+    '/dashboard/packing-queue', // Packing Queue
     '/dashboard/cancelled-orders',
     '/dashboard/insights',
     '/dashboard/inventory/**',
     '/dashboard/pos',
+    '/dashboard/dispatch', // Warehouse Dispatch
     '/dashboard/internal-usage',
     '/dashboard/settings',
     '/dashboard/log'
@@ -75,6 +77,8 @@ export const ROLE_PERMISSIONS = {
   operations: [
     '/dashboard/operations',
     '/dashboard/pos',
+    '/dashboard/dispatch', // Warehouse Dispatch
+    '/dashboard/packing-queue', // Packing Queue
     '/dashboard/operations/transaction-history',
     '/dashboard/track-orders',
     '/dashboard/inventory/**',

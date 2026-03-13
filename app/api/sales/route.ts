@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
         // Find if item already exists in destination storage
         const destinationItem = allItems.find(
           (item) => item.name === inventoryItem.name && 
-                    item.storageRoom === destinationStorage &&
+                    item.store === destinationStorage &&
                     item.id !== inventoryItem.id
         )
 
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
               operation: 'warehouse',
               itemId: inventoryItem.id,
               itemName: inventoryItem.name,
-              details: `Transferred "${inventoryItem.name}" from ${inventoryItem.storageRoom} to ${destinationStorage} - Qty: ${saleItem.quantity}, Staff: ${staffName || 'N/A'}`
+              details: `Transferred "${inventoryItem.name}" from ${inventoryItem.store} to ${destinationStorage} - Qty: ${saleItem.quantity}, Staff: ${staffName || 'N/A'}`
             }),
             // Record transaction
             addTransaction({
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
               transactionType: 'transfer',
               department,
               staffName,
-              notes: `Transfer from ${inventoryItem.storageRoom} to ${destinationStorage}`,
+              notes: `Transfer from ${inventoryItem.store} to ${destinationStorage}`,
             })
           ])
         } else {
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
             addInventoryItem({
               name: inventoryItem.name,
               category: inventoryItem.category,
-              storageRoom: destinationStorage,
+              store: destinationStorage,
               quantity: saleItem.quantity,
               totalCOGS: totalCost,
               costPrice: inventoryItem.costPrice,
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
               operation: 'warehouse',
               itemId: inventoryItem.id,
               itemName: inventoryItem.name,
-              details: `Transferred "${inventoryItem.name}" from ${inventoryItem.storageRoom} to ${destinationStorage} (new entry) - Qty: ${saleItem.quantity}, Staff: ${staffName || 'N/A'}`
+              details: `Transferred "${inventoryItem.name}" from ${inventoryItem.store} to ${destinationStorage} (new entry) - Qty: ${saleItem.quantity}, Staff: ${staffName || 'N/A'}`
             }),
             // Record transaction
             addTransaction({
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
               transactionType: 'transfer',
               department,
               staffName,
-              notes: `Transfer from ${inventoryItem.storageRoom} to ${destinationStorage} (new entry)`,
+              notes: `Transfer from ${inventoryItem.store} to ${destinationStorage} (new entry)`,
             })
           ])
         }

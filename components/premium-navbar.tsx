@@ -1,12 +1,12 @@
 "use client"
 
 import React, { useState } from "react"
-import { Bell, Settings, User, Moon, Sun, Menu } from "lucide-react"
-import { useTheme } from "next-themes"
+import { Bell, Settings, User, Menu } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/hooks/use-accessibility"
 import { CommandPaletteSearch } from "@/components/command-palette-search"
 import { getCurrentUser } from "@/lib/auth"
+import { ToggleTheme } from "@/components/ui/toggle-theme"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,19 +23,15 @@ interface PremiumNavbarProps {
 }
 
 export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggle }: PremiumNavbarProps) {
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
   const [username, setUsername] = useState("Admin User")
   const [userRole, setUserRole] = useState("Administrator")
   const [currentUser, setCurrentUser] = useState(getCurrentUser())
   const reducedMotion = useReducedMotion()
 
-  // Prevent hydration mismatch
+  // Get user info from localStorage
   React.useEffect(() => {
-    setMounted(true)
     setCurrentUser(getCurrentUser())
     
-    // Get user info from localStorage
     if (typeof window !== 'undefined') {
       try {
         const storedUsername = localStorage.getItem("username")
@@ -145,20 +141,11 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           </div>
 
           {/* Theme Toggle */}
-          <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="p-2 rounded-lg transition-colors flex-shrink-0 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-            title={mounted ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
-            aria-label={mounted ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
-          >
-            {!mounted ? (
-              <Sun className="h-[18px] w-[18px]" aria-hidden="true" />
-            ) : theme === "dark" ? (
-              <Sun className="h-[18px] w-[18px]" aria-hidden="true" />
-            ) : (
-              <Moon className="h-[18px] w-[18px]" aria-hidden="true" />
-            )}
-          </button>
+          <ToggleTheme 
+            duration={600}
+            animationType="flip-x-in"
+            className="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+          />
 
           {/* Notifications */}
           <DropdownMenu>

@@ -17,6 +17,16 @@ import { formatCurrency, cn } from "@/lib/utils"
 
 const SALES_CHANNELS = ['Shopee', 'Lazada', 'Facebook', 'TikTok', 'Physical Store'] as const
 
+// Helper functions for bundle calculations
+function calculateBundleCost(components: Array<{ quantity: number; costPrice: number }>): number {
+  return components.reduce((total, comp) => total + (comp.quantity * comp.costPrice), 0)
+}
+
+function calculateVirtualStock(components: Array<{ quantity: number; currentStock: number }>): number {
+  if (components.length === 0) return 0
+  return Math.min(...components.map(comp => Math.floor(comp.currentStock / comp.quantity)))
+}
+
 interface EditItemDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void

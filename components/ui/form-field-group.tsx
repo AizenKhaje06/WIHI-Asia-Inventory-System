@@ -74,7 +74,7 @@ export function FormFieldGroup({
 
       {/* Field */}
       <div className="relative">
-        {React.cloneElement(children as React.ReactElement, {
+        {React.cloneElement(children as React.ReactElement<any>, {
           id: fieldId,
           'aria-describedby': [descriptionId, errorId, hintId]
             .filter(Boolean)
@@ -82,7 +82,7 @@ export function FormFieldGroup({
           'aria-invalid': hasError,
           'aria-required': required,
           className: cn(
-            (children as React.ReactElement).props.className,
+            (children as React.ReactElement<any>).props?.className,
             hasError && "border-red-500 focus:border-red-500 focus:ring-red-500/20"
           ),
         })}

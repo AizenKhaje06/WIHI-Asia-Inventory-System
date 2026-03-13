@@ -479,7 +479,6 @@ export function RevenueChart({
                 dot={false}
                 activeDot={CHART_CONFIG.colors.sales.activeDot}
                 animationDuration={CHART_CONFIG.animation.duration}
-                animationEasing={CHART_CONFIG.animation.easing}
               />
 
               {/* Purchases Line */}
@@ -492,7 +491,6 @@ export function RevenueChart({
                 fill="transparent" 
                 dot={false}
                 animationDuration={CHART_CONFIG.animation.duration}
-                animationEasing={CHART_CONFIG.animation.easing}
               />
             </AreaChart>
           </ResponsiveContainer>

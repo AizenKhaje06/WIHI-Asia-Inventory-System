@@ -33,6 +33,7 @@ export interface JWTPayload {
   displayName: string
   iat?: number
   exp?: number
+  [key: string]: any // Index signature for jose compatibility
 }
 
 /**
@@ -66,7 +67,14 @@ export function generateRefreshToken(userId: string): string {
 export async function verifyAccessToken(token: string): Promise<JWTPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET)
-    return payload as JWTPayload
+    return {
+      userId: payload.userId as string,
+      username: payload.username as string,
+      role: payload.role as 'admin' | 'operations',
+      displayName: payload.displayName as string,
+      iat: payload.iat,
+      exp: payload.exp
+    }
   } catch (error) {
     console.error('JWT verification failed:', error)
     return null

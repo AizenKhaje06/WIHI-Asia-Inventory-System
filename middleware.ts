@@ -19,16 +19,25 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/static/') ||
-    pathname.startsWith('/public/')
+    pathname.startsWith('/public/') ||
+    pathname.includes('.')  // Skip files with extensions (images, fonts, etc.)
   ) {
     return NextResponse.next()
   }
 
   // Protected routes - require authentication
-  // Note: Actual session validation happens client-side
-  // This middleware just ensures proper routing structure
+  // Note: Actual session validation happens client-side via RouteGuard
+  // This middleware just ensures proper routing structure and allows all routes through
+  // The RouteGuard component will handle the actual authentication check
   
-  return NextResponse.next()
+  const response = NextResponse.next()
+  
+  // Add cache control headers to prevent caching of protected pages
+  response.headers.set('Cache-Control', 'no-store, must-revalidate')
+  response.headers.set('Pragma', 'no-cache')
+  response.headers.set('Expires', '0')
+  
+  return response
 }
 
 export const config = {

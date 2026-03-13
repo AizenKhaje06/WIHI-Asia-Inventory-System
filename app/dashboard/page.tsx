@@ -117,9 +117,9 @@ export default function DashboardPage() {
     count: cat.count,
   })) || []
 
-  const stocksCountByStorageRoomData = stats?.stocksCountByStorageRoom?.map((room) => ({
-    name: room.name,
-    count: room.count,
+  const stocksCountByStoreData = stats?.stocksCountByStore?.map((store) => ({
+    name: store.name,
+    count: store.count,
   })) || []
 
   return (
@@ -131,20 +131,20 @@ export default function DashboardPage() {
       </div>
 
 
-      {/* Enhanced Metric Cards - 7 KPIs */}
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      {/* Key Metrics - 5 Primary KPIs */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         {/* Total Revenue */}
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-green-100 dark:bg-green-900/30">
-                <TrendingUp className="h-3 w-3 text-green-600 dark:text-green-400" />
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               ₱<AnimatedNumber value={stats?.totalRevenue || 0} duration={1500} />
             </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 mb-1.5">Total Revenue</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Total Revenue</div>
             {stats?.revenueToday !== undefined && stats.revenueToday > 0 && (
               <div className="flex items-center gap-0.5">
                 <ArrowUpRight className="h-2.5 w-2.5 text-green-600 dark:text-green-400" />
@@ -157,17 +157,17 @@ export default function DashboardPage() {
         </Card>
 
         {/* Net Profit (after returns) */}
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-purple-100 dark:bg-purple-900/30">
-                <DollarSign className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <DollarSign className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               ₱<AnimatedNumber value={netProfit} duration={1500} />
             </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 mb-1.5">Net Profit</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Net Profit</div>
             {stats?.returnValue !== undefined && stats.returnValue > 0 && (
               <div className="flex items-center gap-0.5">
                 <ArrowDownRight className="h-2.5 w-2.5 text-red-600 dark:text-red-400" />
@@ -179,18 +179,18 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Total Sold - REPLACED Return Rate */}
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-blue-100 dark:bg-blue-900/30">
-                <ShoppingCart className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+        {/* Total Sold */}
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               <AnimatedNumber value={stats?.totalSales || 0} duration={1500} />
             </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 mb-1.5">Total Sold</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Total Sold</div>
             {stats?.totalSales !== undefined && (
               <div className="flex items-center gap-0.5">
                 <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
@@ -201,41 +201,18 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Items Sold Today - NEW */}
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-orange-100 dark:bg-orange-900/30">
-                <ShoppingCart className="h-3 w-3 text-orange-600 dark:text-orange-400" />
-              </div>
-            </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
-              <AnimatedNumber value={stats?.itemsSoldToday || 0} duration={1500} />
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 mb-1.5">Items Sold Today</div>
-            {stats?.itemsSoldToday !== undefined && stats.itemsSoldToday > 0 && (
-              <div className="flex items-center gap-0.5">
-                <Package className="h-2.5 w-2.5 text-orange-600 dark:text-orange-400" />
-                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
-                  {stats.recentSales} transactions
-                </span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Profit Margin */}
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-amber-100 dark:bg-amber-900/30">
-                <Percent className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                <Percent className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               <AnimatedNumber value={stats?.profitMargin || 0} decimals={1} duration={1500} />%
             </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 mb-1.5">Profit Margin</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Profit Margin</div>
             {stats?.profitMargin !== undefined && (
               <div className="flex items-center gap-0.5">
                 <span className={cn(
@@ -252,63 +229,23 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Inventory Value - 6th KPI */}
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-indigo-100 dark:bg-indigo-900/30">
-                <Package className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+        {/* Inventory Value */}
+        <Card className="border-0 shadow-md bg-white dark:bg-slate-900 hover:shadow-lg transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+                <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               </div>
             </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               ₱<AnimatedNumber value={stats?.totalValue || 0} duration={1500} />
             </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 mb-1.5">Inventory Value</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Inventory Value</div>
             {stats?.totalItems !== undefined && (
-              <div className="flex items-center gap-0.5">
-                <Package className="h-2.5 w-2.5 text-indigo-600 dark:text-indigo-400" />
+              <div className="flex items-center gap-1">
+                <Package className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
                 <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-                  {stats.totalItems} items in stock
-                </span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Cancelled Orders - NEW 7th KPI */}
-        <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="p-1.5 rounded-[4px] bg-red-100 dark:bg-red-900/30">
-                <PackageX className="h-3 w-3 text-red-600 dark:text-red-400" />
-              </div>
-              {stats?.cancellationRate !== undefined && stats.cancellationRate > 0 && (
-                <Badge className={cn(
-                  "text-[10px] px-1.5 py-0",
-                  stats.cancellationRate > 10 ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
-                  stats.cancellationRate > 5 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
-                  "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400"
-                )}>
-                  {stats.cancellationRate.toFixed(1)}%
-                </Badge>
-              )}
-            </div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">
-              <AnimatedNumber value={stats?.totalCancelledOrders || 0} duration={1500} />
-            </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 mb-1.5">Cancelled Orders</div>
-            {stats?.cancelledOrdersValue !== undefined && stats.cancelledOrdersValue > 0 && (
-              <div className="flex items-center gap-0.5">
-                <ArrowDownRight className="h-2.5 w-2.5 text-red-600 dark:text-red-400" />
-                <span className="text-xs text-red-600 dark:text-red-400 font-medium">
-                  ₱{formatNumber(stats.cancelledOrdersValue)} lost
-                </span>
-              </div>
-            )}
-            {(!stats?.totalCancelledOrders || stats.totalCancelledOrders === 0) && (
-              <div className="flex items-center gap-0.5">
-                <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                  No cancellations
+                  {stats.totalItems} items
                 </span>
               </div>
             )}
@@ -316,10 +253,10 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Quick Stats Row - 4 Mini Cards */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-125">
-        <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
-          <CardContent className="p-3">
+      {/* Secondary Metrics - 4 Cards */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-125">
+        <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 hover:shadow-lg transition-shadow">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
@@ -332,8 +269,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
-          <CardContent className="p-3">
+        <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 hover:shadow-lg transition-shadow">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
@@ -346,8 +283,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-md bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20">
-          <CardContent className="p-3">
+        <Card className="border-0 shadow-md bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 hover:shadow-lg transition-shadow">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl font-bold text-red-600 dark:text-red-400">
@@ -360,8 +297,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-md bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
-          <CardContent className="p-3">
+        <Card className="border-0 shadow-md bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 hover:shadow-lg transition-shadow">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-0.5">
@@ -385,9 +322,9 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Quick Actions & Critical Alerts - Phase 1 Redesign */}
+      {/* Quick Actions & Alerts */}
       <div className={cn(
-        "grid gap-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150",
+        "grid gap-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150",
         // Admin sees both Quick Actions and Alerts (2 columns)
         // Non-admin sees only Alerts (1 column, full width)
         currentUser?.role === 'admin' ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"
@@ -528,7 +465,7 @@ export default function DashboardPage() {
         loading={refreshing}
       />
 
-      {/* Performance Charts - 3 Horizontal Bar Charts */}
+      {/* Performance Analytics */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-300">
         {/* Top Products Chart */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
@@ -727,7 +664,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Distribution Charts - 2 Vertical Bar Charts */}
+      {/* Stock Distribution */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-350">
         {/* Stock by Category Chart */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
@@ -829,7 +766,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Recent Activity - 2 Lists */}
+      {/* Recent Activity */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-400">
         {/* Recent Sales */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
@@ -904,7 +841,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Business Insights & Inventory Health - NEW */}
+      {/* Insights & Health */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-450">
         {/* Business Insights */}
         <Card className="lg:col-span-2 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">

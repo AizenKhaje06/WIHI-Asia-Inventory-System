@@ -2429,3 +2429,130 @@ pre code {
     outline-width: 3px;
   }
 }
+
+
+/* ============================================
+   THEME TOGGLE ANIMATIONS
+   ============================================ */
+
+@keyframes circle-spread {
+  0% {
+    clip-path: circle(0% at 50% 50%);
+  }
+  100% {
+    clip-path: circle(150% at 50% 50%);
+  }
+}
+
+@keyframes flip-x {
+  0% {
+    transform: rotateX(0deg);
+  }
+  50% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0deg);
+  }
+}
+
+@keyframes flip-y {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(90deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+@keyframes theme-fade {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes theme-slide-up {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes theme-slide-down {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes theme-scale {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.8);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes theme-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-circle-spread {
+  animation: circle-spread var(--animation-duration, 400ms) ease-out;
+}
+
+.animate-flip-x {
+  animation: flip-x var(--animation-duration, 400ms) ease-in-out;
+}
+
+.animate-flip-y {
+  animation: flip-y var(--animation-duration, 400ms) ease-in-out;
+}
+
+.animate-fade {
+  animation: theme-fade var(--animation-duration, 400ms) ease-in-out;
+}
+
+.animate-slide-up {
+  animation: theme-slide-up var(--animation-duration, 400ms) ease-in-out;
+}
+
+.animate-slide-down {
+  animation: theme-slide-down var(--animation-duration, 400ms) ease-in-out;
+}
+
+.animate-scale {
+  animation: theme-scale var(--animation-duration, 400ms) ease-in-out;
+}
+
+.animate-rotate {
+  animation: theme-rotate var(--animation-duration, 400ms) ease-in-out;
+}

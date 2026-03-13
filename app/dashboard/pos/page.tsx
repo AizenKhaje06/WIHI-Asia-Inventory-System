@@ -541,7 +541,7 @@ export default function POSPage() {
                       )}
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-slate-600 dark:text-slate-400 font-medium">Store</span>
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">{item.store || item.storageRoom}</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">{item.store}</span>
                       </div>
                     </div>
 

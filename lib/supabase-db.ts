@@ -493,6 +493,8 @@ export interface Account {
   password: string
   role: 'admin' | 'operations'
   displayName: string
+  email?: string
+  phone?: string
   createdAt: string
 }
 

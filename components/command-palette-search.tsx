@@ -255,131 +255,178 @@ export function CommandPaletteSearch() {
         </kbd>
       </button>
 
-      {/* Command Palette Dialog - Production-Ready Linear Style */}
+      {/* Command Palette Dialog - Lightswind UI Style */}
       <CommandDialog open={open} onOpenChange={setOpen}>
-        {/* Compact Search Bar */}
-        <div className="p-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
-          <div className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700/60 rounded-md transition-colors">
-            <Search className="h-4 w-4 text-slate-400 flex-shrink-0" strokeWidth={2} />
+        {/* Header with Site Search title and ESC button */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm">
+              <Search className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Site Search</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <kbd className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md shadow-sm">
+              ESC
+            </kbd>
+            <button
+              onClick={() => setOpen(false)}
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+
+        {/* Search Input */}
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+          <div className="flex items-center gap-3">
+            <Search className="h-5 w-5 text-slate-400 flex-shrink-0" strokeWidth={2.5} />
             <CommandPrimitive.Input
-              placeholder="Search pages, actions, or type a command..." 
+              placeholder="Search & access anything from this site...!" 
               value={search}
               onValueChange={setSearch}
-              className="flex-1 bg-transparent border-0 text-[13px] placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none text-slate-900 dark:text-white"
+              className="flex-1 bg-transparent border-0 text-base placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none text-slate-900 dark:text-white font-medium"
             />
-            {search ? (
-              <button
-                onClick={() => setSearch('')}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex-shrink-0"
-                aria-label="Clear search"
-              >
-                <X className="h-3.5 w-3.5" strokeWidth={2} />
-              </button>
-            ) : (
-              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 rounded flex-shrink-0">
-                ⌘K
-              </kbd>
-            )}
           </div>
         </div>
         
-        <CommandList className="max-h-[400px] overflow-y-auto px-1.5 py-1.5 pb-0">
-          <CommandEmpty className="py-14 text-center">
+        <CommandList className="max-h-[450px] overflow-y-auto">
+          <CommandEmpty className="py-12 text-center">
             <div className="flex flex-col items-center gap-2">
-              <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <Search className="h-4.5 w-4.5 text-slate-400" strokeWidth={2} />
+              <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <Search className="h-5 w-5 text-slate-400" strokeWidth={2} />
               </div>
               <div>
-                <p className="text-[13px] font-medium text-slate-700 dark:text-slate-300">No results found</p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Try a different search term</p>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">No results found</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Try a different search term</p>
               </div>
             </div>
           </CommandEmpty>
 
           {/* Pages Section */}
           <CommandGroup 
-            heading="PAGES" 
-            className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-slate-500 dark:[&_[cmdk-group-heading]]:text-slate-400 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:mb-0.5"
+            heading="Get Started" 
+            className="px-4 py-2 [&_[cmdk-group-heading]]:px-0 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-slate-500 dark:[&_[cmdk-group-heading]]:text-slate-400"
           >
-            {filteredPages.map((item) => {
+            {filteredPages.slice(0, 2).map((item) => {
               const Icon = item.icon
               return (
                 <CommandItem
                   key={item.id}
                   value={`${item.title} ${item.description} ${item.keywords?.join(' ')}`}
                   onSelect={() => handleSelect(item.href)}
-                  className="flex items-center gap-2.5 px-2 py-1.5 rounded-md cursor-pointer data-[selected=true]:bg-blue-50 dark:data-[selected=true]:bg-blue-900/20 transition-colors group"
+                  className="flex items-center justify-between gap-3 px-3 py-3 rounded-lg cursor-pointer data-[selected=true]:bg-slate-100 dark:data-[selected=true]:bg-slate-800 transition-colors group mb-1"
                 >
-                  <Icon className="h-4 w-4 text-slate-500 dark:text-slate-400 group-data-[selected=true]:text-blue-600 dark:group-data-[selected=true]:text-blue-400 flex-shrink-0" strokeWidth={2.5} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-slate-700 dark:text-slate-200 group-data-[selected=true]:text-blue-900 dark:group-data-[selected=true]:text-blue-100 group-data-[selected=true]:font-semibold leading-tight">
-                      {item.title}
-                    </p>
-                    {item.description && (
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 group-data-[selected=true]:text-blue-700 dark:group-data-[selected=true]:text-blue-300 truncate leading-tight mt-0.5">
-                        {item.description}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="h-8 w-8 rounded-lg bg-slate-900 dark:bg-white flex items-center justify-center flex-shrink-0">
+                      <Icon className="h-4 w-4 text-white dark:text-slate-900" strokeWidth={2} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-900 dark:text-white leading-tight">
+                        {item.title}
                       </p>
-                    )}
+                      {item.description && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate leading-tight mt-0.5">
+                          {item.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                      get started
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-slate-400" strokeWidth={2} />
                   </div>
                 </CommandItem>
               )
             })}
           </CommandGroup>
 
-          {filteredPages.length > 0 && filteredQuickLinks.length > 0 && (
-            <div className="my-1.5 h-px bg-slate-200/60 dark:bg-slate-800/60" />
-          )}
+          {/* Component Categories Section */}
+          <CommandGroup 
+            heading="Component Categories" 
+            className="px-4 py-2 [&_[cmdk-group-heading]]:px-0 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-slate-500 dark:[&_[cmdk-group-heading]]:text-slate-400"
+          >
+            {filteredPages.slice(2).map((item) => {
+              const Icon = item.icon
+              return (
+                <CommandItem
+                  key={item.id}
+                  value={`${item.title} ${item.description} ${item.keywords?.join(' ')}`}
+                  onSelect={() => handleSelect(item.href)}
+                  className="flex items-center justify-between gap-3 px-3 py-3 rounded-lg cursor-pointer data-[selected=true]:bg-slate-100 dark:data-[selected=true]:bg-slate-800 transition-colors group mb-1"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="h-8 w-8 rounded-lg bg-slate-900 dark:bg-white flex items-center justify-center flex-shrink-0">
+                      <Icon className="h-4 w-4 text-white dark:text-slate-900" strokeWidth={2} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-900 dark:text-white leading-tight">
+                        {item.title}
+                      </p>
+                      {item.description && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate leading-tight mt-0.5">
+                          {item.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded lowercase">
+                      {item.keywords?.[0] || 'view'}
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-slate-400" strokeWidth={2} />
+                  </div>
+                </CommandItem>
+              )
+            })}
+          </CommandGroup>
 
           {/* Quick Links Section */}
-          <CommandGroup 
-            heading="QUICK LINKS" 
-            className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-slate-500 dark:[&_[cmdk-group-heading]]:text-slate-400 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:mb-0.5 pb-2"
-          >
-            {filteredQuickLinks.map((item) => {
-              const Icon = item.icon
-              return (
-                <CommandItem
-                  key={item.id}
-                  value={`${item.title} ${item.description} ${item.keywords?.join(' ')}`}
-                  onSelect={() => handleSelect(item.href)}
-                  className="flex items-center gap-2.5 px-2 py-1.5 rounded-md cursor-pointer data-[selected=true]:bg-blue-50 dark:data-[selected=true]:bg-blue-900/20 transition-colors group"
-                >
-                  <Icon className="h-4 w-4 text-slate-500 dark:text-slate-400 group-data-[selected=true]:text-blue-600 dark:group-data-[selected=true]:text-blue-400 flex-shrink-0" strokeWidth={2.5} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-slate-700 dark:text-slate-200 group-data-[selected=true]:text-blue-900 dark:group-data-[selected=true]:text-blue-100 group-data-[selected=true]:font-semibold leading-tight">
-                      {item.title}
-                    </p>
-                    {item.description && (
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 group-data-[selected=true]:text-blue-700 dark:group-data-[selected=true]:text-blue-300 truncate leading-tight mt-0.5">
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
-                </CommandItem>
-              )
-            })}
-          </CommandGroup>
+          {filteredQuickLinks.length > 0 && (
+            <CommandGroup 
+              heading="Quick Access" 
+              className="px-4 py-2 pb-4 [&_[cmdk-group-heading]]:px-0 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-slate-500 dark:[&_[cmdk-group-heading]]:text-slate-400"
+            >
+              {filteredQuickLinks.map((item) => {
+                const Icon = item.icon
+                return (
+                  <CommandItem
+                    key={item.id}
+                    value={`${item.title} ${item.description} ${item.keywords?.join(' ')}`}
+                    onSelect={() => handleSelect(item.href)}
+                    className="flex items-center justify-between gap-3 px-3 py-3 rounded-lg cursor-pointer data-[selected=true]:bg-slate-100 dark:data-[selected=true]:bg-slate-800 transition-colors group mb-1"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="h-8 w-8 rounded-lg bg-slate-900 dark:bg-white flex items-center justify-center flex-shrink-0">
+                        <Icon className="h-4 w-4 text-white dark:text-slate-900" strokeWidth={2} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white leading-tight">
+                          {item.title}
+                        </p>
+                        {item.description && (
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate leading-tight mt-0.5">
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded lowercase">
+                        {item.keywords?.[0] || 'view'}
+                      </span>
+                      <ArrowRight className="h-4 w-4 text-slate-400" strokeWidth={2} />
+                    </div>
+                  </CommandItem>
+                )
+              })}
+            </CommandGroup>
+          )}
         </CommandList>
-
-        {/* Compact Footer */}
-        <div className="border-t border-slate-200/60 dark:border-slate-800/60 px-3 py-2 bg-slate-50/50 dark:bg-slate-900/30">
-          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1">
-                <span className="text-slate-400 font-medium">↑↓</span>
-                <span>to navigate</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="text-slate-400 font-medium">↵</span>
-                <span>to select</span>
-              </span>
-            </div>
-            <span className="flex items-center gap-1">
-              <span className="text-slate-400 font-medium">Esc</span>
-              <span>to close</span>
-            </span>
-          </div>
-        </div>
       </CommandDialog>
     </>
   )
