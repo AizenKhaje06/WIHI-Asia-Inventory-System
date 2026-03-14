@@ -178,34 +178,40 @@ export default function ProductEditPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[30%]">Name</th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[10%]">SKU</th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground w-[15%]">Category</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[8%]">Quantity</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[10%]">Cost</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[10%]">Price</th>
-                  <th className="pb-3 text-right text-sm font-medium text-muted-foreground w-[17%]">Actions</th>
+                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[25%]">Product</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[12%]">Category</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[10%]">Status</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[10%]">Stock</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[12%]">Sales Channel</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[12%]">Store</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[10%]">Cost</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[10%]">Price</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[9%]">Margin</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[10%]">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredItems.map((item) => (
-                  <tr key={item.id} className="border-b border-border last:border-0">
-                    <td className="py-4 text-sm text-foreground w-[30%]">{item.name}</td>
-                    <td className="py-4 text-sm text-muted-foreground w-[10%]">{item.sku}</td>
-                    <td className="py-4 text-sm text-muted-foreground w-[15%]">{item.category}</td>
-                    <td className="py-4 text-right text-sm text-foreground w-[8%]">{item.quantity}</td>
-                    <td className="py-4 text-right text-sm text-foreground w-[10%]">₱{item.costPrice.toFixed(2)}</td>
-                    <td className="py-4 text-right text-sm text-foreground w-[10%]">₱{item.sellingPrice.toFixed(2)}</td>
-                    <td className="py-4 text-right w-[17%]">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleRestock(item)} className="text-orange-500 hover:text-orange-600 hover:bg-orange-50">
+                  <tr key={item.id} className="border-b border-border hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3 text-sm font-medium text-foreground w-[25%]">{item.name}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground w-[12%]">{item.category}</td>
+                    <td className="px-4 py-3 text-center text-sm w-[10%]"><span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">OK</span></td>
+                    <td className="px-4 py-3 text-right text-sm font-semibold text-foreground w-[10%]">{item.quantity}</td>
+                    <td className="px-4 py-3 text-center text-sm w-[12%]"><span className="inline-block px-2 py-1 rounded border border-slate-300 dark:border-slate-600 text-xs font-medium">Lazada</span></td>
+                    <td className="px-4 py-3 text-center text-sm w-[12%]"><span className="inline-block px-2 py-1 rounded border border-slate-300 dark:border-slate-600 text-xs font-medium">Warehouse</span></td>
+                    <td className="px-4 py-3 text-right text-sm text-foreground w-[10%]">₱{item.costPrice.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right text-sm text-foreground w-[10%]">₱{item.sellingPrice.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right text-sm font-semibold text-green-600 dark:text-green-400 w-[9%]">{((((item.sellingPrice - item.costPrice) / item.sellingPrice) * 100) || 0).toFixed(1)}%</td>
+                    <td className="px-4 py-3 text-center w-[10%]">
+                      <div className="flex justify-center gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleRestock(item)} className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 p-1 h-auto">
                           <PackagePlus className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(item)} className="text-orange-500 hover:text-orange-600 hover:bg-orange-50">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(item)} className="text-orange-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 p-1 h-auto">
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)} className="text-orange-500 hover:text-orange-600 hover:bg-orange-50">
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 h-auto">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

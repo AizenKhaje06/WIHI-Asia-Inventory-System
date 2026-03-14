@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 import { 
   Store, 
   TrendingUp, 
@@ -18,7 +24,8 @@ import {
   Package,
   BarChart3,
   FileSpreadsheet,
-  FileDown
+  FileDown,
+  ChevronDown
 } from "lucide-react"
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
@@ -351,22 +358,28 @@ export default function SalesChannelsPage() {
           
           {/* Export Buttons */}
           <div className="flex items-center gap-3">
-            <Button
-              onClick={() => handleExportAllChannels('excel')}
-              disabled={loading || !data}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
-            >
-              <FileSpreadsheet className="h-4 w-4 mr-2" />
-              <span className="text-sm font-semibold">Excel Report</span>
-            </Button>
-            <Button
-              onClick={() => handleExportAllChannels('pdf')}
-              disabled={loading || !data}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
-            >
-              <FileDown className="h-4 w-4 mr-2" />
-              <span className="text-sm font-semibold">PDF Report</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  disabled={loading || !data}
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+                >
+                  <FileDown className="h-4 w-4 mr-2" />
+                  <span className="text-sm font-semibold">Export Report</span>
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => handleExportAllChannels('pdf')}>
+                  <FileDown className="h-4 w-4 mr-2" />
+                  <span>Export as PDF</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExportAllChannels('excel')}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  <span>Export as Excel</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
