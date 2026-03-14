@@ -18,6 +18,31 @@ const nextConfig = {
       exclude: ['error', 'warn'],
     } : false,
   },
+  // Rewrites to handle 404 on protected routes
+  async rewrites() {
+    return {
+      fallback: [
+        // Redirect protected routes to login if not authenticated
+        // This is handled by middleware and RouteGuard, but we need this for hard refresh
+        {
+          source: '/dashboard/:path*',
+          destination: '/dashboard/:path*',
+        },
+        {
+          source: '/packer/:path*',
+          destination: '/packer/:path*',
+        },
+        {
+          source: '/team-leader/:path*',
+          destination: '/team-leader/:path*',
+        },
+        {
+          source: '/admin/:path*',
+          destination: '/admin/:path*',
+        },
+      ],
+    }
+  },
   // PWA Configuration
   headers: async () => [
     // LOGIN PAGE - NO CACHE (IMPORTANT!)

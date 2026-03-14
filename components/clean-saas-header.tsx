@@ -28,8 +28,6 @@ const pageTitles: Record<string, string> = {
   "/dashboard/inventory/out-of-stock": "Out of Stock",
   "/dashboard/pos": "Warehouse Dispatch",
   "/dashboard/sales": "Sales Analytics",
-  "/dashboard/reports": "Sales Reports",
-  "/dashboard/insights": "Business Insights",
   "/dashboard/analytics": "Analytics",
   "/dashboard/customers": "Customers",
   "/dashboard/log": "Activity Log",

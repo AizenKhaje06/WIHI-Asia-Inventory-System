@@ -79,13 +79,13 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[] = []) {
       }
     },
     {
-      key: 'r',
+      key: 'a',
       ctrl: true,
-      description: 'Go to reports',
+      description: 'Go to analytics',
       category: 'Navigation',
       action: () => {
-        router.push('/dashboard/reports')
-        announceToScreenReader('Navigating to reports')
+        router.push('/dashboard/analytics')
+        announceToScreenReader('Navigating to analytics')
       }
     },
     {

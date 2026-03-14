@@ -72,12 +72,6 @@ export function CommandPalette() {
             <ShoppingCart className="mr-2 h-4 w-4" />
             <span>New Sale</span>
           </CommandItem>
-          <CommandItem
-            onSelect={() => runCommand(() => router.push('/dashboard/reports'))}
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            <span>Generate Report</span>
-          </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
@@ -127,12 +121,6 @@ export function CommandPalette() {
           >
             <Users className="mr-2 h-4 w-4" />
             <span>Customers</span>
-          </CommandItem>
-          <CommandItem
-            onSelect={() => runCommand(() => router.push('/dashboard/reports'))}
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            <span>Reports</span>
           </CommandItem>
         </CommandGroup>
 

@@ -252,6 +252,45 @@ export default function LogPage() {
     )
   }
 
+  // Extract sales channel from details
+  const getSalesChannel = (details: string) => {
+    if (!details) return null
+    const detailsLower = details.toLowerCase()
+    
+    // Check for specific sales channels
+    if (detailsLower.includes('shopee')) return 'Shopee'
+    if (detailsLower.includes('lazada')) return 'Lazada'
+    if (detailsLower.includes('facebook')) return 'Facebook'
+    if (detailsLower.includes('tiktok')) return 'TikTok'
+    if (detailsLower.includes('physical store')) return 'Physical Store'
+    if (detailsLower.includes('warehouse')) return 'Warehouse'
+    
+    return null
+  }
+
+  // Get sales channel badge
+  const getSalesChannelBadge = (channel: string | null) => {
+    if (!channel) return null
+    
+    const channelConfig: Record<string, { color: string; icon: string }> = {
+      'Shopee': { color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400', icon: '🛍️' },
+      'Lazada': { color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: '🛒' },
+      'Facebook': { color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400', icon: '📘' },
+      'TikTok': { color: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400', icon: '🎵' },
+      'Physical Store': { color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: '🏪' },
+      'Warehouse': { color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300', icon: '🏭' },
+    }
+    
+    const config = channelConfig[channel]
+    if (!config) return null
+    
+    return (
+      <Badge className={`${config.color} font-medium px-2 py-0.5 text-xs w-fit`}>
+        {config.icon} {channel}
+      </Badge>
+    )
+  }
+
   const hasActiveFilters = searchQuery || operationFilter !== "all" || salesChannelFilter !== "all" || sortBy !== "newest" || startDate || endDate
 
   if (loading) {
@@ -501,6 +540,7 @@ export default function LogPage() {
                     <tr className="border-b border-slate-200 dark:border-slate-700">
                       <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[180px]">Date & Time</th>
                       <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[140px]">Operation</th>
+                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[140px]">Sales Channel</th>
                       <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-[220px]">Item</th>
                       <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Details</th>
                     </tr>
@@ -531,6 +571,9 @@ export default function LogPage() {
                         </td>
                         <td className="py-2.5 px-3 whitespace-nowrap">
                           {getOperationBadge(log.operation, log.details)}
+                        </td>
+                        <td className="py-2.5 px-3 whitespace-nowrap">
+                          {getSalesChannelBadge(getSalesChannel(log.details))}
                         </td>
                         <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
                           <div className="max-w-[220px] truncate" title={log.itemName || '-'}>

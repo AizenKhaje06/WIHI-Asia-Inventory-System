@@ -34,6 +34,7 @@ export default function InternalUsagePage() {
   // Dispatch Modal
   const [dispatchModalOpen, setDispatchModalOpen] = useState(false)
   const [items, setItems] = useState<InventoryItem[]>([])
+  const [stores, setStores] = useState<any[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
   const [searchProducts, setSearchProducts] = useState("")
   const [loading, setLoading] = useState(false)
@@ -45,15 +46,36 @@ export default function InternalUsagePage() {
   // Dispatch Form States
   const [purpose, setPurpose] = useState('')
   const [salesChannel, setSalesChannel] = useState('')
+  const [destinationChannel, setDestinationChannel] = useState('')
+  const [destinationStore, setDestinationStore] = useState('')
   const [notes, setNotes] = useState('')
+
+  // Get unique sales channels from stores
+  const uniqueChannels = Array.from(new Set(stores.map(s => s.sales_channel))).sort()
+  
+  // Get stores for selected destination channel
+  const destinationStores = stores.filter(store => store.sales_channel === destinationChannel)
 
   const cartTotal = cart.reduce((sum, cartItem) => sum + cartItem.item.costPrice * cartItem.quantity, 0)
 
   const filteredProducts = items.filter(item => {
-    if (!searchProducts) return true
+    if (!searchProducts) {
+      // If warehouse transfer, exclude items already in destination store
+      if (purpose === 'Warehouse Transfer' && destinationStore) {
+        return item.store !== destinationStore
+      }
+      return true
+    }
     const searchLower = searchProducts.toLowerCase()
-    return item.name.toLowerCase().includes(searchLower) || 
+    const matchesSearch = item.name.toLowerCase().includes(searchLower) || 
            item.category.toLowerCase().includes(searchLower)
+    
+    // If warehouse transfer, exclude items already in destination store
+    if (purpose === 'Warehouse Transfer' && destinationStore) {
+      return matchesSearch && item.store !== destinationStore
+    }
+    
+    return matchesSearch
   })
 
   const filteredTransactions = transactions.filter(transaction => {
@@ -122,6 +144,7 @@ export default function InternalUsagePage() {
     
     fetchTransactions()
     fetchItems()
+    fetchStores()
   }, [])
 
   async function fetchTransactions() {
@@ -141,6 +164,16 @@ export default function InternalUsagePage() {
     } catch (error) {
       console.error("[Internal Usage] Error fetching items:", error)
       setItems([])
+    }
+  }
+
+  async function fetchStores() {
+    try {
+      const data = await apiGet<any[]>("/api/stores")
+      setStores(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error("[Internal Usage] Error fetching stores:", error)
+      setStores([])
     }
   }
 
@@ -196,9 +229,14 @@ export default function InternalUsagePage() {
       return
     }
     
-    // Check if purpose requires sales channel
+    // Check if purpose requires sales channel or destination
     if ((purpose === 'Demo/Display' || purpose === 'Internal Use') && !salesChannel) {
       alert('Please select a sales channel')
+      return
+    }
+    
+    if (purpose === 'Warehouse Transfer' && (!destinationChannel || !destinationStore)) {
+      alert('Please select a destination sales channel and store')
       return
     }
 
@@ -209,10 +247,10 @@ export default function InternalUsagePage() {
         quantity: cartItem.quantity,
       }))
 
-      // Combine purpose and sales channel
-      const finalDepartment = salesChannel 
-        ? `${purpose} / ${salesChannel}`
-        : purpose
+      // Combine purpose and destination
+      const finalDepartment = purpose === 'Warehouse Transfer'
+        ? `${purpose} / ${destinationStore}`
+        : `${purpose} / ${salesChannel}`
 
       await apiPost("/api/sales", {
         items: saleItems,
@@ -236,6 +274,8 @@ export default function InternalUsagePage() {
       setCart([])
       setPurpose('')
       setSalesChannel('')
+      setDestinationChannel('')
+      setDestinationStore('')
       setNotes('')
       setDispatchModalOpen(false)
       setSuccessModalOpen(true)
@@ -255,6 +295,8 @@ export default function InternalUsagePage() {
     setCart([])
     setPurpose('')
     setSalesChannel('')
+    setDestinationChannel('')
+    setDestinationStore('')
     setNotes('')
     setSearchProducts('')
     setDispatchModalOpen(true)
@@ -761,6 +803,7 @@ export default function InternalUsagePage() {
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Date</TableHead>
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Item</TableHead>
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Type</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Sales Channel</TableHead>
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Department</TableHead>
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 text-center">Qty</TableHead>
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 text-right">Cost</TableHead>
@@ -771,7 +814,7 @@ export default function InternalUsagePage() {
                     <TableBody>
                       {filteredTransactions.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={8} className="text-center py-16">
+                          <TableCell colSpan={9} className="text-center py-16">
                             <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
                             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">No internal usage records found</p>
                             <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
@@ -824,6 +867,34 @@ export default function InternalUsagePage() {
                                   Transfer
                                 </span>
                               )}
+                            </TableCell>
+                            <TableCell className="py-2">
+                              {(() => {
+                                // Extract sales channel from department field
+                                const dept = transaction.department || ''
+                                const parts = dept.split(' / ')
+                                const channel = parts.length > 1 ? parts[1] : null
+                                
+                                if (!channel) return <span className="text-[11px] text-slate-500">—</span>
+                                
+                                const channelConfig: Record<string, { color: string; icon: string }> = {
+                                  'Shopee': { color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400', icon: '🛍️' },
+                                  'Lazada': { color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: '🛒' },
+                                  'Facebook': { color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400', icon: '📘' },
+                                  'TikTok': { color: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400', icon: '🎵' },
+                                  'Physical Store': { color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: '🏪' },
+                                  'Warehouse': { color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300', icon: '🏭' },
+                                }
+                                
+                                const config = channelConfig[channel]
+                                if (!config) return <span className="text-[11px] text-slate-500">{channel}</span>
+                                
+                                return (
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold border ${config.color}`}>
+                                    {config.icon} {channel}
+                                  </span>
+                                )
+                              })()}
                             </TableCell>
                             <TableCell className="py-2">
                               <span className="text-[11px] text-slate-700 dark:text-slate-300">
@@ -951,6 +1022,70 @@ export default function InternalUsagePage() {
                           <SelectItem value="Physical Store">🏪 Physical Store</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                  )}
+
+                  {/* Destination Store for Warehouse Transfer */}
+                  {purpose === 'Warehouse Transfer' && (
+                    <div className="space-y-3 animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                      {/* Destination Sales Channel */}
+                      <div>
+                        <Label className="text-sm font-medium">
+                          Destination Sales Channel * <span className="text-xs text-slate-500">(Where to transfer?)</span>
+                        </Label>
+                        <Select value={destinationChannel} onValueChange={(value) => {
+                          setDestinationChannel(value)
+                          setDestinationStore('') // Reset store when channel changes
+                        }}>
+                          <SelectTrigger className="mt-1.5">
+                            <SelectValue placeholder="Select sales channel" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {uniqueChannels.map((channel) => {
+                              const icons: Record<string, string> = {
+                                'Warehouse': '🏭',
+                                'Facebook': '📘',
+                                'TikTok': '🎵',
+                                'Lazada': '🛒',
+                                'Shopee': '🛍️',
+                                'Physical Store': '🏪',
+                              }
+                              return (
+                                <SelectItem key={channel} value={channel}>
+                                  {icons[channel] || '📦'} {channel}
+                                </SelectItem>
+                              )
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Destination Store */}
+                      {destinationChannel && (
+                        <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                          <Label className="text-sm font-medium">
+                            Destination Store * <span className="text-xs text-slate-500">(Which store?)</span>
+                          </Label>
+                          <Select value={destinationStore} onValueChange={setDestinationStore}>
+                            <SelectTrigger className="mt-1.5">
+                              <SelectValue placeholder="Select store" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {destinationStores.length > 0 ? (
+                                destinationStores.map((store) => (
+                                  <SelectItem key={store.id} value={store.store_name}>
+                                    {store.store_name}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="" disabled>
+                                  No stores available
+                                </SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1102,9 +1237,21 @@ export default function InternalUsagePage() {
                           <p className="text-lg font-bold text-slate-900 dark:text-white mb-1">
                             ₱{item.costPrice.toFixed(2)}
                           </p>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                            {item.category}
-                          </p>
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                              {item.category}
+                            </p>
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              {item.salesChannel && (
+                                <span className="text-[9px] font-semibold text-slate-600 dark:text-slate-300 bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 rounded whitespace-nowrap">
+                                  {item.salesChannel}
+                                </span>
+                              )}
+                              <span className="text-[9px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded whitespace-nowrap">
+                                {item.store || 'Warehouse'}
+                              </span>
+                            </div>
+                          </div>
                         </button>
                       )
                     })}

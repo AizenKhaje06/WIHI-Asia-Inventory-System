@@ -364,9 +364,9 @@ export default function DashboardPage() {
                   </Link>
                 </Button>
                 <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
-                  <Link href="/dashboard/reports">
+                  <Link href="/dashboard/analytics">
                     <FileText className="h-3 w-3 mr-1.5" />
-                    Reports
+                    Analytics
                   </Link>
                 </Button>
               </div>

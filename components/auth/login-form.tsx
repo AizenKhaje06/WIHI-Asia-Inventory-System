@@ -17,6 +17,12 @@ interface Channel {
   label: string
 }
 
+interface Staff {
+  id: string
+  name: string
+  identifier: string
+}
+
 interface LoginFormProps {
   role: UserRole
   onSubmit: (data: LoginFormData) => Promise<void>
@@ -26,6 +32,8 @@ interface LoginFormProps {
   selectedChannel?: string
   onChannelChange?: (channel: string) => void
   channelsLoading?: boolean
+  staffList?: Staff[]
+  staffLoading?: boolean
 }
 
 export interface LoginFormData {
@@ -42,7 +50,9 @@ export function LoginForm({
   channels = [],
   selectedChannel = "",
   onChannelChange,
-  channelsLoading = false
+  channelsLoading = false,
+  staffList = [],
+  staffLoading = false
 }: LoginFormProps) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -159,39 +169,50 @@ export function LoginForm({
         </Alert>
       )}
 
-      {/* Username Field - ENHANCED */}
-      <div className="space-y-2">
-        <Label htmlFor="username" className="text-slate-200 font-medium">
-          Username
-        </Label>
-        <div className="relative group">
-          <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200" />
-          <Input
-            id="username"
-            type="text"
-            placeholder="Enter your username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            disabled={loading}
-            className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50"
-            required
-            autoComplete="username"
-            aria-label="Username"
-          />
+      {/* Username Field - ONLY FOR ADMIN/PACKER */}
+      {role !== 'staff' && (
+        <div className="space-y-2">
+          <Label htmlFor="username" className="text-slate-200 font-medium">
+            Username
+          </Label>
+          <div className="relative group">
+            <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200" />
+            <Input
+              id="username"
+              type="text"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
+              className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50"
+              required
+              autoComplete="username"
+              aria-label="Username"
+            />
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Staff Info - FOR STAFF ROLE */}
+      {role === 'staff' && (
+        <div className="space-y-2 p-3 rounded-lg bg-blue-900/20 border border-blue-800">
+          <p className="text-sm text-blue-300">
+            <span className="font-semibold">Staff Login:</span> Enter your staff identifier (password) to access your sales channel dashboard.
+          </p>
+        </div>
+      )}
 
       {/* Password Field - ENHANCED */}
       <div className="space-y-2">
         <Label htmlFor="password" className="text-slate-200 font-medium">
-          Password
+          {role === 'staff' ? 'Staff Identifier' : 'Password'}
         </Label>
         <div className="relative group">
           <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200" />
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
-            placeholder="Enter your password"
+            placeholder={role === 'staff' ? "Enter your staff identifier" : "Enter your password"}
             value={password}
             onChange={(e) => handlePasswordChange(e.target.value)}
             onKeyDown={handleKeyPress}
@@ -199,8 +220,8 @@ export function LoginForm({
             disabled={loading}
             className="pl-12 pr-16 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 font-mono text-sm tracking-wide text-white hover:border-slate-600 disabled:opacity-50"
             required
-            autoComplete="current-password"
-            aria-label="Password"
+            autoComplete={role === 'staff' ? "off" : "current-password"}
+            aria-label={role === 'staff' ? "Staff Identifier" : "Password"}
           />
           <button
             type="button"
@@ -208,7 +229,7 @@ export function LoginForm({
             disabled={loading}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-all duration-200 disabled:opacity-50"
             tabIndex={-1}
-            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-label={showPassword ? "Hide" : "Show"}
           >
             {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
@@ -276,7 +297,7 @@ export function LoginForm({
       {/* Submit Button - ENHANCED MICRO-INTERACTIONS */}
       <Button
         type="submit"
-        disabled={loading || !username || !password}
+        disabled={loading || (role !== 'staff' && !username) || !password}
         className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 group hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 active:scale-[0.98]"
       >
         {loading ? (
