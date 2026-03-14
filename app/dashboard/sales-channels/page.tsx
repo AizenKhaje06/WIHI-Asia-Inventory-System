@@ -596,7 +596,7 @@ export default function SalesChannelsPage() {
                   <button
                     key={dept.name}
                     onClick={() => router.push(`/dashboard/sales-channels/${encodeURIComponent(dept.name)}?startDate=${startDate}&endDate=${endDate}`)}
-                    className="text-left p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-400 hover:shadow-lg transition-all duration-200"
+                    className="text-left p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
