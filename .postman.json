@@ -491,6 +491,143 @@
           ]
         },
         {
+          "name": "Cron Jobs & Automated Reports",
+          "item": [
+            {
+              "name": "Send Email Reports (Cron)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cronSecret}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/cron/send-reports",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "cron", "send-reports"]
+                },
+                "description": "Trigger automated email reports (requires CRON_SECRET)"
+              }
+            },
+            {
+              "name": "Test Email Report (Track Orders)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"recipient_email\": \"test@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/email-test",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "email-test"]
+                },
+                "description": "Send test email report with Track Orders data (orders table). Tests the new data source migration from packing_queue to orders table."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200 or 500 (if email not configured)",
+                      "pm.test('Status code is 200 (success) or 500 (email not configured)', function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 500]);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: If successful, should have success field",
+                      "if (pm.response.code === 200) {",
+                      "    pm.test('Success response has required fields', function () {",
+                      "        const jsonData = pm.response.json();",
+                      "        pm.expect(jsonData).to.have.property('success');",
+                      "        pm.expect(jsonData).to.have.property('message');",
+                      "        pm.expect(jsonData).to.have.property('ordersCount');",
+                      "        pm.expect(jsonData.success).to.be.true;",
+                      "    });",
+                      "    ",
+                      "    pm.test('Orders count is a number', function () {",
+                      "        const jsonData = pm.response.json();",
+                      "        pm.expect(jsonData.ordersCount).to.be.a('number');",
+                      "    });",
+                      "}",
+                      "",
+                      "// Test 4: If error, should have error field",
+                      "if (pm.response.code === 500) {",
+                      "    pm.test('Error response has error field', function () {",
+                      "        const jsonData = pm.response.json();",
+                      "        pm.expect(jsonData).to.have.property('error');",
+                      "    });",
+                      "}",
+                      "",
+                      "// Test 5: Response time should be reasonable (< 10 seconds)",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Test Email Report - Missing Email",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/email-test",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "email-test"]
+                },
+                "description": "Test email endpoint without recipient_email (should return 400)"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is 400 (Bad Request)', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error message indicates missing email', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include('email');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "Bundles (NEW - TO BE IMPLEMENTED)",
           "item": [
             {
@@ -686,6 +823,11 @@
           "key": "bundleId",
           "value": "",
           "enabled": true
+        },
+        {
+          "key": "cronSecret",
+          "value": "your_random_secret_here_change_this",
+          "enabled": true
         }
       ]
     },
@@ -715,6 +857,11 @@
         {
           "key": "bundleId",
           "value": "",
+          "enabled": true
+        },
+        {
+          "key": "cronSecret",
+          "value": "your_random_secret_here_change_this",
           "enabled": true
         }
       ]

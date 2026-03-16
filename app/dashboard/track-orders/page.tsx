@@ -8,11 +8,17 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
 import * as XLSX from 'xlsx'
 import { 
   Search, Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, 
   User, Phone, Mail, MapPin, AlertCircle, PackageCheck, Ban, AlertTriangle, RotateCcw,
-  FileSpreadsheet, FileDown, Download, Trash2
+  FileSpreadsheet, FileDown, Download, Trash2, ChevronDown
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -1155,22 +1161,30 @@ export default function TrackOrdersPage() {
             Manage customer orders and delivery tracking
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button
-            onClick={exportToExcel}
-            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
-          >
-            <FileSpreadsheet className="h-4 w-4 mr-2" />
-            <span className="text-sm font-semibold">Excel Report</span>
-          </Button>
-          <Button
-            onClick={exportToPDF}
-            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
-          >
-            <FileDown className="h-4 w-4 mr-2" />
-            <span className="text-sm font-semibold">PDF Report</span>
-          </Button>
-        </div>
+        {/* Export button - Admin only */}
+        {!isTeamLeader && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="group relative inline-flex items-center justify-center p-0.5 text-sm font-medium text-gray-900 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 transition-all duration-200">
+                <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0 flex items-center gap-2">
+                  <FileDown className="h-4 w-4" />
+                  Export Report
+                  <ChevronDown className="h-4 w-4" />
+                </span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={exportToPDF}>
+                <FileDown className="h-4 w-4 mr-2" />
+                <span>Export as PDF</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportToExcel}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                <span>Export as Excel</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {/* Statistics Cards - 2 Rows x 5 Columns Professional Corporate Design */}

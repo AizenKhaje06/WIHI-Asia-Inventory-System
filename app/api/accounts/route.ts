@@ -120,7 +120,7 @@ export async function PUT(request: NextRequest) {
       await updateAccount(targetUsername, { displayName })
       return NextResponse.json({ success: true, message: "Display name updated successfully" })
     } else if (action === 'updateProfile') {
-      // Update display name, email, and phone
+      // Update display name, email, phone, and optionally username
       const updates: any = {}
       if (displayName !== undefined) updates.displayName = displayName
       if (email !== undefined) updates.email = email
@@ -129,10 +129,15 @@ export async function PUT(request: NextRequest) {
       await updateAccount(targetUsername, updates)
       return NextResponse.json({ success: true, message: "Profile updated successfully" })
     } else if (action === 'updateUsername') {
-      // Only admins can change usernames
-      if (role !== 'admin') {
-        return NextResponse.json({ error: "Forbidden: Only admins can change usernames" }, { status: 403 })
+      // Users can update their own username, admins can update any username
+      if (role !== 'admin' && username !== targetUsername) {
+        return NextResponse.json({ error: "Forbidden: You can only change your own username" }, { status: 403 })
       }
+      
+      if (!newUsername || newUsername.trim() === '') {
+        return NextResponse.json({ error: "New username is required" }, { status: 400 })
+      }
+      
       await updateUsername(targetUsername, newUsername)
       return NextResponse.json({ success: true, message: "Username updated successfully" })
     } else {

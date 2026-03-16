@@ -49,6 +49,7 @@ import { toast } from "sonner"
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api-client"
 import { getCurrentUser } from "@/lib/auth"
 import { BrandLoader } from "@/components/ui/brand-loader"
+import { EmailReportsManager } from "@/components/email-reports-manager"
 
 interface Account {
   id: string
@@ -305,10 +306,28 @@ export default function SettingsPage() {
       return
     }
 
+    if (!profileForm.username) {
+      toast.error('Username is required')
+      return
+    }
+
     try {
+      // Check if username changed
+      const usernameChanged = profileForm.username !== currentUser.username
+
+      if (usernameChanged) {
+        // Update username first (requires admin or self-update)
+        await apiPut('/api/accounts', {
+          action: 'updateUsername',
+          username: currentUser.username,
+          newUsername: profileForm.username
+        })
+      }
+
+      // Update profile (display name, email, phone)
       await apiPut('/api/accounts', {
         action: 'updateProfile',
-        username: currentUser.username,
+        username: usernameChanged ? profileForm.username : currentUser.username,
         displayName: profileForm.displayName,
         email: profileForm.email,
         phone: profileForm.phone
@@ -316,6 +335,7 @@ export default function SettingsPage() {
 
       const updatedUser = { 
         ...currentUser, 
+        username: profileForm.username,
         displayName: profileForm.displayName,
         email: profileForm.email,
         phone: profileForm.phone
@@ -323,7 +343,16 @@ export default function SettingsPage() {
       localStorage.setItem('currentUser', JSON.stringify(updatedUser))
       setCurrentUser(updatedUser)
 
-      toast.success('Profile updated successfully')
+      if (usernameChanged) {
+        toast.success('Profile and username updated successfully! Please login again with your new username.')
+        // Optionally redirect to login after username change
+        setTimeout(() => {
+          localStorage.removeItem('currentUser')
+          window.location.href = '/'
+        }, 2000)
+      } else {
+        toast.success('Profile updated successfully')
+      }
     } catch (error) {
       toast.error('Failed to update profile')
     }
@@ -643,168 +672,233 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden px-4 sm:px-6 lg:px-8 py-8">
-      {/* Enterprise Header */}
-      <div className="mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2 flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
-                <Settings className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      {/* Professional Enterprise Header */}
+      <div className="bg-gradient-to-r from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 border-b border-slate-200 dark:border-slate-800">
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex items-start gap-5">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 shadow-xl shadow-blue-500/20 dark:shadow-blue-500/10">
+                <Settings className="h-8 w-8 text-white" />
               </div>
-              System Settings
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-              Configure your system preferences and manage users
-            </p>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            <Badge variant="outline" className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm">
-              <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-              System Online
-            </Badge>
-            <Badge variant="outline" className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
-              <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-              All Systems Operational
-            </Badge>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+                  System Settings
+                </h1>
+                <p className="text-slate-600 dark:text-slate-400 text-base max-w-2xl">
+                  Configure system preferences, manage users, and customize your workspace
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">System Online</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-medium text-green-700 dark:text-green-400">All Systems Operational</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 gap-2 h-auto p-2 bg-slate-100 dark:bg-slate-900 rounded-lg">
-          <TabsTrigger value="profile" className="flex items-center justify-center gap-2 py-3 px-2 sm:px-4">
-            <User className="h-4 w-4" />
-            <span className="hidden sm:inline text-sm">Profile</span>
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center justify-center gap-2 py-3 px-2 sm:px-4">
-            <Lock className="h-4 w-4" />
-            <span className="hidden sm:inline text-sm">Security</span>
-          </TabsTrigger>
-          {isAdmin && (
-            <TabsTrigger value="users" className="flex items-center justify-center gap-2 py-3 px-2 sm:px-4">
-              <Shield className="h-4 w-4" />
-              <span className="hidden sm:inline text-sm">Users</span>
+        {/* Professional Tab Navigation */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-2">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 gap-2 h-auto p-0 bg-transparent">
+            <TabsTrigger 
+              value="profile" 
+              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+            >
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline text-sm font-medium">Profile</span>
             </TabsTrigger>
-          )}
-          {isAdmin && (
-            <TabsTrigger value="company" className="flex items-center justify-center gap-2 py-3 px-2 sm:px-4">
-              <Building2 className="h-4 w-4" />
-              <span className="hidden sm:inline text-sm">Company</span>
+            <TabsTrigger 
+              value="security" 
+              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+            >
+              <Lock className="h-4 w-4" />
+              <span className="hidden sm:inline text-sm font-medium">Security</span>
             </TabsTrigger>
-          )}
-          <TabsTrigger value="appearance" className="flex items-center justify-center gap-2 py-3 px-2 sm:px-4">
-            <Palette className="h-4 w-4" />
-            <span className="hidden sm:inline text-sm">Appearance</span>
-          </TabsTrigger>
-          <TabsTrigger value="system" className="flex items-center justify-center gap-2 py-3 px-2 sm:px-4">
-            <Database className="h-4 w-4" />
-            <span className="hidden sm:inline text-sm">System</span>
-          </TabsTrigger>
-        </TabsList>
+            {isAdmin && (
+              <TabsTrigger 
+                value="users" 
+                className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+              >
+                <Shield className="h-4 w-4" />
+                <span className="hidden sm:inline text-sm font-medium">Users</span>
+              </TabsTrigger>
+            )}
+            {isAdmin && (
+              <TabsTrigger 
+                value="company" 
+                className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+              >
+                <Building2 className="h-4 w-4" />
+                <span className="hidden sm:inline text-sm font-medium">Company</span>
+              </TabsTrigger>
+            )}
+            {isAdmin && (
+              <TabsTrigger 
+                value="email-reports" 
+                className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+              >
+                <Mail className="h-4 w-4" />
+                <span className="hidden sm:inline text-sm font-medium">Email Reports</span>
+              </TabsTrigger>
+            )}
+            <TabsTrigger 
+              value="appearance" 
+              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+            >
+              <Palette className="h-4 w-4" />
+              <span className="hidden sm:inline text-sm font-medium">Appearance</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="system" 
+              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-700 data-[state=active]:to-slate-900 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+            >
+              <Database className="h-4 w-4" />
+              <span className="hidden sm:inline text-sm font-medium">System</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Profile Tab */}
         <TabsContent value="profile" className="space-y-6 mt-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Profile Card */}
-            <Card className="border-0 shadow-xl lg:col-span-2">
-              <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 p-6">
-                <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            {/* Profile Card - Enhanced */}
+            <Card className="lg:col-span-2 border-0 shadow-xl bg-white dark:bg-slate-900 rounded-2xl overflow-hidden">
+              <CardHeader className="border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 p-8">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg">
+                    <User className="h-6 w-6 text-white" />
                   </div>
-                  Profile Information
-                </CardTitle>
-                <CardDescription className="mt-2">
-                  Manage your personal information and preferences
-                </CardDescription>
+                  <div>
+                    <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">
+                      Profile Information
+                    </CardTitle>
+                    <CardDescription className="mt-1.5 text-base">
+                      Manage your personal information and preferences
+                    </CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="p-6 space-y-6">
+              <CardContent className="p-8 space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <Label htmlFor="username" className="text-sm font-semibold">Username</Label>
+                    <Label htmlFor="username" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Username</Label>
                     <Input
                       id="username"
                       value={profileForm.username}
-                      disabled
-                      className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                      onChange={(e) => setProfileForm({ ...profileForm, username: e.target.value })}
+                      placeholder="Enter username"
+                      className="h-11 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500"
                     />
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Lock className="h-3 w-3" />
-                      Username cannot be changed
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                      <User className="h-3.5 w-3.5" />
+                      Your unique username for login
                     </p>
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="displayName" className="text-sm font-semibold">Display Name</Label>
+                    <Label htmlFor="displayName" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Display Name</Label>
                     <Input
                       id="displayName"
                       value={profileForm.displayName}
                       onChange={(e) => setProfileForm({ ...profileForm, displayName: e.target.value })}
                       placeholder="Enter your display name"
-                      className="border-slate-200 dark:border-slate-700"
+                      className="h-11 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="email" className="text-sm font-semibold">Email Address</Label>
+                    <Label htmlFor="email" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input
                         id="email"
                         type="email"
                         value={profileForm.email}
                         onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
                         placeholder="your.email@company.com"
-                        className="pl-10 border-slate-200 dark:border-slate-700"
+                        className="h-11 pl-12 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="phone" className="text-sm font-semibold">Phone Number</Label>
+                    <Label htmlFor="phone" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Phone Number</Label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input
                         id="phone"
                         type="tel"
                         value={profileForm.phone}
                         onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
                         placeholder="+63 XXX XXX XXXX"
-                        className="pl-10 border-slate-200 dark:border-slate-700"
+                        className="h-11 pl-12 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
                 </div>
 
-                <Separator className="my-6" />
+                <Separator className="my-8" />
 
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                  <div>
-                    <p className="font-semibold text-sm">Account Role</p>
-                    <p className="text-xs text-muted-foreground mt-1">Your current access level</p>
+                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-xl ${
+                      currentUser?.role === 'admin' 
+                        ? 'bg-gradient-to-br from-purple-600 to-pink-600' 
+                        : 'bg-gradient-to-br from-blue-600 to-cyan-600'
+                    }`}>
+                      {currentUser?.role === 'admin' ? (
+                        <Shield className="h-5 w-5 text-white" />
+                      ) : (
+                        <User className="h-5 w-5 text-white" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-base text-slate-900 dark:text-white">Account Role</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">Your current access level</p>
+                    </div>
                   </div>
                   <Badge 
                     variant={currentUser?.role === 'admin' ? 'default' : 'secondary'}
-                    className="px-4 py-2 text-sm"
+                    className={`px-5 py-2.5 text-sm font-semibold rounded-xl ${
+                      currentUser?.role === 'admin'
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                    }`}
                   >
                     {currentUser?.role === 'admin' ? '👑 Administrator' : '👤 Operations Staff'}
                   </Badge>
                 </div>
 
-                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
-                  <Button variant="outline" onClick={() => {
-                    setProfileForm({
-                      displayName: currentUser.displayName || '',
-                      username: currentUser.username || '',
-                      email: currentUser.email || '',
-                      phone: currentUser.phone || ''
-                    })
-                  }} className="w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setProfileForm({
+                        displayName: currentUser.displayName || '',
+                        username: currentUser.username || '',
+                        email: currentUser.email || '',
+                        phone: currentUser.phone || ''
+                      })
+                    }} 
+                    className="h-11 px-6 rounded-xl border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  >
                     <X className="h-4 w-4 mr-2" />
-                    Reset
+                    Reset Changes
                   </Button>
-                  <Button onClick={handleProfileUpdate} className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                  <Button 
+                    onClick={handleProfileUpdate} 
+                    className="h-11 px-8 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/30 dark:shadow-blue-500/20"
+                  >
                     <Save className="h-4 w-4 mr-2" />
                     Save Changes
                   </Button>
@@ -812,39 +906,41 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Quick Stats */}
+            {/* Quick Stats - Enhanced */}
             <div className="space-y-6">
-              <Card className="border-0 shadow-xl">
-                <CardHeader className="pb-4 p-6">
-                  <CardTitle className="text-sm font-semibold">Account Activity</CardTitle>
+              <Card className="border-0 shadow-xl bg-white dark:bg-slate-900 rounded-2xl overflow-hidden">
+                <CardHeader className="pb-4 p-6 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 border-b border-slate-200 dark:border-slate-700">
+                  <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">Account Activity</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 px-6 pb-6">
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-muted-foreground">Last Login</span>
-                    <span className="text-sm font-medium">Today, 10:30 AM</span>
+                <CardContent className="space-y-4 px-6 pb-6 pt-6">
+                  <div className="flex items-center justify-between py-3">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">Last Login</span>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Today, 10:30 AM</span>
                   </div>
                   <Separator />
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-muted-foreground">Account Created</span>
-                    <span className="text-sm font-medium">Jan 2024</span>
+                  <div className="flex items-center justify-between py-3">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">Account Created</span>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Jan 2024</span>
                   </div>
                   <Separator />
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-muted-foreground">Sessions</span>
-                    <Badge variant="outline">Active</Badge>
+                  <div className="flex items-center justify-between py-3">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">Sessions</span>
+                    <Badge variant="outline" className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">Active</Badge>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
-                <CardContent className="p-6">
-                  <div className="text-center space-y-4">
-                    <div className="inline-flex p-3 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                      <Shield className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-2xl overflow-hidden">
+                <CardContent className="p-8">
+                  <div className="text-center space-y-5">
+                    <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-xl">
+                      <Shield className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="font-semibold text-base">Security Score</h3>
-                    <div className="text-4xl font-bold text-green-600 dark:text-green-400">10/10</div>
-                    <p className="text-xs text-muted-foreground">Maximum security achieved</p>
+                    <h3 className="font-bold text-lg text-slate-900 dark:text-white">Security Score</h3>
+                    <div className="text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                      10/10
+                    </div>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Maximum security achieved</p>
                   </div>
                 </CardContent>
               </Card>
@@ -1468,6 +1564,13 @@ export default function SettingsPage() {
           </TabsContent>
         )}
 
+        {/* Email Reports Tab (Admin Only) */}
+        {isAdmin && (
+          <TabsContent value="email-reports" className="space-y-6">
+            <EmailReportsManager />
+          </TabsContent>
+        )}
+
         {/* Appearance Tab */}
         <TabsContent value="appearance" className="space-y-6">
           <Card className="border-0 shadow-xl">
@@ -1809,6 +1912,7 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   )
 }

@@ -7,10 +7,12 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Search, Pencil, Trash2, PackagePlus, Package, Filter, X, ArrowUpDown, AlertCircle, TrendingUp, Warehouse, Tag, Loader2, LayoutGrid, LayoutList, Eye, ShoppingCart, Check, Building2 } from "lucide-react"
+import { Plus, Search, Pencil, Trash2, PackagePlus, Package, Filter, X, ArrowUpDown, AlertCircle, TrendingUp, Warehouse, Tag, Loader2, LayoutGrid, LayoutList, Eye, ShoppingCart, Check, Building2, FileDown, FileSpreadsheet, ChevronDown } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import * as XLSX from 'xlsx'
 import type { InventoryItem } from "@/lib/types"
 import { AddItemDialog } from "@/components/add-item-dialog"
 import { EditItemDialog } from "@/components/edit-item-dialog"
@@ -20,6 +22,8 @@ import { showSuccess, showError } from "@/lib/toast-utils"
 import type { Store } from "@/lib/types"
 import { getCurrentUser } from "@/lib/auth"
 import { apiGet, apiDelete, apiPost, apiPut } from "@/lib/api-client"
+import { getCurrentUserRole } from '@/lib/role-utils'
+import { toast } from 'sonner'
 
 const SALES_CHANNELS = ['Shopee', 'Lazada', 'Facebook', 'TikTok', 'Physical Store'] as const
 
@@ -43,6 +47,10 @@ export default function InventoryPage() {
   
   // Get current user for role-based features
   const currentUser = getCurrentUser()
+  
+  // Role detection for export button
+  const userRole = getCurrentUserRole()
+  const isTeamLeader = userRole === 'team_leader'
   
   // Category Management
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
@@ -120,18 +128,33 @@ export default function InventoryPage() {
     return widths as typeof ratios
   }
   
-  // Resizable columns state - Optimized for full width, no dead space
-  const [columnWidths, setColumnWidths] = useState({
-    product: 319,
-    category: 175,
-    status: 96,
-    stock: 96,
-    salesChannel: 131,
-    store: 157,
-    cost: 105,
-    price: 105,
-    margin: 102,
-    actions: 150
+  // Resizable columns state - Persistent via localStorage
+  const [columnWidths, setColumnWidths] = useState(() => {
+    // Try to load saved column widths from localStorage
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('inventory-column-widths')
+      if (saved) {
+        try {
+          return JSON.parse(saved)
+        } catch (e) {
+          console.error('Failed to parse saved column widths:', e)
+        }
+      }
+    }
+    
+    // Default widths if no saved data
+    return {
+      product: 319,
+      category: 175,
+      status: 96,
+      stock: 96,
+      salesChannel: 131,
+      store: 157,
+      cost: 105,
+      price: 105,
+      margin: 102,
+      actions: 150
+    }
   })
   const [resizing, setResizing] = useState<string | null>(null)
   const [startX, setStartX] = useState(0)
@@ -168,6 +191,10 @@ export default function InventoryPage() {
     }
 
     const handleMouseUp = () => {
+      if (resizing) {
+        // Save to localStorage when resize is complete
+        localStorage.setItem('inventory-column-widths', JSON.stringify(columnWidths))
+      }
       setResizing(null)
     }
 
@@ -184,7 +211,7 @@ export default function InventoryPage() {
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
     }
-  }, [resizing, startX, startWidth])
+  }, [resizing, startX, startWidth, columnWidths])
 
   useEffect(() => {
     fetchItems()
@@ -471,6 +498,454 @@ export default function InventoryPage() {
     }
   }
 
+  // Export Functions
+  const exportToExcel = async () => {
+    try {
+      // Filter out bundles - only export regular items
+      const regularItems = filteredItems.filter(item => (item as any).product_type !== 'bundle')
+      
+      // Fetch restock data for all items
+      const restockResponse = await fetch('/api/restocks')
+      const allRestocks = restockResponse.ok ? await restockResponse.json() : []
+      
+      // Group items by product name + cost price + selling price
+      const groupedItems = regularItems.reduce((acc, item) => {
+        // Create unique key based on name, cost, and selling price
+        const key = `${item.name}-${item.costPrice}-${item.sellingPrice}`
+        
+        if (!acc[key]) {
+          acc[key] = {
+            name: item.name,
+            quantity: 0,
+            costPrice: item.costPrice,
+            sellingPrice: item.sellingPrice,
+            items: []
+          }
+        }
+        
+        acc[key].quantity += item.quantity
+        acc[key].items.push(item)
+        
+        return acc
+      }, {} as Record<string, any>)
+      
+      // Add restock information to each group
+      Object.values(groupedItems).forEach((group: any) => {
+        // Find the most recent restock for any item in this group
+        const itemIds = group.items.map((i: any) => i.id)
+        const groupRestocks = allRestocks.filter((r: any) => itemIds.includes(r.itemId))
+        
+        if (groupRestocks.length > 0) {
+          // Sort by timestamp descending to get the most recent
+          const latestRestock = groupRestocks.sort((a: any, b: any) => 
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          )[0]
+          
+          group.lastRestockDate = latestRestock.timestamp
+          group.lastRestockAmount = latestRestock.quantity
+          group.lastRestockReason = latestRestock.reason
+        } else {
+          group.lastRestockDate = 'N/A'
+          group.lastRestockAmount = 'N/A'
+          group.lastRestockReason = 'N/A'
+        }
+      })
+
+      const groupedArray = Object.values(groupedItems)
+
+      // Calculate totals for header
+      const totalProducts = groupedArray.length
+      const totalQuantity = groupedArray.reduce((sum: number, group: any) => sum + group.quantity, 0)
+      const totalValue = groupedArray.reduce((sum: number, group: any) => sum + (group.quantity * group.sellingPrice), 0)
+      const totalCOGS = groupedArray.reduce((sum: number, group: any) => sum + (group.quantity * group.costPrice), 0)
+      
+      let lowStockCount = 0
+      let outOfStockCount = 0
+      groupedArray.forEach((group: any) => {
+        const lowestReorderLevel = Math.min(...group.items.map((i: any) => i.reorderLevel || 0))
+        if (group.quantity === 0) {
+          outOfStockCount++
+        } else if (group.quantity <= lowestReorderLevel) {
+          lowStockCount++
+        }
+      })
+      const inStockCount = totalProducts - lowStockCount - outOfStockCount
+
+      // Create header information
+      const headerInfo = [
+        ['INVENTORY REPORT'],
+        [''],
+        ['Report Date:', new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })],
+        ['Report Time:', new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })],
+        [''],
+        ['SUMMARY INFORMATION'],
+        ['Total Products:', `${totalProducts} items`],
+        ['Total Quantity:', `${formatNumber(totalQuantity)} units`],
+        ['Total Inventory Value:', formatCurrency(totalValue)],
+        ['Total COGS:', formatCurrency(totalCOGS)],
+        ['In Stock Items:', `${inStockCount} items`],
+        ['Low Stock Items:', `${lowStockCount} items`],
+        ['Out of Stock Items:', `${outOfStockCount} items`],
+        ['Filter Applied:', salesChannelFilter !== 'all' ? salesChannelFilter : 'All Channels'],
+        [''],
+        ['Note: Bundle items are excluded from this report'],
+        [''],
+        ['']
+      ]
+
+      // Convert grouped data to export format
+      const exportData = groupedArray.map((group: any) => {
+        const totalValue = group.quantity * group.sellingPrice
+        const totalCOGS = group.quantity * group.costPrice
+        const profitMargin = group.sellingPrice > 0 
+          ? ((group.sellingPrice - group.costPrice) / group.sellingPrice * 100).toFixed(2)
+          : '0.00'
+        
+        // Determine status based on total quantity
+        const lowestReorderLevel = Math.min(...group.items.map((i: any) => i.reorderLevel || 0))
+        const status = group.quantity === 0 
+          ? 'Out of Stock' 
+          : group.quantity <= lowestReorderLevel 
+            ? 'Low Stock' 
+            : 'In Stock'
+        
+        // Format restock date if available
+        const restockDate = group.lastRestockDate !== 'N/A' 
+          ? new Date(group.lastRestockDate).toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'short', 
+              day: 'numeric' 
+            })
+          : 'N/A'
+        
+        // Format restock reason
+        const restockReason = group.lastRestockReason !== 'N/A'
+          ? group.lastRestockReason.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
+          : 'N/A'
+
+        return {
+          'Product Name': group.name,
+          'Quantity': group.quantity,
+          'Cost Price': formatCurrency(group.costPrice),
+          'Selling Price': formatCurrency(group.sellingPrice),
+          'Profit Margin': `${profitMargin}%`,
+          'Total Value': formatCurrency(totalValue),
+          'Total COGS': formatCurrency(totalCOGS),
+          'Status': status,
+          'Last Restock Date': restockDate,
+          'Last Restock Amount': group.lastRestockAmount,
+          'Restock Reason': restockReason
+        }
+      })
+
+      // Create workbook and add header
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.aoa_to_sheet(headerInfo)
+      
+      // Add data table below header
+      XLSX.utils.sheet_add_json(ws, exportData, { origin: -1, skipHeader: false })
+      
+      // Style the header section (make first row bold)
+      if (!ws['!rows']) ws['!rows'] = []
+      ws['!rows'][0] = { hpt: 20, hpx: 20 }
+      
+      // Auto-size columns
+      const maxWidth = 50
+      const allData = [...headerInfo.map(row => row.join(' ')), ...exportData.map(row => Object.values(row).join(' '))]
+      const colCount = Math.max(...headerInfo.map(row => row.length), Object.keys(exportData[0] || {}).length)
+      const colWidths = Array(colCount).fill(0).map((_, i) => {
+        const maxLen = Math.max(
+          ...headerInfo.map(row => String(row[i] || '').length),
+          ...exportData.map(row => String(Object.values(row)[i] || '').length)
+        )
+        return { wch: Math.min(maxLen + 2, maxWidth) }
+      })
+      ws['!cols'] = colWidths
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Inventory')
+
+      const fileName = `Inventory-Report-${new Date().toISOString().split('T')[0]}.xlsx`
+      XLSX.writeFile(wb, fileName)
+      toast.success('Excel report downloaded successfully')
+    } catch (error) {
+      console.error('Error exporting to Excel:', error)
+      toast.error('Failed to export Excel report')
+    }
+  }
+
+  const exportToPDF = async () => {
+    try {
+      // Filter out bundles - only export regular items
+      const regularItems = filteredItems.filter(item => (item as any).product_type !== 'bundle')
+      
+      // Fetch restock data for all items
+      const restockResponse = await fetch('/api/restocks')
+      const allRestocks = restockResponse.ok ? await restockResponse.json() : []
+      
+      // Group items by product name + cost price + selling price
+      const groupedItems = regularItems.reduce((acc, item) => {
+        // Create unique key based on name, cost, and selling price
+        const key = `${item.name}-${item.costPrice}-${item.sellingPrice}`
+        
+        if (!acc[key]) {
+          acc[key] = {
+            name: item.name,
+            quantity: 0,
+            costPrice: item.costPrice,
+            sellingPrice: item.sellingPrice,
+            items: []
+          }
+        }
+        
+        acc[key].quantity += item.quantity
+        acc[key].items.push(item)
+        
+        return acc
+      }, {} as Record<string, any>)
+      
+      // Add restock information to each group
+      Object.values(groupedItems).forEach((group: any) => {
+        // Find the most recent restock for any item in this group
+        const itemIds = group.items.map((i: any) => i.id)
+        const groupRestocks = allRestocks.filter((r: any) => itemIds.includes(r.itemId))
+        
+        if (groupRestocks.length > 0) {
+          // Sort by timestamp descending to get the most recent
+          const latestRestock = groupRestocks.sort((a: any, b: any) => 
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          )[0]
+          
+          group.lastRestockDate = latestRestock.timestamp
+          group.lastRestockAmount = latestRestock.quantity
+          group.lastRestockReason = latestRestock.reason
+        } else {
+          group.lastRestockDate = 'N/A'
+          group.lastRestockAmount = 'N/A'
+          group.lastRestockReason = 'N/A'
+        }
+      })
+
+      const groupedArray = Object.values(groupedItems)
+
+      // Calculate totals
+      const totalProducts = groupedArray.length
+      const totalQuantity = groupedArray.reduce((sum: number, group: any) => sum + group.quantity, 0)
+      const totalValue = groupedArray.reduce((sum: number, group: any) => sum + (group.quantity * group.sellingPrice), 0)
+      const totalCOGS = groupedArray.reduce((sum: number, group: any) => sum + (group.quantity * group.costPrice), 0)
+      
+      // Count low stock and out of stock
+      let lowStockCount = 0
+      let outOfStockCount = 0
+      groupedArray.forEach((group: any) => {
+        const lowestReorderLevel = Math.min(...group.items.map((i: any) => i.reorderLevel || 0))
+        if (group.quantity === 0) {
+          outOfStockCount++
+        } else if (group.quantity <= lowestReorderLevel) {
+          lowStockCount++
+        }
+      })
+
+      // Create printable HTML
+      const printWindow = window.open('', '_blank')
+      if (!printWindow) {
+        toast.error('Please allow popups to export PDF')
+        return
+      }
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Inventory Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            .header { border-bottom: 3px solid #1e293b; padding-bottom: 20px; margin-bottom: 30px; }
+            h1 { color: #1e293b; margin: 0 0 10px 0; font-size: 32px; }
+            .report-info { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+            .info-item { display: flex; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-radius: 6px; }
+            .info-label { color: #64748b; font-size: 13px; font-weight: 600; }
+            .info-value { color: #1e293b; font-size: 13px; font-weight: 700; }
+            .meta { color: #64748b; margin-bottom: 20px; font-size: 14px; }
+            .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+            .summary-card { border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; }
+            .summary-card h3 { margin: 0 0 5px 0; font-size: 12px; color: #64748b; text-transform: uppercase; }
+            .summary-card p { margin: 0; font-size: 24px; font-weight: bold; color: #1e293b; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+            th { background-color: #f8fafc; font-weight: 600; color: #475569; font-size: 12px; text-transform: uppercase; }
+            td { font-size: 14px; color: #1e293b; }
+            .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+            .status-in-stock { background-color: #dcfce7; color: #166534; }
+            .status-low-stock { background-color: #fef3c7; color: #92400e; }
+            .status-out-of-stock { background-color: #fee2e2; color: #991b1b; }
+            @media print {
+              body { padding: 0; }
+              .header { page-break-inside: avoid; }
+              .summary { page-break-inside: avoid; }
+              table { page-break-inside: auto; }
+              tr { page-break-inside: avoid; page-break-after: auto; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Inventory Report</h1>
+            <div class="report-info">
+              <div class="info-item">
+                <span class="info-label">Report Date:</span>
+                <span class="info-value">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Report Time:</span>
+                <span class="info-value">${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Total Products:</span>
+                <span class="info-value">${totalProducts} items</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Total Quantity:</span>
+                <span class="info-value">${formatNumber(totalQuantity)} units</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Total Inventory Value:</span>
+                <span class="info-value">${formatCurrency(totalValue)}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Total COGS:</span>
+                <span class="info-value">${formatCurrency(totalCOGS)}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">In Stock Items:</span>
+                <span class="info-value">${totalProducts - lowStockCount - outOfStockCount} items</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Low Stock Items:</span>
+                <span class="info-value">${lowStockCount} items</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Out of Stock Items:</span>
+                <span class="info-value">${outOfStockCount} items</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Filter Applied:</span>
+                <span class="info-value">${salesChannelFilter !== 'all' ? salesChannelFilter : 'All Channels'}</span>
+              </div>
+            </div>
+            <p style="margin-top: 15px; color: #64748b; font-size: 12px; font-style: italic;">
+              Note: Bundle items are excluded from this report
+            </p>
+          </div>
+          
+          <div class="summary">
+            <div class="summary-card">
+              <h3>Total Products</h3>
+              <p>${totalProducts}</p>
+            </div>
+            <div class="summary-card">
+              <h3>Total Quantity</h3>
+              <p>${formatNumber(totalQuantity)}</p>
+            </div>
+            <div class="summary-card">
+              <h3>Total Value</h3>
+              <p>${formatCurrency(totalValue)}</p>
+            </div>
+            <div class="summary-card">
+              <h3>Total COGS</h3>
+              <p>${formatCurrency(totalCOGS)}</p>
+            </div>
+            <div class="summary-card">
+              <h3>Low Stock Items</h3>
+              <p>${lowStockCount}</p>
+            </div>
+            <div class="summary-card">
+              <h3>Out of Stock</h3>
+              <p>${outOfStockCount}</p>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Cost Price</th>
+                <th>Selling Price</th>
+                <th>Profit Margin</th>
+                <th>Total Value</th>
+                <th>Status</th>
+                <th>Last Restock</th>
+                <th>Restock Qty</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${groupedArray.map((group: any) => {
+                const totalValue = group.quantity * group.sellingPrice
+                const profitMargin = group.sellingPrice > 0 
+                  ? ((group.sellingPrice - group.costPrice) / group.sellingPrice * 100).toFixed(2)
+                  : '0.00'
+                
+                const lowestReorderLevel = Math.min(...group.items.map((i: any) => i.reorderLevel || 0))
+                const status = group.quantity === 0 
+                  ? 'Out of Stock' 
+                  : group.quantity <= lowestReorderLevel 
+                    ? 'Low Stock' 
+                    : 'In Stock'
+                const statusClass = group.quantity === 0 
+                  ? 'status-out-of-stock' 
+                  : group.quantity <= lowestReorderLevel 
+                    ? 'status-low-stock' 
+                    : 'status-in-stock'
+                
+                // Format restock date
+                const restockDate = group.lastRestockDate !== 'N/A' 
+                  ? new Date(group.lastRestockDate).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })
+                  : 'N/A'
+                
+                // Format restock reason
+                const restockReason = group.lastRestockReason !== 'N/A'
+                  ? group.lastRestockReason.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
+                  : 'N/A'
+                
+                return `
+                  <tr>
+                    <td>${group.name}</td>
+                    <td>${group.quantity}</td>
+                    <td>${formatCurrency(group.costPrice)}</td>
+                    <td>${formatCurrency(group.sellingPrice)}</td>
+                    <td>${profitMargin}%</td>
+                    <td>${formatCurrency(totalValue)}</td>
+                    <td><span class="status-badge ${statusClass}">${status}</span></td>
+                    <td>${restockDate}</td>
+                    <td>${group.lastRestockAmount}</td>
+                    <td>${restockReason}</td>
+                  </tr>
+                `
+              }).join('')}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `)
+
+      printWindow.document.close()
+      printWindow.focus()
+      
+      setTimeout(() => {
+        printWindow.print()
+        toast.success('PDF export ready')
+      }, 250)
+    } catch (error) {
+      console.error('Error exporting to PDF:', error)
+      toast.error('Failed to export PDF report')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center min-h-[600px]">
@@ -502,12 +977,68 @@ export default function InventoryPage() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-4 pb-6 px-0 md:pt-6 md:px-0">
       {/* Page Header - Mobile Optimized */}
       <div className="mb-5 px-4">
-        <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-1">
-          Inventory Management
-        </h1>
-        <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400">
-          Comprehensive product inventory control and management
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-1">
+              Inventory Management
+            </h1>
+            <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400">
+              Comprehensive product inventory control and management
+            </p>
+          </div>
+          
+          {/* Export Button - Admin only - Professional SaaS Style */}
+          {!isTeamLeader && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className="relative h-11 px-6 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0 font-semibold group overflow-hidden"
+                >
+                  {/* Animated shine effect */}
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                  
+                  {/* Button content */}
+                  <div className="relative flex items-center gap-2.5">
+                    <div className="p-1 rounded-md bg-white/20 backdrop-blur-sm">
+                      <FileDown className="h-4 w-4" />
+                    </div>
+                    <span className="text-sm">Export Report</span>
+                    <ChevronDown className="h-4 w-4 ml-1 group-hover:translate-y-0.5 transition-transform" />
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                align="end" 
+                className="w-56 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl rounded-xl"
+              >
+                <DropdownMenuItem 
+                  onClick={exportToPDF}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
+                >
+                  <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform">
+                    <FileDown className="h-4 w-4" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Export as PDF</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Print-ready format</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={exportToExcel}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group mt-1"
+                >
+                  <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform">
+                    <FileSpreadsheet className="h-4 w-4" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Export as Excel</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Editable spreadsheet</span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       </div>
 
       <div className="px-4">

@@ -1,26 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getRestocks } from "@/lib/supabase-db"
-import { getCachedData } from "@/lib/cache"
-import { withAuth } from "@/lib/api-helpers"
 
-export const GET = withAuth(async (request, { user }) => {
+export async function GET(request: NextRequest) {
   try {
-    const restocks = await getCachedData(
-      'restocks',
-      () => getRestocks(),
-      2 * 60 * 1000 // 2 minutes
-    )
-    
-    return NextResponse.json({
-      success: true,
-      count: restocks.length,
-      restocks
-    })
+    const restocks = await getRestocks()
+    return NextResponse.json(restocks)
   } catch (error) {
     console.error("[API] Error fetching restocks:", error)
-    return NextResponse.json({ 
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch restocks" 
-    }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to fetch restocks" },
+      { status: 500 }
+    )
   }
-})
+}

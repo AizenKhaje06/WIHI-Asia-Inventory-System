@@ -142,11 +142,11 @@ export function LoginForm({
       {role === 'staff' && (
         <div className="space-y-2">
           <Label htmlFor="channel" className="text-slate-200 font-medium">
-            Sales Channel
+            Department
           </Label>
           <Select value={selectedChannel} onValueChange={onChannelChange} disabled={channelsLoading}>
             <SelectTrigger className="h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-white hover:border-slate-600">
-              <SelectValue placeholder={channelsLoading ? "Loading channels..." : "Select your sales channel"} />
+              <SelectValue placeholder={channelsLoading ? "Loading departments..." : "Select your department"} />
             </SelectTrigger>
             <SelectContent>
               {channels.map((channel) => (
@@ -193,26 +193,17 @@ export function LoginForm({
         </div>
       )}
 
-      {/* Staff Info - FOR STAFF ROLE */}
-      {role === 'staff' && (
-        <div className="space-y-2 p-3 rounded-lg bg-blue-900/20 border border-blue-800">
-          <p className="text-sm text-blue-300">
-            <span className="font-semibold">Staff Login:</span> Enter your staff identifier (password) to access your sales channel dashboard.
-          </p>
-        </div>
-      )}
-
       {/* Password Field - ENHANCED */}
       <div className="space-y-2">
         <Label htmlFor="password" className="text-slate-200 font-medium">
-          {role === 'staff' ? 'Staff Identifier' : 'Password'}
+          Password
         </Label>
         <div className="relative group">
           <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200" />
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
-            placeholder={role === 'staff' ? "Enter your staff identifier" : "Enter your password"}
+            placeholder="Enter your password"
             value={password}
             onChange={(e) => handlePasswordChange(e.target.value)}
             onKeyDown={handleKeyPress}
@@ -221,7 +212,7 @@ export function LoginForm({
             className="pl-12 pr-16 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 font-mono text-sm tracking-wide text-white hover:border-slate-600 disabled:opacity-50"
             required
             autoComplete={role === 'staff' ? "off" : "current-password"}
-            aria-label={role === 'staff' ? "Staff Identifier" : "Password"}
+            aria-label="Password"
           />
           <button
             type="button"

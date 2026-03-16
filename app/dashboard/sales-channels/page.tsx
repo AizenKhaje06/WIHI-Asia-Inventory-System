@@ -38,6 +38,7 @@ import {
   formatNumberForExport,
   formatPercentageForExport
 } from "@/lib/export-utils"
+import { getCurrentUserRole } from '@/lib/role-utils'
 
 interface Department {
   name: string
@@ -78,6 +79,10 @@ export default function SalesChannelsPage() {
   const [loading, setLoading] = useState(true)
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
+
+  // Role detection
+  const userRole = getCurrentUserRole()
+  const isTeamLeader = userRole === 'team_leader'
 
   useEffect(() => {
     // Set default date range (last 30 days)
@@ -346,7 +351,7 @@ export default function SalesChannelsPage() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
       {/* Page Header */}
       <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <div className="flex items-start justify-between">
+        <div className="flex items-end justify-between">
           <div>
             <h1 className="text-4xl font-bold gradient-text mb-2">
               Sales Channels
@@ -356,31 +361,33 @@ export default function SalesChannelsPage() {
             </p>
           </div>
           
-          {/* Export Buttons */}
-          <div className="flex items-center gap-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  disabled={loading || !data}
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
-                >
-                  <FileDown className="h-4 w-4 mr-2" />
-                  <span className="text-sm font-semibold">Export Report</span>
-                  <ChevronDown className="h-4 w-4 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => handleExportAllChannels('pdf')}>
-                  <FileDown className="h-4 w-4 mr-2" />
-                  <span>Export as PDF</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExportAllChannels('excel')}>
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  <span>Export as Excel</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {/* Export Buttons - Admin only */}
+          {!isTeamLeader && (
+            <div className="flex items-center gap-3 mb-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    disabled={loading || !data}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+                  >
+                    <FileDown className="h-4 w-4 mr-2" />
+                    <span className="text-sm font-semibold">Export Report</span>
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => handleExportAllChannels('pdf')}>
+                    <FileDown className="h-4 w-4 mr-2" />
+                    <span>Export as PDF</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExportAllChannels('excel')}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    <span>Export as Excel</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
       </div>
 

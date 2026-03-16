@@ -320,44 +320,54 @@ export default function PackingQueuePage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Waybill No.
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Date
-                    </th>
-                    {!isTeamLeader && (
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Channel
+            <>
+              {/* Mobile Scroll Hint */}
+              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
+                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
+                  <span className="text-blue-500">←</span>
+                  <span>Swipe to see all columns • Tap row to highlight</span>
+                  <span className="text-blue-500">→</span>
+                </p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="sticky top-0 z-10">
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                      <th className="text-left py-3 px-4 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                        Waybill No.
                       </th>
-                    )}
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Store
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Product
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Qty
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Total
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOrders.map((order) => (
-                    <tr
-                      key={order.id}
-                      className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                    >
+                      <th className="text-left py-3 px-4 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                        Date
+                      </th>
+                      {!isTeamLeader && (
+                        <th className="text-left py-3 px-4 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                          Channel
+                        </th>
+                      )}
+                      <th className="text-left py-3 px-4 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                        Store
+                      </th>
+                      <th className="text-left py-3 px-4 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                        Product
+                      </th>
+                      <th className="text-left py-3 px-4 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                        Qty
+                      </th>
+                      <th className="text-left py-3 px-4 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                        Total
+                      </th>
+                      <th className="text-right py-3 px-4 text-[10px] font-bold text-white uppercase tracking-wider">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                    {filteredOrders.map((order) => (
+                      <tr
+                        key={order.id}
+                        className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                      >
                       <td className="py-3 px-4 text-sm">
                         <span className="font-mono text-slate-900 dark:text-white">
                           {order.waybill || order.id || 'N/A'}
@@ -409,6 +419,7 @@ export default function PackingQueuePage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>

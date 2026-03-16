@@ -60,13 +60,13 @@ export const GET = withAuth(async (request, { user }) => {
       console.log('[Departments API] Transaction department:', transaction.department)
 
       // Extract base department (before the " / " if it exists)
-      const baseDepartment = transaction.department.split(' / ')[0]
+      const baseDepartment = transaction.department.split(' / ')[0].trim()
       
       // Determine type based on base department
       let type: 'sale' | 'demo' | 'internal' | 'transfer' = 'sale'
       if (baseDepartment === 'Demo/Display') type = 'demo'
       else if (baseDepartment === 'Internal Use') type = 'internal'
-      else if (baseDepartment === 'Warehouse') type = 'transfer'
+      else if (baseDepartment === 'Warehouse Transfer' || baseDepartment === 'Warehouse') type = 'transfer'
 
       console.log('[Departments API] Base:', baseDepartment, 'Type:', type)
 

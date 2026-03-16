@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 import { 
   ArrowLeft,
   ArrowUpRight,
@@ -16,7 +22,10 @@ import {
   ShoppingCart,
   Package,
   Calendar,
-  Percent
+  Percent,
+  FileDown,
+  FileSpreadsheet,
+  ChevronDown
 } from "lucide-react"
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts"
@@ -30,7 +39,7 @@ import {
   formatNumberForExport,
   formatPercentageForExport
 } from "@/lib/export-utils"
-import { FileSpreadsheet, FileDown } from "lucide-react"
+import { getCurrentUserRole } from '@/lib/role-utils'
 
 interface DepartmentDetail {
   name: string
@@ -91,6 +100,10 @@ export default function SalesChannelDetailPage() {
   const [startDate, setStartDate] = useState(searchParams.get('startDate') || "")
   const [endDate, setEndDate] = useState(searchParams.get('endDate') || "")
   const [chartPeriod, setChartPeriod] = useState<'day' | 'week' | 'month'>('week')
+
+  // Role detection
+  const userRole = getCurrentUserRole()
+  const isTeamLeader = userRole === 'team_leader'
 
   useEffect(() => {
     if (!startDate || !endDate) {
@@ -565,23 +578,30 @@ export default function SalesChannelDetailPage() {
             </p>
           </div>
           
-          {/* Export Buttons - Top Right Corner */}
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={() => handleExportChannel('excel')}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
-            >
-              <FileSpreadsheet className="h-4 w-4 mr-2" />
-              <span className="text-sm font-semibold">Excel Report</span>
-            </Button>
-            <Button
-              onClick={() => handleExportChannel('pdf')}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
-            >
-              <FileDown className="h-4 w-4 mr-2" />
-              <span className="text-sm font-semibold">PDF Report</span>
-            </Button>
-          </div>
+          {/* Export Button - Admin only */}
+          {!isTeamLeader && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="group relative inline-flex items-center justify-center p-0.5 text-sm font-medium text-gray-900 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 transition-all duration-200">
+                  <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0 flex items-center gap-2">
+                    <FileDown className="h-4 w-4" />
+                    Export Report
+                    <ChevronDown className="h-4 w-4" />
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => handleExportChannel('pdf')}>
+                  <FileDown className="h-4 w-4 mr-2" />
+                  <span>Export as PDF</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExportChannel('excel')}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  <span>Export as Excel</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 

@@ -656,17 +656,17 @@ export default function InsightsPage() {
             <CardContent>
               <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
                 <table className="w-full text-sm">
-                    <thead className="bg-slate-50 dark:bg-slate-800/50">
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                        <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Revenue %</th>
-                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Recommendation</th>
+                    <thead className="sticky top-0 z-10">
+                      <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                        <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Product</th>
+                        <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Category</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Revenue %</th>
+                        <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Recommendation</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                       {filteredAbcAnalysis.slice(0, 20).map((item) => (
-                        <tr key={item.itemId} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <tr key={item.itemId} className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30">
                           <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
                           <td className="py-2.5 px-3 text-center">
                             <Badge className={`${getCategoryColor(item.category)} border text-xs px-1.5 py-0.5`}>
@@ -818,17 +818,17 @@ export default function InsightsPage() {
             <CardContent>
               <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
                 <table className="w-full text-sm">
-                  <thead className="bg-slate-50 dark:bg-slate-800/50">
-                    <tr className="border-b border-slate-200 dark:border-slate-700">
-                      <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Turnover Ratio</th>
-                      <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
-                      <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                  <thead className="sticky top-0 z-10">
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Product</th>
+                      <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Turnover Ratio</th>
+                      <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Days to Sell</th>
+                      <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     {filteredTurnover.slice(0, 20).map((item) => (
-                      <tr key={item.itemId} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <tr key={item.itemId} className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30">
                         <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
                         <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{item.turnoverRatio}</td>
                         <td className="py-2.5 px-3 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums">
@@ -942,18 +942,18 @@ export default function InsightsPage() {
                 <div className="overflow-x-auto -mx-6 px-6">
                 <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
                   <table className="w-full text-sm">
-                    <thead className="bg-slate-50 dark:bg-slate-800/50">
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Predicted Demand</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Recommended Reorder</th>
-                        <th className="py-2.5 px-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Trend</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Confidence</th>
+                    <thead className="sticky top-0 z-10">
+                      <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                        <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Product</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Predicted Demand</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Recommended Reorder</th>
+                        <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Trend</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider">Confidence</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                       {filteredForecasts.slice(0, 20).map((item) => (
-                        <tr key={item.itemId} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <tr key={item.itemId} className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30">
                           <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.itemName}</td>
                           <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{item.predictedDemand}</td>
                           <td className="py-2.5 px-3 text-right text-xs font-bold text-blue-600 tabular-nums">{item.recommendedReorderQty}</td>
@@ -1059,17 +1059,17 @@ export default function InsightsPage() {
                 <div className="overflow-x-auto -mx-6 px-6">
                 <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
                   <table className="w-full text-sm">
-                    <thead className="bg-slate-50 dark:bg-slate-800/50">
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Revenue</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Profit</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Margin %</th>
+                    <thead className="sticky top-0 z-10">
+                      <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                        <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Category</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Revenue</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Profit</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider">Margin %</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                       {filteredProfitMargin.map((item, index) => (
-                        <tr key={index} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <tr key={index} className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30">
                           <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.category}</td>
                           <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{formatCurrency(item.revenue)}</td>
                           <td className="py-2.5 px-3 text-right text-xs font-bold text-green-600 tabular-nums">{formatCurrency(item.profit)}</td>
@@ -1151,17 +1151,17 @@ export default function InsightsPage() {
               <div className="overflow-x-auto -mx-6 px-6">
                 <div className="min-w-full inline-block align-middle">
                   <table className="w-full text-sm">
-                    <thead className="bg-slate-50 dark:bg-slate-800/50">
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">SKU</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Turnover Ratio</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price</th>
+                    <thead className="sticky top-0 z-10">
+                      <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                        <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Product</th>
+                        <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">SKU</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Stock</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Turnover Ratio</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Days to Sell</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider">Price</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                       {fastMoving
                         .filter(item => item.name.toLowerCase().includes(fastMovingSearch.toLowerCase()))
                         .sort((a, b) => {
@@ -1172,7 +1172,7 @@ export default function InsightsPage() {
                           return 0
                         })
                         .map((item) => (
-                        <tr key={item.id} className="hover:bg-green-50 dark:hover:bg-green-950/10 transition-colors">
+                        <tr key={item.id} className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30">
                           <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
                           <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">{item.sku}</td>
                           <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{item.quantity}</td>
@@ -1265,17 +1265,17 @@ export default function InsightsPage() {
               <div className="overflow-x-auto -mx-6 px-6">
                 <div className="min-w-full inline-block align-middle">
                   <table className="w-full text-sm">
-                    <thead className="bg-slate-50 dark:bg-slate-800/50">
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">SKU</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Turnover Ratio</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
+                    <thead className="sticky top-0 z-10">
+                      <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                        <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Product</th>
+                        <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">SKU</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Stock</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Turnover Ratio</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Days to Sell</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider">Value</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                       {slowMoving
                         .filter(item => item.name.toLowerCase().includes(slowMovingSearch.toLowerCase()))
                         .sort((a, b) => {
@@ -1286,7 +1286,7 @@ export default function InsightsPage() {
                           return 0
                         })
                         .map((item) => (
-                        <tr key={item.id} className="hover:bg-amber-50 dark:hover:bg-amber-950/10 transition-colors">
+                        <tr key={item.id} className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30">
                           <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
                           <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">{item.sku}</td>
                           <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{item.quantity}</td>
@@ -1405,19 +1405,19 @@ export default function InsightsPage() {
                 <div className="overflow-x-auto -mx-6 px-6">
                   <div className="min-w-full inline-block align-middle">
                   <table className="w-full text-sm">
-                    <thead className="bg-slate-50 dark:bg-slate-800/50">
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Product</th>
-                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Quantity</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Days to Sell</th>
-                        <th className="py-2.5 px-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Value</th>
-                        <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Action</th>
+                    <thead className="sticky top-0 z-10">
+                      <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                        <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Product</th>
+                        <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Category</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Quantity</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Days to Sell</th>
+                        <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Value</th>
+                        <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                       {filteredDeadStock.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <tr key={item.id} className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30">
                           <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
                           <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">{item.category}</td>
                           <td className="py-2.5 px-3 text-right text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{item.quantity}</td>

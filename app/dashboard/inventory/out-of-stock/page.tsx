@@ -495,40 +495,48 @@ export default function OutOfStockPage() {
                   <span>Drag column borders to resize • Expand Product column to see full names</span>
                 </p>
               </div>
+              {/* Mobile Scroll Hint */}
+              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
+                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
+                  <span className="text-blue-500">←</span>
+                  <span>Swipe to see all columns • Tap row to highlight</span>
+                  <span className="text-blue-500">→</span>
+                </p>
+              </div>
 
               <div className="overflow-x-auto">
               <table className="w-full text-sm" style={{ minWidth: Object.values(columnWidths).reduce((a, b) => a + b, 0) }}>
-                <thead className="bg-slate-50 dark:bg-slate-800/50 sticky top-0 z-10">
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.product }}>
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                    <th className="py-3 px-4 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.product }}>
                       Product
                       <div 
                         className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
                         onMouseDown={(e) => handleMouseDown(e, 'product')}
                       />
                     </th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.category }}>
+                    <th className="py-3 px-4 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.category }}>
                       Category
                       <div 
                         className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
                         onMouseDown={(e) => handleMouseDown(e, 'category')}
                       />
                     </th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.reorder }}>
+                    <th className="py-3 px-4 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.reorder }}>
                       Reorder
                       <div 
                         className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
                         onMouseDown={(e) => handleMouseDown(e, 'reorder')}
                       />
                     </th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.cost }}>
+                    <th className="py-3 px-4 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.cost }}>
                       Cost
                       <div 
                         className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
                         onMouseDown={(e) => handleMouseDown(e, 'cost')}
                       />
                     </th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider relative" style={{ width: columnWidths.price }}>
+                    <th className="py-3 px-4 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.price }}>
                       Price
                       <div 
                         className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors"
@@ -536,7 +544,7 @@ export default function OutOfStockPage() {
                       />
                     </th>
                     {getCurrentUser()?.role === 'admin' && (
-                      <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider" style={{ width: columnWidths.actions }}>
+                      <th className="py-3 px-4 text-center text-[10px] font-bold text-white uppercase tracking-wider" style={{ width: columnWidths.actions }}>
                         Actions
                       </th>
                     )}
