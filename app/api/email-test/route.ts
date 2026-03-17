@@ -26,10 +26,11 @@ export async function POST(request: NextRequest) {
 
     console.log('[Test Email] Generating report for:', recipient_email)
 
-    // Fetch sample data from orders table (track orders)
+    // Fetch sample data from orders table (track orders) - only packed orders
     const { data: orders, error } = await supabaseAdmin
       .from('orders')
       .select('*')
+      .eq('status', 'Packed')
       .order('created_at', { ascending: false })
       .limit(20)
 
@@ -40,23 +41,38 @@ export async function POST(request: NextRequest) {
 
     console.log('[Test Email] Fetched orders:', orders?.length || 0)
 
+    // Transform data EXACTLY like cron job and track orders page
     const transformedOrders = (orders || []).map(order => ({
       id: order.id,
-      orderNumber: order.order_number || `#${order.id.slice(-6)}`,
+      orderNumber: order.id,
       customerName: order.customer_name || 'N/A',
-      itemName: order.product_name || order.item_name || 'N/A',
-      quantity: order.quantity || order.qty || 0,
-      totalAmount: order.amount || order.total || 0,
-      orderDate: order.created_at || order.order_date || new Date().toISOString(),
-      parcelStatus: order.status || 'PENDING',
-      salesChannel: order.department || order.sales_channel || 'N/A',
-      store: order.store || order.customer_address || 'N/A',
+      customerPhone: order.customer_contact || 'N/A',
+      customerEmail: undefined,
+      customerAddress: order.customer_address || 'N/A',
+      storeName: order.store || 'N/A',
+      itemName: order.product || 'N/A', // Product name from database
+      quantity: order.qty || 0,
+      totalAmount: order.total || 0,
+      orderStatus: order.status as 'Pending' | 'Packed',
+      parcelStatus: (order.parcel_status || 'PENDING') as any, // Use parcel_status field
+      paymentStatus: (order.payment_status || 'pending') as any,
       courier: order.courier || '-',
-      trackingNumber: order.tracking_number || order.waybill || '-',
-      waybill: order.tracking_number || order.waybill || '-',
-      paymentStatus: order.payment_status || 'PENDING',
-      department: order.department || 'N/A',
-      customerAddress: order.customer_address || order.store || 'N/A'
+      trackingNumber: order.waybill || '-', // Use waybill field
+      waybill: order.waybill || '-',
+      orderDate: order.date,
+      estimatedDelivery: undefined,
+      deliveryDate: order.status === 'Delivered' ? order.updated_at : undefined,
+      notes: JSON.stringify({
+        dispatchedBy: order.dispatched_by,
+        dispatchedAt: order.created_at,
+        packedBy: order.packed_by,
+        packedAt: order.packed_at,
+        store: order.store
+      }),
+      dispatchNotes: order.dispatch_notes || '',
+      department: order.sales_channel || 'N/A', // Use sales_channel field
+      salesChannel: order.sales_channel || 'N/A',
+      store: order.store || 'N/A'
     }))
 
     const totalOrders = transformedOrders.length

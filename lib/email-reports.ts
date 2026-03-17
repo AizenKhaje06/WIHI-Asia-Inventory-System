@@ -106,29 +106,27 @@ export function generateExcelReport(data: ReportData): Buffer {
 
   // Detailed Orders Section
   wsData.push(['DETAILED ORDERS'])
-  wsData.push(['No.', 'Order #', 'Date', 'Sales Channel', 'Store', 'Product', 'Qty', 'Amount', 'COGS', 'Profit', 'Margin', 'Courier', 'Waybill', 'Payment Status', 'Parcel Status'])
+  wsData.push(['Waybill No.', 'Date', 'Sales Channel', 'Store', 'Product', 'Qty', 'Amount', 'COGS', 'Profit', 'Margin', 'Courier', 'Payment Status', 'Parcel Status'])
   
-  data.orders.forEach((order, index) => {
+  data.orders.forEach((order) => {
     const cogs = order.totalAmount * 0.6
     const profit = order.totalAmount - cogs
     const margin = order.totalAmount > 0 ? ((profit / order.totalAmount) * 100) : 0
     
     wsData.push([
-      index + 1,
-      `#${order.id.slice(-6)}`,
+      order.waybill || order.trackingNumber || '-',
       new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      order.department || 'N/A',
-      order.customerAddress || 'N/A',
-      order.itemName,
+      order.salesChannel || order.department || 'N/A',
+      order.store || order.customerAddress || 'N/A',
+      order.itemName || 'N/A',
       order.quantity,
       order.totalAmount.toFixed(2),
       cogs.toFixed(2),
       profit.toFixed(2),
       `${margin.toFixed(2)}%`,
       order.courier || '-',
-      order.trackingNumber || '-',
-      order.paymentStatus.toUpperCase(),
-      order.parcelStatus
+      (order.paymentStatus || 'PENDING').toUpperCase(),
+      order.parcelStatus || 'PENDING'
     ])
   })
 
@@ -185,19 +183,17 @@ export function generateExcelReport(data: ReportData): Buffer {
 
   // Set column widths
   ws['!cols'] = [
-    { wch: 15 }, // No./Metric/Status
-    { wch: 12 }, // Order #/Value
-    { wch: 15 }, // Date/Quantity
-    { wch: 15 }, // Sales Channel/Amount
-    { wch: 20 }, // Store/COGS
-    { wch: 30 }, // Product/Profit
-    { wch: 8 },  // Qty/Margin
-    { wch: 15 }, // Amount
+    { wch: 15 }, // Metric/Status/Waybill
+    { wch: 12 }, // Value/Date
+    { wch: 15 }, // Quantity/Sales Channel
+    { wch: 15 }, // Amount/Store
+    { wch: 20 }, // COGS/Product (wider for product names)
+    { wch: 30 }, // Profit/Qty (extra wide for long product names)
+    { wch: 8 },  // Margin/Amount
     { wch: 15 }, // COGS
     { wch: 15 }, // Profit
     { wch: 10 }, // Margin
     { wch: 12 }, // Courier
-    { wch: 20 }, // Waybill
     { wch: 15 }, // Payment Status
     { wch: 15 }  // Parcel Status
   ]
@@ -431,8 +427,7 @@ export function generatePDFReportHTML(data: ReportData): string {
       <table>
         <thead>
           <tr>
-            <th>No.</th>
-            <th>Order #</th>
+            <th>Waybill No.</th>
             <th>Date</th>
             <th>Sales Channel</th>
             <th>Store</th>
@@ -443,35 +438,32 @@ export function generatePDFReportHTML(data: ReportData): string {
             <th class="text-right">Profit</th>
             <th class="text-right">Margin</th>
             <th>Courier</th>
-            <th>Waybill</th>
             <th>Payment</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
-          ${data.orders.map((order, index) => {
+          ${data.orders.map((order) => {
             const cogs = order.totalAmount * 0.6
             const profit = order.totalAmount - cogs
             const margin = order.totalAmount > 0 ? ((profit / order.totalAmount) * 100) : 0
-            const statusClass = order.parcelStatus.toLowerCase().replace(' ', '.')
+            const statusClass = (order.parcelStatus || 'PENDING').toLowerCase().replace(' ', '.')
             
             return `
               <tr>
-                <td>${index + 1}</td>
-                <td>#${order.id.slice(-6)}</td>
+                <td>${order.waybill || order.trackingNumber || '-'}</td>
                 <td>${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                <td>${order.department || 'N/A'}</td>
-                <td>${order.customerAddress || 'N/A'}</td>
-                <td>${order.itemName}</td>
+                <td>${order.salesChannel || order.department || 'N/A'}</td>
+                <td>${order.store || order.customerAddress || 'N/A'}</td>
+                <td>${order.itemName || 'N/A'}</td>
                 <td class="text-right">${order.quantity}</td>
                 <td class="text-right">${formatCurrency(order.totalAmount)}</td>
                 <td class="text-right">${formatCurrency(cogs)}</td>
                 <td class="text-right">${formatCurrency(profit)}</td>
                 <td class="text-right">${margin.toFixed(2)}%</td>
                 <td>${order.courier || '-'}</td>
-                <td>${order.trackingNumber || '-'}</td>
-                <td>${order.paymentStatus.toUpperCase()}</td>
-                <td><span class="badge badge-${statusClass}">${order.parcelStatus}</span></td>
+                <td>${(order.paymentStatus || 'PENDING').toUpperCase()}</td>
+                <td><span class="badge badge-${statusClass}">${order.parcelStatus || 'PENDING'}</span></td>
               </tr>
             `
           }).join('')}
