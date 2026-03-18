@@ -598,7 +598,7 @@ export async function generatePDFReport(data: ReportData): Promise<Buffer> {
 }
 
 /**
- * Generate email HTML template
+ * Generate email HTML template - Professional and concise
  */
 export function generateEmailTemplate(data: ReportData): string {
   const deliveryRate = data.totalOrders > 0 
@@ -620,7 +620,7 @@ export function generateEmailTemplate(data: ReportData): string {
         .stat:last-child { border-bottom: none; }
         .stat-label { color: #64748b; font-weight: 600; }
         .stat-value { color: #1e293b; font-weight: bold; }
-        .insights { background: #eff6ff; padding: 15px; border-left: 4px solid #3b82f6; margin: 20px 0; }
+        .attachments { background: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0; }
         .button { display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 5px; }
         .footer { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
       </style>
@@ -628,16 +628,15 @@ export function generateEmailTemplate(data: ReportData): string {
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0;">📊 Track Orders Report</h1>
-          <p style="margin: 10px 0 0 0; opacity: 0.9;">${data.dateRange}</p>
+          <h1 style="margin: 0; font-size: 24px; font-weight: 700;">TRACK ORDERS REPORT</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 14px;">${data.dateRange}</p>
         </div>
         
         <div class="content">
-          <p>Good day!</p>
-          <p>Here's your automated Track Orders report with comprehensive data and insights.</p>
+          <p style="margin-bottom: 20px;">Please find attached your Track Orders report with complete order details and financial summary.</p>
           
           <div class="summary">
-            <h3 style="margin-top: 0; color: #1e293b;">📦 Summary</h3>
+            <h3 style="margin-top: 0; color: #1e293b; font-size: 16px;">📦 Summary</h3>
             <div class="stat">
               <span class="stat-label">Total Orders</span>
               <span class="stat-value">${data.totalOrders}</span>
@@ -664,20 +663,13 @@ export function generateEmailTemplate(data: ReportData): string {
             </div>
           </div>
 
-          <div class="insights">
-            <h4 style="margin-top: 0; color: #1e40af;">💡 Key Insights</h4>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              <li>Delivery rate: ${deliveryRate}%</li>
-              <li>${data.statusBreakdown.cancelled > 0 ? `${data.statusBreakdown.cancelled} cancelled orders` : 'No cancelled orders'}</li>
-              <li>Total revenue: ${formatCurrency(data.totalAmount)}</li>
+          <div class="attachments">
+            <p style="margin: 0 0 10px 0; font-weight: 600; color: #1e293b;">📎 Attachments:</p>
+            <ul style="margin: 0; padding-left: 20px;">
+              <li>Track_Orders_Report.xlsx - Detailed Excel report</li>
+              <li>Track_Orders_Report.pdf - Printable PDF report</li>
             </ul>
           </div>
-
-          <p><strong>📎 Attachments:</strong></p>
-          <ul>
-            <li>Track_Orders_Report.xlsx - Detailed Excel report</li>
-            <li>Track_Orders_Report.pdf - Printable PDF report</li>
-          </ul>
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/track-orders" class="button">
@@ -687,7 +679,7 @@ export function generateEmailTemplate(data: ReportData): string {
         </div>
 
         <div class="footer">
-          <p>This is an automated report from your Track Orders system.</p>
+          <p>Automated report from Vertex Inventory Management System</p>
           <p>Generated on ${new Date().toLocaleString()}</p>
         </div>
       </div>
