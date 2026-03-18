@@ -527,7 +527,7 @@ export async function generatePDFReport(data: ReportData): Promise<Buffer> {
       <table>
         <thead>
           <tr>
-            <th>Order #</th>
+            <th>Waybill No.</th>
             <th>Date</th>
             <th>Channel</th>
             <th>Store</th>
@@ -536,7 +536,6 @@ export async function generatePDFReport(data: ReportData): Promise<Buffer> {
             <th style="text-align: right;">Amount</th>
             <th style="text-align: right;">COGS</th>
             <th>Courier</th>
-            <th>Waybill</th>
             <th>Payment</th>
             <th>Status</th>
             <th>Parcel</th>
@@ -547,19 +546,18 @@ export async function generatePDFReport(data: ReportData): Promise<Buffer> {
             const cogs = order.totalAmount * 0.6
             return `
             <tr>
-              <td style="font-weight: 600; font-family: 'Courier New', monospace; color: #1e40af; font-size: 8px;">#${order.id?.slice(-6) || order.orderNumber || '-'}</td>
-              <td style="color: #64748b; font-size: 8px; white-space: nowrap;">${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-              <td style="font-weight: 600; color: #0f172a; font-size: 8px;">${order.salesChannel || order.department || 'N/A'}</td>
-              <td style="color: #475569; font-size: 8px;">${order.store || order.customerAddress || 'N/A'}</td>
-              <td style="font-weight: 500; color: #0f172a; font-size: 8px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${order.itemName}</td>
-              <td style="text-align: center; font-weight: 700; color: #0f172a; font-size: 8px;">${order.quantity}</td>
-              <td style="text-align: right; font-weight: 600; color: #059669; font-size: 8px; white-space: nowrap;">${formatCurrency(order.totalAmount)}</td>
-              <td style="text-align: right; font-weight: 500; color: #64748b; font-size: 8px; white-space: nowrap;">${formatCurrency(cogs)}</td>
-              <td style="color: #475569; font-size: 8px;">${order.courier || '-'}</td>
-              <td style="font-family: 'Courier New', monospace; font-size: 7px; color: #64748b;">${order.waybill || order.trackingNumber || '-'}</td>
-              <td style="font-weight: 600; color: #0f172a; font-size: 8px;">${(order.paymentStatus || 'PENDING').toUpperCase()}</td>
-              <td style="font-weight: 600; color: #0f172a; font-size: 8px;">${(order.orderStatus || 'PACKED').toUpperCase()}</td>
-              <td style="font-weight: 600; color: #0f172a; font-size: 8px;">${order.parcelStatus || 'PENDING'}</td>
+              <td style="font-weight: 600; font-family: 'Courier New', monospace; color: #000000; font-size: 8px;">${order.waybill || order.trackingNumber || '-'}</td>
+              <td style="color: #000000; font-size: 8px; white-space: nowrap;">${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+              <td style="font-weight: 600; color: #000000; font-size: 8px;">${order.salesChannel || order.department || 'N/A'}</td>
+              <td style="color: #000000; font-size: 8px;">${order.store || order.customerAddress || 'N/A'}</td>
+              <td style="font-weight: 500; color: #000000; font-size: 8px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${order.itemName}</td>
+              <td style="text-align: center; font-weight: 700; color: #000000; font-size: 8px;">${order.quantity}</td>
+              <td style="text-align: right; font-weight: 600; color: #000000; font-size: 8px; white-space: nowrap;">${formatCurrency(order.totalAmount)}</td>
+              <td style="text-align: right; font-weight: 500; color: #000000; font-size: 8px; white-space: nowrap;">${formatCurrency(cogs)}</td>
+              <td style="color: #000000; font-size: 8px;">${order.courier || '-'}</td>
+              <td style="font-weight: 600; color: #000000; font-size: 8px;">${(order.paymentStatus || 'PENDING').toUpperCase()}</td>
+              <td style="font-weight: 600; color: #000000; font-size: 8px;">${(order.orderStatus || 'PACKED').toUpperCase()}</td>
+              <td style="font-weight: 600; color: #000000; font-size: 8px;">${order.parcelStatus || 'PENDING'}</td>
             </tr>
           `}).join('')}
         </tbody>
