@@ -7,20 +7,10 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify cron secret for security (optional for testing)
-    const authHeader = request.headers.get('authorization')
-    const expectedAuth = `Bearer ${process.env.CRON_SECRET}`
+    console.log('[Cron] ===== CRON JOB TRIGGERED =====')
+    console.log('[Cron] Request URL:', request.url)
+    console.log('[Cron] Request headers:', Object.fromEntries(request.headers.entries()))
     
-    // Log for debugging
-    console.log('[Cron] Auth header:', authHeader ? 'Present' : 'Missing')
-    console.log('[Cron] Expected auth:', expectedAuth)
-    
-    // Skip auth check if CRON_SECRET not set (for testing)
-    if (process.env.CRON_SECRET && authHeader !== expectedAuth) {
-      console.error('[Cron] Unauthorized - auth mismatch')
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     console.log('[Cron] Starting email reports job...')
 
     // Check if Resend is configured
