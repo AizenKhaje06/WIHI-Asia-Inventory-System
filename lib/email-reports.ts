@@ -550,7 +550,7 @@ export async function generatePDFReport(data: ReportData): Promise<Buffer> {
               <td style="color: #000000; font-size: 8px; white-space: nowrap;">${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
               <td style="font-weight: 600; color: #000000; font-size: 8px;">${order.salesChannel || order.department || 'N/A'}</td>
               <td style="color: #000000; font-size: 8px;">${order.store || order.customerAddress || 'N/A'}</td>
-              <td style="font-weight: 500; color: #000000; font-size: 8px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${order.itemName}</td>
+              <td style="font-weight: 500; color: #000000; font-size: 8px; word-wrap: break-word; white-space: normal;">${order.itemName}</td>
               <td style="text-align: center; font-weight: 700; color: #000000; font-size: 8px;">${order.quantity}</td>
               <td style="text-align: right; font-weight: 600; color: #000000; font-size: 8px; white-space: nowrap;">${formatCurrency(order.totalAmount)}</td>
               <td style="text-align: right; font-weight: 500; color: #000000; font-size: 8px; white-space: nowrap;">${formatCurrency(cogs)}</td>
