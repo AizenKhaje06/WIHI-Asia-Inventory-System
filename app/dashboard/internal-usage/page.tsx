@@ -796,19 +796,19 @@ export default function InternalUsagePage() {
                   </div>
                 </div>
               ) : (
-                <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                <div className="overflow-x-hidden border border-slate-200 dark:border-slate-700 rounded-lg">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black border-b border-slate-700 hover:bg-gradient-to-r hover:from-slate-800 hover:to-slate-900">
-                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Date</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Item</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Type</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Sales Channel</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Department</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 text-center">Qty</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 text-right">Cost</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Staff</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3">Notes</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[130px]">Date</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[160px]">Item</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[100px]">Type</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[140px]">Sales Channel</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[180px]">Department</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 text-center w-[70px]">Qty</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 text-right w-[100px]">Cost</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[120px]">Staff</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-auto">Notes</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -830,7 +830,7 @@ export default function InternalUsagePage() {
                             key={transaction.id}
                             className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150 border-b border-slate-100 dark:border-slate-800"
                           >
-                            <TableCell className="py-2">
+                            <TableCell className="py-3 px-4 w-[130px]">
                               <div className="flex items-center gap-2">
                                 <Calendar className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
                                 <div>
@@ -843,12 +843,12 @@ export default function InternalUsagePage() {
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="py-2">
+                            <TableCell className="py-3 px-4 w-[160px]">
                               <span className="text-[11px] font-semibold text-slate-900 dark:text-white">
                                 {transaction.itemName}
                               </span>
                             </TableCell>
-                            <TableCell className="py-2">
+                            <TableCell className="py-3 px-4 w-[100px]">
                               {transaction.transactionType === 'demo' && (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                                   <Monitor className="h-2.5 w-2.5" />
@@ -868,7 +868,7 @@ export default function InternalUsagePage() {
                                 </span>
                               )}
                             </TableCell>
-                            <TableCell className="py-2">
+                            <TableCell className="py-3 px-4 w-[140px]">
                               {(() => {
                                 // Extract sales channel from department field
                                 const dept = transaction.department || ''
@@ -896,36 +896,36 @@ export default function InternalUsagePage() {
                                 )
                               })()}
                             </TableCell>
-                            <TableCell className="py-2">
+                            <TableCell className="py-3 px-4 w-[180px]">
                               <span className="text-[11px] text-slate-700 dark:text-slate-300">
                                 {transaction.department || 'N/A'}
                               </span>
                             </TableCell>
-                            <TableCell className="py-2 text-center">
+                            <TableCell className="py-3 px-4 text-center w-[70px]">
                               <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[9px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 tabular-nums">
                                 {transaction.quantity}
                               </span>
                             </TableCell>
-                            <TableCell className="py-2 text-right">
+                            <TableCell className="py-3 px-4 text-right w-[100px]">
                               <span className="text-[11px] font-bold text-slate-900 dark:text-white tabular-nums">
                                 {formatCurrency(transaction.totalCost)}
                               </span>
                             </TableCell>
-                            <TableCell className="py-2">
+                            <TableCell className="py-3 px-4 w-[120px]">
                               <div className="flex items-center gap-2">
                                 <div className="h-6 w-6 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
                                   {transaction.staffName ? transaction.staffName.charAt(0).toUpperCase() : '?'}
                                 </div>
-                                <span className="text-[11px] text-slate-700 dark:text-slate-300 truncate max-w-[120px]">
+                                <span className="text-[11px] text-slate-700 dark:text-slate-300 truncate">
                                   {transaction.staffName || 'N/A'}
                                 </span>
                               </div>
                             </TableCell>
-                            <TableCell className="py-2">
+                            <TableCell className="py-3 px-4 w-auto">
                               {transaction.notes ? (
-                                <div className="flex items-start gap-1.5 max-w-xs">
+                                <div className="flex items-start gap-1.5">
                                   <FileText className="h-3 w-3 text-slate-400 mt-0.5 flex-shrink-0" />
-                                  <span className="text-[10px] text-slate-600 dark:text-slate-400 line-clamp-2">
+                                  <span className="text-[10px] text-slate-600 dark:text-slate-400 whitespace-pre-wrap break-words leading-relaxed">
                                     {transaction.notes}
                                   </span>
                                 </div>

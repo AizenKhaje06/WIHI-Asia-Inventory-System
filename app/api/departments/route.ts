@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getTransactions } from "@/lib/supabase-db"
-import { getCachedData } from "@/lib/cache"
+import { supabase } from "@/lib/supabase"
 import { withAuth } from "@/lib/api-helpers"
+import { filterRevenueOrders, EXCLUDED_STATUSES } from "@/lib/financial-utils"
 
 export const GET = withAuth(async (request, { user }) => {
   try {
@@ -12,32 +12,56 @@ export const GET = withAuth(async (request, { user }) => {
 
     console.log('[Departments API] Params:', { startDate, endDate, departmentFilter })
 
-    // Get all transactions with caching
-    const allTransactions = await getCachedData(
-      'transactions',
-      () => getTransactions(),
-      2 * 60 * 1000 // 2 minutes
-    )
-    
-    // Filter by date range if provided
-    let filteredTransactions = allTransactions
-    
+    // Fetch orders from orders table (same as Dashboard)
+    const { data: allOrders, error: ordersError } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('status', 'Packed') // Only dispatched orders
+
+    if (ordersError) {
+      console.error("[Departments API] Error fetching orders:", ordersError)
+      return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 })
+    }
+
+    console.log('[Departments API] Total orders fetched:', allOrders?.length || 0)
+
+    // Apply date filters if provided
+    let filteredOrders = allOrders || []
     if (startDate) {
       const start = new Date(startDate)
       start.setHours(0, 0, 0, 0)
-      filteredTransactions = filteredTransactions.filter(t => new Date(t.timestamp) >= start)
+      filteredOrders = filteredOrders.filter(order => new Date(order.date) >= start)
     }
     
     if (endDate) {
       const end = new Date(endDate)
       end.setHours(23, 59, 59, 999)
-      filteredTransactions = filteredTransactions.filter(t => new Date(t.timestamp) <= end)
+      filteredOrders = filteredOrders.filter(order => new Date(order.date) <= end)
     }
 
-    // Extract unique departments/sales channels
+    console.log('[Departments API] After date filter:', filteredOrders.length)
+
+    // Filter to active orders only (exclude CANCELLED and RETURNED)
+    const activeOrders = filterRevenueOrders(
+      filteredOrders.map(o => ({
+        id: o.id,
+        qty: o.qty || 0,
+        total: o.total || 0,
+        cogs: o.cogs || 0,
+        parcel_status: o.parcel_status || 'PENDING',
+        payment_status: o.payment_status || 'pending',
+        sales_channel: o.sales_channel,
+        date: o.date
+      })),
+      'active' // Excludes CANCELLED and RETURNED
+    )
+
+    console.log('[Departments API] Active orders (excluding CANCELLED/RETURNED):', activeOrders.length)
+
+    // Group by sales channel
     const departmentMap = new Map<string, {
       name: string
-      type: 'sale' | 'demo' | 'internal' | 'transfer'
+      type: 'sale'
       revenue: number
       cost: number
       profit: number
@@ -45,49 +69,12 @@ export const GET = withAuth(async (request, { user }) => {
       quantity: number
     }>()
 
-    console.log('[Departments API] Processing transactions:', filteredTransactions.length)
-
-    // Filter out cancelled and returned transactions
-    const completedTransactions = filteredTransactions.filter(t => 
-      !t.status || t.status === 'completed'
-    )
-
-    console.log('[Departments API] Completed transactions:', completedTransactions.length)
-
-    completedTransactions.forEach(transaction => {
-      if (!transaction.department) return
-
-      console.log('[Departments API] Transaction department:', transaction.department)
-
-      // Extract base department (before the " / " if it exists)
-      const baseDepartment = transaction.department.split(' / ')[0].trim()
+    activeOrders.forEach(order => {
+      const salesChannel = order.sales_channel || 'Unknown'
       
-      // Determine type based on base department
-      let type: 'sale' | 'demo' | 'internal' | 'transfer' = 'sale'
-      if (baseDepartment === 'Demo/Display') type = 'demo'
-      else if (baseDepartment === 'Internal Use') type = 'internal'
-      else if (baseDepartment === 'Warehouse Transfer' || baseDepartment === 'Warehouse') type = 'transfer'
-
-      console.log('[Departments API] Base:', baseDepartment, 'Type:', type)
-
-      // For sales channels page, ONLY process actual sales (type === 'sale')
-      // Skip demo, internal, and warehouse transfers entirely
-      if (type !== 'sale') {
-        console.log('[Departments API] Skipping non-sale transaction')
-        return
-      }
-
-      // Extract sales channel (before " - " if it exists)
-      // Example: "Physical Store - Warehouse 1" -> "Physical Store"
-      // Example: "Lazada - Store A" -> "Lazada"
-      const salesChannel = transaction.department.split(' - ')[0]
-      const key = salesChannel
-
-      if (!departmentMap.has(key)) {
-        console.log('[Departments API] Creating new sales channel:', key)
-
-        departmentMap.set(key, {
-          name: key,
+      if (!departmentMap.has(salesChannel)) {
+        departmentMap.set(salesChannel, {
+          name: salesChannel,
           type: 'sale',
           revenue: 0,
           cost: 0,
@@ -97,17 +84,17 @@ export const GET = withAuth(async (request, { user }) => {
         })
       }
 
-      const dept = departmentMap.get(key)!
-      dept.revenue += transaction.totalRevenue || 0
-      dept.cost += transaction.totalCost || 0
-      dept.profit += transaction.profit || 0
+      const dept = departmentMap.get(salesChannel)!
+      dept.revenue += order.total
+      dept.cost += order.cogs
+      dept.profit += (order.total - order.cogs)
       dept.transactions += 1
-      dept.quantity += transaction.quantity || 0
+      dept.quantity += order.qty
     })
 
-    console.log('[Departments API] Department map:', Array.from(departmentMap.entries()))
+    console.log('[Departments API] Sales channels found:', Array.from(departmentMap.keys()))
 
-    // Convert to array - already filtered to sales only
+    // Convert to array
     const departments = Array.from(departmentMap.values())
       .sort((a, b) => b.revenue - a.revenue)
 
@@ -125,7 +112,7 @@ export const GET = withAuth(async (request, { user }) => {
       quantity: departments.reduce((sum, d) => sum + d.quantity, 0)
     }
 
-    console.log('[Departments API] Found departments:', departments.length)
+    console.log('[Departments API] Totals:', totals)
 
     return NextResponse.json({
       departments: finalDepartments,

@@ -1194,8 +1194,29 @@ export default function InventoryPage() {
             {/* Stats Row - 3 Cards with Professional Corporate Design */}
             <div className={cn(
               "grid gap-3 sm:gap-4",
-              currentUser?.role === 'admin' ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"
+              currentUser?.role === 'admin' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" : "grid-cols-1 sm:grid-cols-3"
             )}>
+              {/* Total Quantity - Blue Gradient (Excludes Bundles) */}
+              <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                      <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                  </div>
+                  <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Quantity</p>
+                  <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums mb-2">
+                    {formatNumber(Array.isArray(items) ? items.filter(item => !item.isBundle).reduce((sum, item) => sum + item.quantity, 0) : 0)}
+                  </p>
+                  {(search || salesChannelFilter !== "all") && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Filtered: {formatNumber(Array.isArray(filteredItems) ? filteredItems.filter(item => !item.isBundle).reduce((sum, item) => sum + item.quantity, 0) : 0)}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               {/* Total Value - Green Gradient */}
               <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
