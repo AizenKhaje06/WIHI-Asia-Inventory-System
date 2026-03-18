@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     console.log('[Cron] Current time:', currentTime, 'Day:', currentDay, 'Date:', currentDate)
 
-    // Fetch ALL active schedules first for debugging
+    // Fetch ALL active schedules (hourly cron checks all pending schedules)
     const { data: allSchedules, error: allSchedulesError } = await supabaseAdmin
       .from('email_report_schedules')
       .select('*')
@@ -38,45 +38,62 @@ export async function GET(request: NextRequest) {
     console.log('[Cron] All active schedules:', allSchedules?.length || 0)
     if (allSchedules && allSchedules.length > 0) {
       allSchedules.forEach(s => {
-        console.log(`[Cron] Schedule: ${s.id} - Time: ${s.schedule_time} - Email: ${s.recipient_email}`)
+        console.log(`[Cron] Schedule: ${s.id} - Time: ${s.schedule_time} - Email: ${s.recipient_email} - Last sent: ${s.last_sent_at}`)
       })
     }
 
-    // Fetch active schedules that should run now
-    const { data: schedules, error: schedulesError } = await supabaseAdmin
-      .from('email_report_schedules')
-      .select('*')
-      .eq('is_active', true)
-      .eq('schedule_time', currentTime)
-
-    if (schedulesError) {
-      console.error('[Cron] Error fetching schedules:', schedulesError)
-      return NextResponse.json({ error: 'Failed to fetch schedules' }, { status: 500 })
-    }
-
-    console.log('[Cron] Schedules matching current time:', schedules?.length || 0)
-
-    if (!schedules || schedules.length === 0) {
-      console.log('[Cron] No schedules to process at this time')
+    if (!allSchedules || allSchedules.length === 0) {
+      console.log('[Cron] No active schedules found')
       return NextResponse.json({ 
-        message: 'No schedules to process', 
+        message: 'No active schedules', 
         currentTime,
-        allActiveSchedules: allSchedules?.length || 0,
         processed: 0 
       })
     }
 
-    console.log('[Cron] Found', schedules.length, 'schedule(s) to process')
-
-    // Filter schedules based on frequency
-    const schedulesToProcess = schedules.filter(schedule => {
-      if (schedule.frequency === 'daily') return true
-      if (schedule.frequency === 'weekly' && schedule.schedule_day === currentDay.toString()) return true
-      if (schedule.frequency === 'monthly' && schedule.schedule_day === currentDate.toString()) return true
-      return false
+    // Filter schedules that should run now
+    // Check if schedule time has passed and hasn't been sent today
+    const today = new Date().toDateString()
+    const schedulesToProcess = allSchedules.filter(schedule => {
+      // Parse schedule time
+      const [schedHour, schedMin] = schedule.schedule_time.split(':').map(Number)
+      const scheduleDateTime = new Date()
+      scheduleDateTime.setHours(schedHour, schedMin, 0, 0)
+      
+      // Check if schedule time has passed
+      const timePassed = now >= scheduleDateTime
+      
+      // Check if already sent today
+      const lastSent = schedule.last_sent_at ? new Date(schedule.last_sent_at) : null
+      const alreadySentToday = lastSent && lastSent.toDateString() === today
+      
+      // Check frequency match
+      let frequencyMatch = false
+      if (schedule.frequency === 'daily') {
+        frequencyMatch = true
+      } else if (schedule.frequency === 'weekly') {
+        frequencyMatch = schedule.schedule_day === currentDay.toString()
+      } else if (schedule.frequency === 'monthly') {
+        frequencyMatch = schedule.schedule_day === currentDate.toString()
+      }
+      
+      console.log(`[Cron] Schedule ${schedule.id}: time=${schedule.schedule_time}, passed=${timePassed}, sentToday=${alreadySentToday}, freqMatch=${frequencyMatch}`)
+      
+      return timePassed && !alreadySentToday && frequencyMatch
     })
 
-    console.log('[Cron] Processing', schedulesToProcess.length, 'schedule(s)')
+    console.log('[Cron] Schedules to process:', schedulesToProcess.length)
+    console.log('[Cron] Schedules to process:', schedulesToProcess.length)
+
+    if (schedulesToProcess.length === 0) {
+      console.log('[Cron] No schedules ready to process')
+      return NextResponse.json({ 
+        message: 'No schedules ready to process', 
+        currentTime,
+        allActiveSchedules: allSchedules.length,
+        processed: 0 
+      })
+    }
 
     let successCount = 0
     let failCount = 0
