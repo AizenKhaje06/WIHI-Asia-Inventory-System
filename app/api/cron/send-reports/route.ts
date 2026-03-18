@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { supabaseAdmin } from '@/lib/supabase'
-import { generateExcelReport, generatePDFReportHTML, generateEmailTemplate, type ReportData } from '@/lib/email-reports'
+import { generateExcelReport, generatePDFReport, generateEmailTemplate, type ReportData } from '@/lib/email-reports'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 
         // Generate reports
         const excelBuffer = generateExcelReport(reportData)
-        const pdfHTML = generatePDFReportHTML(reportData)
+        const pdfBuffer = await generatePDFReport(reportData)
         const emailHTML = generateEmailTemplate(reportData)
 
         // Send email with attachments
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
             },
             {
               filename: `Track_Orders_Report_${new Date().toISOString().split('T')[0]}.pdf`,
-              content: Buffer.from(pdfHTML)
+              content: pdfBuffer
             }
           ]
         })
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
           report_date_range: reportData.dateRange,
           orders_count: reportData.totalOrders,
           total_amount: reportData.totalAmount,
-          file_size_bytes: excelBuffer.length + Buffer.from(pdfHTML).length,
+          file_size_bytes: excelBuffer.length + pdfBuffer.length,
           generation_time_ms: generationTime
         })
 

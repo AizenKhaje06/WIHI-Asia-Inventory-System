@@ -133,63 +133,15 @@ export function generateExcelReport(data: ReportData): Buffer {
   // Create worksheet from data
   const ws = XLSX.utils.aoa_to_sheet(wsData)
 
-  // Apply number formatting to currency cells
-  const range = XLSX.utils.decode_range(ws['!ref'] || 'A1')
-  
-  // Format Financial Summary amounts (rows 8-10, column B)
-  for (let row = 7; row <= 9; row++) {
-    const cellAddress = XLSX.utils.encode_cell({ r: row, c: 1 })
-    if (ws[cellAddress] && typeof ws[cellAddress].v === 'string') {
-      const numValue = parseFloat(ws[cellAddress].v)
-      if (!isNaN(numValue)) {
-        ws[cellAddress].t = 'n'
-        ws[cellAddress].v = numValue
-        ws[cellAddress].z = '"₱"#,##0.00'
-      }
-    }
-  }
-
-  // Format Status Breakdown amounts (starting from row 15, columns D, E, F)
-  const statusStartRow = 14 // Row 15 in 0-indexed
-  for (let row = statusStartRow; row <= statusStartRow + 9; row++) {
-    for (let col = 3; col <= 5; col++) { // Columns D, E, F (Amount, COGS, Profit)
-      const cellAddress = XLSX.utils.encode_cell({ r: row, c: col })
-      if (ws[cellAddress] && typeof ws[cellAddress].v === 'string') {
-        const numValue = parseFloat(ws[cellAddress].v)
-        if (!isNaN(numValue)) {
-          ws[cellAddress].t = 'n'
-          ws[cellAddress].v = numValue
-          ws[cellAddress].z = '"₱"#,##0.00'
-        }
-      }
-    }
-  }
-
-  // Format Detailed Orders amounts (starting from detailed orders section, columns H, I, J)
-  const detailedStartRow = statusStartRow + 13 // After status breakdown + empty rows + headers
-  for (let row = detailedStartRow; row <= range.e.r; row++) {
-    for (let col = 7; col <= 9; col++) { // Columns H, I, J (Amount, COGS, Profit)
-      const cellAddress = XLSX.utils.encode_cell({ r: row, c: col })
-      if (ws[cellAddress] && typeof ws[cellAddress].v === 'string') {
-        const numValue = parseFloat(ws[cellAddress].v)
-        if (!isNaN(numValue)) {
-          ws[cellAddress].t = 'n'
-          ws[cellAddress].v = numValue
-          ws[cellAddress].z = '"₱"#,##0.00'
-        }
-      }
-    }
-  }
-
   // Set column widths
   ws['!cols'] = [
-    { wch: 15 }, // Metric/Status/Waybill
-    { wch: 12 }, // Value/Date
-    { wch: 15 }, // Quantity/Sales Channel
-    { wch: 15 }, // Amount/Store
-    { wch: 20 }, // COGS/Product (wider for product names)
-    { wch: 30 }, // Profit/Qty (extra wide for long product names)
-    { wch: 8 },  // Margin/Amount
+    { wch: 15 }, // Waybill
+    { wch: 12 }, // Date
+    { wch: 15 }, // Sales Channel
+    { wch: 15 }, // Store
+    { wch: 30 }, // Product
+    { wch: 8 },  // Qty
+    { wch: 15 }, // Amount
     { wch: 15 }, // COGS
     { wch: 15 }, // Profit
     { wch: 10 }, // Margin
@@ -205,13 +157,48 @@ export function generateExcelReport(data: ReportData): Buffer {
 }
 
 /**
- * Generate PDF report as HTML (for email or print)
+ * Generate PDF report - EXACT FORMAT from Track Orders Page
+ * Uses puppeteer directly for browser-identical rendering
  */
-export function generatePDFReportHTML(data: ReportData): string {
+export async function generatePDFReport(data: ReportData): Promise<Buffer> {
+  const puppeteer = require('puppeteer')
+  
   const totalQuantity = data.orders.reduce((sum, order) => sum + order.quantity, 0)
   const totalProfitMargin = data.totalAmount > 0 ? ((data.totalProfit / data.totalAmount) * 100) : 0
 
-  return `
+  // Calculate per-status financials
+  const getStatusFinancials = (statusOrders: any[]) => {
+    const qty = statusOrders.reduce((sum, o) => sum + o.quantity, 0)
+    const amt = statusOrders.reduce((sum, o) => sum + o.totalAmount, 0)
+    const cogs = amt * 0.6
+    const profit = amt - cogs
+    const margin = amt > 0 ? ((profit / amt) * 100) : 0
+    return { qty, amt, cogs, profit, margin }
+  }
+
+  const pendingFinancials = getStatusFinancials(data.orders.filter(o => o.parcelStatus === 'PENDING'))
+  const inTransitFinancials = getStatusFinancials(data.orders.filter(o => o.parcelStatus === 'IN TRANSIT'))
+  const onDeliveryFinancials = getStatusFinancials(data.orders.filter(o => o.parcelStatus === 'ON DELIVERY'))
+  const pickupFinancials = getStatusFinancials(data.orders.filter(o => o.parcelStatus === 'PICKUP'))
+  const deliveredFinancials = getStatusFinancials(data.orders.filter(o => o.parcelStatus === 'DELIVERED'))
+  const cancelledFinancials = getStatusFinancials(data.orders.filter(o => o.parcelStatus === 'CANCELLED'))
+  const detainedFinancials = getStatusFinancials(data.orders.filter(o => o.parcelStatus === 'DETAINED'))
+  const problematicFinancials = getStatusFinancials(data.orders.filter(o => o.parcelStatus === 'PROBLEMATIC'))
+  const returnedFinancials = getStatusFinancials(data.orders.filter(o => o.parcelStatus === 'RETURNED'))
+
+  // Count orders by status
+  const pendingCount = data.orders.filter(o => o.parcelStatus === 'PENDING').length
+  const inTransitCount = data.orders.filter(o => o.parcelStatus === 'IN TRANSIT').length
+  const onDeliveryCount = data.orders.filter(o => o.parcelStatus === 'ON DELIVERY').length
+  const pickupCount = data.orders.filter(o => o.parcelStatus === 'PICKUP').length
+  const deliveredCount = data.orders.filter(o => o.parcelStatus === 'DELIVERED').length
+  const cancelledCount = data.orders.filter(o => o.parcelStatus === 'CANCELLED').length
+  const detainedCount = data.orders.filter(o => o.parcelStatus === 'DETAINED').length
+  const problematicCount = data.orders.filter(o => o.parcelStatus === 'PROBLEMATIC').length
+  const returnedCount = data.orders.filter(o => o.parcelStatus === 'RETURNED').length
+
+  // Generate HTML - EXACT COPY from Track Orders page
+  const html = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -222,157 +209,196 @@ export function generatePDFReportHTML(data: ReportData): string {
         @page { margin: 0; size: auto; }
         @media print {
           @page { margin: 0; }
-          body { margin: 1.6cm; }
+          body { margin: 1cm; }
         }
         body { 
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-          padding: 30px; 
+          padding: 20px; 
           background: white;
           color: #1e293b;
         }
         .header {
           text-align: center;
-          margin-bottom: 40px;
-          padding-bottom: 25px;
-          border-bottom: 4px solid #3b82f6;
+          margin-bottom: 25px;
+          padding-bottom: 15px;
+          border-bottom: 4px solid #ec540e;
         }
         .page-title {
-          font-size: 32px;
+          font-size: 26px;
           font-weight: 700;
           color: #1e293b;
-          margin-bottom: 20px;
+          margin-bottom: 12px;
           letter-spacing: 0.5px;
           text-transform: uppercase;
         }
         .meta { 
           color: #64748b; 
-          font-size: 15px;
-          line-height: 1.8;
+          font-size: 12px;
+          line-height: 1.6;
         }
         .meta strong { color: #1e293b; font-weight: 700; }
         
         .financial-summary {
           display: grid;
           grid-template-columns: repeat(5, 1fr);
-          gap: 15px;
-          margin-bottom: 35px;
-          padding: 25px;
-          background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-          border-radius: 12px;
-          border: 3px solid #3b82f6;
+          gap: 10px;
+          margin-bottom: 20px;
+          padding: 15px;
+          background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+          border-radius: 8px;
+          border: 2px solid #f59e0b;
         }
         .financial-card {
           text-align: center;
-          padding: 15px;
+          padding: 10px;
           background: white;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          border-radius: 6px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .financial-card .label {
-          font-size: 11px;
+          font-size: 9px;
           color: #64748b;
           font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-bottom: 8px;
+          letter-spacing: 0.3px;
+          margin-bottom: 6px;
         }
         .financial-card .value {
-          font-size: 24px;
+          font-size: 18px;
           font-weight: 800;
           color: #1e293b;
         }
         .financial-card.profit .value { color: #059669; }
         .financial-card.margin .value { color: #0284c7; }
         
-        .status-breakdown {
-          margin-bottom: 35px;
+        .summary { 
+          display: grid; 
+          grid-template-columns: repeat(5, 1fr); 
+          gap: 8px; 
+          margin-bottom: 20px; 
         }
-        .section-title {
-          font-size: 20px;
-          font-weight: 700;
-          color: #1e293b;
-          margin-bottom: 20px;
-          padding-bottom: 10px;
-          border-bottom: 2px solid #e2e8f0;
-        }
-        .status-grid {
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 12px;
-        }
-        .status-card {
-          background: #f8fafc;
-          padding: 15px;
+        .summary-card { 
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          padding: 12px 8px;
           border-radius: 8px;
-          border: 1px solid #e2e8f0;
           text-align: center;
+          border: 2px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        .status-card .status-name {
-          font-size: 12px;
-          color: #64748b;
+        .summary-card .number { 
+          font-size: 24px; 
+          font-weight: 800; 
+          color: #1e293b;
+          margin-bottom: 6px;
+        }
+        .summary-card .label { 
+          font-size: 9px; 
+          color: #64748b; 
           font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
           margin-bottom: 8px;
         }
-        .status-card .status-count {
-          font-size: 28px;
-          font-weight: 800;
-          color: #1e293b;
+        .summary-card .mini-stats {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 3px;
+          margin-top: 8px;
+          padding-top: 8px;
+          border-top: 1px solid #e2e8f0;
         }
-        .status-card .status-percent {
-          font-size: 11px;
-          color: #64748b;
-          margin-top: 4px;
+        .summary-card .mini-stat {
+          font-size: 7px;
+          color: #94a3b8;
+          font-weight: 600;
+        }
+        .summary-card .mini-stat .mini-value {
+          font-size: 8px;
+          color: #475569;
+          font-weight: 700;
+          display: block;
+          margin-top: 2px;
         }
         
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 20px;
-          font-size: 12px;
+        .summary-row-2 {
+          display: grid; 
+          grid-template-columns: repeat(5, 1fr); 
+          gap: 8px; 
+          margin-bottom: 20px;
         }
-        th {
-          background: #3b82f6;
-          color: white;
-          padding: 12px 8px;
-          text-align: left;
-          font-weight: 600;
-          font-size: 11px;
+        
+        table { 
+          width: 100%; 
+          border-collapse: separate;
+          border-spacing: 0;
+          margin-top: 20px; 
+          font-size: 9px;
+          border: 1px solid #cbd5e1;
+          background: white;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        thead {
+          background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+        }
+        th { 
+          color: white; 
+          padding: 10px 6px; 
+          text-align: left; 
+          font-size: 8px; 
+          font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.3px;
+          border-right: 1px solid rgba(255,255,255,0.15);
+          border-bottom: 2px solid #1e40af;
         }
-        td {
-          padding: 10px 8px;
+        th:last-child { border-right: none; }
+        td { 
+          padding: 8px 6px; 
           border-bottom: 1px solid #e2e8f0;
+          border-right: 1px solid #f1f5f9;
+          font-size: 9px;
+          color: #334155;
+          line-height: 1.4;
         }
-        tr:hover { background: #f8fafc; }
-        .badge {
-          padding: 4px 8px;
-          border-radius: 4px;
+        td:last-child { border-right: none; }
+        tbody tr:nth-child(even) { background-color: #f8fafc; }
+        tbody tr:hover { background-color: #eff6ff; }
+        tbody tr:last-child td { border-bottom: none; }
+        
+        .footer {
+          margin-top: 25px;
+          padding-top: 15px;
+          border-top: 2px solid #e2e8f0;
+          text-align: center;
+          color: #94a3b8;
           font-size: 10px;
-          font-weight: 600;
-          text-transform: uppercase;
         }
-        .badge-delivered { background: #d1fae5; color: #065f46; }
-        .badge-in.transit { background: #dbeafe; color: #1e40af; }
-        .badge-pending { background: #fef3c7; color: #92400e; }
-        .badge-cancelled { background: #fee2e2; color: #991b1b; }
-        .text-right { text-align: right; }
+        .footer strong {
+          color: #1e293b;
+          font-size: 11px;
+        }
       </style>
     </head>
     <body>
       <div class="header">
         <h1 class="page-title">Track Orders Report</h1>
         <div class="meta">
-          <p><strong>Generated:</strong> ${new Date().toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-          <p><strong>Period:</strong> ${data.dateRange}</p>
-          <p><strong>Total Orders:</strong> ${data.totalOrders}</p>
+          <strong>Generated:</strong> ${new Date().toLocaleString('en-US', { 
+            month: 'long', 
+            day: 'numeric', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          })}<br>
+          <strong>Total Orders:</strong> ${data.totalOrders} | 
+          <strong>Report Type:</strong> Comprehensive Track Orders
         </div>
       </div>
 
       <div class="financial-summary">
         <div class="financial-card">
           <div class="label">Total Quantity</div>
-          <div class="value">${formatNumber(totalQuantity)}</div>
+          <div class="value">${totalQuantity}</div>
         </div>
         <div class="financial-card">
           <div class="label">Total Amount</div>
@@ -391,87 +417,186 @@ export function generatePDFReportHTML(data: ReportData): string {
           <div class="value">${totalProfitMargin.toFixed(2)}%</div>
         </div>
       </div>
-
-      <div class="status-breakdown">
-        <h2 class="section-title">Status Breakdown</h2>
-        <div class="status-grid">
-          <div class="status-card">
-            <div class="status-name">Total</div>
-            <div class="status-count">${data.totalOrders}</div>
-            <div class="status-percent">100%</div>
+      
+      <div class="summary">
+        <div class="summary-card">
+          <div class="number">${data.totalOrders}</div>
+          <div class="label">Total Orders</div>
+          <div class="mini-stats">
+            <div class="mini-stat">Qty: <span class="mini-value">${totalQuantity}</span></div>
+            <div class="mini-stat">Amt: <span class="mini-value">${formatCurrency(data.totalAmount).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">Profit: <span class="mini-value">${formatCurrency(data.totalProfit).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">% of Total: <span class="mini-value">100.0%</span></div>
           </div>
-          <div class="status-card">
-            <div class="status-name">Pending</div>
-            <div class="status-count">${data.statusBreakdown.pending}</div>
-            <div class="status-percent">${data.totalOrders > 0 ? ((data.statusBreakdown.pending / data.totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+        </div>
+        <div class="summary-card">
+          <div class="number">${pendingCount}</div>
+          <div class="label">Pending</div>
+          <div class="mini-stats">
+            <div class="mini-stat">Qty: <span class="mini-value">${pendingFinancials.qty}</span></div>
+            <div class="mini-stat">Amt: <span class="mini-value">${formatCurrency(pendingFinancials.amt).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">Profit: <span class="mini-value">${formatCurrency(pendingFinancials.profit).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">% of Total: <span class="mini-value">${data.totalOrders > 0 ? ((pendingCount / data.totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
           </div>
-          <div class="status-card">
-            <div class="status-name">In Transit</div>
-            <div class="status-count">${data.statusBreakdown.inTransit}</div>
-            <div class="status-percent">${data.totalOrders > 0 ? ((data.statusBreakdown.inTransit / data.totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+        </div>
+        <div class="summary-card">
+          <div class="number">${inTransitCount}</div>
+          <div class="label">In Transit</div>
+          <div class="mini-stats">
+            <div class="mini-stat">Qty: <span class="mini-value">${inTransitFinancials.qty}</span></div>
+            <div class="mini-stat">Amt: <span class="mini-value">${formatCurrency(inTransitFinancials.amt).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">Profit: <span class="mini-value">${formatCurrency(inTransitFinancials.profit).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">% of Total: <span class="mini-value">${data.totalOrders > 0 ? ((inTransitCount / data.totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
           </div>
-          <div class="status-card">
-            <div class="status-name">Delivered</div>
-            <div class="status-count">${data.statusBreakdown.delivered}</div>
-            <div class="status-percent">${data.totalOrders > 0 ? ((data.statusBreakdown.delivered / data.totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+        </div>
+        <div class="summary-card">
+          <div class="number">${onDeliveryCount}</div>
+          <div class="label">On Delivery</div>
+          <div class="mini-stats">
+            <div class="mini-stat">Qty: <span class="mini-value">${onDeliveryFinancials.qty}</span></div>
+            <div class="mini-stat">Amt: <span class="mini-value">${formatCurrency(onDeliveryFinancials.amt).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">Profit: <span class="mini-value">${formatCurrency(onDeliveryFinancials.profit).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">% of Total: <span class="mini-value">${data.totalOrders > 0 ? ((onDeliveryCount / data.totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
           </div>
-          <div class="status-card">
-            <div class="status-name">Cancelled</div>
-            <div class="status-count">${data.statusBreakdown.cancelled}</div>
-            <div class="status-percent">${data.totalOrders > 0 ? ((data.statusBreakdown.cancelled / data.totalOrders) * 100).toFixed(1) : '0.0'}%</div>
+        </div>
+        <div class="summary-card">
+          <div class="number">${pickupCount}</div>
+          <div class="label">Pickup</div>
+          <div class="mini-stats">
+            <div class="mini-stat">Qty: <span class="mini-value">${pickupFinancials.qty}</span></div>
+            <div class="mini-stat">Amt: <span class="mini-value">${formatCurrency(pickupFinancials.amt).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">Profit: <span class="mini-value">${formatCurrency(pickupFinancials.profit).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">% of Total: <span class="mini-value">${data.totalOrders > 0 ? ((pickupCount / data.totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
           </div>
         </div>
       </div>
 
-      <h2 class="section-title">Detailed Orders</h2>
+      <div class="summary-row-2">
+        <div class="summary-card">
+          <div class="number">${deliveredCount}</div>
+          <div class="label">Delivered</div>
+          <div class="mini-stats">
+            <div class="mini-stat">Qty: <span class="mini-value">${deliveredFinancials.qty}</span></div>
+            <div class="mini-stat">Amt: <span class="mini-value">${formatCurrency(deliveredFinancials.amt).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">Profit: <span class="mini-value">${formatCurrency(deliveredFinancials.profit).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">% of Total: <span class="mini-value">${data.totalOrders > 0 ? ((deliveredCount / data.totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="number">${cancelledCount}</div>
+          <div class="label">Cancelled</div>
+          <div class="mini-stats">
+            <div class="mini-stat">Qty: <span class="mini-value">${cancelledFinancials.qty}</span></div>
+            <div class="mini-stat">Amt: <span class="mini-value">${formatCurrency(cancelledFinancials.amt).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">Profit: <span class="mini-value">${formatCurrency(cancelledFinancials.profit).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">% of Total: <span class="mini-value">${data.totalOrders > 0 ? ((cancelledCount / data.totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="number">${detainedCount}</div>
+          <div class="label">Detained</div>
+          <div class="mini-stats">
+            <div class="mini-stat">Qty: <span class="mini-value">${detainedFinancials.qty}</span></div>
+            <div class="mini-stat">Amt: <span class="mini-value">${formatCurrency(detainedFinancials.amt).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">Profit: <span class="mini-value">${formatCurrency(detainedFinancials.profit).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">% of Total: <span class="mini-value">${data.totalOrders > 0 ? ((detainedCount / data.totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="number">${problematicCount}</div>
+          <div class="label">Problematic</div>
+          <div class="mini-stats">
+            <div class="mini-stat">Qty: <span class="mini-value">${problematicFinancials.qty}</span></div>
+            <div class="mini-stat">Amt: <span class="mini-value">${formatCurrency(problematicFinancials.amt).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">Profit: <span class="mini-value">${formatCurrency(problematicFinancials.profit).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">% of Total: <span class="mini-value">${data.totalOrders > 0 ? ((problematicCount / data.totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="number">${returnedCount}</div>
+          <div class="label">Returned</div>
+          <div class="mini-stats">
+            <div class="mini-stat">Qty: <span class="mini-value">${returnedFinancials.qty}</span></div>
+            <div class="mini-stat">Amt: <span class="mini-value">${formatCurrency(returnedFinancials.amt).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">Profit: <span class="mini-value">${formatCurrency(returnedFinancials.profit).replace('₱', 'P')}</span></div>
+            <div class="mini-stat">% of Total: <span class="mini-value">${data.totalOrders > 0 ? ((returnedCount / data.totalOrders) * 100).toFixed(1) : '0.0'}%</span></div>
+          </div>
+        </div>
+      </div>
+
       <table>
         <thead>
           <tr>
-            <th>Waybill No.</th>
+            <th>Order #</th>
             <th>Date</th>
-            <th>Sales Channel</th>
+            <th>Channel</th>
             <th>Store</th>
             <th>Product</th>
-            <th class="text-right">Qty</th>
-            <th class="text-right">Amount</th>
-            <th class="text-right">COGS</th>
-            <th class="text-right">Profit</th>
-            <th class="text-right">Margin</th>
+            <th style="text-align: center;">Qty</th>
+            <th style="text-align: right;">Amount</th>
+            <th style="text-align: right;">COGS</th>
             <th>Courier</th>
+            <th>Waybill</th>
             <th>Payment</th>
             <th>Status</th>
+            <th>Parcel</th>
           </tr>
         </thead>
         <tbody>
-          ${data.orders.map((order) => {
+          ${data.orders.map(order => {
             const cogs = order.totalAmount * 0.6
-            const profit = order.totalAmount - cogs
-            const margin = order.totalAmount > 0 ? ((profit / order.totalAmount) * 100) : 0
-            const statusClass = (order.parcelStatus || 'PENDING').toLowerCase().replace(' ', '.')
-            
             return `
-              <tr>
-                <td>${order.waybill || order.trackingNumber || '-'}</td>
-                <td>${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                <td>${order.salesChannel || order.department || 'N/A'}</td>
-                <td>${order.store || order.customerAddress || 'N/A'}</td>
-                <td>${order.itemName || 'N/A'}</td>
-                <td class="text-right">${order.quantity}</td>
-                <td class="text-right">${formatCurrency(order.totalAmount)}</td>
-                <td class="text-right">${formatCurrency(cogs)}</td>
-                <td class="text-right">${formatCurrency(profit)}</td>
-                <td class="text-right">${margin.toFixed(2)}%</td>
-                <td>${order.courier || '-'}</td>
-                <td>${(order.paymentStatus || 'PENDING').toUpperCase()}</td>
-                <td><span class="badge badge-${statusClass}">${order.parcelStatus || 'PENDING'}</span></td>
-              </tr>
-            `
-          }).join('')}
+            <tr>
+              <td style="font-weight: 600; font-family: 'Courier New', monospace; color: #1e40af; font-size: 8px;">#${order.id?.slice(-6) || order.orderNumber || '-'}</td>
+              <td style="color: #64748b; font-size: 8px; white-space: nowrap;">${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+              <td style="font-weight: 600; color: #0f172a; font-size: 8px;">${order.salesChannel || order.department || 'N/A'}</td>
+              <td style="color: #475569; font-size: 8px;">${order.store || order.customerAddress || 'N/A'}</td>
+              <td style="font-weight: 500; color: #0f172a; font-size: 8px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${order.itemName}</td>
+              <td style="text-align: center; font-weight: 700; color: #0f172a; font-size: 8px;">${order.quantity}</td>
+              <td style="text-align: right; font-weight: 600; color: #059669; font-size: 8px; white-space: nowrap;">${formatCurrency(order.totalAmount)}</td>
+              <td style="text-align: right; font-weight: 500; color: #64748b; font-size: 8px; white-space: nowrap;">${formatCurrency(cogs)}</td>
+              <td style="color: #475569; font-size: 8px;">${order.courier || '-'}</td>
+              <td style="font-family: 'Courier New', monospace; font-size: 7px; color: #64748b;">${order.waybill || order.trackingNumber || '-'}</td>
+              <td style="font-weight: 600; color: #0f172a; font-size: 8px;">${(order.paymentStatus || 'PENDING').toUpperCase()}</td>
+              <td style="font-weight: 600; color: #0f172a; font-size: 8px;">${(order.orderStatus || 'PACKED').toUpperCase()}</td>
+              <td style="font-weight: 600; color: #0f172a; font-size: 8px;">${order.parcelStatus || 'PENDING'}</td>
+            </tr>
+          `}).join('')}
         </tbody>
       </table>
+
+      <div class="footer">
+        <p><strong>Vertex Professional Inventory Management System</strong></p>
+        <p>Track Orders Report - Confidential Document</p>
+      </div>
     </body>
     </html>
   `
+
+  // Convert HTML to PDF using puppeteer directly (same as browser print)
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  })
+  
+  const page = await browser.newPage()
+  await page.setContent(html, { waitUntil: 'networkidle0' })
+  
+  const pdfBuffer = await page.pdf({
+    format: 'A3',
+    landscape: true,
+    printBackground: true,
+    margin: {
+      top: '0.3cm',
+      right: '0.3cm',
+      bottom: '0.3cm',
+      left: '0.3cm'
+    }
+  })
+  
+  await browser.close()
+  
+  return Buffer.from(pdfBuffer)
 }
 
 /**

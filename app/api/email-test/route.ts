@@ -1,138 +1,179 @@
-import { type NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { generateExcelReport, generatePDFReportHTML, generateEmailTemplate, type ReportData } from '@/lib/email-reports'
+import { generateExcelReport, generatePDFReport, generateEmailTemplate, ReportData } from '@/lib/email-reports'
+import { Resend } from 'resend'
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+export const dynamic = 'force-dynamic'
 
+/**
+ * POST /api/email-test
+ * Test email report generation and sending
+ * 
+ * Body: { recipient_email: string }
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { recipient_email } = body
 
-    if (!recipient_email) {
+    if (!recipient_email || typeof recipient_email !== 'string') {
       return NextResponse.json(
-        { error: 'Recipient email is required' },
+        { error: 'recipient_email is required' },
         { status: 400 }
       )
     }
 
-    if (!resend) {
-      return NextResponse.json(
-        { error: 'Email service not configured. Please set RESEND_API_KEY.' },
-        { status: 500 }
-      )
-    }
+    console.log('[Email Test] Fetching orders from database...')
 
-    console.log('[Test Email] Generating report for:', recipient_email)
-
-    // Fetch sample data from orders table (track orders) - only packed orders
-    const { data: orders, error } = await supabaseAdmin
+    // Fetch orders from orders table (new data source)
+    const { data: orders, error: ordersError } = await supabaseAdmin
       .from('orders')
       .select('*')
       .eq('status', 'Packed')
       .order('created_at', { ascending: false })
-      .limit(20)
+      .limit(100)
 
-    if (error) {
-      console.error('[Test Email] Error fetching orders:', error)
-      throw new Error(`Failed to fetch orders: ${error.message}`)
+    if (ordersError) {
+      console.error('[Email Test] Error fetching orders:', ordersError)
+      return NextResponse.json(
+        { error: 'Failed to fetch orders from database' },
+        { status: 500 }
+      )
     }
 
-    console.log('[Test Email] Fetched orders:', orders?.length || 0)
+    console.log(`[Email Test] Found ${orders?.length || 0} orders`)
 
-    // Transform data EXACTLY like cron job and track orders page
-    const transformedOrders = (orders || []).map(order => ({
+    if (!orders || orders.length === 0) {
+      return NextResponse.json(
+        { 
+          success: true,
+          message: 'No orders found to generate report',
+          ordersCount: 0
+        },
+        { status: 200 }
+      )
+    }
+
+    // Transform orders to match ReportData interface
+    const transformedOrders = orders.map(order => ({
       id: order.id,
-      orderNumber: order.id,
-      customerName: order.customer_name || 'N/A',
-      customerPhone: order.customer_contact || 'N/A',
-      customerEmail: undefined,
+      waybill: order.waybill || order.id,
+      trackingNumber: order.waybill || '-',
+      orderDate: order.date || order.created_at,
+      salesChannel: order.sales_channel || 'N/A',
+      department: order.sales_channel || 'N/A',
+      store: order.store || 'N/A',
       customerAddress: order.customer_address || 'N/A',
-      storeName: order.store || 'N/A',
-      itemName: order.product || 'N/A', // Product name from database
+      itemName: order.product || 'N/A',
       quantity: order.qty || 0,
       totalAmount: order.total || 0,
-      orderStatus: order.status as 'Pending' | 'Packed',
-      parcelStatus: (order.parcel_status || 'PENDING') as any, // Use parcel_status field
-      paymentStatus: (order.payment_status || 'pending') as any,
       courier: order.courier || '-',
-      trackingNumber: order.waybill || '-', // Use waybill field
-      waybill: order.waybill || '-',
-      orderDate: order.date,
-      estimatedDelivery: undefined,
-      deliveryDate: order.status === 'Delivered' ? order.updated_at : undefined,
-      notes: JSON.stringify({
-        dispatchedBy: order.dispatched_by,
-        dispatchedAt: order.created_at,
-        packedBy: order.packed_by,
-        packedAt: order.packed_at,
-        store: order.store
-      }),
-      dispatchNotes: order.dispatch_notes || '',
-      department: order.sales_channel || 'N/A', // Use sales_channel field
-      salesChannel: order.sales_channel || 'N/A',
-      store: order.store || 'N/A'
+      paymentStatus: order.payment_status || 'pending',
+      parcelStatus: order.parcel_status || 'PENDING'
     }))
 
-    const totalOrders = transformedOrders.length
+    // Calculate totals
     const totalAmount = transformedOrders.reduce((sum, o) => sum + o.totalAmount, 0)
-    const totalCOGS = totalAmount * 0.6
+    const totalCOGS = totalAmount * 0.6 // Assuming 60% COGS
     const totalProfit = totalAmount - totalCOGS
+
+    // Calculate status breakdown
+    const statusBreakdown = {
+      pending: transformedOrders.filter(o => o.parcelStatus === 'PENDING').length,
+      inTransit: transformedOrders.filter(o => o.parcelStatus === 'IN TRANSIT').length,
+      delivered: transformedOrders.filter(o => o.parcelStatus === 'DELIVERED').length,
+      cancelled: transformedOrders.filter(o => o.parcelStatus === 'CANCELLED').length
+    }
 
     const reportData: ReportData = {
       orders: transformedOrders,
-      dateRange: `Test Report - ${new Date().toLocaleDateString()}`,
-      totalOrders,
+      dateRange: 'All Time',
+      totalOrders: transformedOrders.length,
       totalAmount,
       totalCOGS,
       totalProfit,
-      statusBreakdown: {
-        pending: transformedOrders.filter(o => o.parcelStatus === 'PENDING').length,
-        inTransit: transformedOrders.filter(o => o.parcelStatus === 'IN TRANSIT').length,
-        delivered: transformedOrders.filter(o => o.parcelStatus === 'DELIVERED').length,
-        cancelled: transformedOrders.filter(o => o.parcelStatus === 'CANCELLED').length
-      }
+      statusBreakdown
     }
 
-    // Generate reports
+    console.log('[Email Test] Generating Excel report...')
     const excelBuffer = generateExcelReport(reportData)
-    const pdfHTML = generatePDFReportHTML(reportData)
+    console.log(`[Email Test] Excel report generated: ${excelBuffer.length} bytes`)
+
+    console.log('[Email Test] Generating PDF report...')
+    const pdfBuffer = await generatePDFReport(reportData)
+    console.log(`[Email Test] PDF report generated: ${pdfBuffer.length} bytes`)
+
+    console.log('[Email Test] Generating email HTML...')
     const emailHTML = generateEmailTemplate(reportData)
 
-    // Send email
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
-    await resend.emails.send({
-      from: fromEmail,
+    // Check if Resend is configured
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('[Email Test] RESEND_API_KEY not configured')
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Email service not configured (RESEND_API_KEY missing)',
+          ordersCount: transformedOrders.length,
+          reportGenerated: true,
+          excelSize: excelBuffer.length,
+          pdfSize: pdfBuffer.length
+        },
+        { status: 500 }
+      )
+    }
+
+    console.log('[Email Test] Sending email via Resend...')
+    const resend = new Resend(process.env.RESEND_API_KEY)
+
+    const { data: emailData, error: emailError } = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
       to: recipient_email,
-      subject: `🧪 Test Report - Track Orders (${new Date().toLocaleDateString()})`,
+      subject: `📊 Track Orders Report - ${new Date().toLocaleDateString()}`,
       html: emailHTML,
       attachments: [
         {
-          filename: `Test_Track_Orders_Report_${new Date().toISOString().split('T')[0]}.xlsx`,
+          filename: 'Track_Orders_Report.xlsx',
           content: excelBuffer
         },
         {
-          filename: `Test_Track_Orders_Report_${new Date().toISOString().split('T')[0]}.pdf`,
-          content: Buffer.from(pdfHTML)
+          filename: 'Track_Orders_Report.pdf',
+          content: pdfBuffer
         }
       ]
     })
 
-    console.log('[Test Email] ✅ Successfully sent to:', recipient_email)
+    if (emailError) {
+      console.error('[Email Test] Error sending email:', emailError)
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Failed to send email: ${emailError.message}`,
+          ordersCount: transformedOrders.length,
+          reportGenerated: true
+        },
+        { status: 500 }
+      )
+    }
 
-    return NextResponse.json({
-      success: true,
-      message: `Test email sent successfully to ${recipient_email}`,
-      ordersCount: totalOrders
-    })
+    console.log('[Email Test] Email sent successfully:', emailData)
 
-  } catch (error) {
-    console.error('[Test Email] ❌ Error:', error)
     return NextResponse.json(
-      { 
-        error: 'Failed to send test email', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
+      {
+        success: true,
+        message: 'Test email sent successfully',
+        ordersCount: transformedOrders.length,
+        emailId: emailData?.id,
+        recipient: recipient_email
+      },
+      { status: 200 }
+    )
+
+  } catch (error: any) {
+    console.error('[Email Test] Unexpected error:', error)
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: error.message
       },
       { status: 500 }
     )
