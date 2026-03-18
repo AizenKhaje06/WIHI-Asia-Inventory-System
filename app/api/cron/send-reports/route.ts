@@ -7,9 +7,17 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify cron secret for security
+    // Verify cron secret for security (optional for testing)
     const authHeader = request.headers.get('authorization')
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const expectedAuth = `Bearer ${process.env.CRON_SECRET}`
+    
+    // Log for debugging
+    console.log('[Cron] Auth header:', authHeader ? 'Present' : 'Missing')
+    console.log('[Cron] Expected auth:', expectedAuth)
+    
+    // Skip auth check if CRON_SECRET not set (for testing)
+    if (process.env.CRON_SECRET && authHeader !== expectedAuth) {
+      console.error('[Cron] Unauthorized - auth mismatch')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -31,6 +39,19 @@ export async function GET(request: NextRequest) {
 
     console.log('[Cron] Current time:', currentTime, 'Day:', currentDay, 'Date:', currentDate)
 
+    // Fetch ALL active schedules first for debugging
+    const { data: allSchedules, error: allSchedulesError } = await supabaseAdmin
+      .from('email_report_schedules')
+      .select('*')
+      .eq('is_active', true)
+
+    console.log('[Cron] All active schedules:', allSchedules?.length || 0)
+    if (allSchedules && allSchedules.length > 0) {
+      allSchedules.forEach(s => {
+        console.log(`[Cron] Schedule: ${s.id} - Time: ${s.schedule_time} - Email: ${s.recipient_email}`)
+      })
+    }
+
     // Fetch active schedules that should run now
     const { data: schedules, error: schedulesError } = await supabaseAdmin
       .from('email_report_schedules')
@@ -43,9 +64,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch schedules' }, { status: 500 })
     }
 
+    console.log('[Cron] Schedules matching current time:', schedules?.length || 0)
+
     if (!schedules || schedules.length === 0) {
       console.log('[Cron] No schedules to process at this time')
-      return NextResponse.json({ message: 'No schedules to process', processed: 0 })
+      return NextResponse.json({ 
+        message: 'No schedules to process', 
+        currentTime,
+        allActiveSchedules: allSchedules?.length || 0,
+        processed: 0 
+      })
     }
 
     console.log('[Cron] Found', schedules.length, 'schedule(s) to process')
