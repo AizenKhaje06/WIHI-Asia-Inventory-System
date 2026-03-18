@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api-client"
+import { DateRangePicker } from "@/components/ui/date-range-picker"
 
 interface EmailSchedule {
   id: string
@@ -63,7 +64,9 @@ export function EmailReportsManager() {
     recipient_name: '',
     frequency: 'daily' as 'daily' | 'weekly' | 'monthly',
     schedule_time: '08:00',
-    schedule_day: ''
+    schedule_day: '',
+    start_date: null as Date | null,
+    end_date: null as Date | null
   })
 
   useEffect(() => {
@@ -176,7 +179,9 @@ export function EmailReportsManager() {
       recipient_name: schedule.recipient_name,
       frequency: schedule.frequency,
       schedule_time: schedule.schedule_time,
-      schedule_day: schedule.schedule_day || ''
+      schedule_day: schedule.schedule_day || '',
+      start_date: null,
+      end_date: null
     })
     setEditingId(schedule.id)
     setShowAddForm(false)
@@ -188,7 +193,9 @@ export function EmailReportsManager() {
       recipient_name: '',
       frequency: 'daily',
       schedule_time: '08:00',
-      schedule_day: ''
+      schedule_day: '',
+      start_date: null,
+      end_date: null
     })
   }
 
@@ -314,6 +321,24 @@ export function EmailReportsManager() {
                     />
                   </div>
                 )}
+
+                {/* Date Range Picker - Professional & Compact */}
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Report Date Range (Optional)
+                  </Label>
+                  <DateRangePicker
+                    startDate={formData.start_date}
+                    endDate={formData.end_date}
+                    onDateChange={(start, end) => {
+                      setFormData({ ...formData, start_date: start, end_date: end })
+                    }}
+                    className="w-full border-slate-200 dark:border-slate-800"
+                  />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Leave empty to include all orders. Select a range to filter reports by date.
+                  </p>
+                </div>
               </div>
 
               <div className="flex gap-3 pt-2">

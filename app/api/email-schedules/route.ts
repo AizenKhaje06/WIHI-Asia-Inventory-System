@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { recipient_email, recipient_name, frequency, schedule_time, schedule_day } = body
+    const { recipient_email, recipient_name, frequency, schedule_time, schedule_day, start_date, end_date } = body
 
     // Validate required fields
     if (!recipient_email || !recipient_name || !frequency || !schedule_time) {
@@ -48,6 +48,8 @@ export async function POST(request: NextRequest) {
         frequency,
         schedule_time,
         schedule_day: schedule_day || null,
+        start_date: start_date || null,
+        end_date: end_date || null,
         is_active: true,
         filters: {},
         created_by: 'admin'
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { id, recipient_email, recipient_name, frequency, schedule_time, schedule_day, is_active } = body
+    const { id, recipient_email, recipient_name, frequency, schedule_time, schedule_day, start_date, end_date, is_active } = body
 
     if (!id) {
       return NextResponse.json(
@@ -86,6 +88,8 @@ export async function PUT(request: NextRequest) {
     if (frequency !== undefined) updateData.frequency = frequency
     if (schedule_time !== undefined) updateData.schedule_time = schedule_time
     if (schedule_day !== undefined) updateData.schedule_day = schedule_day
+    if (start_date !== undefined) updateData.start_date = start_date
+    if (end_date !== undefined) updateData.end_date = end_date
     if (is_active !== undefined) updateData.is_active = is_active
 
     const { data, error } = await supabaseAdmin
