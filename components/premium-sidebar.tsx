@@ -237,8 +237,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           "left-0 top-0 h-screen",
           // Light mode - vibrant purple/magenta gradient
           "bg-gradient-to-b from-fuchsia-600 to-purple-700 border-r border-fuchsia-500/30",
-          // Dark mode - pure black with subtle border
-          "dark:bg-black dark:border-slate-800/60"
+          // Dark mode - pure black with subtle border (remove gradient)
+          "dark:bg-none dark:bg-black dark:border-slate-800/60"
         )}
         role="navigation"
         aria-label="Main navigation"
@@ -406,7 +406,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                           side="right" 
                           className={cn(
                             "font-medium shadow-xl border-slate-200 dark:border-slate-700",
-                            "bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm"
+                            "bg-white/95 dark:bg-black/95 backdrop-blur-sm"
                           )}
                           sideOffset={12}
                         >
@@ -460,7 +460,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                   side="right" 
                   className={cn(
                     "font-medium shadow-xl border-slate-200 dark:border-slate-700",
-                    "bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm"
+                    "bg-white/95 dark:bg-black/95 backdrop-blur-sm"
                   )}
                   sideOffset={12}
                 >
@@ -497,7 +497,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
               className={cn(
                 "w-full flex items-center justify-center gap-2 rounded-lg",
                 "py-2.5 xl:py-3",
-                "bg-white/10 hover:bg-white/20 dark:bg-slate-800/50 dark:hover:bg-slate-800/80",
+                "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
                 "text-white dark:text-white",
                 "transition-all duration-200",
                 "hover:shadow-lg",
@@ -533,7 +533,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
 
       {/* Logout Confirmation Modal */}
       <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
-        <AlertDialogContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+        <AlertDialogContent className="bg-white dark:bg-black border-slate-200 dark:border-slate-800">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-slate-900 dark:text-white">Confirm Logout</AlertDialogTitle>
             <AlertDialogDescription className="text-slate-600 dark:text-slate-400">
@@ -541,7 +541,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex gap-3 justify-end">
-            <AlertDialogCancel className="bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white border-0">
+            <AlertDialogCancel className="bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-white border-0">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 

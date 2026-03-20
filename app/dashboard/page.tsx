@@ -108,7 +108,8 @@ export default function DashboardPage() {
   }
 
   // Calculate additional metrics
-  const netProfit = (stats?.totalProfit || 0) - (stats?.returnValue || 0)
+  // Note: totalProfit already excludes returns (calculated from filtered orders)
+  const netProfit = stats?.totalProfit || 0
   const lowStockCount = lowStockItems.length
   const outOfStockCount = outOfStockItems.length
 
@@ -123,16 +124,15 @@ export default function DashboardPage() {
   })) || []
 
   return (
-    <div className="space-y-5 pt-2">
-      {/* Page Header - Vertically aligned with sidebar brand */}
-      <div>
-        <h1 className="text-3xl font-bold gradient-text mb-1.5">Dashboard</h1>
-        <p className="text-xs text-slate-600 dark:text-slate-400">Welcome back! Here's what's happening with your inventory.</p>
+    <div className="space-y-6 pt-2 pb-8">
+      {/* Page Header - Professional */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold gradient-text mb-2">Dashboard</h1>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Welcome back! Here's what's happening with your inventory.</p>
       </div>
 
-
       {/* Key Metrics - 5 Primary KPIs - Professional Corporate Design */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         {/* Total Revenue */}
         <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
@@ -142,10 +142,10 @@ export default function DashboardPage() {
                 <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent mb-1">
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent mb-2">
               ₱<AnimatedNumber value={stats?.totalRevenue || 0} duration={1500} />
             </div>
-            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 font-medium">Total Revenue</div>
+            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Total Revenue</div>
             {stats?.revenueToday !== undefined && stats.revenueToday > 0 ? (
               <div className="flex items-center gap-1">
                 <ArrowUpRight className="h-3 w-3 text-green-600 dark:text-green-400" />
@@ -170,10 +170,10 @@ export default function DashboardPage() {
                 <DollarSign className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent mb-1">
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent mb-2">
               ₱<AnimatedNumber value={netProfit} duration={1500} />
             </div>
-            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 font-medium">Net Profit</div>
+            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Net Profit</div>
             {stats?.returnValue !== undefined && stats.returnValue > 0 ? (
               <div className="flex items-center gap-1">
                 <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />
@@ -198,10 +198,10 @@ export default function DashboardPage() {
                 <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent mb-1">
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
               <AnimatedNumber value={stats?.totalSales || 0} duration={1500} />
             </div>
-            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 font-medium">Total Sold</div>
+            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Total Sold</div>
             <div className="flex items-center gap-1">
               <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
                 All-time quantity
@@ -219,10 +219,10 @@ export default function DashboardPage() {
                 <Percent className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent mb-1">
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent mb-2">
               <AnimatedNumber value={stats?.profitMargin || 0} decimals={1} duration={1500} />%
             </div>
-            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 font-medium">Profit Margin</div>
+            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Profit Margin</div>
             <div className="flex items-center gap-1">
               {(stats?.profitMargin || 0) >= 30 ? (
                 <span className="text-xs font-semibold text-green-600 dark:text-green-400">🏆 Excellent!</span>
@@ -244,10 +244,10 @@ export default function DashboardPage() {
                 <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-indigo-600 to-indigo-700 bg-clip-text text-transparent mb-1">
+            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-indigo-600 to-indigo-700 bg-clip-text text-transparent mb-2">
               ₱<AnimatedNumber value={stats?.totalValue || 0} duration={1500} />
             </div>
-            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 font-medium">Inventory Value</div>
+            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Inventory Value</div>
             <div className="flex items-center gap-1">
               <Package className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
               <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
@@ -261,7 +261,7 @@ export default function DashboardPage() {
       {/* Secondary Metrics - 4 Cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-125">
         <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 hover:shadow-lg transition-shadow">
-          <CardContent className="p-4">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
@@ -275,13 +275,13 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 hover:shadow-lg transition-shadow">
-          <CardContent className="p-4">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
                   <AnimatedNumber value={lowStockCount} duration={1000} />
                 </div>
-                <div className="text-xs font-medium text-amber-700 dark:text-amber-300 mt-0.5">Low Stock</div>
+                <div className="text-xs font-medium text-amber-700 dark:text-amber-300 mt-1">Low Stock</div>
               </div>
               <AlertTriangle className="h-8 w-8 text-amber-400 dark:text-amber-500 opacity-50" />
             </div>
@@ -289,13 +289,13 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="border-0 shadow-md bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 hover:shadow-lg transition-shadow">
-          <CardContent className="p-4">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                   <AnimatedNumber value={outOfStockCount} duration={1000} />
                 </div>
-                <div className="text-xs font-medium text-red-700 dark:text-red-300 mt-0.5">Out of Stock</div>
+                <div className="text-xs font-medium text-red-700 dark:text-red-300 mt-1">Out of Stock</div>
               </div>
               <PackageX className="h-8 w-8 text-red-400 dark:text-red-500 opacity-50" />
             </div>
@@ -303,13 +303,13 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="border-0 shadow-md bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 hover:shadow-lg transition-shadow">
-          <CardContent className="p-4">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-0.5">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">
                   <AnimatedNumber value={stats?.returnRate || 0} decimals={1} duration={1000} />%
                 </div>
-                <div className="text-xs font-medium text-orange-700 dark:text-orange-300 mb-1.5">Return Rate</div>
+                <div className="text-xs font-medium text-orange-700 dark:text-orange-300 mb-2">Return Rate</div>
                 {stats?.damagedReturnRate !== undefined && stats?.supplierReturnRate !== undefined && (
                   <div className="space-y-0.5">
                     <div className="text-xs text-orange-600 dark:text-orange-400">
@@ -329,43 +329,41 @@ export default function DashboardPage() {
 
       {/* Quick Actions & Alerts */}
       <div className={cn(
-        "grid gap-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150",
-        // Admin sees both Quick Actions and Alerts (2 columns)
-        // Non-admin sees only Alerts (1 column, full width)
+        "grid gap-5 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150",
         currentUser?.role === 'admin' ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"
       )}>
         {/* Quick Actions - Admin Only */}
         {currentUser?.role === 'admin' && (
           <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <Activity className="h-4 w-4 text-blue-600" />
                 Quick Actions
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <Button variant="outline" size="sm" className="h-auto py-3 text-xs justify-start" asChild>
                   <Link href="/dashboard/inventory/create">
-                    <Plus className="h-3 w-3 mr-1.5" />
+                    <Plus className="h-3.5 w-3.5 mr-2" />
                     Add Product
                   </Link>
                 </Button>
-                <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
+                <Button variant="outline" size="sm" className="h-auto py-3 text-xs justify-start" asChild>
                   <Link href="/dashboard/pos">
-                    <ShoppingCart className="h-3 w-3 mr-1.5" />
+                    <ShoppingCart className="h-3.5 w-3.5 mr-2" />
                     New Sale
                   </Link>
                 </Button>
-                <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
+                <Button variant="outline" size="sm" className="h-auto py-3 text-xs justify-start" asChild>
                   <Link href="/dashboard/inventory/low-stock">
-                    <Package className="h-3 w-3 mr-1.5" />
+                    <Package className="h-3.5 w-3.5 mr-2" />
                     Restock
                   </Link>
                 </Button>
-                <Button variant="outline" size="sm" className="h-auto py-2 text-xs" asChild>
+                <Button variant="outline" size="sm" className="h-auto py-3 text-xs justify-start" asChild>
                   <Link href="/dashboard/analytics">
-                    <FileText className="h-3 w-3 mr-1.5" />
+                    <FileText className="h-3.5 w-3.5 mr-2" />
                     Analytics
                   </Link>
                 </Button>
@@ -376,12 +374,12 @@ export default function DashboardPage() {
 
         {/* Critical Alerts - Redesigned Compact */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-red-600" />
               Inventory Alerts
               {(outOfStockCount + lowStockCount) > 0 && (
-                <Badge variant="destructive" className="ml-auto text-xs px-1.5 py-0">
+                <Badge variant="destructive" className="ml-auto text-xs px-2 py-0.5">
                   {outOfStockCount + lowStockCount}
                 </Badge>
               )}
@@ -471,7 +469,7 @@ export default function DashboardPage() {
       />
 
       {/* Performance Analytics */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-300">
+      <div className="grid gap-5 grid-cols-1 lg:grid-cols-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-300">
         {/* Top Products Chart */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-4">
@@ -488,27 +486,21 @@ export default function DashboardPage() {
                   layout="vertical"
                   margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
                 >
-                  <defs>
-                    <linearGradient id="topProductsGradient" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.9}/>
-                      <stop offset="100%" stopColor="#059669" stopOpacity={0.8}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
+                  <CartesianGrid strokeDasharray="0" className="stroke-gray-200 dark:stroke-gray-800" opacity={0.5} horizontal={true} vertical={false} />
                   <XAxis 
                     type="number"
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={11}
+                    className="fill-gray-500 dark:fill-gray-500" 
+                    fontSize={10}
                     tickLine={false}
-                    axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                    axisLine={false}
                   />
                   <YAxis 
                     type="category"
                     dataKey="name" 
                     className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={11}
+                    fontSize={10}
                     tickLine={false}
-                    axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                    axisLine={false}
                     width={100}
                   />
                   <Tooltip 
@@ -516,13 +508,13 @@ export default function DashboardPage() {
                       if (name === 'revenue') return [`₱${formatNumber(Number(value))}`, 'Revenue']
                       return [value.toString(), 'Units Sold']
                     }} />}
-                    cursor={{ fill: 'rgba(16, 185, 129, 0.1)' }}
+                    cursor={{ fill: 'rgba(16, 185, 129, 0.05)' }}
                   />
                   <Bar 
                     dataKey="revenue" 
-                    fill="url(#topProductsGradient)" 
-                    radius={[0, 8, 8, 0]}
-                    maxBarSize={40}
+                    fill="#10B981" 
+                    radius={[0, 4, 4, 0]}
+                    maxBarSize={32}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -623,38 +615,32 @@ export default function DashboardPage() {
                   layout="vertical"
                   margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
                 >
-                  <defs>
-                    <linearGradient id="categoryGradient2" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#A855F7" stopOpacity={0.9}/>
-                      <stop offset="100%" stopColor="#9333EA" stopOpacity={0.8}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
+                  <CartesianGrid strokeDasharray="0" className="stroke-gray-200 dark:stroke-gray-800" opacity={0.5} horizontal={true} vertical={false} />
                   <XAxis 
                     type="number"
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={11}
+                    className="fill-gray-500 dark:fill-gray-500" 
+                    fontSize={10}
                     tickLine={false}
-                    axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                    axisLine={false}
                   />
                   <YAxis 
                     type="category"
                     dataKey="name" 
                     className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={11}
+                    fontSize={10}
                     tickLine={false}
-                    axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                    axisLine={false}
                     width={100}
                   />
                   <Tooltip 
                     content={<ChartTooltip formatter={(value) => [value.toString(), 'Units Sold']} />}
-                    cursor={{ fill: 'rgba(168, 85, 247, 0.1)' }}
+                    cursor={{ fill: 'rgba(168, 85, 247, 0.05)' }}
                   />
                   <Bar 
                     dataKey="sales" 
-                    fill="url(#categoryGradient2)" 
-                    radius={[0, 8, 8, 0]}
-                    maxBarSize={40}
+                    fill="#A855F7" 
+                    radius={[0, 4, 4, 0]}
+                    maxBarSize={32}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -670,7 +656,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stock Distribution */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-350">
+      <div className="grid gap-5 grid-cols-1 lg:grid-cols-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-350">
         {/* Stock by Category Chart */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-4">
@@ -682,40 +668,34 @@ export default function DashboardPage() {
           <CardContent>
             <ResponsiveContainer width="100%" height={350}>
               <BarChart data={stocksCountData} margin={{ top: 10, bottom: 60, left: 0, right: 10 }}>
-                <defs>
-                  <linearGradient id="categoryGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" stopOpacity={0.9}/>
-                    <stop offset="100%" stopColor="#059669" stopOpacity={0.8}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
+                <CartesianGrid strokeDasharray="0" className="stroke-gray-200 dark:stroke-gray-800" opacity={0.5} horizontal={true} vertical={false} />
                 <XAxis 
                   dataKey="name" 
                   className="fill-gray-600 dark:fill-gray-400" 
                   fontSize={10}
                   tickLine={false}
-                  axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                  axisLine={false}
                   angle={-45}
                   textAnchor="end"
                   height={80}
                   interval={0}
                 />
                 <YAxis 
-                  className="fill-gray-600 dark:fill-gray-400" 
-                  fontSize={11}
+                  className="fill-gray-500 dark:fill-gray-500" 
+                  fontSize={10}
                   tickLine={false}
-                  axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                  axisLine={false}
                   width={50}
                 />
                 <Tooltip 
                   content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />}
-                  cursor={{ fill: 'rgba(16, 185, 129, 0.1)' }}
+                  cursor={{ fill: 'rgba(16, 185, 129, 0.05)' }}
                 />
                 <Bar 
                   dataKey="count" 
-                  fill="url(#categoryGradient)" 
-                  radius={[8, 8, 0, 0]}
-                  maxBarSize={60}
+                  fill="#10B981" 
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={48}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -733,37 +713,31 @@ export default function DashboardPage() {
           <CardContent>
             <ResponsiveContainer width="100%" height={350}>
               <BarChart data={stocksCountByStoreData} margin={{ top: 10, bottom: 20, left: 0, right: 10 }}>
-                <defs>
-                  <linearGradient id="storageGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.9}/>
-                    <stop offset="100%" stopColor="#1D4ED8" stopOpacity={0.8}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
+                <CartesianGrid strokeDasharray="0" className="stroke-gray-200 dark:stroke-gray-800" opacity={0.5} horizontal={true} vertical={false} />
                 <XAxis 
                   dataKey="name" 
                   className="fill-gray-600 dark:fill-gray-400" 
-                  fontSize={11}
+                  fontSize={10}
                   tickLine={false}
-                  axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                  axisLine={false}
                   interval={0}
                 />
                 <YAxis 
-                  className="fill-gray-600 dark:fill-gray-400" 
-                  fontSize={11}
+                  className="fill-gray-500 dark:fill-gray-500" 
+                  fontSize={10}
                   tickLine={false}
-                  axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                  axisLine={false}
                   width={50}
                 />
                 <Tooltip 
                   content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />}
-                  cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+                  cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }}
                 />
                 <Bar 
                   dataKey="count" 
-                  fill="url(#storageGradient)" 
-                  radius={[8, 8, 0, 0]}
-                  maxBarSize={60}
+                  fill="#3B82F6" 
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={48}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -772,7 +746,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-400">
+      <div className="grid gap-5 grid-cols-1 lg:grid-cols-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-400">
         {/* Recent Sales */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-3">
@@ -847,7 +821,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Insights & Health */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-450">
+      <div className="grid gap-5 grid-cols-1 lg:grid-cols-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-450">
         {/* Business Insights */}
         <Card className="lg:col-span-2 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <CardHeader className="pb-3">

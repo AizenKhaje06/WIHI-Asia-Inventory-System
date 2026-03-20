@@ -18,7 +18,10 @@ export function GaugeChart({
   size = 200 
 }: GaugeChartProps) {
   const percentage = Math.min((value / max) * 100, 100)
-  const angle = (percentage / 100) * 180 // Half circle (180 degrees)
+  
+  // Calculate angle: 0% = 180° (left), 100% = 0° (right)
+  // Gauge goes from left to right (180° to 0°)
+  const needleAngle = 180 - (percentage / 100) * 180
   
   const getColor = useMemo(() => {
     if (percentage >= 80) return '#10b981' // Green
@@ -52,19 +55,19 @@ export function GaugeChart({
             stroke={getColor}
             strokeWidth={size * 0.08}
             strokeLinecap="round"
-            strokeDasharray={`${(angle / 180) * Math.PI * size * 0.4} ${Math.PI * size * 0.4}`}
+            strokeDasharray={`${(percentage / 100) * Math.PI * size * 0.4} ${Math.PI * size * 0.4}`}
             className="transition-all duration-1000 ease-out"
             style={{
               filter: `drop-shadow(0 0 8px ${getColor}40)`
             }}
           />
           
-          {/* Needle */}
+          {/* Needle - Fixed rotation */}
           <line
             x1={size / 2}
             y1={size / 2}
-            x2={size / 2 + Math.cos((angle - 90) * Math.PI / 180) * (size * 0.35)}
-            y2={size / 2 + Math.sin((angle - 90) * Math.PI / 180) * (size * 0.35)}
+            x2={size / 2 + Math.cos((needleAngle - 90) * Math.PI / 180) * (size * 0.35)}
+            y2={size / 2 + Math.sin((needleAngle - 90) * Math.PI / 180) * (size * 0.35)}
             stroke={getColor}
             strokeWidth={size * 0.02}
             strokeLinecap="round"

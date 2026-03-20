@@ -1095,55 +1095,83 @@ export default function SalesChannelDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Recent Transactions */}
+        {/* Store Average */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-3 px-4 md:px-6">
             <CardTitle className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
-              Recent Transactions
+              Store Average
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 md:px-6">
-            <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-              {data.recentTransactions.length > 0 ? (
-                data.recentTransactions.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="p-2.5 md:p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
-                  >
-                    <div className="flex items-start justify-between mb-1.5">
-                      <div className="flex-1 min-w-0 pr-2">
-                        <p className="font-semibold text-xs md:text-sm text-slate-900 dark:text-white break-words">
-                          {transaction.itemName}
-                        </p>
-                        <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          {new Date(transaction.timestamp).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
+            <div className="space-y-2.5">
+              {data.storeBreakdown.length > 0 ? (
+                data.storeBreakdown.map((store, index) => {
+                  const avgRevenuePerTransaction = store.transactions > 0 ? store.revenue / store.transactions : 0
+                  const avgProfitPerTransaction = store.transactions > 0 ? store.profit / store.transactions : 0
+                  const profitMargin = store.revenue > 0 ? (store.profit / store.revenue) * 100 : 0
+                  
+                  return (
+                    <div
+                      key={index}
+                      className="p-3 md:p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-sm md:text-base text-slate-900 dark:text-white">
+                          {store.name}
+                        </h4>
+                        <Badge variant="outline" className="text-xs">
+                          {store.transactions} orders
+                        </Badge>
                       </div>
-                      <p className="text-xs md:text-sm font-bold text-green-600 dark:text-green-400 whitespace-nowrap">
-                        {formatCurrency(transaction.revenue)}
-                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* Avg Revenue per Order */}
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">
+                            Avg Revenue/Order
+                          </p>
+                          <p className="text-sm md:text-base font-bold text-green-600 dark:text-green-400">
+                            {formatCurrency(avgRevenuePerTransaction)}
+                          </p>
+                        </div>
+                        
+                        {/* Avg Profit per Order */}
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">
+                            Avg Profit/Order
+                          </p>
+                          <p className="text-sm md:text-base font-bold text-purple-600 dark:text-purple-400">
+                            {formatCurrency(avgProfitPerTransaction)}
+                          </p>
+                        </div>
+                        
+                        {/* Total Quantity */}
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">
+                            Total Quantity
+                          </p>
+                          <p className="text-sm md:text-base font-bold text-blue-600 dark:text-blue-400">
+                            {formatNumber(store.quantity)}
+                          </p>
+                        </div>
+                        
+                        {/* Profit Margin */}
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">
+                            Profit Margin
+                          </p>
+                          <p className="text-sm md:text-base font-bold text-amber-600 dark:text-amber-400">
+                            {profitMargin.toFixed(1)}%
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between text-[10px] md:text-xs">
-                      <span className="text-slate-600 dark:text-slate-400">
-                        Qty: {transaction.quantity}
-                      </span>
-                      {transaction.staffName && (
-                        <span className="text-slate-600 dark:text-slate-400 truncate max-w-[120px]">
-                          Staff: {transaction.staffName}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))
+                  )
+                })
               ) : (
                 <div className="text-center py-8">
                   <p className="text-slate-500 dark:text-slate-400 text-sm">
-                    No transactions found
+                    No store data available
                   </p>
                 </div>
               )}
