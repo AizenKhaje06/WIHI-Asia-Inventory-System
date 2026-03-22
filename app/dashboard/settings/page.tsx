@@ -55,7 +55,8 @@ interface Account {
   id: string
   username: string
   password: string
-  role: 'admin' | 'operations'
+  role: 'admin' | 'operations' | 'team_leader' | 'packer'
+  assignedChannel?: string // For team leaders
   displayName: string
   createdAt: string
 }
@@ -102,15 +103,18 @@ export default function SettingsPage() {
     username: '',
     password: '',
     displayName: '',
-    role: 'operations' as 'admin' | 'operations'
+    role: 'operations' as 'admin' | 'operations' | 'team_leader' | 'packer',
+    assignedChannel: '' // For team leaders
   })
 
   // Edit user form
   const [editUserForm, setEditUserForm] = useState({
     id: '',
     username: '',
+    originalUsername: '', // Store original username for comparison
     displayName: '',
-    role: 'operations' as 'admin' | 'operations',
+    role: 'operations' as 'admin' | 'operations' | 'team_leader' | 'packer',
+    assignedChannel: '', // For team leaders
     newPassword: '',
     confirmPassword: ''
   })
@@ -364,6 +368,11 @@ export default function SettingsPage() {
       return
     }
 
+    if (newUserForm.role === 'team_leader' && !newUserForm.assignedChannel) {
+      toast.error('Please select a sales channel for the team leader')
+      return
+    }
+
     if (newUserForm.password.length < 6) {
       toast.error('Password must be at least 6 characters')
       return
@@ -375,7 +384,7 @@ export default function SettingsPage() {
         ...newUserForm
       })
       toast.success('User created successfully')
-      setNewUserForm({ username: '', password: '', displayName: '', role: 'operations' })
+      setNewUserForm({ username: '', password: '', displayName: '', role: 'operations', assignedChannel: '' })
       setShowNewUserForm(false)
       fetchAccounts()
     } catch (error: any) {
@@ -387,8 +396,10 @@ export default function SettingsPage() {
     setEditUserForm({
       id: account.id,
       username: account.username,
+      originalUsername: account.username, // Store original
       displayName: account.displayName,
       role: account.role,
+      assignedChannel: account.assignedChannel || '',
       newPassword: '',
       confirmPassword: ''
     })
@@ -398,6 +409,11 @@ export default function SettingsPage() {
   const handleUpdateUser = async () => {
     if (!editUserForm.displayName) {
       toast.error('Display name is required')
+      return
+    }
+
+    if (!editUserForm.username) {
+      toast.error('Username is required')
       return
     }
 
@@ -415,7 +431,18 @@ export default function SettingsPage() {
     }
 
     try {
-      // Update display name
+      const usernameChanged = editUserForm.username !== editUserForm.originalUsername
+
+      // Update username if changed
+      if (usernameChanged) {
+        await apiPut('/api/accounts', {
+          action: 'updateUsername',
+          username: editUserForm.originalUsername,
+          newUsername: editUserForm.username
+        })
+      }
+
+      // Update display name (use new username if changed)
       await apiPut('/api/accounts', {
         action: 'updateDisplayName',
         username: editUserForm.username,
@@ -429,7 +456,14 @@ export default function SettingsPage() {
           username: editUserForm.username,
           password: editUserForm.newPassword
         })
-        toast.success('User updated successfully (including password)')
+      }
+
+      if (usernameChanged && editUserForm.newPassword) {
+        toast.success('User updated successfully (username and password changed)')
+      } else if (usernameChanged) {
+        toast.success('User updated successfully (username changed)')
+      } else if (editUserForm.newPassword) {
+        toast.success('User updated successfully (password changed)')
       } else {
         toast.success('User updated successfully')
       }
@@ -446,8 +480,10 @@ export default function SettingsPage() {
     setEditUserForm({
       id: '',
       username: '',
+      originalUsername: '',
       displayName: '',
       role: 'operations',
+      assignedChannel: '',
       newPassword: '',
       confirmPassword: ''
     })
@@ -1185,14 +1221,43 @@ export default function SettingsPage() {
                           <select
                             id="newRole"
                             value={newUserForm.role}
-                            onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value as 'admin' | 'operations' })}
+                            onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value as any, assignedChannel: e.target.value === 'team_leader' ? newUserForm.assignedChannel : '' })}
                             className="flex h-10 w-full rounded-md border border-purple-200 dark:border-purple-800 bg-background px-3 py-2 text-sm"
                           >
                             <option value="operations">👤 Operations Staff</option>
+                            <option value="team_leader">👔 Team Leader</option>
+                            <option value="packer">📦 Packer</option>
                             <option value="admin">👑 Administrator</option>
                           </select>
                         </div>
                       </div>
+
+                      {/* Channel Assignment for Team Leaders */}
+                      {newUserForm.role === 'team_leader' && (
+                        <div className="space-y-2 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <Label htmlFor="assignedChannel" className="text-sm font-semibold flex items-center gap-2">
+                            <Building2 className="h-4 w-4 text-blue-600" />
+                            Assigned Sales Channel *
+                          </Label>
+                          <select
+                            id="assignedChannel"
+                            value={newUserForm.assignedChannel}
+                            onChange={(e) => setNewUserForm({ ...newUserForm, assignedChannel: e.target.value })}
+                            className="flex h-10 w-full rounded-md border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+                          >
+                            <option value="">Select a channel...</option>
+                            <option value="Warehouse Admin">🏢 Warehouse Admin</option>
+                            <option value="TikTok">🎵 TikTok</option>
+                            <option value="Shopee">🛍️ Shopee</option>
+                            <option value="Facebook">👥 Facebook</option>
+                            <option value="Lazada">🛒 Lazada</option>
+                            <option value="Physical Store">🏪 Physical Store</option>
+                          </select>
+                          <p className="text-xs text-blue-600 dark:text-blue-400">
+                            Team leaders can only access data for their assigned channel
+                          </p>
+                        </div>
+                      )}
 
                       <div className="flex gap-3 pt-2">
                         <Button 
@@ -1220,10 +1285,21 @@ export default function SettingsPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-lg">Active Users ({accounts.length})</h3>
-                    <Badge variant="outline" className="px-3 py-1">
-                      <Activity className="h-3 w-3 mr-1" />
-                      {accounts.filter(a => a.role === 'admin').length} Admins, {accounts.filter(a => a.role === 'operations').length} Staff
-                    </Badge>
+                    <div className="flex gap-2 flex-wrap">
+                      <Badge variant="outline" className="px-3 py-1">
+                        <Activity className="h-3 w-3 mr-1" />
+                        {accounts.filter(a => a.role === 'admin').length} Admins
+                      </Badge>
+                      <Badge variant="outline" className="px-3 py-1">
+                        👔 {accounts.filter(a => a.role === 'team_leader').length} Team Leaders
+                      </Badge>
+                      <Badge variant="outline" className="px-3 py-1">
+                        📦 {accounts.filter(a => a.role === 'packer').length} Packers
+                      </Badge>
+                      <Badge variant="outline" className="px-3 py-1">
+                        👤 {accounts.filter(a => a.role === 'operations').length} Staff
+                      </Badge>
+                    </div>
                   </div>
 
                   {accounts.map((account) => (
@@ -1243,9 +1319,12 @@ export default function SettingsPage() {
                                 <Input
                                   id="editUsername"
                                   value={editUserForm.username}
-                                  disabled
-                                  className="bg-slate-50 dark:bg-slate-900"
+                                  onChange={(e) => setEditUserForm({ ...editUserForm, username: e.target.value })}
+                                  placeholder="Enter username"
                                 />
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  Changing username will require the user to login with the new username
+                                </p>
                               </div>
                               <div className="space-y-2">
                                 <Label htmlFor="editDisplayName" className="text-sm font-semibold">Display Name</Label>
@@ -1374,11 +1453,23 @@ export default function SettingsPage() {
                                 className={`px-4 py-2 ${
                                   account.role === 'admin'
                                     ? 'bg-gradient-to-r from-purple-600 to-pink-600'
+                                    : account.role === 'team_leader'
+                                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600'
+                                    : account.role === 'packer'
+                                    ? 'bg-gradient-to-r from-green-600 to-emerald-600'
                                     : ''
                                 }`}
                               >
-                                {account.role === 'admin' ? '👑 Admin' : '👤 Staff'}
+                                {account.role === 'admin' ? '👑 Admin' : 
+                                 account.role === 'team_leader' ? '👔 Team Leader' :
+                                 account.role === 'packer' ? '📦 Packer' : '👤 Staff'}
                               </Badge>
+                              {account.role === 'team_leader' && account.assignedChannel && (
+                                <Badge variant="outline" className="px-3 py-1.5">
+                                  <Building2 className="h-3 w-3 mr-1" />
+                                  {account.assignedChannel}
+                                </Badge>
+                              )}
                               {account.username !== currentUser?.username && (
                                 <div className="flex gap-2">
                                   <Button 

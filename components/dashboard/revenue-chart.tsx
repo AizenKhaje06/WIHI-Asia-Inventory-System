@@ -44,6 +44,7 @@ export interface ChartDataPoint {
   date: string
   sales: number
   purchases: number
+  quantity: number
 }
 
 export interface PeriodComparison {
@@ -51,6 +52,8 @@ export interface PeriodComparison {
   previous: number
   change: number
   changePercent: number
+  currentQuantity: number
+  previousQuantity: number
 }
 
 export interface RevenueChartProps {
@@ -333,6 +336,9 @@ export function RevenueChart({
                 </Badge>
               )}
             </div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+              {comparison.currentQuantity.toLocaleString()} {comparison.currentQuantity === 1 ? 'unit' : 'units'} sold
+            </div>
           </div>
 
           {/* Previous Period */}
@@ -345,8 +351,11 @@ export function RevenueChart({
                 {formatCurrency(comparison.previous)}
               </span>
             </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {comparison.previous === 0 ? 'No sales recorded' : 'Previous period sales'}
+            <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+              {comparison.previous === 0 
+                ? 'No sales recorded' 
+                : `${comparison.previousQuantity.toLocaleString()} ${comparison.previousQuantity === 1 ? 'unit' : 'units'} sold`
+              }
             </div>
           </div>
 

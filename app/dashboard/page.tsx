@@ -112,6 +112,15 @@ export default function DashboardPage() {
   const netProfit = stats?.totalProfit || 0
   const lowStockCount = lowStockItems.length
   const outOfStockCount = outOfStockItems.length
+  
+  // Calculate damaged and supplier return counts from percentages
+  const totalSales = stats?.totalSales || 0
+  const damagedReturnsCount = totalSales > 0 && stats?.damagedReturnRate 
+    ? Math.round((stats.damagedReturnRate / 100) * totalSales) 
+    : 0
+  const supplierReturnsCount = totalSales > 0 && stats?.supplierReturnRate 
+    ? Math.round((stats.supplierReturnRate / 100) * totalSales) 
+    : 0
 
   const stocksCountData = stats?.stocksCountByCategory?.map((cat) => ({
     name: cat.name,
@@ -307,16 +316,16 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">
-                  <AnimatedNumber value={stats?.returnRate || 0} decimals={1} duration={1000} />%
+                  <AnimatedNumber value={stats?.totalReturns || 0} duration={1000} />
                 </div>
-                <div className="text-xs font-medium text-orange-700 dark:text-orange-300 mb-2">Return Rate</div>
-                {stats?.damagedReturnRate !== undefined && stats?.supplierReturnRate !== undefined && (
+                <div className="text-xs font-medium text-orange-700 dark:text-orange-300 mb-2">Total Returns</div>
+                {(damagedReturnsCount > 0 || supplierReturnsCount > 0) && (
                   <div className="space-y-0.5">
                     <div className="text-xs text-orange-600 dark:text-orange-400">
-                      • Damaged: {stats.damagedReturnRate.toFixed(1)}%
+                      • Damaged: {damagedReturnsCount}
                     </div>
                     <div className="text-xs text-orange-600 dark:text-orange-400">
-                      • Supplier: {stats.supplierReturnRate.toFixed(1)}%
+                      • Supplier: {supplierReturnsCount}
                     </div>
                   </div>
                 )}

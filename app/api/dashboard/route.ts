@@ -181,6 +181,7 @@ export async function GET(request: Request) {
       return orderDate >= yesterday && orderDate < yesterdayEnd
     })
     const yesterdaySales = yesterdayOrders.reduce((sum, o) => sum + o.total, 0)
+    const yesterdayQuantity = yesterdayOrders.reduce((sum, o) => sum + o.qty, 0)
 
     // Last week sales (7-14 days ago)
     const lastWeekStart = new Date(today)
@@ -193,6 +194,7 @@ export async function GET(request: Request) {
       return orderDate >= lastWeekStart && orderDate < lastWeekEnd
     })
     const lastWeekSales = lastWeekOrders.reduce((sum, o) => sum + o.total, 0)
+    const lastWeekQuantity = lastWeekOrders.reduce((sum, o) => sum + o.qty, 0)
 
     // Last month sales
     const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1)
@@ -205,9 +207,10 @@ export async function GET(request: Request) {
       return orderDate >= lastMonthStart && orderDate < lastMonthEnd
     })
     const lastMonthSales = lastMonthOrders.reduce((sum, o) => sum + o.total, 0)
+    const lastMonthQuantity = lastMonthOrders.reduce((sum, o) => sum + o.qty, 0)
 
     // Sales over time based on period
-    let salesOverTime: { date: string; purchases: number; sales: number }[] = []
+    let salesOverTime: { date: string; purchases: number; sales: number; quantity: number }[] = []
 
     if (period === 'ID') {
       // Today: Hourly data
@@ -219,14 +222,15 @@ export async function GET(request: Request) {
 
         const hourStr = i.toString().padStart(2, '0') + ':00'
 
-        const sales = activeOrders
-          .filter(order => {
-            const orderDate = new Date(order.date)
-            return orderDate >= hourStart && orderDate <= hourEnd
-          })
-          .reduce((sum, o) => sum + o.total, 0)
+        const hourOrders = activeOrders.filter(order => {
+          const orderDate = new Date(order.date)
+          return orderDate >= hourStart && orderDate <= hourEnd
+        })
 
-        return { date: hourStr, purchases: 0, sales }
+        const sales = hourOrders.reduce((sum, o) => sum + o.total, 0)
+        const quantity = hourOrders.reduce((sum, o) => sum + o.qty, 0)
+
+        return { date: hourStr, purchases: 0, sales, quantity }
       })
     } else if (period === '1W') {
       // Last 7 days
@@ -239,14 +243,15 @@ export async function GET(request: Request) {
 
         const dayStr = day.toISOString().split('T')[0]
 
-        const sales = activeOrders
-          .filter(order => {
-            const orderDate = new Date(order.date)
-            return orderDate >= day && orderDate < nextDay
-          })
-          .reduce((sum, o) => sum + o.total, 0)
+        const dayOrders = activeOrders.filter(order => {
+          const orderDate = new Date(order.date)
+          return orderDate >= day && orderDate < nextDay
+        })
 
-        return { date: dayStr, purchases: 0, sales }
+        const sales = dayOrders.reduce((sum, o) => sum + o.total, 0)
+        const quantity = dayOrders.reduce((sum, o) => sum + o.qty, 0)
+
+        return { date: dayStr, purchases: 0, sales, quantity }
       })
     } else if (period === '1M') {
       // Current month
@@ -260,14 +265,15 @@ export async function GET(request: Request) {
 
         const dayStr = `${today.toLocaleDateString('en-US', { month: 'short' })} ${i + 1}`
 
-        const sales = activeOrders
-          .filter(order => {
-            const orderDate = new Date(order.date)
-            return orderDate >= day && orderDate < nextDay
-          })
-          .reduce((sum, o) => sum + o.total, 0)
+        const dayOrders = activeOrders.filter(order => {
+          const orderDate = new Date(order.date)
+          return orderDate >= day && orderDate < nextDay
+        })
 
-        return { date: dayStr, purchases: 0, sales }
+        const sales = dayOrders.reduce((sum, o) => sum + o.total, 0)
+        const quantity = dayOrders.reduce((sum, o) => sum + o.qty, 0)
+
+        return { date: dayStr, purchases: 0, sales, quantity }
       })
     }
 
@@ -532,6 +538,9 @@ export async function GET(request: Request) {
       yesterdaySales,
       lastWeekSales,
       lastMonthSales,
+      yesterdayQuantity,
+      lastWeekQuantity,
+      lastMonthQuantity,
       totalCancelledOrders,
       cancelledOrdersValue,
       cancellationRate,

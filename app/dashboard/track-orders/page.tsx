@@ -20,7 +20,7 @@ import {
   User, Phone, Mail, MapPin, AlertCircle, PackageCheck, Ban, AlertTriangle, RotateCcw,
   FileSpreadsheet, FileDown, Download, Trash2, ChevronDown
 } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { apiGet } from '@/lib/api-client'
 import { BrandLoader } from '@/components/ui/brand-loader'
@@ -1697,8 +1697,12 @@ export default function TrackOrdersPage() {
                         <Select 
                           value={order.parcelStatus} 
                           onValueChange={(value) => updateOrderStatus(order.id, undefined, value)}
+                          disabled={isTeamLeader}
                         >
-                          <SelectTrigger className="h-auto w-auto mx-auto border-0 bg-transparent text-[9px] shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 p-0">
+                          <SelectTrigger className={cn(
+                            "h-auto w-auto mx-auto border-0 bg-transparent text-[9px] shadow-none p-0",
+                            isTeamLeader ? "cursor-not-allowed opacity-70" : "hover:bg-slate-50 dark:hover:bg-slate-800"
+                          )}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>

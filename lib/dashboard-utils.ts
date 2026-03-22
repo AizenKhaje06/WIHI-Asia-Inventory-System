@@ -22,7 +22,7 @@ import type { ChartDataPoint, PeriodComparison, TimePeriod } from "@/components/
  * @returns Formatted chart data points
  */
 export function formatChartData(
-  salesOverTime: Array<{ date: string; sales: number; purchases: number }> | undefined,
+  salesOverTime: Array<{ date: string; sales: number; purchases: number; quantity: number }> | undefined,
   timePeriod: TimePeriod
 ): ChartDataPoint[] {
   if (!salesOverTime || salesOverTime.length === 0) return []
@@ -58,7 +58,8 @@ export function formatChartData(
     return {
       date: displayDate,
       sales: item.sales,
-      purchases: item.purchases
+      purchases: item.purchases,
+      quantity: item.quantity || 0
     }
   })
 }
@@ -86,24 +87,31 @@ export function calculatePeriodComparison(
       current: 0,
       previous: 0,
       change: 0,
-      changePercent: 0
+      changePercent: 0,
+      currentQuantity: 0,
+      previousQuantity: 0
     }
   }
 
   // Calculate current period total from salesOverTime
   const current = stats.salesOverTime?.reduce((sum, item) => sum + item.sales, 0) || 0
+  const currentQuantity = stats.salesOverTime?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0
 
   // Get previous period total from API (already calculated)
   let previous = 0
+  let previousQuantity = 0
   if (timePeriod === 'ID') {
     // Day: use yesterday's sales
     previous = stats.yesterdaySales || 0
+    previousQuantity = stats.yesterdayQuantity || 0
   } else if (timePeriod === '1W') {
     // Week: use last week's sales
     previous = stats.lastWeekSales || 0
+    previousQuantity = stats.lastWeekQuantity || 0
   } else if (timePeriod === '1M') {
     // Month: use last month's sales
     previous = stats.lastMonthSales || 0
+    previousQuantity = stats.lastMonthQuantity || 0
   }
 
   // Calculate change
@@ -114,7 +122,9 @@ export function calculatePeriodComparison(
     current,
     previous,
     change,
-    changePercent
+    changePercent,
+    currentQuantity,
+    previousQuantity
   }
 }
 

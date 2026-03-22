@@ -1207,11 +1207,11 @@ export default function InventoryPage() {
                   </div>
                   <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Quantity</p>
                   <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums mb-2">
-                    {formatNumber(Array.isArray(items) ? items.filter(item => !item.isBundle).reduce((sum, item) => sum + item.quantity, 0) : 0)}
+                    {formatNumber(Array.isArray(items) ? items.filter(item => item.productType !== 'bundle').reduce((sum, item) => sum + item.quantity, 0) : 0)}
                   </p>
                   {(search || salesChannelFilter !== "all") && (
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Filtered: {formatNumber(Array.isArray(filteredItems) ? filteredItems.filter(item => !item.isBundle).reduce((sum, item) => sum + item.quantity, 0) : 0)}
+                      Filtered: {formatNumber(Array.isArray(filteredItems) ? filteredItems.filter(item => item.productType !== 'bundle').reduce((sum, item) => sum + item.quantity, 0) : 0)}
                     </p>
                   )}
                 </div>

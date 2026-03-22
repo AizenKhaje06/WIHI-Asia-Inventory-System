@@ -117,7 +117,7 @@ export interface DashboardStats {
   totalCost: number
   totalProfit: number
   profitMargin: number
-  salesOverTime: { date: string; purchases: number; sales: number }[]
+  salesOverTime: { date: string; purchases: number; sales: number; quantity: number }[]
   topProducts: { name: string; sales: number; revenue: number }[]
   recentTransactions: Transaction[]
   topCategories: { name: string; sales: number }[]
@@ -146,6 +146,9 @@ export interface DashboardStats {
   yesterdaySales?: number
   lastWeekSales?: number
   lastMonthSales?: number
+  yesterdayQuantity?: number
+  lastWeekQuantity?: number
+  lastMonthQuantity?: number
   // Cancelled orders tracking
   totalCancelledOrders?: number
   cancelledOrdersValue?: number
