@@ -156,7 +156,7 @@ export default function TrackOrdersPage() {
         paymentStatus: (order.payment_status || 'pending') as any,
         courier: order.courier || '-',
         trackingNumber: order.waybill || '-',
-        orderDate: order.date,
+        orderDate: order.packed_at || order.date, // Use packed_at timestamp (when marked as packed) instead of original order date
         estimatedDelivery: undefined,
         deliveryDate: order.status === 'Delivered' ? order.updated_at : undefined,
         notes: JSON.stringify({
@@ -335,7 +335,15 @@ export default function TrackOrdersPage() {
         wsData.push([
           index + 1,
           `#${order.id.slice(-6)}`,
-          new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          new Date(order.orderDate).toLocaleDateString('en-US', { 
+            month: '2-digit', 
+            day: '2-digit', 
+            year: '2-digit'
+          }) + ' ' + new Date(order.orderDate).toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: false
+          }),
           order.department || 'N/A',
           order.customerAddress || 'N/A',
           order.itemName,
@@ -862,7 +870,15 @@ export default function TrackOrdersPage() {
               ${filteredOrders.map(order => `
                 <tr>
                   <td style="font-weight: 600; font-family: 'Courier New', monospace; color: #1e40af;">#${order.id.slice(-6)}</td>
-                  <td style="color: #64748b;">${new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                  <td style="color: #64748b;">${new Date(order.orderDate).toLocaleDateString('en-US', { 
+                    month: '2-digit', 
+                    day: '2-digit', 
+                    year: '2-digit'
+                  })} ${new Date(order.orderDate).toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    hour12: false
+                  })}</td>
                   <td style="font-weight: 600; color: #0f172a;">${order.department || 'N/A'}</td>
                   <td style="color: #475569;">${order.customerAddress || 'N/A'}</td>
                   <td style="font-weight: 500; color: #0f172a;">${order.itemName}</td>
@@ -1614,7 +1630,7 @@ export default function TrackOrdersPage() {
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[90px]">Order #</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[100px]">Date</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[100px]">Date & Time</th>
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[110px]">Channel</th>
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[180px]">Store</th>
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 min-w-[250px]">Product</th>
@@ -1639,7 +1655,17 @@ export default function TrackOrdersPage() {
                       </td>
                       <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
                         <div className="text-[11px] font-medium text-slate-900 dark:text-white whitespace-nowrap">
-                          {new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {new Date(order.orderDate).toLocaleDateString('en-US', { 
+                            month: '2-digit', 
+                            day: '2-digit', 
+                            year: '2-digit'
+                          })}
+                          {' '}
+                          {new Date(order.orderDate).toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit', 
+                            hour12: false
+                          })}
                         </div>
                       </td>
                       <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">

@@ -132,6 +132,11 @@ export default function DashboardPage() {
     count: store.count,
   })) || []
 
+  const storePerformanceData = stats?.storePerformance?.map((store) => ({
+    name: store.name,
+    count: store.count,
+  })) || []
+
   return (
     <div className="space-y-6 pt-2 pb-8">
       {/* Page Header - Professional */}
@@ -666,57 +671,12 @@ export default function DashboardPage() {
 
       {/* Stock Distribution */}
       <div className="grid gap-5 grid-cols-1 lg:grid-cols-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-350">
-        {/* Stock by Category Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
-              <Activity className="h-5 w-5 text-green-600" />
-              Stock Distribution by Category
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={stocksCountData} margin={{ top: 10, bottom: 60, left: 0, right: 10 }}>
-                <CartesianGrid strokeDasharray="0" className="stroke-gray-200 dark:stroke-gray-800" opacity={0.5} horizontal={true} vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  className="fill-gray-600 dark:fill-gray-400" 
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  interval={0}
-                />
-                <YAxis 
-                  className="fill-gray-500 dark:fill-gray-500" 
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                  width={50}
-                />
-                <Tooltip 
-                  content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />}
-                  cursor={{ fill: 'rgba(16, 185, 129, 0.05)' }}
-                />
-                <Bar 
-                  dataKey="count" 
-                  fill="#10B981" 
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={48}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Stock by Store Chart - NEW */}
+        {/* Department Performance Chart */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-4">
             <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
               <Package className="h-5 w-5 text-blue-600" />
-              Stock by Store
+              Department Performance
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -737,14 +697,58 @@ export default function DashboardPage() {
                   tickLine={false}
                   axisLine={false}
                   width={50}
+                  tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
                 />
                 <Tooltip 
-                  content={<ChartTooltip formatter={(value) => [value.toString(), 'Count']} />}
+                  content={<ChartTooltip formatter={(value) => [`₱${formatNumber(value as number)}`, 'Revenue']} />}
                   cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }}
                 />
                 <Bar 
                   dataKey="count" 
                   fill="#3B82F6" 
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={48}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Store Performance Chart */}
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
+              <Activity className="h-5 w-5 text-green-600" />
+              Store Performance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={storePerformanceData} margin={{ top: 10, bottom: 20, left: 0, right: 10 }}>
+                <CartesianGrid strokeDasharray="0" className="stroke-gray-200 dark:stroke-gray-800" opacity={0.5} horizontal={true} vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  className="fill-gray-600 dark:fill-gray-400" 
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  interval={0}
+                />
+                <YAxis 
+                  className="fill-gray-500 dark:fill-gray-500" 
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  width={50}
+                  tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                />
+                <Tooltip 
+                  content={<ChartTooltip formatter={(value) => [`₱${formatNumber(value as number)}`, 'Revenue']} />}
+                  cursor={{ fill: 'rgba(16, 185, 129, 0.05)' }}
+                />
+                <Bar 
+                  dataKey="count" 
+                  fill="#10B981" 
                   radius={[4, 4, 0, 0]}
                   maxBarSize={48}
                 />

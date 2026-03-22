@@ -393,6 +393,9 @@ export default function AnalyticsPage() {
                               <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                                 {formatCurrency(cell.revenue)}
                               </div>
+                              <div className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5">
+                                {cell.itemsSold} {cell.itemsSold === 1 ? 'unit' : 'units'}
+                              </div>
                               <Badge className="mt-1 h-4 text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
                                 Sale
                               </Badge>
@@ -553,7 +556,7 @@ export default function AnalyticsPage() {
   )
 }
 
-function generateCalendarDays(month: Date, dailySales: { date: string; revenue: number }[]) {
+function generateCalendarDays(month: Date, dailySales: { date: string; revenue: number; itemsSold: number }[]) {
   const year = month.getFullYear()
   const mon = month.getMonth()
   const firstDay = new Date(year, mon, 1)
@@ -561,27 +564,27 @@ function generateCalendarDays(month: Date, dailySales: { date: string; revenue: 
   const daysInMonth = lastDay.getDate()
   const startingDayOfWeek = firstDay.getDay()
 
-  const salesMap = new Map(dailySales.map(d => [d.date, d.revenue]))
+  const salesMap = new Map(dailySales.map(d => [d.date, { revenue: d.revenue, itemsSold: d.itemsSold || 0 }]))
 
   const calendar = []
 
   // Empty cells before first day
   for (let i = 0; i < startingDayOfWeek; i++) {
-    calendar.push({ day: null, revenue: 0 })
+    calendar.push({ day: null, revenue: 0, itemsSold: 0 })
   }
 
   // Days of the month
   for (let i = 1; i <= daysInMonth; i++) {
     const dateStr = `${year}-${String(mon + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`
-    const revenue = salesMap.get(dateStr) || 0
-    calendar.push({ day: i, revenue })
+    const data = salesMap.get(dateStr) || { revenue: 0, itemsSold: 0 }
+    calendar.push({ day: i, revenue: data.revenue, itemsSold: data.itemsSold })
   }
 
   // Empty cells after last day to complete weeks
   const totalCells = calendar.length
   const remainingCells = (7 - (totalCells % 7)) % 7
   for (let i = 0; i < remainingCells; i++) {
-    calendar.push({ day: null, revenue: 0 })
+    calendar.push({ day: null, revenue: 0, itemsSold: 0 })
   }
 
   return calendar

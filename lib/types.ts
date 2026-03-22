@@ -125,7 +125,8 @@ export interface DashboardStats {
   totalProducts: number
   stockPercentageByCategory: { name: string; percentage: number }[]
   stocksCountByCategory: { name: string; count: number }[]
-  stocksCountByStore: { name: string; count: number }[] // Changed from stocksCountByStorageRoom
+  stocksCountByStore: { name: string; count: number }[] // Sales channel performance (revenue)
+  storePerformance?: { name: string; count: number }[] // Actual store performance (inventory value)
   totalCustomers?: number
   topCustomers?: { name: string; spent: number }[]
   averageOrderValue?: number

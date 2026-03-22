@@ -62,6 +62,29 @@ export default function PackingQueuePage() {
   const userRole = getCurrentUserRole()
   const isTeamLeader = userRole === 'team_leader'
 
+  // Helper function to format date and time - using same logic as Activity Logs
+  const formatDateTime = (dateString: string) => {
+    if (!dateString) return 'N/A'
+    
+    const date = new Date(dateString)
+    
+    // Format date as MM/DD/YY
+    const dateStr = date.toLocaleDateString('en-US', { 
+      month: '2-digit', 
+      day: '2-digit', 
+      year: '2-digit'
+    })
+    
+    // Format time as HH:mm (24-hour)
+    const timeStr = date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: false
+    })
+    
+    return `${dateStr} ${timeStr}`
+  }
+
   useEffect(() => {
     const user = getCurrentUser()
     setCurrentUser(user)
@@ -338,7 +361,7 @@ export default function PackingQueuePage() {
                         Waybill No.
                       </th>
                       <th className="text-left py-3 px-4 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
-                        Date
+                        Date & Time
                       </th>
                       {!isTeamLeader && (
                         <th className="text-left py-3 px-4 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
@@ -374,7 +397,9 @@ export default function PackingQueuePage() {
                         </span>
                       </td>
                       <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400">
-                        {new Date(order.date || order.orderDate || order.created_at || '').toLocaleDateString()}
+                        <div className="whitespace-nowrap">
+                          {formatDateTime(order.created_at || order.orderDate || order.date || '')}
+                        </div>
                       </td>
                       {!isTeamLeader && (
                         <td className="py-3 px-4 text-sm">

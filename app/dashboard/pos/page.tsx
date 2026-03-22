@@ -30,10 +30,19 @@ export default function POSPage() {
   const [dispatchedItems, setDispatchedItems] = useState<Array<{name: string, quantity: number, price: number}>>([])
   const [successModalOpen, setSuccessModalOpen] = useState(false)
   
+  // Helper function to get local date in YYYY-MM-DD format
+  const getLocalDateString = () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  
   // Order Form Modal States
   const [orderFormOpen, setOrderFormOpen] = useState(false)
   const [orderForm, setOrderForm] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: getLocalDateString(),
     salesChannel: '',
     store: '',
     courier: '',
@@ -122,7 +131,7 @@ export default function POSPage() {
     const firstItem = cart[0].item
     
     setOrderForm({
-      date: new Date().toISOString().split('T')[0],
+      date: getLocalDateString(),
       salesChannel: firstItem.salesChannel || '',
       store: firstItem.store || '',
       courier: '',
@@ -226,7 +235,7 @@ export default function POSPage() {
 
       // Reset form
       setOrderForm({
-        date: new Date().toISOString().split('T')[0],
+        date: getLocalDateString(),
         salesChannel: '',
         store: '',
         courier: '',

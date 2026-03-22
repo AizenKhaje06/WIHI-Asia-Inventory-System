@@ -373,13 +373,29 @@ export async function GET(request: Request) {
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
 
-    const stocksCountByStore = items.reduce((acc: { [key: string]: number }, item: InventoryItem) => {
-      acc[item.store] = (acc[item.store] || 0) + item.quantity
+    // Sales performance by sales channel (Department Performance - for left chart)
+    const salesByChannel = activeOrders.reduce((acc: { [key: string]: number }, order) => {
+      const channel = order.sales_channel || 'Unknown'
+      acc[channel] = (acc[channel] || 0) + order.total
       return acc
     }, {})
 
-    const stocksCountByStoreSorted = Object.entries(stocksCountByStore)
-      .map(([name, count]) => ({ name, count }))
+    const stocksCountByStoreSorted = Object.entries(salesByChannel)
+      .map(([name, revenue]) => ({ name, count: revenue })) // Using 'count' for backward compatibility
+      .sort((a, b) => b.count - a.count)
+
+    // Store performance by actual store names (Store Performance - for right chart)
+    // Use the store field directly from orders table
+    const storePerformance = filteredOrders
+      .filter(o => !EXCLUDED_STATUSES.includes(o.parcel_status)) // Only active orders
+      .reduce((acc: { [key: string]: number }, order) => {
+        const storeName = order.store || 'Unknown'
+        acc[storeName] = (acc[storeName] || 0) + (order.total || 0)
+        return acc
+      }, {})
+
+    const storePerformanceSorted = Object.entries(storePerformance)
+      .map(([name, revenue]) => ({ name, count: revenue as number }))
       .sort((a, b) => b.count - a.count)
 
     // Return metrics from restock history
@@ -387,7 +403,6 @@ export async function GET(request: Request) {
     const totalReturns = returns.reduce((sum, r) => sum + r.quantity, 0)
     const totalSales = financialMetrics.totalQuantity
     const returnRate = totalSales > 0 ? (totalReturns / totalSales) * 100 : 0
-
     const damagedReturns = returns.filter(r => r.reason === 'damaged-return').reduce((sum, r) => sum + r.quantity, 0)
     const supplierReturnsCount = returns.filter(r => r.reason === 'supplier-return').reduce((sum, r) => sum + r.quantity, 0)
     const damagedReturnRate = totalSales > 0 ? (damagedReturns / totalSales) * 100 : 0
@@ -520,6 +535,7 @@ export async function GET(request: Request) {
       stockPercentageByCategory,
       stocksCountByCategory: stocksCountByCategorySorted,
       stocksCountByStore: stocksCountByStoreSorted,
+      storePerformance: storePerformanceSorted,
       totalSales: financialMetrics.totalQuantity,
       returnRate: Math.round(returnRate * 100) / 100,
       damagedReturnRate: Math.round(damagedReturnRate * 100) / 100,

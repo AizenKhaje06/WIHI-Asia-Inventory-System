@@ -566,15 +566,13 @@ export default function LogPage() {
                             {new Date(log.timestamp).toLocaleDateString('en-US', { 
                               month: '2-digit', 
                               day: '2-digit', 
-                              year: '2-digit',
-                              timeZone: 'Asia/Manila'
+                              year: '2-digit'
                             })}
                             {' '}
                             {new Date(log.timestamp).toLocaleTimeString('en-US', { 
                               hour: '2-digit', 
                               minute: '2-digit', 
-                              hour12: false,
-                              timeZone: 'Asia/Manila'
+                              hour12: false
                             })}
                           </div>
                         </td>
