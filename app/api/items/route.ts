@@ -43,6 +43,28 @@ export const GET = withAuth(async (request, { user }) => {
 export const POST = withAdmin(async (request, { user }) => {
   try {
     const body = await request.json()
+    
+    // Check for duplicates: same name, store, and sales channel
+    const existingItems = await getInventoryItems()
+    const duplicate = existingItems.find(item => 
+      item.name.toLowerCase() === body.name.toLowerCase() &&
+      item.store === body.store &&
+      item.salesChannel === body.salesChannel
+    )
+    
+    if (duplicate) {
+      return NextResponse.json({ 
+        error: `Product "${body.name}" already exists in ${body.store} (${body.salesChannel}). Please update the existing product instead of creating a duplicate.`,
+        existingProduct: {
+          id: duplicate.id,
+          name: duplicate.name,
+          store: duplicate.store,
+          salesChannel: duplicate.salesChannel,
+          quantity: duplicate.quantity
+        }
+      }, { status: 409 }) // 409 Conflict
+    }
+    
     const item = await addInventoryItem(body)
     
     // Invalidate cache after creating new item
