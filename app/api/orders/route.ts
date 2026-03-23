@@ -72,6 +72,11 @@ export async function POST(request: NextRequest) {
     // Generate order ID
     const orderId = `ORD-${Date.now()}`
     
+    // Get current Manila time for created_at
+    const now = new Date()
+    const manilaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }))
+    const createdAt = manilaTime.toISOString()
+    
     // Insert order
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -93,8 +98,8 @@ export async function POST(request: NextRequest) {
         customer_address: customerAddress || null,
         customer_contact: customerContact || null,
         dispatch_notes: notes || null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        created_at: createdAt,
+        updated_at: createdAt
       })
       .select()
       .single()
@@ -116,7 +121,7 @@ export async function POST(request: NextRequest) {
         selling_price: item.sellingPrice,
         total_cost: item.quantity * item.costPrice,
         total_revenue: item.quantity * item.sellingPrice,
-        created_at: new Date().toISOString()
+        created_at: createdAt
       }))
       
       const { error: itemsError } = await supabase
