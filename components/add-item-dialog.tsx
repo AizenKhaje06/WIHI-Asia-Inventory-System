@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Package, Loader2 } from "lucide-react"
 import type { Store } from "@/lib/types"
 import { apiGet, apiPost } from "@/lib/api-client"
+import { toast } from "sonner"
 
 const SALES_CHANNELS = ['Shopee', 'Lazada', 'Facebook', 'TikTok', 'Physical Store'] as const
 
@@ -74,6 +75,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
 
     try {
       await apiPost("/api/items", formData)
+      toast.success("Product added successfully!")
       onSuccess()
       onOpenChange(false)
       setFormData({
@@ -86,8 +88,15 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
         sellingPrice: 0,
         reorderLevel: 0,
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error("[v0] Error adding item:", error)
+      
+      // Show user-friendly error message
+      if (error.message) {
+        toast.error(error.message)
+      } else {
+        toast.error("Failed to add product. Please try again.")
+      }
     } finally {
       setLoading(false)
     }
