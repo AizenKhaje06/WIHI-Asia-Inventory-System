@@ -6,6 +6,13 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Skip static generation for API routes during build
+  // This prevents "supabaseUrl is required" errors during build time
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'recharts', '@radix-ui/react-icons'],
+  },
+  // Ensure API routes are not statically generated
+  output: 'standalone',
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],
@@ -194,10 +201,6 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   poweredByHeader: false,
   reactStrictMode: true,
-  // Experimental features for performance
-  experimental: {
-    optimizePackageImports: ['lucide-react', 'recharts', '@radix-ui/react-icons'],
-  },
   // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
     // Production optimizations

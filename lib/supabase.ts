@@ -1,14 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Check if Supabase is configured
-const hasSupabaseConfig = !!(
-  process.env.NEXT_PUBLIC_SUPABASE_URL && 
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+// Validate environment variables
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  throw new Error('Missing environment variable: NEXT_PUBLIC_SUPABASE_URL')
+}
 
-// Use placeholder values if not configured (will cause graceful failures)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
+if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  throw new Error('Missing environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY')
+}
+
+// Get Supabase configuration from environment variables
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey
 
 // Create Supabase client for client-side operations
@@ -35,7 +38,7 @@ export const supabaseAdmin = createClient(
 )
 
 // Export config status
-export const isSupabaseConfigured = hasSupabaseConfig
+export const isSupabaseConfigured = true
 
 // Database types (matching your Supabase schema)
 export interface Database {
