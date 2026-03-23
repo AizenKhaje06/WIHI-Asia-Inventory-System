@@ -8,6 +8,7 @@ interface GaugeChartProps {
   label: string
   color?: string
   size?: number
+  showMinMax?: boolean
 }
 
 export function GaugeChart({ 
@@ -15,7 +16,8 @@ export function GaugeChart({
   max, 
   label, 
   color = '#3b82f6',
-  size = 200 
+  size = 240,
+  showMinMax = true
 }: GaugeChartProps) {
   const percentage = Math.min((value / max) * 100, 100)
   
@@ -28,69 +30,173 @@ export function GaugeChart({
     if (percentage >= 50) return '#f59e0b' // Amber
     return '#ef4444' // Red
   }, [percentage])
+  
+  const getStatusText = useMemo(() => {
+    if (percentage >= 80) return 'Excellent'
+    if (percentage >= 50) return 'Good'
+    if (percentage >= 30) return 'Fair'
+    return 'Poor'
+  }, [percentage])
+  
+  const getStatusColor = useMemo(() => {
+    if (percentage >= 80) return 'text-green-600 dark:text-green-400'
+    if (percentage >= 50) return 'text-amber-600 dark:text-amber-400'
+    return 'text-red-600 dark:text-red-400'
+  }, [percentage])
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="relative" style={{ width: size, height: size / 2 }}>
-        {/* Background arc */}
+    <div className="flex flex-col items-center justify-center py-4">
+      <div className="relative" style={{ width: size, height: size * 0.6 }}>
+        {/* Background glow effect */}
+        <div 
+          className="absolute inset-0 blur-2xl opacity-20 rounded-full"
+          style={{ 
+            background: `radial-gradient(circle, ${getColor} 0%, transparent 70%)`,
+            transform: 'translateY(20%)'
+          }}
+        />
+        
+        {/* SVG Gauge */}
         <svg
           width={size}
-          height={size / 2}
-          viewBox={`0 0 ${size} ${size / 2}`}
-          className="overflow-visible"
+          height={size * 0.6}
+          viewBox={`0 0 ${size} ${size * 0.6}`}
+          className="overflow-visible relative z-10"
         >
-          {/* Background track */}
+          <defs>
+            {/* Gradient for progress arc */}
+            <linearGradient id={`gaugeGradient-${label}`} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor={getColor} stopOpacity="0.6" />
+              <stop offset="100%" stopColor={getColor} stopOpacity="1" />
+            </linearGradient>
+            
+            {/* Shadow filter */}
+            <filter id={`gaugeShadow-${label}`}>
+              <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+              <feOffset dx="0" dy="2" result="offsetblur"/>
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="0.3"/>
+              </feComponentTransfer>
+              <feMerge>
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          
+          {/* Background track with subtle gradient */}
           <path
-            d={`M ${size * 0.1} ${size / 2} A ${size * 0.4} ${size * 0.4} 0 0 1 ${size * 0.9} ${size / 2}`}
+            d={`M ${size * 0.15} ${size * 0.5} A ${size * 0.35} ${size * 0.35} 0 0 1 ${size * 0.85} ${size * 0.5}`}
             fill="none"
             stroke="currentColor"
-            strokeWidth={size * 0.08}
-            className="text-slate-200 dark:text-slate-800"
+            strokeWidth={size * 0.06}
+            strokeLinecap="round"
+            className="text-slate-200/60 dark:text-slate-700/60"
           />
           
-          {/* Progress arc */}
+          {/* Tick marks */}
+          {[0, 25, 50, 75, 100].map((tick) => {
+            const tickAngle = 180 - (tick / 100) * 180
+            const innerRadius = size * 0.28
+            const outerRadius = size * 0.32
+            const x1 = size / 2 + Math.cos((tickAngle - 90) * Math.PI / 180) * innerRadius
+            const y1 = size * 0.5 + Math.sin((tickAngle - 90) * Math.PI / 180) * innerRadius
+            const x2 = size / 2 + Math.cos((tickAngle - 90) * Math.PI / 180) * outerRadius
+            const y2 = size * 0.5 + Math.sin((tickAngle - 90) * Math.PI / 180) * outerRadius
+            
+            return (
+              <line
+                key={tick}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke="currentColor"
+                strokeWidth={tick % 50 === 0 ? 2 : 1}
+                className="text-slate-400 dark:text-slate-600"
+              />
+            )
+          })}
+          
+          {/* Progress arc with gradient */}
           <path
-            d={`M ${size * 0.1} ${size / 2} A ${size * 0.4} ${size * 0.4} 0 0 1 ${size * 0.9} ${size / 2}`}
+            d={`M ${size * 0.15} ${size * 0.5} A ${size * 0.35} ${size * 0.35} 0 0 1 ${size * 0.85} ${size * 0.5}`}
             fill="none"
-            stroke={getColor}
-            strokeWidth={size * 0.08}
+            stroke={`url(#gaugeGradient-${label})`}
+            strokeWidth={size * 0.06}
             strokeLinecap="round"
-            strokeDasharray={`${(percentage / 100) * Math.PI * size * 0.4} ${Math.PI * size * 0.4}`}
+            strokeDasharray={`${(percentage / 100) * Math.PI * size * 0.35} ${Math.PI * size * 0.35}`}
             className="transition-all duration-1000 ease-out"
             style={{
-              filter: `drop-shadow(0 0 8px ${getColor}40)`
+              filter: `drop-shadow(0 0 12px ${getColor}60)`
             }}
           />
           
-          {/* Needle - Fixed rotation */}
-          <line
-            x1={size / 2}
-            y1={size / 2}
-            x2={size / 2 + Math.cos((needleAngle - 90) * Math.PI / 180) * (size * 0.35)}
-            y2={size / 2 + Math.sin((needleAngle - 90) * Math.PI / 180) * (size * 0.35)}
-            stroke={getColor}
-            strokeWidth={size * 0.02}
-            strokeLinecap="round"
-            className="transition-all duration-1000 ease-out"
-          />
+          {/* Needle with shadow */}
+          <g filter={`url(#gaugeShadow-${label})`}>
+            <line
+              x1={size / 2}
+              y1={size * 0.5}
+              x2={size / 2 + Math.cos((needleAngle - 90) * Math.PI / 180) * (size * 0.3)}
+              y2={size * 0.5 + Math.sin((needleAngle - 90) * Math.PI / 180) * (size * 0.3)}
+              stroke={getColor}
+              strokeWidth={size * 0.015}
+              strokeLinecap="round"
+              className="transition-all duration-1000 ease-out"
+            />
+          </g>
           
-          {/* Center dot */}
+          {/* Center hub with gradient */}
           <circle
             cx={size / 2}
-            cy={size / 2}
-            r={size * 0.04}
+            cy={size * 0.5}
+            r={size * 0.05}
             fill={getColor}
+            className="transition-all duration-500"
+            style={{
+              filter: `drop-shadow(0 2px 4px ${getColor}60)`
+            }}
+          />
+          <circle
+            cx={size / 2}
+            cy={size * 0.5}
+            r={size * 0.025}
+            fill="white"
+            opacity="0.9"
           />
         </svg>
         
-        {/* Value display */}
-        <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
-          <div className="text-3xl font-bold text-slate-900 dark:text-white">
-            {percentage.toFixed(0)}%
+        {/* Value display - Centered and prominent */}
+        <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
+          <div className="text-5xl font-bold bg-gradient-to-br from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent tracking-tight">
+            {percentage.toFixed(1)}%
           </div>
-          <div className="text-sm text-slate-600 dark:text-slate-400">
+          <div className={`text-xs font-semibold uppercase tracking-wider mt-1 ${getStatusColor}`}>
+            {getStatusText}
+          </div>
+          <div className="text-sm text-slate-600 dark:text-slate-400 font-medium mt-0.5">
             {label}
           </div>
+        </div>
+        
+        {/* Min/Max labels */}
+        {showMinMax && (
+          <>
+            <div className="absolute left-0 bottom-0 text-xs text-slate-500 dark:text-slate-500 font-medium">
+              0%
+            </div>
+            <div className="absolute right-0 bottom-0 text-xs text-slate-500 dark:text-slate-500 font-medium">
+              100%
+            </div>
+          </>
+        )}
+      </div>
+      
+      {/* Additional info bar */}
+      <div className="mt-4 flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getColor }} />
+          <span className="font-medium">{value} / {max}</span>
         </div>
       </div>
     </div>
