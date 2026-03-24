@@ -137,85 +137,78 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2 pb-8">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
       {/* Page Header */}
-      <div className="mb-8 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
-            <BarChart3 className="h-6 w-6" />
-          </div>
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">
-              Sales Analytics
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base mt-0.5">
-              Comprehensive sales performance analysis and business insights
-            </p>
-          </div>
-        </div>
+      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+        <h1 className="text-4xl font-bold gradient-text mb-2">
+          Sales Analytics
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400 text-base">
+          Comprehensive sales performance analysis and business insights
+        </p>
       </div>
 
       {/* Sales Performance Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         {/* Total Revenue - Blue */}
-        <div className="group relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all duration-300 p-5 rounded-2xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900/50">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300" />
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
           <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
-                <DollarSign className="h-5 w-5" />
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Total Revenue</p>
-            <p className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tabular-nums">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Revenue</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">
               {formatCurrency(report?.totalRevenue || 0)}
             </p>
           </div>
         </div>
 
         {/* Total Cost - Purple */}
-        <div className="group relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all duration-300 p-5 rounded-2xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900/50">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300" />
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
           <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
-                <TrendingDown className="h-5 w-5" />
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <TrendingDown className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Total Cost</p>
-            <p className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tabular-nums">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Cost</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent tabular-nums">
               {formatCurrency(report?.totalCost || 0)}
             </p>
           </div>
         </div>
 
         {/* Net Profit - Emerald */}
-        <div className="group relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all duration-300 p-5 rounded-2xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900/50">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300" />
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-full -mr-16 -mt-16" />
           <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
-                <TrendingUp className="h-5 w-5" />
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Net Profit</p>
-            <p className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tabular-nums">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Net Profit</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-emerald-600 to-emerald-700 bg-clip-text text-transparent tabular-nums">
               {formatCurrency(report?.totalProfit || 0)}
             </p>
           </div>
         </div>
 
         {/* Profit Margin - Amber */}
-        <div className="group relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all duration-300 p-5 rounded-2xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900/50">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300" />
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
           <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
-                <Percent className="h-5 w-5" />
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                <Percent className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Profit Margin</p>
-            <p className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tabular-nums">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Profit Margin</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums">
               {(report?.profitMargin || 0).toFixed(1)}%
             </p>
           </div>
@@ -223,54 +216,54 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Additional Insights */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
         {/* Avg Daily Revenue - Blue */}
-        <div className="group relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all duration-300 p-5 rounded-2xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900/50">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300" />
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
           <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
-                <Calendar className="h-5 w-5" />
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Avg Daily Revenue</p>
-            <p className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tabular-nums">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Avg Daily Revenue</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">
               {formatCurrency(avgDailyRevenue)}
             </p>
           </div>
         </div>
 
         {/* Total Transactions - Emerald */}
-        <div className="group relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all duration-300 p-5 rounded-2xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900/50">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300" />
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-full -mr-16 -mt-16" />
           <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
-                <ShoppingCart className="h-5 w-5" />
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                <ShoppingCart className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Total Transactions</p>
-            <p className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tabular-nums">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Transactions</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-emerald-600 to-emerald-700 bg-clip-text text-transparent tabular-nums">
               {formatNumber(totalTransactions)}
             </p>
           </div>
         </div>
 
         {/* Highest Sale Day - Amber */}
-        <div className="group relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all duration-300 p-5 rounded-2xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900/50">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300" />
+        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
           <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
-                <TrendingUp className="h-5 w-5" />
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Highest Sale Day</p>
-            <p className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tabular-nums">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Highest Sale Day</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums">
               {highestSaleDay ? formatCurrency(highestSaleDay.revenue) : '₱0.00'}
             </p>
             {highestSaleDay && (
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {new Date(highestSaleDay.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </p>
             )}
@@ -279,18 +272,18 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Filter and Controls */}
-      <Card className="mb-6 border border-slate-200 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
-        <CardContent className="p-5 sm:p-6">
-          <div className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <Card className="mb-4 border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
+        <CardContent className="p-4">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <Label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 block uppercase tracking-wider">View Type</Label>
+                <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">View Type</Label>
                 <div className="flex gap-2">
                   <Button
                     variant={view === 'daily' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setView('daily')}
-                    className="h-10 flex-1 font-medium"
+                    className="h-9 flex-1"
                   >
                     <Calendar className="h-4 w-4 mr-2" />
                     Daily
@@ -299,7 +292,7 @@ export default function AnalyticsPage() {
                     variant={view === 'monthly' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setView('monthly')}
-                    className="h-10 flex-1 font-medium"
+                    className="h-9 flex-1"
                   >
                     <BarChart3 className="h-4 w-4 mr-2" />
                     Monthly
@@ -308,9 +301,9 @@ export default function AnalyticsPage() {
               </div>
 
               <div>
-                <Label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 block uppercase tracking-wider">Sales Channel</Label>
+                <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Sales Channel</Label>
                 <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-                  <SelectTrigger className="h-10 border-slate-200 dark:border-slate-700 font-medium">
+                  <SelectTrigger className="h-9 border-slate-200 dark:border-slate-700">
                     <SelectValue placeholder="All Channels" />
                   </SelectTrigger>
                   <SelectContent>
@@ -326,9 +319,9 @@ export default function AnalyticsPage() {
 
               {view === 'monthly' && (
                 <div>
-                  <Label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 block uppercase tracking-wider">Chart Type</Label>
+                  <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Chart Type</Label>
                   <Select value={chartType} onValueChange={(value: 'bar' | 'line' | 'area') => setChartType(value)}>
-                    <SelectTrigger className="h-10 border-slate-200 dark:border-slate-700 font-medium">
+                    <SelectTrigger className="h-9 border-slate-200 dark:border-slate-700">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -343,14 +336,14 @@ export default function AnalyticsPage() {
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               {view === 'daily' && (
-                <div className="flex items-center gap-3 flex-1">
-                  <Button variant="outline" size="sm" onClick={prevMonth} className="h-10 px-4 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-1">
+                  <Button variant="outline" size="sm" onClick={prevMonth} className="h-9 flex-shrink-0">
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <span className="text-base font-bold text-slate-900 dark:text-white text-center flex-1">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white text-center flex-1">
                     {monthYear}
                   </span>
-                  <Button variant="outline" size="sm" onClick={nextMonth} className="h-10 px-4 flex-shrink-0">
+                  <Button variant="outline" size="sm" onClick={nextMonth} className="h-9 flex-shrink-0">
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -434,48 +427,59 @@ export default function AnalyticsPage() {
       ) : (
         monthlySales.length > 0 ? (
           <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-250">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-[5px] bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
+            <CardHeader className="pb-6 border-b border-slate-100 dark:border-slate-800">
+              <CardTitle className="flex items-center gap-3 text-xl font-bold text-slate-900 dark:text-white">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg">
                   <BarChart3 className="h-5 w-5" />
                 </div>
-                Monthly Sales Revenue Trend
+                <div>
+                  <div className="text-xl font-bold">Monthly Sales Revenue Trend</div>
+                  <div className="text-sm font-normal text-slate-500 dark:text-slate-400 mt-0.5">
+                    Year-to-date performance overview
+                  </div>
+                </div>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="w-full h-[350px]">
+            <CardContent className="p-8">
+              <div className="w-full h-[400px]">
                 <ChartContainer config={chartConfig} className="h-full w-full">
                   {chartType === 'bar' ? (
-                    <BarChart data={monthlySales} margin={{ left: 0, right: 30, top: 20, bottom: 40 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                    <BarChart data={monthlySales} margin={{ left: 10, right: 40, top: 30, bottom: 50 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} stroke="hsl(var(--border))" />
                       <XAxis
                         dataKey="month"
                         tickLine={false}
-                        tickMargin={10}
+                        axisLine={false}
+                        tickMargin={12}
                         minTickGap={32}
                         tickFormatter={(month) => new Date(month + '-01').toLocaleDateString('en-US', { month: 'short' })}
-                        className="text-xs"
+                        className="text-sm font-medium"
+                        stroke="hsl(var(--muted-foreground))"
                       />
                       <YAxis 
                         tickLine={false}
-                        tickMargin={10}
+                        axisLine={false}
+                        tickMargin={12}
                         tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
-                        className="text-xs"
-                        width={45}
+                        className="text-sm font-medium"
+                        width={60}
+                        stroke="hsl(var(--muted-foreground))"
                       />
                       <ChartTooltipContent
                         formatter={(value) => [formatCurrency(value as number), 'Revenue']}
+                        labelFormatter={(label) => new Date(label + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        className="rounded-xl shadow-xl border-slate-200 dark:border-slate-700"
                       />
                       <Bar 
                         dataKey="revenue" 
                         fill="url(#colorRevenue)" 
-                        radius={[8, 8, 0, 0]}
-                        maxBarSize={60}
+                        radius={[10, 10, 0, 0]}
+                        maxBarSize={70}
                       />
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
-                          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                          <stop offset="0%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0.9} />
+                          <stop offset="100%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0.4} />
                         </linearGradient>
                       </defs>
                     </BarChart>
