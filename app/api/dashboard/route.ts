@@ -112,20 +112,20 @@ export async function GET(request: Request) {
       })
     }
 
-    // Filter to active orders only (exclude CANCELLED and RETURNED)
-    const activeOrders = filterRevenueOrders(
-      filteredOrders.map(o => ({
-        id: o.id,
-        qty: o.qty || 0,
-        total: o.total || 0,
-        cogs: o.cogs || 0, // Use ACTUAL COGS from order
-        parcel_status: o.parcel_status || 'PENDING',
-        payment_status: o.payment_status || 'pending',
-        sales_channel: o.sales_channel,
-        date: o.date
-      })),
-      'active' // Excludes CANCELLED and RETURNED
-    )
+    // Map all orders for processing
+    const allOrdersMapped = filteredOrders.map(o => ({
+      id: o.id,
+      qty: o.qty || 0,
+      total: o.total || 0,
+      cogs: o.cogs || 0, // Use ACTUAL COGS from order
+      parcel_status: o.parcel_status || 'PENDING',
+      payment_status: o.payment_status || 'pending',
+      sales_channel: o.sales_channel,
+      date: o.date
+    }))
+
+    // Filter to active orders only for revenue calculation (exclude CANCELLED and RETURNED)
+    const activeOrders = filterRevenueOrders(allOrdersMapped, 'active')
 
     // Calculate overall financial metrics
     const financialMetrics = calculateFinancialMetrics(activeOrders)
@@ -154,20 +154,25 @@ export async function GET(request: Request) {
       sum + item.quantity * item.sellingPrice, 0
     )
 
-    // Today's metrics
+    // Today's metrics - count ALL orders (including cancelled/returned)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const todayEnd = new Date()
     todayEnd.setHours(23, 59, 59, 999)
 
-    const todayOrders = activeOrders.filter(order => {
+    const todayAllOrders = allOrdersMapped.filter(order => {
       const orderDate = new Date(order.date)
       return orderDate >= today && orderDate <= todayEnd
     })
 
-    const itemsSoldToday = todayOrders.reduce((sum, o) => sum + o.qty, 0)
-    const revenueToday = todayOrders.reduce((sum, o) => sum + o.total, 0)
-    const recentSales = todayOrders.length
+    const todayActiveOrders = activeOrders.filter(order => {
+      const orderDate = new Date(order.date)
+      return orderDate >= today && orderDate <= todayEnd
+    })
+
+    const itemsSoldToday = todayActiveOrders.reduce((sum, o) => sum + o.qty, 0)
+    const revenueToday = todayActiveOrders.reduce((sum, o) => sum + o.total, 0)
+    const recentSales = todayAllOrders.length // Count ALL orders as transactions
 
     // Yesterday's sales for comparison
     const yesterday = new Date(today)
@@ -526,6 +531,7 @@ export async function GET(request: Request) {
       totalCost: financialMetrics.totalCOGS,
       totalProfit: financialMetrics.totalProfit,
       profitMargin: financialMetrics.profitMargin,
+      totalTransactions: allOrdersMapped.length, // ALL orders in Track Orders
       salesOverTime,
       topProducts,
       recentTransactions,
