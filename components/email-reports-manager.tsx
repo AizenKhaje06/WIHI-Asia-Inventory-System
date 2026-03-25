@@ -221,25 +221,10 @@ export function EmailReportsManager() {
             Manage automated report schedules
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setShowAddForm(!showAddForm)
-            setEditingId(null)
-            resetForm()
-          }}
-          size="sm"
-          className="bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 dark:text-slate-900"
-        >
-          {showAddForm ? (
-            <><X className="h-4 w-4 mr-2" /> Cancel</>
-          ) : (
-            <><Plus className="h-4 w-4 mr-2" /> Add Recipient</>
-          )}
-        </Button>
       </div>
 
-      {/* Add/Edit Form - Minimalist */}
-      {(showAddForm || editingId) && (
+      {/* Add/Edit Form - Hidden (no Add Recipient button) */}
+      {false && (showAddForm || editingId) && (
         <Card className="border border-slate-200 dark:border-slate-800">
           <CardContent className="p-6">
             <div className="space-y-5">
