@@ -166,31 +166,35 @@ export function GaugeChart({
           />
         </svg>
         
-        {/* Value display - Centered and prominent */}
-        <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
-          <div className="text-5xl font-bold bg-gradient-to-br from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent tracking-tight">
+        {/* Value display - Centered below gauge */}
+        <div className="absolute inset-0 flex flex-col items-center justify-end" style={{ top: '65%' }}>
+          <div className="text-4xl sm:text-5xl font-bold bg-gradient-to-br from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent tracking-tight">
             {percentage.toFixed(1)}%
           </div>
-          <div className={`text-xs font-semibold uppercase tracking-wider mt-1 ${getStatusColor}`}>
+          <div className={`text-xs font-semibold uppercase tracking-wider mt-1.5 ${getStatusColor}`}>
             {getStatusText}
           </div>
-          <div className="text-sm text-slate-600 dark:text-slate-400 font-medium mt-0.5">
-            {label}
+        </div>
+      </div>
+      
+      {/* Label below the gauge */}
+      <div className="mt-2 text-center">
+        <div className="text-sm font-medium text-slate-600 dark:text-slate-400">
+          {label}
+        </div>
+      </div>
+      
+      {/* Min/Max labels */}
+      {showMinMax && (
+        <div className="w-full flex justify-between px-4 -mt-2">
+          <div className="text-xs text-slate-500 dark:text-slate-500 font-medium">
+            0%
+          </div>
+          <div className="text-xs text-slate-500 dark:text-slate-500 font-medium">
+            100%
           </div>
         </div>
-        
-        {/* Min/Max labels */}
-        {showMinMax && (
-          <>
-            <div className="absolute left-0 bottom-0 text-xs text-slate-500 dark:text-slate-500 font-medium">
-              0%
-            </div>
-            <div className="absolute right-0 bottom-0 text-xs text-slate-500 dark:text-slate-500 font-medium">
-              100%
-            </div>
-          </>
-        )}
-      </div>
+      )}
       
       {/* Additional info bar */}
       <div className="mt-4 flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400">

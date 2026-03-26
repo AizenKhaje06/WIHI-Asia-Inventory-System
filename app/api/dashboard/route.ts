@@ -282,9 +282,12 @@ export async function GET(request: Request) {
       })
     }
 
-    // Top products by quantity sold
+    // Top products by quantity sold - Group by first product name only
     const productSales = filteredOrders.reduce((acc: { [key: string]: { quantity: number; revenue: number; status: string } }, order) => {
-      const product = order.product || 'Unknown'
+      const fullProduct = order.product || 'Unknown'
+      // Extract first product name (before comma or parenthesis)
+      const product = fullProduct.split(',')[0].split('(')[0].trim()
+      
       if (!acc[product]) {
         acc[product] = { quantity: 0, revenue: 0, status: order.parcel_status }
       }

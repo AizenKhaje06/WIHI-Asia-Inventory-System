@@ -519,13 +519,13 @@ export default function DashboardPage() {
                   />
                   <Tooltip 
                     content={<ChartTooltip formatter={(value, name) => {
-                      if (name === 'revenue') return [`₱${formatNumber(Number(value))}`, 'Revenue']
+                      if (name === 'sales') return [value.toString(), 'Units Sold']
                       return [value.toString(), 'Units Sold']
                     }} />}
                     cursor={{ fill: 'rgba(16, 185, 129, 0.05)' }}
                   />
                   <Bar 
-                    dataKey="revenue" 
+                    dataKey="sales" 
                     fill="#10B981" 
                     radius={[0, 4, 4, 0]}
                     maxBarSize={32}
@@ -542,78 +542,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Return To Seller Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
-              <RotateCcw className="h-5 w-5 text-red-600" />
-              Return To Seller
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {stats?.supplierReturns && stats.supplierReturns.length > 0 ? (
-              <div className="space-y-6">
-                {/* Overall Return Rate Gauge - Bigger */}
-                <div className="flex justify-center py-6">
-                  <GaugeChart
-                    value={stats.supplierReturns.reduce((sum, item) => sum + item.quantity, 0)}
-                    max={stats.totalSales || 100}
-                    label="Return Rate"
-                    size={240}
-                  />
-                </div>
-
-                {/* Top Returned Products - Clean List */}
-                <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
-                  <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Top Returned Products</h4>
-                  <div className="space-y-3">
-                    {stats.supplierReturns.slice(0, 3).map((item, index) => (
-                      <div 
-                        key={index}
-                        className="flex items-center justify-between p-3 rounded-[5px] bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-semibold text-sm">
-                            {index + 1}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-900 dark:text-white">
-                              {item.itemName}
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {item.quantity} {item.quantity === 1 ? 'item' : 'items'} returned
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-red-600 dark:text-red-400">
-                            ₱{formatNumber(item.value)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {stats.supplierReturns.length > 3 && (
-                    <div className="mt-3 text-center">
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        +{stats.supplierReturns.length - 3} more products
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-20">
-                <RotateCcw className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No supplier returns yet</p>
-                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Items returned to suppliers will appear here</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Top Categories Chart - NEW */}
+        {/* Top Categories Chart */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-4">
             <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
@@ -663,6 +592,61 @@ export default function DashboardPage() {
                 <BarChart2 className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
                 <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No category data yet</p>
                 <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Sales by category will appear here</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Return Count by Sales Channel */}
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
+              <RotateCcw className="h-5 w-5 text-red-600" />
+              Return Count by Sales Channel
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {stats?.cancelledOrdersByChannel && Object.keys(stats.cancelledOrdersByChannel).length > 0 ? (
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart 
+                  data={Object.entries(stats.cancelledOrdersByChannel).map(([name, count]) => ({ name, count }))} 
+                  layout="vertical"
+                  margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
+                >
+                  <CartesianGrid strokeDasharray="0" className="stroke-gray-200 dark:stroke-gray-800" opacity={0.5} horizontal={true} vertical={false} />
+                  <XAxis 
+                    type="number"
+                    className="fill-gray-500 dark:fill-gray-500" 
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    type="category"
+                    dataKey="name" 
+                    className="fill-gray-600 dark:fill-gray-400" 
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                    width={100}
+                  />
+                  <Tooltip 
+                    content={<ChartTooltip formatter={(value) => [value.toString(), 'Returns']} />}
+                    cursor={{ fill: 'rgba(239, 68, 68, 0.05)' }}
+                  />
+                  <Bar 
+                    dataKey="count" 
+                    fill="#EF4444" 
+                    radius={[0, 4, 4, 0]}
+                    maxBarSize={32}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-center py-20">
+                <RotateCcw className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No returns yet</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Returned orders by channel will appear here</p>
               </div>
             )}
           </CardContent>
