@@ -42,28 +42,8 @@ export default function DashboardPage() {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("ID")
   const currentUser = getCurrentUser()
 
-  // Redirect team leaders to their dashboard (different KPIs)
-  useEffect(() => {
-    console.log('[Dashboard] Checking user role...')
-    const role = getCurrentUserRole()
-    console.log('[Dashboard] Current role:', role)
-    
-    if (role === 'team_leader') {
-      console.log('[Dashboard] Team leader detected, redirecting to /team-leader/dashboard')
-      router.push('/team-leader/dashboard')
-    } else {
-      console.log('[Dashboard] Not a team leader, staying on admin dashboard')
-    }
-  }, [router])
-
   const fetchData = async () => {
     try {
-      // Don't fetch if team leader (they'll be redirected)
-      const role = getCurrentUserRole()
-      if (role === 'team_leader') {
-        return
-      }
-
       setRefreshing(true)
       console.log('[Dashboard] Fetching data for period:', timePeriod)
       

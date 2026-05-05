@@ -35,7 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { getCurrentUser, hasPermission, clearCurrentUser } from "@/lib/auth"
+import { getCurrentUser, hasPermission } from "@/lib/auth"
 import { apiGet } from "@/lib/api-client"
 
 interface NavItem {
@@ -56,7 +56,6 @@ const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0): 
     section: "Main",
     items: [
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, // Admin only
-      { name: "Dashboard", href: "/team-leader/dashboard", icon: LayoutDashboard }, // Team Leader only
       { name: "Operations Dashboard", href: "/dashboard/operations", icon: LayoutDashboard }, // Operations only
       { name: "Warehouse Dispatch", href: "/dashboard/pos", icon: ShoppingCart },
       { name: "Packing Queue", href: "/dashboard/packing-queue", icon: Package },
@@ -136,9 +135,9 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
   useEffect(() => {
     const fetchInventoryCounts = async () => {
       try {
-        // Skip for team leaders - they don't have access to /api/items
-        const teamLeaderRole = localStorage.getItem('x-team-leader-role')
-        if (teamLeaderRole === 'team_leader') {
+        // Skip for non-admin users who don't have access to /api/items
+        const user = getCurrentUser()
+        if (user?.role !== 'admin') {
           return
         }
 
@@ -194,9 +193,114 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
     }
   }
 
-  const handleLogout = () => {
-    clearCurrentUser()
-    window.location.href = "/"
+  const handleLogout = async () => {
+    try {
+      console.log('[Sidebar] Starting logout...')
+      
+      // Check if team leader
+      const user = getCurrentUser()
+      
+      console.log('[Sidebar] User role:', user?.role)
+      
+      // Set a marker BEFORE clearing to prevent race conditions
+      if (typeof window !== 'undefined') {
+        try {
+          // Use a cookie as backup since localStorage might fail
+          document.cookie = '__logout_marker__=true; path=/; max-age=10'
+          console.log('[Sidebar] Logout marker set in cookie')
+        } catch (e) {
+          console.error('[Sidebar] Cookie error:', e)
+        }
+      }
+      
+      // CRITICAL: Unregister service worker to clear all caches
+      if ('serviceWorker' in navigator) {
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations()
+          console.log('[Sidebar] Found service workers:', registrations.length)
+          
+          for (const registration of registrations) {
+            await registration.unregister()
+            console.log('[Sidebar] Service worker unregistered')
+          }
+        } catch (e) {
+          console.error('[Sidebar] Service worker unregister error:', e)
+        }
+      }
+      
+      // Clear all caches
+      if ('caches' in window) {
+        try {
+          const cacheNames = await caches.keys()
+          console.log('[Sidebar] Found caches:', cacheNames)
+          
+          for (const cacheName of cacheNames) {
+            await caches.delete(cacheName)
+            console.log('[Sidebar] Cache deleted:', cacheName)
+          }
+        } catch (e) {
+          console.error('[Sidebar] Cache delete error:', e)
+        }
+      }
+      
+      // Use the proper clearCurrentUser function from lib/auth.ts
+      // This ensures all session keys are properly removed
+      const { clearCurrentUser } = await import('@/lib/auth')
+      clearCurrentUser()
+      console.log('[Sidebar] clearCurrentUser() called')
+      
+      // Additional aggressive clearing for any remaining keys
+      if (typeof window !== 'undefined' && localStorage) {
+        console.log('[Sidebar] Double-checking localStorage...')
+        
+        // Get all remaining keys
+        const keys = Object.keys(localStorage)
+        console.log('[Sidebar] Remaining keys after clearCurrentUser:', keys)
+        
+        // Remove any remaining keys
+        if (keys.length > 0) {
+          console.log('[Sidebar] Removing remaining keys:', keys)
+          keys.forEach(key => {
+            try {
+              localStorage.removeItem(key)
+            } catch (e) {
+              console.error('[Sidebar] Error removing key:', key, e)
+            }
+          })
+        }
+        
+        // Final clear
+        try {
+          localStorage.clear()
+          console.log('[Sidebar] localStorage.clear() called')
+        } catch (e) {
+          console.error('[Sidebar] localStorage.clear() error:', e)
+        }
+      }
+      
+      // Clear sessionStorage
+      if (typeof window !== 'undefined' && sessionStorage) {
+        console.log('[Sidebar] Clearing sessionStorage...')
+        try {
+          sessionStorage.clear()
+          console.log('[Sidebar] sessionStorage cleared')
+        } catch (e) {
+          console.error('[Sidebar] sessionStorage.clear() error:', e)
+        }
+      }
+      
+      // Force redirect with timestamp to prevent caching
+      const timestamp = Date.now()
+      console.log('[Sidebar] Redirecting to login with timestamp:', timestamp)
+      
+      // Use location.replace to prevent back button
+      window.location.replace(`/?logout=${timestamp}`)
+      
+    } catch (error) {
+      console.error('[Sidebar] Logout error:', error)
+      // Force redirect even on error
+      window.location.replace('/?logout=error')
+    }
   }
 
   // Prevent body scroll when mobile menu is open

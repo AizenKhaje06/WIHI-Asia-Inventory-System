@@ -34,8 +34,8 @@ export async function GET(
     let ordersQuery = supabase
       .from('orders')
       .select('*')
-      .eq('status', 'Packed') // Only dispatched orders
       .eq('sales_channel', departmentName)
+      // Don't filter by status here - get all orders and filter by parcel_status later
 
     // Apply date filters
     if (startDate) {
@@ -54,13 +54,16 @@ export async function GET(
 
     const orders = allOrders || []
 
+    console.log('[Sales Channel API] Total orders fetched:', orders.length)
+    console.log('[Sales Channel API] Sample order:', orders[0])
+
     // Filter to active orders only (exclude CANCELLED and RETURNED)
     const activeOrders = filterRevenueOrders(
       orders.map(o => ({
         id: o.id,
         qty: o.qty || 0,
         total: o.total || 0,
-        cogs: o.cogs || 0, // Use ACTUAL COGS from order
+        cogs: o.cogs || (o.total * 0.6) || 0, // Calculate COGS if missing (60% of total)
         parcel_status: o.parcel_status || 'PENDING',
         payment_status: o.payment_status || 'pending',
         sales_channel: o.sales_channel,

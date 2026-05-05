@@ -119,10 +119,12 @@ export function LoginForm({
     switch (role) {
       case "admin":
         return "admin dashboard"
-      case "staff":
+      case "operations":
         return "warehouse operations"
       case "packer":
         return "packer dashboard"
+      default:
+        return "dashboard"
     }
   }
 
@@ -138,26 +140,8 @@ export function LoginForm({
         </p>
       </div>
 
-      {/* Staff Channel Selector */}
-      {role === 'staff' && (
-        <div className="space-y-2">
-          <Label htmlFor="channel" className="text-slate-200 font-medium">
-            Department
-          </Label>
-          <Select value={selectedChannel} onValueChange={onChannelChange} disabled={channelsLoading}>
-            <SelectTrigger className="h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-white hover:border-slate-600">
-              <SelectValue placeholder={channelsLoading ? "Loading departments..." : "Select your department"} />
-            </SelectTrigger>
-            <SelectContent>
-              {channels.map((channel) => (
-                <SelectItem key={channel.id} value={channel.name}>
-                  {channel.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+      {/* Operations Channel Selector - REMOVED */}
+      {/* Team leader role has been removed from the system */}
 
       {/* Error Alert */}
       {error && (
@@ -169,29 +153,27 @@ export function LoginForm({
         </Alert>
       )}
 
-      {/* Username Field - ONLY FOR ADMIN/PACKER */}
-      {role !== 'staff' && (
-        <div className="space-y-2">
-          <Label htmlFor="username" className="text-slate-200 font-medium">
-            Username
-          </Label>
-          <div className="relative group">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200" />
-            <Input
-              id="username"
-              type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              disabled={loading}
-              className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50"
-              required
-              autoComplete="username"
-              aria-label="Username"
-            />
-          </div>
+      {/* Username Field - FOR ALL ROLES */}
+      <div className="space-y-2">
+        <Label htmlFor="username" className="text-slate-200 font-medium">
+          Username
+        </Label>
+        <div className="relative group">
+          <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200" />
+          <Input
+            id="username"
+            type="text"
+            placeholder="Enter your username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            disabled={loading}
+            className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50"
+            required
+            autoComplete="username"
+            aria-label="Username"
+          />
         </div>
-      )}
+      </div>
 
       {/* Password Field - ENHANCED */}
       <div className="space-y-2">
@@ -211,7 +193,7 @@ export function LoginForm({
             disabled={loading}
             className="pl-12 pr-16 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 font-mono text-sm tracking-wide text-white hover:border-slate-600 disabled:opacity-50"
             required
-            autoComplete={role === 'staff' ? "off" : "current-password"}
+            autoComplete="current-password"
             aria-label="Password"
           />
           <button
@@ -288,7 +270,7 @@ export function LoginForm({
       {/* Submit Button - ENHANCED MICRO-INTERACTIONS */}
       <Button
         type="submit"
-        disabled={loading || (role !== 'staff' && !username) || !password}
+        disabled={loading || !username || !password}
         className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 group hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 active:scale-[0.98]"
       >
         {loading ? (

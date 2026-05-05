@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabase'
 
@@ -33,30 +33,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    console.log('[Bundles API] Received request body:', JSON.stringify(body, null, 2))
+    console.log('[Bundles API] Creating bundle:', body.name)
     
     const { name, description, store, salesChannel, bundlePrice, items, badge } = body
     
     if (!name || !store || !bundlePrice || !items?.length) {
-      console.log('[Bundles API] Validation failed:', {
-        hasName: !!name,
-        hasStore: !!store,
-        hasBundlePrice: !!bundlePrice,
-        hasItems: !!items?.length,
-        receivedFields: Object.keys(body)
-      })
-      return NextResponse.json({ 
-        error: 'Missing required fields',
-        details: {
-          name: !!name,
-          store: !!store,
-          bundlePrice: !!bundlePrice,
-          items: !!items?.length
-        }
-      }, { status: 400 })
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
     
     const itemIds = items.map((i: any) => i.itemId)
+    
+    // Fetch items for cost calculation
     const { data: itemsData, error: itemsError } = await supabase
       .from('inventory')
       .select('id, cost_price, selling_price')
@@ -83,6 +70,7 @@ export async function POST(request: NextRequest) {
     
     const bundleId = 'BUNDLE-' + Date.now()
     
+    // Insert bundle with quantity = 0 (will be updated by trigger)
     const bundleData: any = {
       id: bundleId,
       name: name.trim(),
@@ -92,7 +80,7 @@ export async function POST(request: NextRequest) {
       regular_price: regularPrice,
       savings: regularPrice - bundlePrice,
       is_active: true,
-      quantity: 0,
+      quantity: 0, // Trigger will update this
       reorder_level: 5
     }
     
@@ -111,6 +99,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create bundle' }, { status: 500 })
     }
     
+    // Insert bundle items (trigger will auto-update bundle quantity)
     const bundleItemsData = items.map((item: any, index: number) => ({
       id: 'BITEM-' + Date.now() + '-' + index,
       bundle_id: bundleId,
@@ -128,8 +117,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to add items' }, { status: 500 })
     }
     
-    console.log('[Bundles API] Success:', bundleId)
-    return NextResponse.json(bundle, { status: 201 })
+    // Fetch updated bundle with correct quantity (set by trigger)
+    const { data: updatedBundle } = await supabase
+      .from('bundles')
+      .select('*')
+      .eq('id', bundleId)
+      .single()
+    
+    console.log('[Bundles API] Bundle created with quantity:', updatedBundle?.quantity)
+    return NextResponse.json(updatedBundle || bundle, { status: 201 })
   } catch (error: any) {
     console.error('[Bundles API] Exception:', error)
     return NextResponse.json({ error: 'Failed to create bundle' }, { status: 500 })

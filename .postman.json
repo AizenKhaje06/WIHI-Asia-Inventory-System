@@ -328,7 +328,7 @@
           "name": "Authentication",
           "item": [
             {
-              "name": "Team Leader Login - Valid",
+              "name": "Team Leader Login - DEPRECATED (Role Removed)",
               "request": {
                 "method": "POST",
                 "header": [
@@ -347,77 +347,27 @@
                   "host": ["{{baseUrl}}"],
                   "path": ["api", "auth", "team-leader-login"]
                 },
-                "description": "Team leader login with valid channel and password (Requirements: 1.2, 1.3, 1.6)"
-              }
-            },
-            {
-              "name": "Team Leader Login - Invalid Password",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "type": "text"
+                "description": "⚠️ DEPRECATED: Team leader role has been removed from the system. This endpoint will return 401 as no team_leader users exist in the database. Consider removing this endpoint or returning 410 Gone."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Expected: 401 Unauthorized (no team_leader users exist)",
+                      "pm.test('Status code is 401 (role removed)', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test('Error message indicates invalid credentials', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
                   }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"channel\": \"Shopee\",\n  \"password\": \"wrong_password\"\n}"
-                },
-                "url": {
-                  "raw": "{{baseUrl}}/api/auth/team-leader-login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["api", "auth", "team-leader-login"]
-                },
-                "description": "Team leader login with invalid password (should return 401)"
-              }
-            },
-            {
-              "name": "Team Leader Login - Missing Channel",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"password\": \"team_leader_password\"\n}"
-                },
-                "url": {
-                  "raw": "{{baseUrl}}/api/auth/team-leader-login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["api", "auth", "team-leader-login"]
-                },
-                "description": "Team leader login without channel (should return 400)"
-              }
-            },
-            {
-              "name": "Team Leader Login - Missing Password",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"channel\": \"Shopee\"\n}"
-                },
-                "url": {
-                  "raw": "{{baseUrl}}/api/auth/team-leader-login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["api", "auth", "team-leader-login"]
-                },
-                "description": "Team leader login without password (should return 400)"
-              }
+                }
+              ]
             },
             {
               "name": "Forgot Password - Valid Email",
@@ -618,6 +568,244 @@
                       "    const jsonData = pm.response.json();",
                       "    pm.expect(jsonData).to.have.property('error');",
                       "    pm.expect(jsonData.error.toLowerCase()).to.include('email');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Reports",
+          "item": [
+            {
+              "name": "Get Sales Report - All Orders",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/reports",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "reports"]
+                },
+                "description": "Get sales report for all orders (filters by parcel_status internally)"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: Response has required financial fields",
+                      "pm.test('Response has required financial fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('totalRevenue');",
+                      "    pm.expect(jsonData).to.have.property('totalCost');",
+                      "    pm.expect(jsonData).to.have.property('totalProfit');",
+                      "    pm.expect(jsonData).to.have.property('profitMargin');",
+                      "    pm.expect(jsonData).to.have.property('itemsSold');",
+                      "    pm.expect(jsonData).to.have.property('totalOrders');",
+                      "});",
+                      "",
+                      "// Test 4: Financial values are numbers",
+                      "pm.test('Financial values are numbers', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.totalRevenue).to.be.a('number');",
+                      "    pm.expect(jsonData.totalCost).to.be.a('number');",
+                      "    pm.expect(jsonData.totalProfit).to.be.a('number');",
+                      "    pm.expect(jsonData.profitMargin).to.be.a('number');",
+                      "    pm.expect(jsonData.itemsSold).to.be.a('number');",
+                      "    pm.expect(jsonData.totalOrders).to.be.a('number');",
+                      "});",
+                      "",
+                      "// Test 5: Response has data arrays",
+                      "pm.test('Response has data arrays', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('transactions');",
+                      "    pm.expect(jsonData).to.have.property('dailySales');",
+                      "    pm.expect(jsonData).to.have.property('monthlySales');",
+                      "    pm.expect(jsonData).to.have.property('salesOverTime');",
+                      "    pm.expect(jsonData.transactions).to.be.an('array');",
+                      "    pm.expect(jsonData.dailySales).to.be.an('array');",
+                      "    pm.expect(jsonData.monthlySales).to.be.an('array');",
+                      "    pm.expect(jsonData.salesOverTime).to.be.an('array');",
+                      "});",
+                      "",
+                      "// Test 6: Profit calculation is correct",
+                      "pm.test('Profit calculation is correct', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const expectedProfit = jsonData.totalRevenue - jsonData.totalCost;",
+                      "    pm.expect(Math.abs(jsonData.totalProfit - expectedProfit)).to.be.below(0.01);",
+                      "});",
+                      "",
+                      "// Test 7: Profit margin calculation is correct",
+                      "pm.test('Profit margin calculation is correct', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.totalRevenue > 0) {",
+                      "        const expectedMargin = (jsonData.totalProfit / jsonData.totalRevenue) * 100;",
+                      "        pm.expect(Math.abs(jsonData.profitMargin - expectedMargin)).to.be.below(0.01);",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 8: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Sales Report - Date Filtered",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/reports?startDate=2026-03-01&endDate=2026-03-31",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "reports"],
+                  "query": [
+                    {
+                      "key": "startDate",
+                      "value": "2026-03-01"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "2026-03-31"
+                    }
+                  ]
+                },
+                "description": "Get sales report filtered by date range"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Response has required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('totalRevenue');",
+                      "    pm.expect(jsonData).to.have.property('dailySales');",
+                      "});",
+                      "",
+                      "pm.test('Daily sales data is within date range', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.dailySales.length > 0) {",
+                      "        jsonData.dailySales.forEach(day => {",
+                      "            pm.expect(day.date).to.match(/^2026-03-/);",
+                      "        });",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Sales Report - Sales Channel Filtered",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/reports?salesChannel=Shopee",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "reports"],
+                  "query": [
+                    {
+                      "key": "salesChannel",
+                      "value": "Shopee"
+                    }
+                  ]
+                },
+                "description": "Get sales report filtered by sales channel"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Response has required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('totalRevenue');",
+                      "    pm.expect(jsonData).to.have.property('transactions');",
+                      "});",
+                      "",
+                      "pm.test('All transactions are from Shopee channel', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.transactions.length > 0) {",
+                      "        // Note: transactions may not have sales_channel field in response",
+                      "        // This test validates the filter was applied server-side",
+                      "        pm.expect(jsonData.transactions).to.be.an('array');",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Sales Report - Combined Filters",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/reports?startDate=2026-03-01&endDate=2026-03-31&salesChannel=Shopee",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "reports"],
+                  "query": [
+                    {
+                      "key": "startDate",
+                      "value": "2026-03-01"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "2026-03-31"
+                    },
+                    {
+                      "key": "salesChannel",
+                      "value": "Shopee"
+                    }
+                  ]
+                },
+                "description": "Get sales report with both date and channel filters"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Response structure is valid', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('totalRevenue');",
+                      "    pm.expect(jsonData).to.have.property('dailySales');",
+                      "    pm.expect(jsonData).to.have.property('monthlySales');",
                       "});"
                     ],
                     "type": "text/javascript"

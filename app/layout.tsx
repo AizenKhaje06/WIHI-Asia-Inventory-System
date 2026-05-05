@@ -139,15 +139,15 @@ export default function RootLayout({
                             // Check for updates every time the page loads
                             registration.update();
                             
-                            // Listen for new service worker
+                            // Listen for new service worker - SILENT, no reload
                             registration.addEventListener('updatefound', () => {
                               const newWorker = registration.installing;
                               if (newWorker) {
                                 newWorker.addEventListener('statechange', () => {
                                   if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // New service worker available, reload to activate
-                                    console.log('New service worker available, reloading...');
-                                    window.location.reload();
+                                    // New service worker available - activate silently
+                                    console.log('New service worker available, will activate on next navigation');
+                                    // Don't reload - let it activate naturally
                                   }
                                 });
                               }

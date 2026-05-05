@@ -117,6 +117,7 @@ export interface DashboardStats {
   totalCost: number
   totalProfit: number
   profitMargin: number
+  totalTransactions: number
   salesOverTime: { date: string; purchases: number; sales: number; quantity: number }[]
   topProducts: { name: string; sales: number; revenue: number }[]
   recentTransactions: Transaction[]

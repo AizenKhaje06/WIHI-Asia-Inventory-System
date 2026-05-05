@@ -227,6 +227,70 @@ export async function getTransactions(): Promise<Transaction[]> {
   })
 }
 
+// ==================== ORDERS ====================
+
+export interface Order {
+  id: string
+  date: string
+  sales_channel: string
+  store: string
+  courier?: string
+  waybill?: string
+  qty: number
+  cogs: number
+  total: number
+  product: string
+  status: string
+  parcel_status: string
+  dispatched_by: string
+  packed_by?: string
+  packed_at?: string
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+}
+
+export async function getOrders(salesChannel?: string): Promise<Order[]> {
+  let query = supabaseAdmin
+    .from('orders')
+    .select('*')
+    .is('deleted_at', null)
+    .order('date', { ascending: false })
+  
+  // Filter by sales channel if provided
+  if (salesChannel && salesChannel !== 'all') {
+    query = query.eq('sales_channel', salesChannel)
+  }
+  
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching orders:', error)
+    throw new Error(`Failed to fetch orders: ${error.message}`)
+  }
+
+  return (data || []).map(row => ({
+    id: row.id,
+    date: row.date,
+    sales_channel: row.sales_channel,
+    store: row.store,
+    courier: row.courier,
+    waybill: row.waybill,
+    qty: row.qty,
+    cogs: parseFloat(row.cogs) || 0,
+    total: parseFloat(row.total) || 0,
+    product: row.product,
+    status: row.status,
+    parcel_status: row.parcel_status,
+    dispatched_by: row.dispatched_by,
+    packed_by: row.packed_by,
+    packed_at: row.packed_at,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    deleted_at: row.deleted_at
+  }))
+}
+
 // ==================== LOGS ====================
 
 export async function addLog(log: Omit<Log, "id" | "timestamp">): Promise<Log> {
@@ -670,5 +734,23 @@ export async function addAccount(account: Omit<Account, "id" | "createdAt">): Pr
     role: account.role,
     displayName: account.displayName,
     createdAt,
+  }
+}
+
+export async function deleteAccount(username: string): Promise<void> {
+  // Check if account exists
+  const account = await getAccountByUsername(username)
+  if (!account) {
+    throw new Error('Account not found')
+  }
+
+  const { error } = await supabaseAdmin
+    .from('users')
+    .delete()
+    .eq('username', username)
+
+  if (error) {
+    console.error('Error deleting account:', error)
+    throw new Error(`Failed to delete account: ${error.message}`)
   }
 }

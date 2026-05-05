@@ -50,7 +50,7 @@ export default function InventoryPage() {
   
   // Role detection for export button
   const userRole = getCurrentUserRole()
-  const isTeamLeader = userRole === 'team_leader'
+  const isTeamLeader = false // Team leader role removed
   
   // Category Management
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)

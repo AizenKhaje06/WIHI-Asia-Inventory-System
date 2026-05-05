@@ -18,7 +18,7 @@ import * as XLSX from 'xlsx'
 import { 
   Search, Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, 
   User, Phone, Mail, MapPin, AlertCircle, PackageCheck, Ban, AlertTriangle, RotateCcw,
-  FileSpreadsheet, FileDown, Download, Trash2, ChevronDown
+  FileSpreadsheet, FileDown, Download, Trash2, ChevronDown, X
 } from 'lucide-react'
 import { formatCurrency, cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -77,7 +77,7 @@ export default function TrackOrdersPage() {
 
   // Role detection
   const userRole = getCurrentUserRole()
-  const isTeamLeader = userRole === 'team_leader'
+  const isTeamLeader = false // Team leader role removed
 
   useEffect(() => {
     fetchOrders()
@@ -954,6 +954,15 @@ export default function TrackOrdersPage() {
     setFilteredOrders(filtered)
   }
 
+  const clearFilters = () => {
+    setSearchTerm('')
+    setStatusFilter('all')
+    setSalesChannelFilter('all')
+    setStartDate(null)
+    setEndDate(null)
+    toast.success('Filters cleared')
+  }
+
   const getStatusBadge = (status: string) => {
     const styles = {
       Pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
@@ -1548,68 +1557,166 @@ export default function TrackOrdersPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2 mb-6">
-        <div className="w-[300px]">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              placeholder="Search by order no. or waybill no..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-11"
-            />
+      {/* Filters - Professional SaaS Design */}
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 rounded-xl overflow-hidden">
+        <CardContent className="p-6">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Search Input */}
+            <div className="flex-1 min-w-[280px]">
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                <Input
+                  placeholder="Search by order no. or waybill no..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-11 h-12 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-medium placeholder:text-slate-400 transition-all"
+                />
+              </div>
+            </div>
+            
+            {/* Status Filter */}
+            <div className="w-[200px]">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-12 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all">
+                  <SelectValue placeholder="All Status" />
+                </SelectTrigger>
+                <SelectContent className="rounded-lg">
+                  <SelectItem value="all" className="font-semibold">All Status</SelectItem>
+                  <SelectItem value="PENDING">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3.5 w-3.5 text-yellow-600" />
+                      <span>PENDING</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="DELIVERED">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+                      <span>DELIVERED</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="ON DELIVERY">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-3.5 w-3.5 text-blue-600" />
+                      <span>ON DELIVERY</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="PICKUP">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-3.5 w-3.5 text-purple-600" />
+                      <span>PICKUP</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="IN TRANSIT">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-3.5 w-3.5 text-indigo-600" />
+                      <span>IN TRANSIT</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="CANCELLED">
+                    <div className="flex items-center gap-2">
+                      <XCircle className="h-3.5 w-3.5 text-red-600" />
+                      <span>CANCELLED</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="DETAINED">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-3.5 w-3.5 text-orange-600" />
+                      <span>DETAINED</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="PROBLEMATIC">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-3.5 w-3.5 text-pink-600" />
+                      <span>PROBLEMATIC</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="RETURNED">
+                    <div className="flex items-center gap-2">
+                      <RotateCcw className="h-3.5 w-3.5 text-slate-600" />
+                      <span>RETURNED</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Sales Channel Filter */}
+            <div className="w-[200px]">
+              <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
+                <SelectTrigger className="h-12 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all">
+                  <SelectValue placeholder="Sales Channel" />
+                </SelectTrigger>
+                <SelectContent className="rounded-lg">
+                  <SelectItem value="all" className="font-semibold">All Channels</SelectItem>
+                  <SelectItem value="Shopee">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                      <span>Shopee</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Lazada">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      <span>Lazada</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Facebook">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                      <span>Facebook</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="TikTok">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-black dark:bg-white"></div>
+                      <span>TikTok</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Physical Store">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      <span>Physical Store</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Date Range Picker */}
+            <div className="w-[300px]">
+              <DateRangePicker
+                startDate={startDate}
+                endDate={endDate}
+                onDateChange={(start, end) => {
+                  setStartDate(start)
+                  setEndDate(end)
+                }}
+                className="h-12 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all"
+              />
+            </div>
+
+            {/* Clear Filters Button */}
+            <Button
+              onClick={clearFilters}
+              variant="outline"
+              className="h-12 px-5 bg-white dark:bg-slate-800 border-2 border-red-200 dark:border-red-800 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 rounded-lg font-semibold transition-all group"
+            >
+              <X className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+              Clear
+            </Button>
+
+            {/* Refresh Button */}
+            <Button
+              onClick={fetchOrders}
+              variant="outline"
+              className="h-12 px-5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg font-semibold transition-all group"
+            >
+              <RefreshCw className="h-4 w-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
+              Refresh
+            </Button>
           </div>
-        </div>
-        
-        <div className="w-[180px]">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-11">
-              <SelectValue placeholder="All Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="PENDING">PENDING</SelectItem>
-              <SelectItem value="DELIVERED">DELIVERED</SelectItem>
-              <SelectItem value="ON DELIVERY">ON DELIVERY</SelectItem>
-              <SelectItem value="PICKUP">PICKUP</SelectItem>
-              <SelectItem value="IN TRANSIT">IN TRANSIT</SelectItem>
-              <SelectItem value="CANCELLED">CANCELLED</SelectItem>
-              <SelectItem value="DETAINED">DETAINED</SelectItem>
-              <SelectItem value="PROBLEMATIC">PROBLEMATIC</SelectItem>
-              <SelectItem value="RETURNED">RETURNED</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="w-[180px]">
-          <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-            <SelectTrigger className="h-11">
-              <SelectValue placeholder="Sales Channel" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Channels</SelectItem>
-              <SelectItem value="Shopee">Shopee</SelectItem>
-              <SelectItem value="Lazada">Lazada</SelectItem>
-              <SelectItem value="Facebook">Facebook</SelectItem>
-              <SelectItem value="TikTok">TikTok</SelectItem>
-              <SelectItem value="Physical Store">Physical Store</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="w-[280px]">
-          <DateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onDateChange={(start, end) => {
-              setStartDate(start)
-              setEndDate(end)
-            }}
-            className="h-11"
-          />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Orders Table - Enterprise Grade 10/10 */}
       <Card className="border-0 shadow-xl bg-white dark:bg-slate-900 rounded-xl overflow-hidden">

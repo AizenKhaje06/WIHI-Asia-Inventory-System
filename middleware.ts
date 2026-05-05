@@ -8,7 +8,6 @@ export function middleware(request: NextRequest) {
   const publicRoutes = [
     '/',
     '/api/auth/login',
-    '/api/auth/team-leader-login',
     '/api/auth/channels',
     '/api/auth/forgot-password'
   ]

@@ -148,3 +148,34 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: error.message || "Update failed" }, { status: 500 })
   }
 }
+
+// DELETE - Delete account (admin only)
+export const DELETE = withAdmin(async (request, { user }) => {
+  try {
+    const { searchParams } = new URL(request.url)
+    const username = searchParams.get('username')
+
+    if (!username) {
+      return NextResponse.json({ error: "Username is required" }, { status: 400 })
+    }
+
+    // Prevent deleting own account
+    if (username === user.username) {
+      return NextResponse.json({ error: "Cannot delete your own account" }, { status: 400 })
+    }
+
+    // Delete from database
+    const { deleteAccount } = await import("@/lib/supabase-db")
+    await deleteAccount(username)
+
+    return NextResponse.json({ 
+      success: true, 
+      message: `User "${username}" deleted successfully` 
+    })
+  } catch (error: any) {
+    console.error("[Accounts API] Delete error:", error)
+    return NextResponse.json({ 
+      error: error.message || "Failed to delete account" 
+    }, { status: 500 })
+  }
+})

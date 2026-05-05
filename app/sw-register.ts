@@ -7,16 +7,15 @@ export function registerServiceWorker() {
         .then((registration) => {
           console.log('SW registered: ', registration);
 
-          // Handle updates
+          // Handle updates - SILENT, no reload
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New content is available, notify user
-                  if (confirm('New content is available. Reload to update?')) {
-                    window.location.reload();
-                  }
+                  // New content is available - activate silently without reload
+                  console.log('New service worker installed, will activate on next navigation');
+                  // Don't reload - let it activate naturally
                 }
               });
             }

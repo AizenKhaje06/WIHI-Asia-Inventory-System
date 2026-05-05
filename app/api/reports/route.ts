@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     const { data: allOrders, error: ordersError } = await supabase
       .from('orders')
       .select('*')
-      .eq('status', 'Packed') // Only dispatched orders
+      // Don't filter by status here - get all orders and filter by parcel_status later
 
     if (ordersError) {
       console.error("[Reports API] Error fetching orders:", ordersError)
@@ -44,6 +44,9 @@ export async function GET(request: NextRequest) {
     }
 
     let orders = allOrders || []
+
+    console.log('[Reports API] Total orders fetched:', orders.length)
+    console.log('[Reports API] Sample order:', orders[0])
 
     // Apply date filters
     if (startDate) {
@@ -71,11 +74,12 @@ export async function GET(request: NextRequest) {
         id: o.id,
         qty: o.qty || 0,
         total: o.total || 0,
-        cogs: o.cogs || 0,
+        cogs: o.cogs || (o.total * 0.6) || 0, // Calculate COGS if missing (60% of total)
         parcel_status: o.parcel_status || 'PENDING',
         payment_status: o.payment_status || 'pending',
         sales_channel: o.sales_channel,
-        date: o.date
+        date: o.date,
+        product: o.product
       })),
       'active'
     )

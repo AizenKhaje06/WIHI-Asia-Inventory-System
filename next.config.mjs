@@ -40,10 +40,6 @@ const nextConfig = {
           destination: '/packer/:path*',
         },
         {
-          source: '/team-leader/:path*',
-          destination: '/team-leader/:path*',
-        },
-        {
           source: '/admin/:path*',
           destination: '/admin/:path*',
         },

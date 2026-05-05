@@ -103,7 +103,7 @@ export default function SalesChannelDetailPage() {
 
   // Role detection
   const userRole = getCurrentUserRole()
-  const isTeamLeader = userRole === 'team_leader'
+  const isTeamLeader = false // Team leader role removed
 
   useEffect(() => {
     if (!startDate || !endDate) {

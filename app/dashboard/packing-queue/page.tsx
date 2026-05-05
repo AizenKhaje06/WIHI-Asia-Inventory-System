@@ -60,7 +60,7 @@ export default function PackingQueuePage() {
 
   // Role detection
   const userRole = getCurrentUserRole()
-  const isTeamLeader = userRole === 'team_leader'
+  const isTeamLeader = false // Team leader role removed
 
   // Helper function to format date and time - using same logic as Activity Logs
   const formatDateTime = (dateString: string) => {

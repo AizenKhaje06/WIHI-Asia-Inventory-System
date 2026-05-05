@@ -1,6 +1,6 @@
 // Role-based access control system
 
-export type UserRole = 'admin' | 'team_leader' | 'operations' | 'packer'
+export type UserRole = 'admin' | 'operations' | 'packer'
 
 export interface User {
   username: string
@@ -8,7 +8,6 @@ export interface User {
   displayName: string
   email?: string
   phone?: string
-  sales_channel?: string
 }
 
 // Role definitions with better names
@@ -18,12 +17,6 @@ export const ROLES = {
     name: 'Administrator',
     description: 'Full system access - Analytics, Reports, Settings',
     icon: '👔'
-  },
-  team_leader: {
-    id: 'team_leader' as const,
-    name: 'Team Leader',
-    description: 'Sales channel management, team oversight, view-only tracking',
-    icon: '👨‍💼'
   },
   operations: {
     id: 'operations' as const,
@@ -49,35 +42,21 @@ export const ROLE_PERMISSIONS = {
     '/dashboard/customers',
     '/dashboard/operations/transaction-history',
     '/dashboard/track-orders',
-    '/dashboard/packing-queue', // Packing Queue
+    '/dashboard/packing-queue',
     '/dashboard/cancelled-orders',
     '/dashboard/insights',
     '/dashboard/inventory/**',
     '/dashboard/pos',
-    '/dashboard/dispatch', // Warehouse Dispatch
+    '/dashboard/dispatch',
     '/dashboard/internal-usage',
     '/dashboard/settings',
     '/dashboard/log'
   ],
-  team_leader: [
-    '/team-leader/dashboard', // Team Leader Dashboard
-    '/dashboard/pos', // Warehouse Dispatch
-    '/dashboard/packing-queue', // Packing Queue
-    '/dashboard/track-orders', // Track Orders
-    '/dashboard/inventory/**', // All Inventory pages (Products, Low Stock, Out of Stock)
-    '/dashboard/sales-channels/**', // Sales Channels
-    '/dashboard/analytics', // Sales Analytics
-    '/dashboard/insights', // Business Insights
-    '/dashboard/customers', // Customers
-    '/dashboard/internal-usage', // Internal Usage
-    '/dashboard/log' // Activity Logs
-    // Settings is excluded - admin only
-  ],
   operations: [
     '/dashboard/operations',
     '/dashboard/pos',
-    '/dashboard/dispatch', // Warehouse Dispatch
-    '/dashboard/packing-queue', // Packing Queue
+    '/dashboard/dispatch',
+    '/dashboard/packing-queue',
     '/dashboard/operations/transaction-history',
     '/dashboard/track-orders',
     '/dashboard/inventory/**',
@@ -92,7 +71,6 @@ export const ROLE_PERMISSIONS = {
 // Default passwords per role
 export const DEFAULT_PASSWORDS: Record<UserRole, string> = {
   admin: 'admin123',
-  team_leader: 'leader456',
   operations: 'ops456',
   packer: 'pack789'
 }
@@ -138,9 +116,6 @@ export function getDefaultRoute(role: UserRole): string {
   if (role === 'operations') {
     return '/dashboard/operations'
   }
-  if (role === 'team_leader') {
-    return '/team-leader/dashboard'
-  }
   if (role === 'packer') {
     return '/packer/dashboard'
   }
@@ -150,49 +125,22 @@ export function getDefaultRoute(role: UserRole): string {
 export function getCurrentUser(): User | null {
   if (typeof window === 'undefined') return null
   
+  // CRITICAL: Check for logout parameter FIRST
+  // If logout is in progress, ALWAYS return null regardless of localStorage
   try {
-    // Check for team leader session first
-    const teamLeaderRole = localStorage.getItem('x-team-leader-role')
-    if (teamLeaderRole === 'team_leader') {
-      const teamLeaderSession = localStorage.getItem('teamLeaderSession')
-      if (teamLeaderSession) {
-        try {
-          const session = JSON.parse(teamLeaderSession)
-          
-          // Validate session has required fields
-          if (!session.userId || !session.assignedChannel) {
-            console.warn('[Auth] Invalid team leader session structure, clearing...')
-            clearCurrentUser()
-            return null
-          }
-          
-          // Check session expiry (24 hours)
-          const sessionTimestamp = session.timestamp || 0
-          const now = Date.now()
-          const twentyFourHours = 24 * 60 * 60 * 1000
-          
-          if (now - sessionTimestamp > twentyFourHours) {
-            console.warn('[Auth] Team leader session expired, clearing...')
-            clearCurrentUser()
-            return null
-          }
-          
-          return {
-            username: session.username,
-            role: 'team_leader' as UserRole,
-            displayName: session.displayName,
-            email: session.email,
-            sales_channel: session.assignedChannel
-          }
-        } catch (error) {
-          console.error('[Auth] Error parsing team leader session:', error)
-          clearCurrentUser()
-          return null
-        }
-      }
-    }
+    const urlParams = new URLSearchParams(window.location.search)
+    const logoutParam = urlParams.get('logout')
     
-    // Check for admin/operations session
+    if (logoutParam) {
+      console.log('[Auth] Logout parameter detected, forcing null user')
+      return null
+    }
+  } catch (e) {
+    console.error('[Auth] Error checking logout parameter:', e)
+  }
+  
+  try {
+    // Check for admin/operations/packer session
     const isLoggedIn = localStorage.getItem('isLoggedIn')
     const username = localStorage.getItem('username')
     const role = localStorage.getItem('userRole') as UserRole
@@ -200,7 +148,7 @@ export function getCurrentUser(): User | null {
     
     if (isLoggedIn === 'true' && username && role) {
       // Validate role is valid
-      if (!['admin', 'team_leader', 'operations', 'packer'].includes(role)) {
+      if (!['admin', 'operations', 'packer'].includes(role)) {
         console.warn('[Auth] Invalid role in session, clearing...')
         clearCurrentUser()
         return null
@@ -250,18 +198,16 @@ export function clearCurrentUser(): void {
   if (typeof window === 'undefined') return
   
   try {
-    // Clear admin/operations session
+    console.log('[Auth] Clearing all user sessions...')
+    
+    // Clear admin/operations/packer session
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('username')
     localStorage.removeItem('userRole')
     localStorage.removeItem('displayName')
     localStorage.removeItem('currentUser')
     
-    // Clear team leader session
-    localStorage.removeItem('teamLeaderSession')
-    localStorage.removeItem('x-team-leader-user-id')
-    localStorage.removeItem('x-team-leader-channel')
-    localStorage.removeItem('x-team-leader-role')
+    console.log('[Auth] All sessions cleared successfully')
   } catch (error) {
     console.error('Error clearing user from localStorage:', error)
   }
@@ -269,7 +215,7 @@ export function clearCurrentUser(): void {
 
 /**
  * Check if current user can edit tracking/packing status
- * Only admins can edit, team leaders can only view
+ * Only admins can edit
  */
 export function canEditTracking(): boolean {
   const user = getCurrentUser()
@@ -278,17 +224,9 @@ export function canEditTracking(): boolean {
 
 /**
  * Check if current user can edit warehouse dispatch
- * Both admins and team leaders can edit
+ * Only admins can edit
  */
 export function canEditWarehouseDispatch(): boolean {
   const user = getCurrentUser()
-  return user?.role === 'admin' || user?.role === 'team_leader'
-}
-
-/**
- * Check if current user is a team leader
- */
-export function isTeamLeader(): boolean {
-  const user = getCurrentUser()
-  return user?.role === 'team_leader'
+  return user?.role === 'admin'
 }

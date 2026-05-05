@@ -8,10 +8,14 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { BarcodeScanner } from '@/components/barcode-scanner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Activity } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
+import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Activity, CalendarIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { getCurrentUser } from '@/lib/auth'
 import { AnimatedNumber } from '@/components/ui/animated-number'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 
 interface Order {
   id: string
@@ -52,10 +56,16 @@ export default function PackerDashboard() {
   const [scannerOpen, setScannerOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showOrderDetails, setShowOrderDetails] = useState(false)
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [packedOrderDetails, setPackedOrderDetails] = useState<Order | null>(null)
   const [packing, setPacking] = useState(false)
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
+  
+  // Date filter states
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
+    from: startOfDay(new Date()),
+    to: endOfDay(new Date())
+  })
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [datePreset, setDatePreset] = useState<string>('today')
 
   // Get unique channels
   const channels = useMemo(() => {
@@ -63,24 +73,50 @@ export default function PackerDashboard() {
     return ['All', ...uniqueChannels.sort()]
   }, [pendingOrders])
 
-  // Performance metrics - filtered by channel
-  const todayPacked = useMemo(() => {
-    const today = new Date().toDateString()
-    return packedHistory.filter(p => {
-      const packedDate = new Date(p.packedAt).toDateString()
-      return packedDate === today
-    })
-  }, [packedHistory])
-
-  // Filtered packed history by channel
-  const filteredPackedHistory = useMemo(() => {
-    if (selectedChannel === 'All') return packedHistory
+  // Date preset handler
+  const handleDatePreset = (preset: string) => {
+    setDatePreset(preset)
+    const now = new Date()
     
-    // We need to match waybills with pending orders to get channel info
-    // For packed orders, we'll show all if channel filter is active
-    // since we don't store channel in packed history
-    return packedHistory
-  }, [packedHistory, selectedChannel])
+    switch (preset) {
+      case 'today':
+        setDateRange({ from: startOfDay(now), to: endOfDay(now) })
+        break
+      case 'yesterday':
+        setDateRange({ from: startOfDay(subDays(now, 1)), to: endOfDay(subDays(now, 1)) })
+        break
+      case 'last7days':
+        setDateRange({ from: startOfDay(subDays(now, 6)), to: endOfDay(now) })
+        break
+      case 'last14days':
+        setDateRange({ from: startOfDay(subDays(now, 13)), to: endOfDay(now) })
+        break
+      case 'last30days':
+        setDateRange({ from: startOfDay(subDays(now, 29)), to: endOfDay(now) })
+        break
+      default:
+        break
+    }
+  }
+
+  // Performance metrics - filtered by channel AND date range
+  const todayPacked = useMemo(() => {
+    return packedHistory.filter(p => {
+      const packedDate = new Date(p.packedAt)
+      return packedDate >= dateRange.from && packedDate <= dateRange.to
+    })
+  }, [packedHistory, dateRange])
+
+  // Filtered packed history by channel AND date range
+  const filteredPackedHistory = useMemo(() => {
+    let filtered = packedHistory.filter(p => {
+      const packedDate = new Date(p.packedAt)
+      return packedDate >= dateRange.from && packedDate <= dateRange.to
+    })
+    
+    // Note: We don't filter by channel for packed history since channel info is not stored
+    return filtered
+  }, [packedHistory, dateRange])
 
   // Pending count filtered by channel
   const pendingCount = useMemo(() => {
@@ -203,7 +239,6 @@ export default function PackerDashboard() {
 
     try {
       setPacking(true)
-      setScannerOpen(false) // Close scanner
 
       const response = await fetch(`/api/packer/pack/${order.id}`, {
         method: 'PUT',
@@ -221,23 +256,29 @@ export default function PackerDashboard() {
         throw new Error(data.error || 'Failed to pack order')
       }
 
-      // Show success modal with order details
-      setPackedOrderDetails(order)
-      setShowSuccessModal(true)
+      // Show quick success notification (auto-dismiss after 2 seconds)
+      toast.success(
+        `✅ Successfully packed! Waybill: ${order.waybill}`,
+        {
+          duration: 2000,
+          position: 'top-center',
+          style: {
+            background: '#10b981',
+            color: 'white',
+            fontSize: '16px',
+            fontWeight: '600',
+            padding: '16px 24px',
+          }
+        }
+      )
       
-      // Refresh data immediately
+      // Refresh data immediately (silent)
       await fetchData(true)
 
-      // Auto-close success modal and reopen scanner after 3 seconds
-      setTimeout(() => {
-        setShowSuccessModal(false)
-        setPackedOrderDetails(null)
-        setScannerOpen(true)
-      }, 3000)
+      // Scanner stays open for next scan - no need to reopen
     } catch (error) {
       console.error('Error packing order:', error)
-      toast.error('Failed to pack order')
-      setScannerOpen(true) // Reopen scanner on error
+      toast.error('❌ Failed to pack order. Please try again.')
     } finally {
       setPacking(false)
     }
@@ -311,6 +352,9 @@ export default function PackerDashboard() {
             >
               <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} strokeWidth={2.5} />
             </Button>
+            <div className="h-12 flex items-center">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
 
@@ -337,6 +381,113 @@ export default function PackerDashboard() {
           )}
         </div>
       </div>
+
+      {/* Date Filter - Facebook Ads Manager Style */}
+      <Card className="shadow-lg border-2">
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              <CalendarIcon className="h-4 w-4" />
+              <span>Date Range:</span>
+            </div>
+            
+            {/* Date Presets */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: 'today', label: 'Today' },
+                { value: 'yesterday', label: 'Yesterday' },
+                { value: 'last7days', label: 'Last 7 days' },
+                { value: 'last14days', label: 'Last 14 days' },
+                { value: 'last30days', label: 'Last 30 days' }
+              ].map((preset) => (
+                <Button
+                  key={preset.value}
+                  variant={datePreset === preset.value ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleDatePreset(preset.value)}
+                  className={datePreset === preset.value ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                >
+                  {preset.label}
+                </Button>
+              ))}
+              
+              {/* Custom Date Picker */}
+              <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={datePreset === 'custom' ? 'default' : 'outline'}
+                    size="sm"
+                    className={datePreset === 'custom' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                  >
+                    <CalendarIcon className="h-4 w-4 mr-2" />
+                    Custom
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700" align="start">
+                  <div className="p-4">
+                    {/* Single Calendar with Range Selection */}
+                    <div className="space-y-3">
+                      <div className="text-center">
+                        <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">Select Date Range</label>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Click start date, then end date</p>
+                      </div>
+                      
+                      <Calendar
+                        mode="range"
+                        selected={{ from: dateRange.from, to: dateRange.to }}
+                        onSelect={(range) => {
+                          if (range?.from) {
+                            setDateRange({
+                              from: startOfDay(range.from),
+                              to: range.to ? endOfDay(range.to) : endOfDay(range.from)
+                            })
+                            setDatePreset('custom')
+                          }
+                        }}
+                        numberOfMonths={2}
+                        showOutsideDays={false}
+                        initialFocus
+                        className="dark:text-slate-100"
+                        classNames={{
+                          day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 relative",
+                          range_start: "bg-blue-600 text-white hover:bg-blue-700 hover:text-white rounded-l-md",
+                          range_end: "bg-blue-600 text-white hover:bg-blue-700 hover:text-white rounded-r-md",
+                          range_middle: "bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-100 rounded-none",
+                          today: "bg-accent text-accent-foreground",
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setShowDatePicker(false)}
+                        className="flex-1 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => setShowDatePicker(false)}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      >
+                        Apply
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            {/* Selected Date Range Display */}
+            <div className="ml-auto text-sm text-slate-600 dark:text-slate-400 font-medium">
+              {format(dateRange.from, 'MMM d, yyyy')} - {format(dateRange.to, 'MMM d, yyyy')}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Enhanced Stats Cards - Professional 4-Card Layout */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -458,34 +609,36 @@ export default function PackerDashboard() {
       </div>
 
       {/* Packing Queue */}
-      <Card className="shadow-lg">
+      <Card className="shadow-lg overflow-hidden">
         <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-3 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-lg">
-                <Target className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                Packing Queue
-              </CardTitle>
-              <CardDescription className="mt-1 text-xs sm:text-sm">
-                {filteredPending.length} {filteredPending.length === 1 ? 'order' : 'orders'} ready
-              </CardDescription>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              {selectedChannel !== 'All' && (
-                <Badge variant="secondary" className="text-xs">
-                  {selectedChannel}
-                </Badge>
-              )}
-              {searchTerm && (
-                <Badge variant="outline" className="text-xs">
-                  Searching
-                </Badge>
-              )}
-              {!searchTerm && selectedChannel === 'All' && (
-                <Badge variant="outline" className="text-xs">
-                  All Orders
-                </Badge>
-              )}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-lg">
+                  <Target className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                  Packing Queue
+                </CardTitle>
+                <CardDescription className="mt-1 text-xs sm:text-sm">
+                  {filteredPending.length} {filteredPending.length === 1 ? 'order' : 'orders'} ready
+                </CardDescription>
+              </div>
+              <div className="flex gap-2 flex-wrap justify-end flex-shrink-0">
+                {selectedChannel !== 'All' && (
+                  <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                    {selectedChannel}
+                  </Badge>
+                )}
+                {searchTerm && (
+                  <Badge variant="outline" className="text-xs whitespace-nowrap">
+                    Searching
+                  </Badge>
+                )}
+                {!searchTerm && selectedChannel === 'All' && (
+                  <Badge variant="outline" className="text-xs whitespace-nowrap">
+                    All Orders
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -584,10 +737,10 @@ export default function PackerDashboard() {
       </Card>
 
       {/* Packed History */}
-      <Card className="shadow-lg">
+      <Card className="shadow-lg overflow-hidden">
         <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-3 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div>
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
               <CardTitle className="flex items-center gap-2 text-sm sm:text-lg">
                 <Award className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                 Packed History
@@ -596,8 +749,8 @@ export default function PackerDashboard() {
                 Recent activity
               </CardDescription>
             </div>
-            <Badge variant="secondary" className="text-xs w-fit">
-              Last {packedHistory.length > 20 ? '20' : packedHistory.length}
+            <Badge variant="secondary" className="text-xs whitespace-nowrap flex-shrink-0">
+              Last {filteredPackedHistory.length > 20 ? '20' : filteredPackedHistory.length}
             </Badge>
           </div>
         </CardHeader>
@@ -818,66 +971,6 @@ export default function PackerDashboard() {
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Success Modal - Auto-closes after 3 seconds */}
-      <AlertDialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <AlertDialogContent className="max-w-[95vw] sm:max-w-lg border-2 border-green-500">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg flex items-center gap-2 text-green-600">
-              <CheckCircle className="h-5 w-5" />
-              Successfully Packed!
-            </AlertDialogTitle>
-          </AlertDialogHeader>
-          {packedOrderDetails && (
-            <div className="space-y-4">
-              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                <div className="text-center space-y-2">
-                  <div className="text-xs text-slate-600 dark:text-slate-400">Waybill Number</div>
-                  <div className="font-mono text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400 break-all">
-                    {packedOrderDetails.waybill}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Product:</div>
-                  <div className="font-semibold">{packedOrderDetails.itemName}</div>
-                </div>
-                
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Quantity:</div>
-                  <div className="font-semibold">{packedOrderDetails.quantity}</div>
-                </div>
-                
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Customer:</div>
-                  <div className="font-semibold">{packedOrderDetails.customerName}</div>
-                </div>
-                
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Channel:</div>
-                  <div><Badge variant="outline" className="text-xs">{packedOrderDetails.channel}</Badge></div>
-                </div>
-
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Store:</div>
-                  <div className="font-semibold">{packedOrderDetails.store}</div>
-                </div>
-
-                <div className="flex flex-col sm:contents">
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">Packed By:</div>
-                  <div className="font-semibold">{currentUser?.displayName || currentUser?.username}</div>
-                </div>
-              </div>
-
-              <div className="text-center text-xs text-slate-500 pt-2 border-t">
-                Auto-closing in 3 seconds...
-              </div>
-            </div>
-          )}
         </AlertDialogContent>
       </AlertDialog>
     </div>

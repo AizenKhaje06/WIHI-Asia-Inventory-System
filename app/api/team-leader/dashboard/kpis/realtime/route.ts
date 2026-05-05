@@ -40,7 +40,7 @@ export const GET = async (request: NextRequest) => {
 
     // Query inventory items for the channel
     const { data: items, error: itemsError } = await supabaseAdmin
-      .from('items')
+      .from('inventory')
       .select('*')
       .eq('sales_channel', channel)
 

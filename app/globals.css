@@ -2579,3 +2579,76 @@ pre code {
   color: #f1f5f9 !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
+
+/* ============================================
+   CALENDAR DATE RANGE STYLING
+   ============================================ */
+
+/* Calendar range highlighting - with proper spacing */
+.rdp-day[data-range-start="true"] button,
+[data-range-start="true"] button {
+  background-color: rgb(37, 99, 235) !important;
+  color: white !important;
+  border-radius: 0.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.rdp-day[data-range-end="true"] button,
+[data-range-end="true"] button {
+  background-color: rgb(37, 99, 235) !important;
+  color: white !important;
+  border-radius: 0.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.rdp-day[data-range-middle="true"] button,
+[data-range-middle="true"] button {
+  background-color: rgb(219, 234, 254) !important;
+  color: rgb(30, 58, 138) !important;
+  border-radius: 0.375rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Dark mode calendar range */
+.dark .rdp-day[data-range-middle="true"] button,
+.dark [data-range-middle="true"] button {
+  background-color: rgba(37, 99, 235, 0.3) !important;
+  color: rgb(191, 219, 254) !important;
+}
+
+/* Hover states for range dates */
+.rdp-day[data-range-start="true"] button:hover,
+.rdp-day[data-range-end="true"] button:hover,
+[data-range-start="true"] button:hover,
+[data-range-end="true"] button:hover {
+  background-color: rgb(29, 78, 216) !important;
+}
+
+.rdp-day[data-range-middle="true"] button:hover,
+[data-range-middle="true"] button:hover {
+  background-color: rgb(191, 219, 254) !important;
+}
+
+.dark .rdp-day[data-range-middle="true"] button:hover,
+.dark [data-range-middle="true"] button:hover {
+  background-color: rgba(37, 99, 235, 0.5) !important;
+}
+
+/* Ensure proper spacing between date cells */
+.rdp-day {
+  padding: 2px !important;
+}
+
+/* Center all date numbers in calendar */
+.rdp-day button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}

@@ -59,7 +59,7 @@ export default function DispatchPage() {
 
   // Role detection
   const userRole = getCurrentUserRole()
-  const isTeamLeader = userRole === 'team_leader'
+  const isTeamLeader = false // Team leader role removed
 
   useEffect(() => {
     fetchQueue()
@@ -432,43 +432,145 @@ export default function DispatchPage() {
         </CardContent>
       </Card>
 
-      {/* Dispatch Form Dialog */}
+      {/* Dispatch Form Dialog - Modern SaaS Design */}
       <Dialog open={showDispatchForm} onOpenChange={setShowDispatchForm}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Dispatch Order</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Order #</label>
-              <div className="font-mono text-sm text-slate-600 dark:text-slate-400">
-                #{(selectedOrder?.orderNumber || selectedOrder?.id || '').slice(-6)}
+        <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden">
+          {/* Header with gradient background */}
+          <div className="bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 px-8 py-6">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <Truck className="h-6 w-6 text-white" />
+                </div>
+                Order Dispatch Form
+              </DialogTitle>
+              <p className="text-blue-100 text-sm mt-2">
+                Fill in courier and tracking details for this dispatch
+              </p>
+            </DialogHeader>
+          </div>
+
+          {/* Form Content */}
+          <div className="px-8 py-6 space-y-6 bg-slate-50 dark:bg-slate-900/50">
+            {/* Order Info Card */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Order Number
+                  </label>
+                  <div className="font-mono text-lg font-bold text-slate-900 dark:text-white mt-1">
+                    #{(selectedOrder?.orderNumber || selectedOrder?.id || '').slice(-6)}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Customer
+                  </label>
+                  <div className="text-base font-semibold text-slate-900 dark:text-white mt-1">
+                    {selectedOrder?.customerName}
+                  </div>
+                </div>
               </div>
+              {selectedOrder?.sales_channel && (
+                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Sales Channel
+                  </label>
+                  <Badge variant="outline" className="mt-2">
+                    {selectedOrder.sales_channel || selectedOrder.channel}
+                  </Badge>
+                </div>
+              )}
             </div>
+
+            {/* Courier Selection */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Customer</label>
-              <div className="text-sm text-slate-600 dark:text-slate-400">
-                {selectedOrder?.customerName}
-              </div>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                Courier <span className="text-red-500">*</span>
+              </label>
+              <Select 
+                value={dispatchForm.courier} 
+                onValueChange={(value) => setDispatchForm({ ...dispatchForm, courier: value })}
+              >
+                <SelectTrigger className="h-12 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500">
+                  <SelectValue placeholder="Select courier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="J&T Express">J&T Express</SelectItem>
+                  <SelectItem value="LBC">LBC</SelectItem>
+                  <SelectItem value="Ninja Van">Ninja Van</SelectItem>
+                  <SelectItem value="Flash Express">Flash Express</SelectItem>
+                  <SelectItem value="Grab Express">Grab Express</SelectItem>
+                  <SelectItem value="Lalamove">Lalamove</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
+            {/* Tracking Number */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Courier *</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                Waybill / Tracking Number <span className="text-red-500">*</span>
+              </label>
               <Input
-                placeholder="Enter courier name (e.g., J&T, LBC, Ninja Van)"
-                value={dispatchForm.courier}
-                onChange={(e) => setDispatchForm({ ...dispatchForm, courier: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Tracking Number *</label>
-              <Input
-                placeholder="Enter tracking/waybill number"
+                placeholder="Enter tracking number"
                 value={dispatchForm.trackingNumber}
                 onChange={(e) => setDispatchForm({ ...dispatchForm, trackingNumber: e.target.value })}
+                className="h-12 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400"
               />
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Enter the complete delivery address
+              </p>
+            </div>
+
+            {/* Customer Details */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Status
+                </label>
+                <div className="h-12 px-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Pending</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Total Quantity
+                </label>
+                <div className="h-12 px-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                    {selectedOrder?.qty || selectedOrder?.quantity || 1}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Amount Details */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Total COGS
+                </label>
+                <div className="h-12 px-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">₱50.00</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                  Total Amount <span className="text-red-500">*</span>
+                </label>
+                <div className="h-12 px-4 bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200 dark:border-blue-800 rounded-lg flex items-center">
+                  <span className="text-base font-bold text-blue-700 dark:text-blue-400">
+                    {formatCurrency(selectedOrder?.total || selectedOrder?.totalAmount || 0)}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-          <DialogFooter>
+
+          {/* Footer Actions */}
+          <div className="px-8 py-5 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
             <Button
               variant="outline"
               onClick={() => {
@@ -476,12 +578,14 @@ export default function DispatchPage() {
                 setSelectedOrder(null)
                 setDispatchForm({ courier: '', trackingNumber: '' })
               }}
+              className="h-11 px-6 font-semibold"
             >
               Cancel
             </Button>
             <Button
               onClick={handleDispatch}
-              disabled={dispatching !== null}
+              disabled={dispatching !== null || !dispatchForm.courier || !dispatchForm.trackingNumber}
+              className="h-11 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 font-semibold shadow-lg shadow-blue-500/30"
             >
               {dispatching ? (
                 <>
@@ -495,7 +599,7 @@ export default function DispatchPage() {
                 </>
               )}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

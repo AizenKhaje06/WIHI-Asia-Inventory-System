@@ -9,8 +9,17 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isChecking, setIsChecking] = useState(true)
   const [isAuthorized, setIsAuthorized] = useState(false)
+  const [redirectCount, setRedirectCount] = useState(0)
 
   useEffect(() => {
+    // Prevent infinite redirect loops
+    if (redirectCount > 3) {
+      console.error('[RouteGuard] Too many redirects, stopping')
+      setIsChecking(false)
+      setIsAuthorized(false)
+      return
+    }
+
     // Check auth on mount and when pathname changes
     const checkAuth = () => {
       console.log('[RouteGuard] Starting auth check for:', pathname)
@@ -20,7 +29,23 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
         console.log('[RouteGuard] Login page - allowing access')
         setIsAuthorized(true)
         setIsChecking(false)
+        setRedirectCount(0) // Reset counter on login page
         return
+      }
+
+      // CHECK FOR LOGOUT PARAMETER - if present, force redirect to login
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search)
+        const logoutParam = urlParams.get('logout')
+        
+        if (logoutParam) {
+          console.log('[RouteGuard] LOGOUT DETECTED - forcing redirect to login')
+          setIsAuthorized(false)
+          setIsChecking(false)
+          setRedirectCount(prev => prev + 1)
+          router.replace('/')
+          return
+        }
       }
 
       const user = getCurrentUser()
@@ -31,6 +56,7 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
         console.log('[RouteGuard] No user found, redirecting to login')
         setIsAuthorized(false)
         setIsChecking(false)
+        setRedirectCount(prev => prev + 1)
         router.replace('/')
         return
       }
@@ -48,6 +74,7 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
         console.log('[RouteGuard] NO PERMISSION! Redirecting to:', defaultRoute)
         setIsAuthorized(false)
         setIsChecking(false)
+        setRedirectCount(prev => prev + 1)
         router.replace(defaultRoute)
         return
       }
@@ -55,6 +82,7 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
       console.log('[RouteGuard] Access granted!')
       setIsAuthorized(true)
       setIsChecking(false)
+      setRedirectCount(0) // Reset counter on successful auth
     }
 
     // Reset state when pathname changes
@@ -65,7 +93,7 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       checkAuth()
     }
-  }, [pathname, router])
+  }, [pathname, router, redirectCount])
 
   // Show loading spinner while checking (prevents 404)
   if (isChecking) {

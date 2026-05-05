@@ -82,7 +82,7 @@ export default function SalesChannelsPage() {
 
   // Role detection
   const userRole = getCurrentUserRole()
-  const isTeamLeader = userRole === 'team_leader'
+  const isTeamLeader = false // Team leader role removed
 
   useEffect(() => {
     // Set default date range (last 30 days)

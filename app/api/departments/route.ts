@@ -16,7 +16,7 @@ export const GET = withAuth(async (request, { user }) => {
     const { data: allOrders, error: ordersError } = await supabase
       .from('orders')
       .select('*')
-      .eq('status', 'Packed') // Only dispatched orders
+      // Don't filter by status - get ALL orders from Track Orders page
 
     if (ordersError) {
       console.error("[Departments API] Error fetching orders:", ordersError)
@@ -24,6 +24,9 @@ export const GET = withAuth(async (request, { user }) => {
     }
 
     console.log('[Departments API] Total orders fetched:', allOrders?.length || 0)
+    if (allOrders && allOrders.length > 0) {
+      console.log('[Departments API] Sample order:', allOrders[0])
+    }
 
     // Apply date filters if provided
     let filteredOrders = allOrders || []
@@ -47,7 +50,7 @@ export const GET = withAuth(async (request, { user }) => {
         id: o.id,
         qty: o.qty || 0,
         total: o.total || 0,
-        cogs: o.cogs || 0,
+        cogs: o.cogs || (o.total * 0.6) || 0, // Calculate COGS if missing (60% of total)
         parcel_status: o.parcel_status || 'PENDING',
         payment_status: o.payment_status || 'pending',
         sales_channel: o.sales_channel,

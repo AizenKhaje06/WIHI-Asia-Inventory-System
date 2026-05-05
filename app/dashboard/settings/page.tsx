@@ -55,8 +55,8 @@ interface Account {
   id: string
   username: string
   password: string
-  role: 'admin' | 'operations' | 'team_leader' | 'packer'
-  assignedChannel?: string // For team leaders
+  role: 'admin' | 'operations' | 'packer'
+  assignedChannel?: string // Legacy field, no longer used
   displayName: string
   createdAt: string
 }
@@ -103,8 +103,8 @@ export default function SettingsPage() {
     username: '',
     password: '',
     displayName: '',
-    role: 'operations' as 'admin' | 'operations' | 'team_leader' | 'packer',
-    assignedChannel: '' // For team leaders
+    role: 'operations' as 'admin' | 'operations' | 'packer',
+    assignedChannel: '' // Legacy field, no longer used
   })
 
   // Edit user form
@@ -113,8 +113,8 @@ export default function SettingsPage() {
     username: '',
     originalUsername: '', // Store original username for comparison
     displayName: '',
-    role: 'operations' as 'admin' | 'operations' | 'team_leader' | 'packer',
-    assignedChannel: '', // For team leaders
+    role: 'operations' as 'admin' | 'operations' | 'packer',
+    assignedChannel: '', // Legacy field, no longer used
     newPassword: '',
     confirmPassword: ''
   })
@@ -368,9 +368,8 @@ export default function SettingsPage() {
       return
     }
 
-    if (newUserForm.role === 'team_leader' && !newUserForm.assignedChannel) {
-      toast.error('Please select a sales channel for the team leader')
-      return
+    if (newUserForm.role === 'operations' && !newUserForm.assignedChannel) {
+      // Legacy check - no longer enforced
     }
 
     if (newUserForm.password.length < 6) {
@@ -495,17 +494,38 @@ export default function SettingsPage() {
       return
     }
 
-    if (!confirm(`Are you sure you want to delete user "${username}"?`)) {
+    if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
       return
     }
 
     try {
-      // Note: You'll need to implement DELETE endpoint in API
-      toast.info('Delete functionality coming soon')
-      // await apiDelete(`/api/accounts/${username}`)
-      // toast.success('User deleted successfully')
-      // fetchAccounts()
+      // Get current user info for auth headers
+      const currentUsername = localStorage.getItem('username')
+      const currentRole = localStorage.getItem('userRole')
+
+      if (!currentUsername || !currentRole) {
+        throw new Error('Not authenticated')
+      }
+
+      const response = await fetch(`/api/accounts?username=${encodeURIComponent(username)}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-username': currentUsername,
+          'x-user-role': currentRole,
+        },
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete user')
+      }
+
+      toast.success(`User "${username}" deleted successfully`)
+      fetchAccounts()
     } catch (error: any) {
+      console.error('Delete user error:', error)
       toast.error(error.message || 'Failed to delete user')
     }
   }
@@ -1221,43 +1241,17 @@ export default function SettingsPage() {
                           <select
                             id="newRole"
                             value={newUserForm.role}
-                            onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value as any, assignedChannel: e.target.value === 'team_leader' ? newUserForm.assignedChannel : '' })}
+                            onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value as any, assignedChannel: '' })}
                             className="flex h-10 w-full rounded-md border border-purple-200 dark:border-purple-800 bg-background px-3 py-2 text-sm"
                           >
                             <option value="operations">👤 Operations Staff</option>
-                            <option value="team_leader">👔 Team Leader</option>
                             <option value="packer">📦 Packer</option>
                             <option value="admin">👑 Administrator</option>
                           </select>
                         </div>
                       </div>
 
-                      {/* Channel Assignment for Team Leaders */}
-                      {newUserForm.role === 'team_leader' && (
-                        <div className="space-y-2 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <Label htmlFor="assignedChannel" className="text-sm font-semibold flex items-center gap-2">
-                            <Building2 className="h-4 w-4 text-blue-600" />
-                            Assigned Sales Channel *
-                          </Label>
-                          <select
-                            id="assignedChannel"
-                            value={newUserForm.assignedChannel}
-                            onChange={(e) => setNewUserForm({ ...newUserForm, assignedChannel: e.target.value })}
-                            className="flex h-10 w-full rounded-md border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
-                          >
-                            <option value="">Select a channel...</option>
-                            <option value="Warehouse Admin">🏢 Warehouse Admin</option>
-                            <option value="TikTok">🎵 TikTok</option>
-                            <option value="Shopee">🛍️ Shopee</option>
-                            <option value="Facebook">👥 Facebook</option>
-                            <option value="Lazada">🛒 Lazada</option>
-                            <option value="Physical Store">🏪 Physical Store</option>
-                          </select>
-                          <p className="text-xs text-blue-600 dark:text-blue-400">
-                            Team leaders can only access data for their assigned channel
-                          </p>
-                        </div>
-                      )}
+                      {/* Channel Assignment removed - team leader role no longer exists */}
 
                       <div className="flex gap-3 pt-2">
                         <Button 
@@ -1271,7 +1265,7 @@ export default function SettingsPage() {
                           variant="outline" 
                           onClick={() => {
                             setShowNewUserForm(false)
-                            setNewUserForm({ username: '', password: '', displayName: '', role: 'operations' })
+                            setNewUserForm({ username: '', password: '', displayName: '', role: 'operations', assignedChannel: '' })
                           }}
                         >
                           <X className="h-4 w-4 mr-2" />
@@ -1289,9 +1283,6 @@ export default function SettingsPage() {
                       <Badge variant="outline" className="px-3 py-1">
                         <Activity className="h-3 w-3 mr-1" />
                         {accounts.filter(a => a.role === 'admin').length} Admins
-                      </Badge>
-                      <Badge variant="outline" className="px-3 py-1">
-                        👔 {accounts.filter(a => a.role === 'team_leader').length} Team Leaders
                       </Badge>
                       <Badge variant="outline" className="px-3 py-1">
                         📦 {accounts.filter(a => a.role === 'packer').length} Packers
@@ -1453,18 +1444,15 @@ export default function SettingsPage() {
                                 className={`px-4 py-2 ${
                                   account.role === 'admin'
                                     ? 'bg-gradient-to-r from-purple-600 to-pink-600'
-                                    : account.role === 'team_leader'
-                                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600'
                                     : account.role === 'packer'
                                     ? 'bg-gradient-to-r from-green-600 to-emerald-600'
-                                    : ''
+                                    : 'bg-gradient-to-r from-blue-600 to-cyan-600'
                                 }`}
                               >
                                 {account.role === 'admin' ? '👑 Admin' : 
-                                 account.role === 'team_leader' ? '👔 Team Leader' :
                                  account.role === 'packer' ? '📦 Packer' : '👤 Staff'}
                               </Badge>
-                              {account.role === 'team_leader' && account.assignedChannel && (
+                              {account.assignedChannel && (
                                 <Badge variant="outline" className="px-3 py-1.5">
                                   <Building2 className="h-3 w-3 mr-1" />
                                   {account.assignedChannel}

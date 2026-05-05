@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getInventoryItems, getTransactions, getRestocks } from "@/lib/supabase-db"
+import { getInventoryItems, getOrders, getRestocks } from "@/lib/supabase-db"
 import { getCachedData } from "@/lib/cache"
+import { transformOrdersToTransactions } from "@/lib/orders-to-transactions"
 import {
   calculateSalesForecast,
   performABCAnalysis,
@@ -19,6 +20,9 @@ export const GET = withAuth(async (request, { user }) => {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'all'
     const itemId = searchParams.get('itemId')
+    const salesChannel = searchParams.get('salesChannel') // NEW: Sales channel filter
+
+    console.log('[Analytics API] Params:', { type, itemId, salesChannel })
 
     const items = await getCachedData(
       'inventory-items',
@@ -26,11 +30,19 @@ export const GET = withAuth(async (request, { user }) => {
       2 * 60 * 1000
     )
     
-    const transactions = await getCachedData(
-      'transactions',
-      () => getTransactions(),
+    // NEW: Fetch orders instead of transactions
+    const orders = await getCachedData(
+      `orders-${salesChannel || 'all'}`,
+      () => getOrders(salesChannel || undefined),
       2 * 60 * 1000
     )
+    
+    console.log('[Analytics API] Orders fetched:', orders.length)
+    
+    // NEW: Transform orders to transaction format for backward compatibility
+    const transactions = transformOrdersToTransactions(orders)
+    
+    console.log('[Analytics API] Transactions after transformation:', transactions.length)
     
     const restocks = await getCachedData(
       'restocks',
@@ -96,9 +108,11 @@ export const GET = withAuth(async (request, { user }) => {
         break
     }
 
+    console.log('[Analytics API] Result type:', type, 'Data length:', Array.isArray(result) ? result.length : 'N/A')
+
     return NextResponse.json(result)
   } catch (error) {
-    console.error("[API] Error generating analytics:", error)
+    console.error("[Analytics API] Error generating analytics:", error)
     return NextResponse.json({ error: "Failed to generate analytics" }, { status: 500 })
   }
 })

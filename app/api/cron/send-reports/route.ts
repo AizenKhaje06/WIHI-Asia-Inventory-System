@@ -70,8 +70,8 @@ export async function GET(request: NextRequest) {
       try {
         console.log(`[Cron] Processing schedule ${schedule.id} for ${schedule.recipient_email}`)
 
-        // Fetch orders data
-        const reportData = await fetchTrackOrdersData(schedule.filters || {})
+        // Fetch orders data with date range filtering
+        const reportData = await fetchTrackOrdersData(schedule)
 
         // Generate reports
         const excelBuffer = generateExcelReport(reportData)
@@ -157,13 +157,23 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function fetchTrackOrdersData(_filters: any): Promise<ReportData> {
-  // Fetch from orders table (track orders) - only packed orders
-  const { data: orders, error } = await supabaseAdmin
+async function fetchTrackOrdersData(schedule: any): Promise<ReportData> {
+  // Build query with optional date range filtering
+  let query = supabaseAdmin
     .from('orders')
     .select('*')
     .eq('status', 'Packed')
     .order('created_at', { ascending: false })
+
+  // Apply date range filter if specified in schedule
+  if (schedule.start_date) {
+    query = query.gte('date', schedule.start_date)
+  }
+  if (schedule.end_date) {
+    query = query.lte('date', schedule.end_date)
+  }
+
+  const { data: orders, error } = await query
 
   if (error) {
     console.error('[Cron] Error fetching orders:', error)
@@ -172,48 +182,62 @@ async function fetchTrackOrdersData(_filters: any): Promise<ReportData> {
 
   console.log('[Cron] Fetched orders:', orders?.length || 0)
 
-  // Transform data to match Track Orders page format EXACTLY
-  const transformedOrders = (orders || []).map(order => {
-    // Debug log to see actual data
-    console.log('[Cron] Order data:', {
-      id: order.id,
-      product: order.product,
-      sales_channel: order.sales_channel,
-      parcel_status: order.parcel_status,
-      waybill: order.waybill
-    })
-    
-    return {
-      id: order.id,
-      orderNumber: `#${order.id.slice(-6)}`,
-      customerName: order.customer_name || 'N/A',
-      customerPhone: order.customer_contact || 'N/A',
-      customerAddress: order.customer_address || 'N/A',
-      storeName: order.store || 'N/A',
-      itemName: order.product || order.item_name || 'N/A', // Product name
-      quantity: order.qty || order.quantity || 0,
-      totalAmount: order.total || order.amount || 0,
-      orderStatus: order.status as 'Pending' | 'Packed',
-      parcelStatus: (order.parcel_status || order.status || 'PENDING') as any,
-      paymentStatus: (order.payment_status || 'pending') as any,
-      courier: order.courier || '-',
-      trackingNumber: order.waybill || order.tracking_number || '-',
-      waybill: order.waybill || order.tracking_number || '-',
-      orderDate: order.date || order.created_at,
-      department: order.sales_channel || order.department || 'N/A',
-      salesChannel: order.sales_channel || order.department || 'N/A',
-      store: order.store || 'N/A'
-    }
-  })
+  // Transform data EXACTLY like track orders page
+  const transformedOrders = (orders || []).map(order => ({
+    id: order.id,
+    orderNumber: order.id,
+    customerName: order.customer_name || 'N/A',
+    customerPhone: order.customer_contact || 'N/A',
+    customerEmail: undefined,
+    customerAddress: order.customer_address || 'N/A',
+    storeName: order.store || 'N/A',
+    itemName: order.product || 'N/A', // Product name (keep full text with quantities)
+    quantity: order.qty || 0,
+    totalAmount: order.total || 0,
+    orderStatus: order.status as 'Pending' | 'Packed',
+    parcelStatus: (order.parcel_status || 'PENDING') as any,
+    paymentStatus: (order.payment_status || 'pending') as any,
+    courier: order.courier || '-',
+    trackingNumber: order.waybill || '-',
+    waybill: order.waybill || '-',
+    orderDate: order.date,
+    estimatedDelivery: undefined,
+    deliveryDate: order.status === 'Delivered' ? order.updated_at : undefined,
+    notes: JSON.stringify({
+      dispatchedBy: order.dispatched_by,
+      dispatchedAt: order.created_at,
+      packedBy: order.packed_by,
+      packedAt: order.packed_at,
+      store: order.store
+    }),
+    dispatchNotes: order.dispatch_notes || '',
+    department: order.sales_channel || 'N/A',
+    salesChannel: order.sales_channel || 'N/A',
+    store: order.store || 'N/A'
+  }))
 
   const totalOrders = transformedOrders.length
   const totalAmount = transformedOrders.reduce((sum, o) => sum + o.totalAmount, 0)
   const totalCOGS = totalAmount * 0.6
   const totalProfit = totalAmount - totalCOGS
 
+  // Format date range for report
+  let dateRange = `As of ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+  if (schedule.start_date && schedule.end_date) {
+    const start = new Date(schedule.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    const end = new Date(schedule.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    dateRange = `${start} - ${end}`
+  } else if (schedule.start_date) {
+    const start = new Date(schedule.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    dateRange = `From ${start}`
+  } else if (schedule.end_date) {
+    const end = new Date(schedule.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    dateRange = `Until ${end}`
+  }
+
   return {
     orders: transformedOrders,
-    dateRange: `As of ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,
+    dateRange,
     totalOrders,
     totalAmount,
     totalCOGS,

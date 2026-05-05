@@ -11,7 +11,6 @@ import {
   Loader2, Mail, CheckCircle2, AlertCircle
 } from "lucide-react"
 import { apiPost } from "@/lib/api-client"
-import { setTeamLeaderSession } from "@/lib/team-leader-auth"
 import { RoleSelector, type UserRole } from "@/components/auth/role-selector"
 import { LoginForm, type LoginFormData } from "@/components/auth/login-form"
 import { SecurityIndicator } from "@/components/auth/security-indicator"
@@ -43,128 +42,108 @@ export default function EnterpriseLoginPage() {
   useEffect(() => {
     setMounted(true)
     
-    // Only run session check once on mount
-    if (typeof window === 'undefined') return
+    console.log('[Login Page] ========== MOUNT DEBUG ==========')
+    console.log('[Login Page] Mounted')
     
-    try {
-      // IMPORTANT: When on login page, we should NOT have any active sessions
-      // If we're here, it means user either logged out or session expired
-      // So we need to be very strict about validation
+    // CRITICAL: One-time cleanup of ALL team leader data
+    if (typeof window !== 'undefined') {
+      console.log('[Login Page] Performing one-time team leader cleanup...')
       
-      const isAdminLoggedIn = localStorage.getItem("isLoggedIn") === "true"
-      const teamLeaderSession = localStorage.getItem("teamLeaderSession")
-      const teamLeaderRole = localStorage.getItem("x-team-leader-role")
+      // Remove ALL team leader keys
+      const teamLeaderKeys = [
+        'teamLeaderSession',
+        'x-team-leader-role',
+        'x-team-leader-user-id',
+        'x-team-leader-channel'
+      ]
       
-      console.log('[Login Page] Checking existing session...')
-      console.log('[Login Page] Admin logged in:', isAdminLoggedIn)
-      console.log('[Login Page] Team leader session exists:', !!teamLeaderSession)
-      console.log('[Login Page] Team leader role:', teamLeaderRole)
-      
-      let hasValidSession = false
-      
-      // Validate admin session
-      if (isAdminLoggedIn) {
-        const username = localStorage.getItem("username")
-        const userRole = localStorage.getItem("userRole")
-        
-        // Only redirect if we have ALL required fields
-        if (username && userRole && (userRole === 'admin' || userRole === 'operations' || userRole === 'packer')) {
-          console.log('[Login Page] Valid admin session found, redirecting...')
-          hasValidSession = true
-          
-          // Redirect based on role
-          if (userRole === 'packer') {
-            router.push('/packer/dashboard')
-          } else {
-            router.push('/dashboard')
-          }
-          return
-        } else {
-          // Invalid or incomplete session, clear it
-          console.log('[Login Page] Invalid admin session, clearing...')
-          localStorage.removeItem("isLoggedIn")
-          localStorage.removeItem("username")
-          localStorage.removeItem("userRole")
-          localStorage.removeItem("displayName")
-          localStorage.removeItem("currentUser")
+      teamLeaderKeys.forEach(key => {
+        if (localStorage.getItem(key)) {
+          console.log('[Login Page] Removing old team leader key:', key)
+          localStorage.removeItem(key)
         }
+      })
+      
+      // DEBUG: Check ALL localStorage keys
+      const allKeys = Object.keys(localStorage)
+      console.log('[Login Page] ALL localStorage keys on mount:', allKeys)
+      
+      // Check specific keys
+      const remainingKeys = {
+        teamLeaderSession: localStorage.getItem('teamLeaderSession'),
+        'x-team-leader-role': localStorage.getItem('x-team-leader-role'),
+        'x-team-leader-user-id': localStorage.getItem('x-team-leader-user-id'),
+        'x-team-leader-channel': localStorage.getItem('x-team-leader-channel'),
+        isLoggedIn: localStorage.getItem('isLoggedIn'),
+        username: localStorage.getItem('username'),
+        userRole: localStorage.getItem('userRole')
       }
-      
-      // Validate team leader session
-      if (teamLeaderSession && teamLeaderRole === 'team_leader') {
-        try {
-          const session = JSON.parse(teamLeaderSession)
-          
-          // Strict validation: Check ALL required fields
-          if (session.userId && session.assignedChannel && session.username && session.timestamp) {
-            // Check session expiry (24 hours)
-            const now = Date.now()
-            const twentyFourHours = 24 * 60 * 60 * 1000
-            
-            if (now - session.timestamp > twentyFourHours) {
-              console.log('[Login Page] Team leader session expired, clearing...')
-              localStorage.removeItem('teamLeaderSession')
-              localStorage.removeItem('x-team-leader-user-id')
-              localStorage.removeItem('x-team-leader-channel')
-              localStorage.removeItem('x-team-leader-role')
-            } else {
-              console.log('[Login Page] Valid team leader session found, redirecting to /team-leader/dashboard')
-              hasValidSession = true
-              router.push('/team-leader/dashboard')
-              return
-            }
-          } else {
-            // Invalid session structure, clear it
-            console.log('[Login Page] Invalid team leader session structure, clearing...')
-            localStorage.removeItem('teamLeaderSession')
-            localStorage.removeItem('x-team-leader-user-id')
-            localStorage.removeItem('x-team-leader-channel')
-            localStorage.removeItem('x-team-leader-role')
-          }
-        } catch (error) {
-          // Corrupted session data, clear it
-          console.log('[Login Page] Corrupted team leader session, clearing...', error)
-          localStorage.removeItem('teamLeaderSession')
-          localStorage.removeItem('x-team-leader-user-id')
-          localStorage.removeItem('x-team-leader-channel')
-          localStorage.removeItem('x-team-leader-role')
-        }
-      }
-      
-      // If we reach here, no valid session was found
-      // Clear any remaining session fragments
-      if (!hasValidSession) {
-        console.log('[Login Page] No valid session found, ensuring clean state...')
-        
-        // Clear any orphaned session data
-        if (localStorage.getItem('teamLeaderSession') || localStorage.getItem('x-team-leader-role')) {
-          console.log('[Login Page] Clearing orphaned team leader session data...')
-          localStorage.removeItem('teamLeaderSession')
-          localStorage.removeItem('x-team-leader-user-id')
-          localStorage.removeItem('x-team-leader-channel')
-          localStorage.removeItem('x-team-leader-role')
-        }
-        
-        if (localStorage.getItem('isLoggedIn')) {
-          console.log('[Login Page] Clearing orphaned admin session data...')
-          localStorage.removeItem("isLoggedIn")
-          localStorage.removeItem("username")
-          localStorage.removeItem("userRole")
-          localStorage.removeItem("displayName")
-          localStorage.removeItem("currentUser")
-        }
-      }
-    } catch (error) {
-      console.error('[Login Page] Error accessing localStorage:', error)
-      // Clear all sessions on error to prevent infinite loops
-      console.log('[Login Page] Clearing all localStorage due to error...')
-      localStorage.clear()
+      console.log('[Login Page] Remaining keys after cleanup:', remainingKeys)
     }
-  }, [router])
+    
+    // Check for logout marker in cookie
+    const hasLogoutMarker = document.cookie.includes('__logout_marker__=true')
+    console.log('[Login Page] Logout marker in cookie:', hasLogoutMarker)
+    
+    // Check if user just logged out
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const logoutParam = urlParams.get('logout')
+      
+      if (logoutParam || hasLogoutMarker) {
+        console.log('[Login Page] Logout detected (param or marker), clearing everything...')
+        
+        // Clear the logout marker cookie
+        document.cookie = '__logout_marker__=; path=/; max-age=0'
+        
+        // AGGRESSIVE CLEARING
+        try {
+          // Clear localStorage
+          const localKeys = Object.keys(localStorage)
+          console.log('[Login Page] LocalStorage keys before clear:', localKeys)
+          
+          localKeys.forEach(key => {
+            try {
+              localStorage.removeItem(key)
+              delete localStorage[key]
+            } catch (e) {
+              console.error('[Login Page] Error removing key:', key, e)
+            }
+          })
+          
+          try {
+            localStorage.clear()
+          } catch (e) {
+            console.error('[Login Page] localStorage.clear() error:', e)
+          }
+          
+          const remaining = Object.keys(localStorage)
+          console.log('[Login Page] LocalStorage keys after clear:', remaining)
+          
+          if (remaining.length > 0) {
+            console.error('[Login Page] WARNING: localStorage not fully cleared!', remaining)
+          }
+          
+          // Clear sessionStorage
+          sessionStorage.clear()
+          console.log('[Login Page] SessionStorage cleared')
+          
+        } catch (error) {
+          console.error('[Login Page] Error clearing storage:', error)
+        }
+        
+        // Clean up URL
+        if (logoutParam) {
+          window.history.replaceState({}, '', '/')
+          console.log('[Login Page] URL cleaned')
+        }
+      }
+    }
+  }, [])
 
-  // Fetch channels when staff role is selected
+  // Fetch channels when operations role is selected
   useEffect(() => {
-    if (selectedRole === 'staff') {
+    if (selectedRole === 'operations') {
       const fetchChannels = async () => {
         setChannelsLoading(true)
         try {
@@ -259,45 +238,7 @@ export default function EnterpriseLoginPage() {
         }
       }
 
-      // Staff/Team Leader login
-      if (formData.role === 'staff') {
-        if (!selectedChannel) {
-          throw new Error("Please select a sales channel")
-        }
-
-        const response = await fetch('/api/auth/team-leader-login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            channel: selectedChannel,
-            password: formData.password
-          })
-        })
-
-        const data = await response.json()
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Invalid channel or credentials')
-        }
-
-        const sessionWithTimestamp = {
-          ...data.sessionData,
-          timestamp: data.sessionData.timestamp || Date.now()
-        }
-        
-        setTeamLeaderSession(sessionWithTimestamp)
-
-        localStorage.setItem('x-team-leader-user-id', data.user.id)
-        localStorage.setItem('x-team-leader-channel', data.user.assignedChannel)
-        localStorage.setItem('x-team-leader-role', data.user.role)
-
-        await new Promise(resolve => setTimeout(resolve, 100))
-        
-        router.push('/team-leader/dashboard')
-        return
-      }
+      // Staff/Team Leader role removed - no longer supported
 
       // Admin login
       const data = await apiPost("/api/accounts", {

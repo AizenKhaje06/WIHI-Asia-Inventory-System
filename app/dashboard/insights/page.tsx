@@ -14,6 +14,8 @@ import type { ABCAnalysis, InventoryTurnover, PredictiveAnalytics } from "@/lib/
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { apiGet } from "@/lib/api-client"
+import { getCurrentUserRole } from '@/lib/role-utils'
+import { getCurrentUser } from '@/lib/auth'
 
 export default function InsightsPage() {
   const [abcAnalysis, setAbcAnalysis] = useState<ABCAnalysis[]>([])
@@ -26,6 +28,12 @@ export default function InsightsPage() {
   const [returnAnalytics, setReturnAnalytics] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("abc")
+  
+  // Role detection
+  const userRole = getCurrentUserRole()
+  const isTeamLeader = false // Team leader role removed
+  const currentUser = getCurrentUser()
+  const teamLeaderChannel = null
   
   // Global Sales Channel Filter
   const [salesChannelFilter, setSalesChannelFilter] = useState("all")
@@ -306,12 +314,16 @@ export default function InsightsPage() {
           </p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
+          <Select 
+            value={salesChannelFilter} 
+            onValueChange={setSalesChannelFilter}
+            disabled={isTeamLeader} // Disable for team leaders
+          >
             <SelectTrigger className="h-9 w-full sm:w-[180px] border-slate-300 dark:border-slate-700">
-              <SelectValue placeholder="All Channels" />
+              <SelectValue placeholder={isTeamLeader ? teamLeaderChannel : "All Channels"} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Channels</SelectItem>
+              {!isTeamLeader && <SelectItem value="all">All Channels</SelectItem>}
               <SelectItem value="Shopee">Shopee</SelectItem>
               <SelectItem value="Lazada">Lazada</SelectItem>
               <SelectItem value="Facebook">Facebook</SelectItem>
