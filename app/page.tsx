@@ -234,11 +234,46 @@ export default function EnterpriseLoginPage() {
           router.push('/packer/dashboard')
           return
         } else {
-          throw new Error("Invalid packer credentials")
+          throw new Error("Invalid packer credentials or account is not a packer")
         }
       }
 
-      // Staff/Team Leader role removed - no longer supported
+      // Operations login
+      if (formData.role === 'operations') {
+        const data = await apiPost("/api/accounts", {
+          action: "validate",
+          username: formData.username,
+          password: formData.password
+        })
+
+        if (data.success && data.account && data.account.role === 'operations') {
+          if (typeof window !== 'undefined') {
+            if (formData.rememberDevice) {
+              localStorage.setItem("rememberedUsername", formData.username)
+            } else {
+              localStorage.removeItem("rememberedUsername")
+            }
+            
+            localStorage.setItem("isLoggedIn", "true")
+            localStorage.setItem("username", data.account.username)
+            localStorage.setItem("userRole", "operations")
+            localStorage.setItem("displayName", data.account.displayName)
+            
+            localStorage.setItem("currentUser", JSON.stringify({
+              username: data.account.username,
+              role: "operations",
+              displayName: data.account.displayName,
+              email: data.account.email || '',
+              phone: data.account.phone || ''
+            }))
+          }
+          
+          router.push('/dashboard/operations')
+          return
+        } else {
+          throw new Error("Invalid operations credentials or account is not operations staff")
+        }
+      }
 
       // Admin login
       const data = await apiPost("/api/accounts", {
@@ -247,7 +282,7 @@ export default function EnterpriseLoginPage() {
         password: formData.password
       })
 
-      if (data.success && data.account) {
+      if (data.success && data.account && data.account.role === 'admin') {
         if (typeof window !== 'undefined') {
           if (formData.rememberDevice) {
             localStorage.setItem("rememberedUsername", formData.username)
@@ -257,22 +292,21 @@ export default function EnterpriseLoginPage() {
           
           localStorage.setItem("isLoggedIn", "true")
           localStorage.setItem("username", data.account.username)
-          localStorage.setItem("userRole", data.account.role)
+          localStorage.setItem("userRole", "admin")
           localStorage.setItem("displayName", data.account.displayName)
           
           localStorage.setItem("currentUser", JSON.stringify({
             username: data.account.username,
-            role: data.account.role,
+            role: "admin",
             displayName: data.account.displayName,
             email: data.account.email || '',
             phone: data.account.phone || ''
           }))
         }
         
-        const redirectPath = data.account.role === "admin" ? "/dashboard" : "/dashboard/operations"
-        router.push(redirectPath)
+        router.push('/dashboard')
       } else {
-        throw new Error(data.error || "Invalid username or password. Please try again.")
+        throw new Error("Invalid admin credentials or account is not an admin")
       }
     } catch (error) {
       console.error("Login error:", error)
