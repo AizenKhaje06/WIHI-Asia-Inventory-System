@@ -93,7 +93,7 @@ const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0): 
   },
   {
     section: "CRM",
-    items: [{ name: "Customers", href: "/dashboard/customers", icon: Users }],
+    items: [{ name: "Business Contacts", href: "/dashboard/business-contacts", icon: Users }],
   },
   {
     section: "System",

@@ -49,6 +49,21 @@ export interface Transaction {
   cancelledAt?: string
 }
 
+export interface BusinessContact {
+  id: string
+  name: string // Company name or individual name
+  companyName?: string
+  contactPerson?: string
+  contactType: 'supplier' | 'distributor' | 'reseller'
+  position?: string
+  email?: string
+  phone?: string
+  address?: string
+  notes?: string
+  createdAt: string
+}
+
+// Legacy Customer interface - kept for backward compatibility
 export interface Customer {
   id: string
   name: string
