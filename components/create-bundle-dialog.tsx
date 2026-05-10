@@ -367,14 +367,16 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold">Store *</Label>
                   <Select value={formData.store} onValueChange={(value) => setFormData({...formData, store: value})}>
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-11 w-full">
                       <SelectValue placeholder="Select store" />
                     </SelectTrigger>
                     <SelectContent>
                       {filteredStores.length > 0 ? (
                         filteredStores.map(store => (
                           <SelectItem key={store.id} value={store.store_name}>
-                            {store.store_name} {store.sales_channel && `(${store.sales_channel})`}
+                            <span className="truncate">
+                              {store.store_name} {store.sales_channel && `(${store.sales_channel})`}
+                            </span>
                           </SelectItem>
                         ))
                       ) : (
@@ -458,7 +460,7 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
                     className={cn(
                       "relative w-full h-11 border rounded-lg bg-white dark:bg-slate-950 cursor-pointer transition-all",
                       searchOpen 
-                        ? "border-purple-500 ring-2 ring-purple-500/20" 
+                        ? "border-purple-500" 
                         : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
                     )}
                     onClick={() => setSearchOpen(!searchOpen)}
@@ -477,7 +479,8 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
                           setSearchOpen(true)
                         }}
                         placeholder={`Search products... (${items.length} available)`}
-                        className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500"
+                        className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-0 focus:border-0"
+                        style={{ boxShadow: 'none' }}
                       />
                       <ChevronDown className={cn(
                         "h-4 w-4 text-slate-400 flex-shrink-0 transition-transform",

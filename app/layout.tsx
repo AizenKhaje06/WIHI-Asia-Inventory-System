@@ -10,18 +10,30 @@ import { Toaster } from "@/components/ui/sonner"
 import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
-  title: "StockSync - Professional Inventory Management System",
+  title: "Vertex - Professional Inventory Management System",
   description: "Enterprise-grade inventory management with real-time analytics, Google Sheets integration, and offline-first architecture",
   generator: "Next.js",
   manifest: "/manifest.json",
   keywords: ["inventory", "management", "stock", "analytics", "POS", "enterprise"],
-  authors: [{ name: "StockSync Team" }],
-  creator: "StockSync",
-  publisher: "StockSync",
+  authors: [{ name: "Vertex Team" }],
+  creator: "Vertex",
+  publisher: "Vertex",
+  icons: {
+    icon: [
+      { url: "/Vertex-icon-3.png", sizes: "32x32", type: "image/png" },
+      { url: "/Vertex-icon-3.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [
+      { url: "/Vertex-icon-3.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      { rel: "icon", url: "/Vertex-icon-3.png" },
+    ],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "StockSync",
+    title: "Vertex",
   },
   formatDetection: {
     telephone: false,
@@ -29,20 +41,20 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    title: "StockSync - Professional Inventory Management",
+    title: "Vertex - Professional Inventory Management",
     description: "Enterprise-grade inventory management system",
-    siteName: "StockSync",
+    siteName: "Vertex",
   },
   twitter: {
     card: "summary_large_image",
-    title: "StockSync - Professional Inventory Management",
+    title: "Vertex - Professional Inventory Management",
     description: "Enterprise-grade inventory management system",
   },
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
-    "apple-mobile-web-app-title": "StockSync",
+    "apple-mobile-web-app-title": "Vertex",
     "msapplication-TileColor": "#3b82f6",
     "msapplication-config": "/browserconfig.xml",
   },
@@ -67,10 +79,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
       <head>
-        {/* Favicon */}
-        <link rel="icon" href="/System Logo.png" sizes="any" />
-        <link rel="icon" href="/System Logo.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/System Logo.png" />
+        {/* Favicon - Using Vertex Icon */}
+        <link rel="icon" href="/Vertex-icon-3.png" sizes="any" />
+        <link rel="icon" href="/Vertex-icon-3.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/Vertex-icon-3.png" />
       </head>
       <body className={`min-h-screen w-full overflow-x-hidden antialiased ${GeistSans.variable} ${GeistMono.variable} font-sans`} suppressHydrationWarning>
         <ErrorBoundary>

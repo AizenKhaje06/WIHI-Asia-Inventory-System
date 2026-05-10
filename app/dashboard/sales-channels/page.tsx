@@ -38,6 +38,7 @@ import {
   formatNumberForExport,
   formatPercentageForExport
 } from "@/lib/export-utils"
+import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
 import { getCurrentUserRole } from '@/lib/role-utils'
 
 interface Department {
@@ -77,8 +78,8 @@ export default function SalesChannelsPage() {
   const router = useRouter()
   const [data, setData] = useState<DepartmentsData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
+  const [startDate, setStartDate] = useState<Date | null>(null)
+  const [endDate, setEndDate] = useState<Date | null>(null)
 
   // Role detection
   const userRole = getCurrentUserRole()
@@ -90,8 +91,8 @@ export default function SalesChannelsPage() {
     const start = new Date()
     start.setDate(start.getDate() - 30)
     
-    setStartDate(start.toISOString().split('T')[0])
-    setEndDate(end.toISOString().split('T')[0])
+    setStartDate(start)
+    setEndDate(end)
   }, [])
 
   useEffect(() => {
@@ -104,8 +105,8 @@ export default function SalesChannelsPage() {
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      if (startDate) params.append('startDate', startDate)
-      if (endDate) params.append('endDate', endDate)
+      if (startDate) params.append('startDate', startDate.toISOString().split('T')[0])
+      if (endDate) params.append('endDate', endDate.toISOString().split('T')[0])
 
       const result = await apiGet<DepartmentsData>(`/api/departments?${params}`)
       setData(result)
@@ -151,8 +152,8 @@ export default function SalesChannelsPage() {
     }
 
     const filters = []
-    if (startDate) filters.push({ label: 'Start Date', value: new Date(startDate).toLocaleDateString() })
-    if (endDate) filters.push({ label: 'End Date', value: new Date(endDate).toLocaleDateString() })
+    if (startDate) filters.push({ label: 'Start Date', value: startDate.toLocaleDateString() })
+    if (endDate) filters.push({ label: 'End Date', value: endDate.toLocaleDateString() })
 
     const summary = [
       { label: 'Total Sales Channels', value: formatNumberForExport(data.departments.length) },
@@ -391,40 +392,27 @@ export default function SalesChannelsPage() {
         </div>
       </div>
 
-      {/* Date Filter */}
+      {/* Date Filter - Enterprise Style */}
       <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900">
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-            <div>
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
               <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
-                Start Date
+                Date Range
               </Label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="border-slate-200 dark:border-slate-700 w-full"
+              <EnterpriseDateRangePicker
+                startDate={startDate}
+                endDate={endDate}
+                onDateChange={(start, end) => {
+                  setStartDate(start)
+                  setEndDate(end)
+                  // Auto-fetch when dates change
+                  if (start && end) {
+                    fetchData()
+                  }
+                }}
+                className="w-full"
               />
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
-                End Date
-              </Label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="border-slate-200 dark:border-slate-700 w-full"
-              />
-            </div>
-            <div className="flex items-end">
-              <Button 
-                onClick={fetchData} 
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Apply Filter
-              </Button>
             </div>
           </div>
         </CardContent>

@@ -816,6 +816,247 @@
           ]
         },
         {
+          "name": "Business Contacts",
+          "item": [
+            {
+              "name": "Get All Business Contacts",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/business-contacts",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "business-contacts"]
+                },
+                "description": "Get all business contacts (suppliers, customers, partners) - requires authentication"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: Response should be an array",
+                      "pm.test('Response is an array', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an('array');",
+                      "});",
+                      "",
+                      "// Test 4: If contacts exist, validate structure",
+                      "pm.test('Contact structure is valid', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.length > 0) {",
+                      "        const contact = jsonData[0];",
+                      "        pm.expect(contact).to.have.property('id');",
+                      "        pm.expect(contact).to.have.property('name');",
+                      "        pm.expect(contact).to.have.property('contact_type');",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 5: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create Business Contact",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Test Supplier Co.\",\n  \"companyName\": \"Test Supplier Company Ltd.\",\n  \"contactPerson\": \"John Doe\",\n  \"contactType\": \"supplier\",\n  \"position\": \"Sales Manager\",\n  \"email\": \"john.doe@testsupplier.com\",\n  \"phone\": \"+63 917 123 4567\",\n  \"address\": \"123 Business St, Makati City, Metro Manila\",\n  \"notes\": \"Primary supplier for electronics\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/business-contacts",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "business-contacts"]
+                },
+                "description": "Create new business contact (requires admin role)"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200 or 201",
+                      "pm.test('Status code is 200 or 201', function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: Response has required fields",
+                      "pm.test('Response has required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('id');",
+                      "    pm.expect(jsonData).to.have.property('name');",
+                      "    pm.expect(jsonData).to.have.property('contact_type');",
+                      "});",
+                      "",
+                      "// Test 4: Contact type is valid",
+                      "pm.test('Contact type is valid', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.contact_type).to.be.oneOf(['supplier', 'customer', 'partner']);",
+                      "});",
+                      "",
+                      "// Test 5: Email format is valid (if provided)",
+                      "pm.test('Email format is valid', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.email) {",
+                      "        pm.expect(jsonData.email).to.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/);",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 6: Created timestamp exists",
+                      "pm.test('Created timestamp exists', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('created_at');",
+                      "});",
+                      "",
+                      "// Test 7: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create Business Contact - Missing Required Fields",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"companyName\": \"Incomplete Contact\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/business-contacts",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "business-contacts"]
+                },
+                "description": "Test validation - should fail without required fields"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 400 or 500",
+                      "pm.test('Status code indicates error', function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error message",
+                      "pm.test('Response has error message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create Business Contact - Invalid Contact Type",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Invalid Type Contact\",\n  \"contactType\": \"invalid_type\",\n  \"phone\": \"+63 917 123 4567\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/business-contacts",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "business-contacts"]
+                },
+                "description": "Test validation - should fail with invalid contact type"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should indicate error",
+                      "pm.test('Status code indicates error', function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error message",
+                      "pm.test('Response has error message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "Bundles (NEW - TO BE IMPLEMENTED)",
           "item": [
             {

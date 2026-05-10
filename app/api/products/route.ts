@@ -16,18 +16,10 @@ export const GET = withAuth(async (request, { user }) => {
       .select('*')
       .order('name', { ascending: true })
 
-    // Filter by sales channel for team leaders
-    if (user.role === 'team_leader') {
-      const channel = request.headers.get('x-team-leader-channel')
-      console.log('[Products API] Team leader detected, filtering by channel:', channel)
-      
-      if (channel) {
-        // Use salesChannel (camelCase) as defined in the view
-        query = query.eq('salesChannel', channel)
-      }
-    }
+    // Team leader role removed - no channel filtering needed
+    // All users see all products
 
-    // Apply other filters
+    // Apply filters
     if (search) {
       query = query.or(`name.ilike.%${search}%,category.ilike.%${search}%,sku.ilike.%${search}%`)
     }

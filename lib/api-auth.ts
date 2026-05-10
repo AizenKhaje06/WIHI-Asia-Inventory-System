@@ -40,31 +40,21 @@ export const AuthErrors = {
 /**
  * Check if user is authenticated
  * This reads from the request headers (set by client)
- * Supports both admin and team leader authentication
  */
 export function getAuthUser(request: NextRequest): { username: string; role: UserRole; displayName: string } | null {
   try {
-    // Check for team leader headers first
-    const teamLeaderUserId = request.headers.get('x-team-leader-user-id')
-    const teamLeaderRole = request.headers.get('x-team-leader-role')
-    const teamLeaderChannel = request.headers.get('x-team-leader-channel')
-
-    if (teamLeaderUserId && teamLeaderRole === 'team_leader') {
-      // Get display name from team leader session if available
-      const displayName = teamLeaderUserId.replace('staff_', '').replace('_', ' ').toUpperCase()
-      return { 
-        username: teamLeaderUserId, 
-        role: 'team_leader' as UserRole, 
-        displayName: displayName || teamLeaderUserId 
-      }
-    }
-
-    // Check for admin/operations headers
+    // Check for admin/operations/packer headers
     const username = request.headers.get('x-user-username')
     const role = request.headers.get('x-user-role') as UserRole
     const displayName = request.headers.get('x-user-display-name')
 
     if (!username || !role) {
+      return null
+    }
+
+    // Validate role is one of the allowed roles
+    if (!['admin', 'operations', 'packer'].includes(role)) {
+      console.warn('[API Auth] Invalid role:', role)
       return null
     }
 
@@ -149,26 +139,12 @@ export function requirePermission(request: NextRequest, path: string):
 /**
  * Middleware helper to add auth headers to requests
  * Call this from your client-side code before making API requests
- * Supports both admin and team leader authentication
  */
 export function addAuthHeaders(headers: Headers = new Headers()): Headers {
   if (typeof window === 'undefined') return headers
 
   try {
-    // Check for team leader session first
-    const teamLeaderRole = localStorage.getItem('x-team-leader-role')
-    if (teamLeaderRole === 'team_leader') {
-      const userId = localStorage.getItem('x-team-leader-user-id')
-      const channel = localStorage.getItem('x-team-leader-channel')
-      
-      if (userId) headers.set('x-team-leader-user-id', userId)
-      if (teamLeaderRole) headers.set('x-team-leader-role', teamLeaderRole)
-      if (channel) headers.set('x-team-leader-channel', channel)
-      
-      return headers
-    }
-
-    // Check for admin/operations session
+    // Get user authentication from localStorage
     const username = localStorage.getItem('username')
     const role = localStorage.getItem('userRole')
     const displayName = localStorage.getItem('displayName')

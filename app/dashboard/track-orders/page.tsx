@@ -18,14 +18,16 @@ import * as XLSX from 'xlsx'
 import { 
   Search, Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, 
   User, Phone, Mail, MapPin, AlertCircle, PackageCheck, Ban, AlertTriangle, RotateCcw,
-  FileSpreadsheet, FileDown, Download, Trash2, ChevronDown, X
+  FileSpreadsheet, FileDown, Download, Trash2, ChevronDown, X, Calendar
 } from 'lucide-react'
 import { formatCurrency, cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { apiGet } from '@/lib/api-client'
 import { BrandLoader } from '@/components/ui/brand-loader'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
+import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
 import { getCurrentUserRole, getAuthHeaders } from '@/lib/role-utils'
+import { format } from 'date-fns'
 
 interface Order {
   id: string
@@ -1682,16 +1684,16 @@ export default function TrackOrdersPage() {
               </Select>
             </div>
 
-            {/* Date Range Picker */}
-            <div className="w-[300px]">
-              <DateRangePicker
+            {/* Date Range Picker - Enterprise Style */}
+            <div className="w-auto">
+              <EnterpriseDateRangePicker
                 startDate={startDate}
                 endDate={endDate}
                 onDateChange={(start, end) => {
                   setStartDate(start)
                   setEndDate(end)
                 }}
-                className="h-12 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all"
+                className="h-12 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all shadow-sm"
               />
             </div>
 
@@ -1736,8 +1738,7 @@ export default function TrackOrdersPage() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[90px]">Order #</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[100px]">Date & Time</th>
+                    <th className="py-3 px-4 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[150px]">Date & Time</th>
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[110px]">Channel</th>
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[180px]">Store</th>
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 min-w-[250px]">Product</th>
@@ -1755,24 +1756,17 @@ export default function TrackOrdersPage() {
                       key={order.id} 
                       className="group hover:bg-blue-50 dark:hover:bg-slate-800/50 transition-all duration-200"
                     >
-                      <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300">
-                          #{order.id.slice(-6)}
-                        </div>
-                      </td>
-                      <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-[11px] font-medium text-slate-900 dark:text-white whitespace-nowrap">
-                          {new Date(order.orderDate).toLocaleDateString('en-US', { 
-                            month: '2-digit', 
-                            day: '2-digit', 
-                            year: '2-digit'
-                          })}
-                          {' '}
-                          {new Date(order.orderDate).toLocaleTimeString('en-US', { 
-                            hour: '2-digit', 
-                            minute: '2-digit', 
-                            hour12: false
-                          })}
+                      <td className="py-3 px-4 border-r border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-3">
+                          <Calendar className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                          <div>
+                            <span className="text-[11px] font-medium text-slate-900 dark:text-white block">
+                              {format(new Date(order.orderDate), 'MMM dd, yyyy')}
+                            </span>
+                            <span className="text-[9px] text-slate-500 dark:text-slate-400 block mt-0.5">
+                              {format(new Date(order.orderDate), 'hh:mm a')}
+                            </span>
+                          </div>
                         </div>
                       </td>
                       <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">

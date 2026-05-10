@@ -458,6 +458,8 @@ export default function BusinessContactsPage() {
                       <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Contact Person</th>
                       <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Type</th>
                       <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Contact Info</th>
+                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Address</th>
+                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Notes</th>
                       {isAdmin && (
                         <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider">Actions</th>
                       )}
@@ -499,6 +501,16 @@ export default function BusinessContactsPage() {
                                 {contact.phone}
                               </div>
                             )}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="text-xs text-slate-600 dark:text-slate-400 max-w-[200px] truncate">
+                            {contact.address || "-"}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="text-xs text-slate-600 dark:text-slate-400 max-w-[200px] truncate">
+                            {contact.notes || "-"}
                           </div>
                         </td>
                         {isAdmin && (
@@ -654,15 +666,6 @@ export default function BusinessContactsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="companyName">Company Name</Label>
-                <Input
-                  id="companyName"
-                  value={formData.companyName}
-                  onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                  placeholder="Optional if same as name"
-                />
-              </div>
-              <div>
                 <Label htmlFor="contactPerson">Contact Person</Label>
                 <Input
                   id="contactPerson"
@@ -671,15 +674,15 @@ export default function BusinessContactsPage() {
                   placeholder="John Doe"
                 />
               </div>
-            </div>
-            <div>
-              <Label htmlFor="position">Position/Title</Label>
-              <Input
-                id="position"
-                value={formData.position}
-                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                placeholder="Sales Manager"
-              />
+              <div>
+                <Label htmlFor="position">Position/Title</Label>
+                <Input
+                  id="position"
+                  value={formData.position}
+                  onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                  placeholder="Sales Manager"
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -769,14 +772,6 @@ export default function BusinessContactsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="edit-companyName">Company Name</Label>
-                <Input
-                  id="edit-companyName"
-                  value={formData.companyName}
-                  onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                />
-              </div>
-              <div>
                 <Label htmlFor="edit-contactPerson">Contact Person</Label>
                 <Input
                   id="edit-contactPerson"
@@ -784,14 +779,14 @@ export default function BusinessContactsPage() {
                   onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
                 />
               </div>
-            </div>
-            <div>
-              <Label htmlFor="edit-position">Position/Title</Label>
-              <Input
-                id="edit-position"
-                value={formData.position}
-                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-              />
+              <div>
+                <Label htmlFor="edit-position">Position/Title</Label>
+                <Input
+                  id="edit-position"
+                  value={formData.position}
+                  onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>

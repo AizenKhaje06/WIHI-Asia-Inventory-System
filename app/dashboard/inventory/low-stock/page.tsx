@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Search, Pencil, Trash2, PackagePlus, Filter, AlertTriangle, Package, TrendingDown, DollarSign, CheckCircle2, X, ArrowUpDown, AlertCircle } from "lucide-react"
+import { Search, Pencil, Trash2, PackagePlus, AlertTriangle, Package, TrendingDown, DollarSign, CheckCircle2, X, AlertCircle } from "lucide-react"
 import type { InventoryItem } from "@/lib/types"
 import { cn, formatCurrency, formatNumber } from "@/lib/utils"
 import { EditItemDialog } from "@/components/edit-item-dialog"
@@ -21,12 +21,6 @@ export default function LowStockPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
   const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
   const [search, setSearch] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [salesChannelFilter, setSalesChannelFilter] = useState("all")
-  const [priceFilter, setPriceFilter] = useState("all")
-  const [stockRoomFilter, setStockRoomFilter] = useState("all")
-  const [urgencyFilter, setUrgencyFilter] = useState("all")
-  const [sortBy, setSortBy] = useState("urgency-desc")
   const [loading, setLoading] = useState(true)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
@@ -111,50 +105,15 @@ export default function LowStockPage() {
       )
     }
 
-    if (categoryFilter && categoryFilter !== "all") {
-      filtered = filtered.filter((item) => item.category === categoryFilter)
-    }
-
-    if (salesChannelFilter && salesChannelFilter !== "all") {
-      filtered = filtered.filter((item) => item.salesChannel === salesChannelFilter)
-    }
-
-    if (priceFilter && priceFilter !== "all") {
-      if (priceFilter === "low") {
-        filtered = filtered.filter((item) => item.sellingPrice < 100)
-      } else if (priceFilter === "medium") {
-        filtered = filtered.filter((item) => item.sellingPrice >= 100 && item.sellingPrice < 500)
-      } else if (priceFilter === "high") {
-        filtered = filtered.filter((item) => item.sellingPrice >= 500)
-      }
-    }
-
-    if (stockRoomFilter && stockRoomFilter !== "all") {
-      filtered = filtered.filter((item) => item.store === stockRoomFilter)
-    }
-
-    if (urgencyFilter && urgencyFilter !== "all") {
-      filtered = filtered.filter((item) => {
-        const urgency = getUrgencyLevel(item)
-        return urgency === urgencyFilter
-      })
-    }
-
-    // Apply sorting
-    if (sortBy === "urgency-desc") {
-      filtered.sort((a, b) => {
-        const urgencyA = a.quantity / a.reorderLevel
-        const urgencyB = b.quantity / b.reorderLevel
-        return urgencyA - urgencyB
-      })
-    } else if (sortBy === "name-asc") {
-      filtered.sort((a, b) => a.name.localeCompare(b.name))
-    } else if (sortBy === "quantity-asc") {
-      filtered.sort((a, b) => a.quantity - b.quantity)
-    }
+    // Sort by urgency (most urgent first)
+    filtered.sort((a, b) => {
+      const urgencyA = a.quantity / a.reorderLevel
+      const urgencyB = b.quantity / b.reorderLevel
+      return urgencyA - urgencyB
+    })
 
     setFilteredItems(filtered)
-  }, [search, categoryFilter, salesChannelFilter, priceFilter, stockRoomFilter, urgencyFilter, sortBy, items])
+  }, [search, items])
 
   async function fetchItems() {
     try {
@@ -230,45 +189,12 @@ export default function LowStockPage() {
     }
   }
 
-  function clearAllFilters() {
-    setSearch("")
-    setCategoryFilter("all")
-    setSalesChannelFilter("all")
-    setPriceFilter("all")
-    setStockRoomFilter("all")
-    setUrgencyFilter("all")
-    setSortBy("urgency-desc")
-  }
-
-  // Define constants
-  const categories = [
-    "Electronics & Gadgets",
-    "Fashion & Apparel",
-    "Health, Beauty & Personal Care",
-    "Home & Living",
-    "Sports & Outdoors",
-    "Baby, Kids & Toys",
-    "Groceries & Pets",
-    "Automotive & Industrial",
-    "Stationery & Books",
-    "Other / Miscellaneous",
-  ]
-
   const lowStockItems = items.filter((item) => item.quantity <= item.reorderLevel && item.quantity > 0)
   const criticalItems = lowStockItems.filter(item => {
     const percentage = (item.quantity / item.reorderLevel) * 100
     return percentage <= 25
   })
   const totalValueAtRisk = lowStockItems.reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0)
-
-  const activeFiltersCount = [
-    categoryFilter !== "all",
-    salesChannelFilter !== "all",
-    priceFilter !== "all",
-    stockRoomFilter !== "all",
-    urgencyFilter !== "all",
-    search !== ""
-  ].filter(Boolean).length
 
   if (loading) {
     return (
@@ -345,131 +271,35 @@ export default function LowStockPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="px-4">
-      <Card className="mb-4 border-slate-200 dark:border-slate-800 shadow-sm">
-        <CardContent className="p-4">
-          <div className="space-y-3">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder="Search products..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-11 h-12 text-sm border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-800 transition-colors"
-              />
-            </div>
-
-            {/* Filters Grid - 2 columns on mobile, 5 columns on desktop */}
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-2.5">
-              <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
-                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <SelectValue placeholder="Urgency" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Levels</SelectItem>
-                  <SelectItem value="critical">🔴 Critical</SelectItem>
-                  <SelectItem value="low">🟡 Low</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                </SelectContent>
-              </Select>
-
-              <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <SelectValue placeholder="Sales Channel" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Channels</SelectItem>
-                  <SelectItem value="Shopee">Shopee</SelectItem>
-                  <SelectItem value="Lazada">Lazada</SelectItem>
-                  <SelectItem value="Facebook">Facebook</SelectItem>
-                  <SelectItem value="TikTok">TikTok</SelectItem>
-                  <SelectItem value="Physical Store">Physical Store</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={priceFilter} onValueChange={setPriceFilter}>
-                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <SelectValue placeholder="Price" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Prices</SelectItem>
-                  <SelectItem value="low">Low (&lt; ₱100)</SelectItem>
-                  <SelectItem value="medium">Medium (₱100-₱499)</SelectItem>
-                  <SelectItem value="high">High (≥ ₱500)</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={stockRoomFilter} onValueChange={setStockRoomFilter}>
-                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <SelectValue placeholder="Room" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Rooms</SelectItem>
-                  <SelectItem value="A">Room A</SelectItem>
-                  <SelectItem value="B">Room B</SelectItem>
-                  <SelectItem value="C">Room C</SelectItem>
-                  <SelectItem value="D">Room D</SelectItem>
-                  <SelectItem value="E">Room E</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="h-11 text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                  <div className="flex items-center gap-2">
-                    <ArrowUpDown className="h-4 w-4 text-slate-500" />
-                    <SelectValue placeholder="Sort by" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="urgency-desc">Most Urgent</SelectItem>
-                  <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                  <SelectItem value="quantity-asc">Lowest Stock</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Active Filters + Results - Enhanced */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-2">
-                {activeFiltersCount > 0 ? (
-                  <>
-                    <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-xs px-2.5 py-1 font-medium">
-                      {activeFiltersCount} active
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearAllFilters}
-                      className="h-8 px-3 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg font-medium"
-                    >
-                      <X className="h-3.5 w-3.5 mr-1" />
-                      Clear all
-                    </Button>
-                  </>
-                ) : (
-                  <span className="text-xs text-slate-500 dark:text-slate-500 font-medium">No filters</span>
-                )}
-              </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">
-                <span className="font-bold text-slate-900 dark:text-white">{filteredItems.length}</span>
-                <span className="mx-1 text-slate-400">of</span>
-                <span className="font-semibold">{lowStockItems.length}</span>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Search Bar */}
+      <div className="px-4 mb-4">
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+          <Input
+            placeholder="Search low stock products..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-12 h-14 text-base border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 shadow-sm focus:shadow-md transition-all"
+          />
+          {search && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSearch("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 p-0 text-slate-400 hover:text-slate-600"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <div className="flex items-center justify-between mt-2 px-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Showing <span className="font-bold text-slate-900 dark:text-white">{filteredItems.length}</span> of <span className="font-semibold">{lowStockItems.length}</span> items
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Sorted by urgency (most critical first)
+          </p>
+        </div>
       </div>
 
       {/* Table */}
@@ -514,8 +344,8 @@ export default function LowStockPage() {
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">All Items Well Stocked!</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
-                {search || categoryFilter !== "all" || priceFilter !== "all" || stockRoomFilter !== "all" || urgencyFilter !== "all"
-                  ? "No items match your current filters"
+                {search
+                  ? "No items match your search"
                   : "Great job! All your inventory items are above their reorder levels."}
               </p>
             </div>

@@ -423,57 +423,83 @@ export default function PackerDashboard() {
                     Custom
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700" align="start">
-                  <div className="p-4">
+                <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-2xl" align="start">
+                  <div className="p-5">
+                    {/* Header */}
+                    <div className="mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Select Date Range</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Click start date, then click end date</p>
+                    </div>
+                    
                     {/* Single Calendar with Range Selection */}
-                    <div className="space-y-3">
-                      <div className="text-center">
-                        <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">Select Date Range</label>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Click start date, then end date</p>
+                    <Calendar
+                      mode="range"
+                      selected={{ from: dateRange.from, to: dateRange.to }}
+                      onSelect={(range) => {
+                        if (range?.from) {
+                          setDateRange({
+                            from: startOfDay(range.from),
+                            to: range.to ? endOfDay(range.to) : endOfDay(range.from)
+                          })
+                          setDatePreset('custom')
+                        }
+                      }}
+                      numberOfMonths={1}
+                      showOutsideDays={false}
+                      initialFocus
+                      className="dark:text-slate-100"
+                      classNames={{
+                        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                        month: "space-y-4",
+                        caption: "flex justify-center pt-1 relative items-center",
+                        caption_label: "text-sm font-bold text-slate-900 dark:text-slate-100",
+                        nav: "space-x-1 flex items-center",
+                        nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-all",
+                        nav_button_previous: "absolute left-1",
+                        nav_button_next: "absolute right-1",
+                        table: "w-full border-collapse space-y-1",
+                        head_row: "flex",
+                        head_cell: "text-slate-500 dark:text-slate-400 rounded-md w-9 font-semibold text-[0.8rem]",
+                        row: "flex w-full mt-2",
+                        cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-slate-100 dark:[&:has([aria-selected])]:bg-slate-800",
+                        day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors flex items-center justify-center",
+                        day_selected: "bg-blue-600 text-white hover:bg-blue-700 hover:text-white focus:bg-blue-600 focus:text-white",
+                        day_today: "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold",
+                        day_outside: "text-slate-400 opacity-50",
+                        day_disabled: "text-slate-400 opacity-50",
+                        day_range_middle: "aria-selected:bg-blue-100 dark:aria-selected:bg-blue-900/40 aria-selected:text-blue-900 dark:aria-selected:text-blue-100 rounded-none",
+                        day_range_start: "rounded-l-md rounded-r-none",
+                        day_range_end: "rounded-r-md rounded-l-none",
+                        day_hidden: "invisible",
+                      }}
+                    />
+                    
+                    {/* Selected Range Display */}
+                    <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500 dark:text-slate-400 font-medium">Selected Range:</span>
+                        <span className="text-slate-900 dark:text-slate-100 font-bold">
+                          {format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d, yyyy')}
+                        </span>
                       </div>
-                      
-                      <Calendar
-                        mode="range"
-                        selected={{ from: dateRange.from, to: dateRange.to }}
-                        onSelect={(range) => {
-                          if (range?.from) {
-                            setDateRange({
-                              from: startOfDay(range.from),
-                              to: range.to ? endOfDay(range.to) : endOfDay(range.from)
-                            })
-                            setDatePreset('custom')
-                          }
-                        }}
-                        numberOfMonths={2}
-                        showOutsideDays={false}
-                        initialFocus
-                        className="dark:text-slate-100"
-                        classNames={{
-                          day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 relative",
-                          range_start: "bg-blue-600 text-white hover:bg-blue-700 hover:text-white rounded-l-md",
-                          range_end: "bg-blue-600 text-white hover:bg-blue-700 hover:text-white rounded-r-md",
-                          range_middle: "bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-100 rounded-none",
-                          today: "bg-accent text-accent-foreground",
-                        }}
-                      />
                     </div>
                     
                     {/* Action Buttons */}
-                    <div className="flex gap-2 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <div className="flex gap-2 mt-4">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => setShowDatePicker(false)}
-                        className="flex-1 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        className="flex-1 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium"
                       >
                         Cancel
                       </Button>
                       <Button
                         size="sm"
                         onClick={() => setShowDatePicker(false)}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md"
                       >
-                        Apply
+                        Apply Filter
                       </Button>
                     </div>
                   </div>

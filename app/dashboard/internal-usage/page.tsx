@@ -134,10 +134,8 @@ export default function InternalUsagePage() {
       const name = currentUser.displayName || currentUser.username || 'Unknown User'
       setStaffName(name)
       
-      // Auto-set sales channel filter for team leaders
-      if (currentUser.role === 'team_leader' && currentUser.sales_channel) {
-        setFilterSalesChannel(currentUser.sales_channel)
-      }
+      // Team leader role removed - no auto-filter needed
+      // All users see all sales channels
     } else {
       setStaffName('Unknown User')
     }
@@ -1237,21 +1235,9 @@ export default function InternalUsagePage() {
                           <p className="text-lg font-bold text-slate-900 dark:text-white mb-1">
                             ₱{item.costPrice.toFixed(2)}
                           </p>
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                              {item.category}
-                            </p>
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              {item.salesChannel && (
-                                <span className="text-[9px] font-semibold text-slate-600 dark:text-slate-300 bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 rounded whitespace-nowrap">
-                                  {item.salesChannel}
-                                </span>
-                              )}
-                              <span className="text-[9px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded whitespace-nowrap">
-                                {item.store || 'Warehouse'}
-                              </span>
-                            </div>
-                          </div>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                            {item.category}
+                          </p>
                         </button>
                       )
                     })}

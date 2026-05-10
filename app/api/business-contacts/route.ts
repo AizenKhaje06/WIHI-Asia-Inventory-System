@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getBusinessContacts, addBusinessContact } from "@/lib/business-contacts"
 import { getCachedData, invalidateCachePattern } from "@/lib/cache"
-import { withAuth, withAdmin } from "@/lib/api-helpers"
+import { withAuth, withAdmin, withRoles } from "@/lib/api-helpers"
 
 export const GET = withAuth(async (request, { user }) => {
   try {
@@ -17,9 +17,12 @@ export const GET = withAuth(async (request, { user }) => {
   }
 })
 
-export const POST = withAdmin(async (request, { user }) => {
+export const POST = withRoles(['admin', 'operations'], async (request, { user }) => {
   try {
     const body = await request.json()
+    
+    console.log('[Business Contacts API] POST request from:', user.username, user.role)
+    console.log('[Business Contacts API] Request body:', body)
     
     const contact = await addBusinessContact({
       name: body.name,
@@ -33,11 +36,14 @@ export const POST = withAdmin(async (request, { user }) => {
       notes: body.notes
     })
     
+    console.log('[Business Contacts API] Contact created:', contact.id)
+    
     invalidateCachePattern('business-contacts')
     
     return NextResponse.json(contact)
   } catch (error) {
     console.error("[API] Error creating business contact:", error)
-    return NextResponse.json({ error: "Failed to create business contact" }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : "Failed to create business contact"
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 })

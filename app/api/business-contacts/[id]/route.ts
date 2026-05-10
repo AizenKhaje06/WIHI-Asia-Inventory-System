@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { updateBusinessContact, deleteBusinessContact } from "@/lib/business-contacts"
 import { invalidateCachePattern } from "@/lib/cache"
-import { withAdmin } from "@/lib/api-helpers"
+import { withAdmin, withRoles } from "@/lib/api-helpers"
 
-export const PUT = withAdmin(async (request, { params, user }) => {
+export const PUT = withRoles(['admin', 'operations'], async (request, { params, user }) => {
   try {
     const id = params.id
     const body = await request.json()

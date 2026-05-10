@@ -33,8 +33,17 @@ export default function AnalyticsPage() {
         setError(null)
         const year = currentMonth.getFullYear()
         const month = currentMonth.getMonth()
-        const startDate = new Date(year, month, 1)
-        const endDate = new Date(year, month + 1, 0)
+        
+        // For monthly view, fetch entire year data
+        // For daily view, fetch only the selected month
+        let startDate, endDate
+        if (view === 'monthly') {
+          startDate = new Date(year, 0, 1) // January 1st
+          endDate = new Date(year, 11, 31) // December 31st
+        } else {
+          startDate = new Date(year, month, 1)
+          endDate = new Date(year, month + 1, 0)
+        }
 
         const startDateStr = startDate.toISOString().split('T')[0]
         const endDateStr = endDate.toISOString().split('T')[0]
@@ -515,37 +524,49 @@ export default function AnalyticsPage() {
                   </LineChart>
                 ) : (
                   <AreaChart data={monthlySales} margin={{ left: 0, right: 30, top: 20, bottom: 40 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                    <defs>
+                      <linearGradient id="colorArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#6366F1" stopOpacity={0.05}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid 
+                      strokeDasharray="3 3" 
+                      className="stroke-slate-200 dark:stroke-slate-700" 
+                      opacity={0.3} 
+                      vertical={false} 
+                    />
                     <XAxis
                       dataKey="month"
                       tickLine={false}
+                      axisLine={false}
                       tickMargin={10}
                       minTickGap={32}
                       tickFormatter={(month) => new Date(month + '-01').toLocaleDateString('en-US', { month: 'short' })}
-                      className="text-xs"
+                      className="text-xs fill-slate-400 dark:fill-slate-500"
                     />
                     <YAxis 
                       tickLine={false}
+                      axisLine={false}
                       tickMargin={10}
                       tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
-                      className="text-xs"
-                      width={45}
+                      className="text-xs fill-slate-400 dark:fill-slate-500"
+                      width={50}
                     />
                     <ChartTooltipContent
                       formatter={(value) => [formatCurrency(value as number), 'Revenue']}
+                      labelFormatter={(label) => new Date(label + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                      className="rounded-lg shadow-lg border-slate-200 dark:border-slate-700"
                     />
-                    <defs>
-                      <linearGradient id="colorArea" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
                     <Area 
                       type="monotone"
                       dataKey="revenue" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2}
+                      stroke="#6366F1"
+                      strokeWidth={3}
                       fill="url(#colorArea)"
+                      dot={{ fill: "#6366F1", stroke: "#fff", strokeWidth: 2, r: 4 }}
+                      activeDot={{ fill: "#6366F1", stroke: "#fff", strokeWidth: 2, r: 6 }}
+                      animationDuration={1000}
                     />
                   </AreaChart>
                 )}

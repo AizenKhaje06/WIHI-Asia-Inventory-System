@@ -77,15 +77,13 @@ export default function InventoryPage() {
   const getInitialColumnWidths = () => {
     if (typeof window === 'undefined') {
       return {
-        product: 280,
-        category: 200,
-        status: 110,
-        stock: 110,
-        salesChannel: 150,
-        store: 180,
-        cost: 120,
-        price: 120,
-        margin: 110,
+        product: 350,
+        category: 220,
+        status: 120,
+        stock: 130,
+        cost: 130,
+        price: 130,
+        margin: 120,
         actions: 150
       }
     }
@@ -96,17 +94,15 @@ export default function InventoryPage() {
     const scrollbarWidth = 17 // Typical scrollbar width
     const availableWidth = viewportWidth - sidebarWidth - scrollbarWidth
     
-    // Base ratios for proportional distribution
+    // Base ratios for proportional distribution (removed salesChannel and store)
     const ratios = {
-      product: 280,
-      category: 200,
-      status: 110,
-      stock: 110,
-      salesChannel: 150,
-      store: 180,
-      cost: 120,
-      price: 120,
-      margin: 110,
+      product: 350,
+      category: 220,
+      status: 120,
+      stock: 130,
+      cost: 130,
+      price: 130,
+      margin: 120,
       actions: 150
     }
     
@@ -142,17 +138,15 @@ export default function InventoryPage() {
       }
     }
     
-    // Default widths if no saved data
+    // Default widths if no saved data (removed salesChannel and store)
     return {
-      product: 319,
-      category: 175,
-      status: 96,
-      stock: 96,
-      salesChannel: 131,
-      store: 157,
-      cost: 105,
-      price: 105,
-      margin: 102,
+      product: 350,
+      category: 220,
+      status: 120,
+      stock: 130,
+      cost: 130,
+      price: 130,
+      margin: 120,
       actions: 150
     }
   })
@@ -241,12 +235,15 @@ export default function InventoryPage() {
         (item) =>
           item.name.toLowerCase().includes(searchLower) ||
           item.category.toLowerCase().includes(searchLower) ||
-          item.store.toLowerCase().includes(searchLower)
+          item.sku?.toLowerCase().includes(searchLower)
       )
     }
 
-    if (salesChannelFilter && salesChannelFilter !== "all") {
-      filtered = filtered.filter((item) => item.salesChannel === salesChannelFilter)
+    // Stock status filter
+    if (salesChannelFilter === "low-stock") {
+      filtered = filtered.filter((item) => item.quantity > 0 && item.quantity <= item.reorderLevel)
+    } else if (salesChannelFilter === "out-of-stock") {
+      filtered = filtered.filter((item) => item.quantity === 0)
     }
 
     // Apply sorting
@@ -1042,74 +1039,67 @@ export default function InventoryPage() {
       </div>
 
       <div className="px-4">
-      {/* Redesigned Filter Section - Horizontal Layout */}
-      <div className="mb-4">
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center">
-              {/* Search - Left */}
+      {/* Professional Search & Actions Bar */}
+      <div className="mb-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
+          <div className="p-5">
+            <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
+              {/* Enhanced Search Bar - Left */}
               <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <Input
-                  placeholder="Search products..."
+                  placeholder="Search products by name, category, or SKU..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-11 h-11 text-sm border-slate-300 dark:border-slate-700 rounded-lg w-full"
+                  className="pl-12 pr-4 h-12 text-[15px] border-slate-300 dark:border-slate-700 rounded-lg w-full bg-slate-50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-800 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
+                  >
+                    <X className="h-4 w-4 text-slate-400" />
+                  </button>
+                )}
               </div>
 
-              {/* Sales Channel Filter */}
-              <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-                <SelectTrigger className="h-11 w-full lg:w-[180px] text-sm rounded-lg border-slate-300 dark:border-slate-700">
-                  <SelectValue placeholder="All Channels" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Channels</SelectItem>
-                  <SelectItem value="Shopee">Shopee</SelectItem>
-                  <SelectItem value="Lazada">Lazada</SelectItem>
-                  <SelectItem value="Facebook">Facebook</SelectItem>
-                  <SelectItem value="TikTok">TikTok</SelectItem>
-                  <SelectItem value="Physical Store">Physical Store</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* Professional Action Buttons - Right */}
+              <div className="flex gap-2.5 flex-wrap lg:flex-nowrap">
+                <Button
+                  onClick={() => setCategoryDialogOpen(true)}
+                  className="flex-1 lg:flex-none h-12 px-5 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white shadow-md hover:shadow-lg text-[14px] font-semibold whitespace-nowrap transition-all duration-200 rounded-lg"
+                >
+                  <Plus className="h-[18px] w-[18px] mr-2" />
+                  Categories
+                </Button>
 
-              {/* Action Buttons - Right (Horizontal) */}
-              <div className="flex gap-2 flex-wrap lg:flex-nowrap">
+                <Button
+                  onClick={() => setStoreDialogOpen(true)}
+                  className="flex-1 lg:flex-none h-12 px-5 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white shadow-md hover:shadow-lg text-[14px] font-semibold whitespace-nowrap transition-all duration-200 rounded-lg"
+                >
+                  <Plus className="h-[18px] w-[18px] mr-2" />
+                  Stores
+                </Button>
+
                 <Button
                   onClick={() => setCreateBundleOpen(true)}
-                  className="flex-1 lg:flex-none h-11 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md text-sm whitespace-nowrap"
+                  className="flex-1 lg:flex-none h-12 px-5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md hover:shadow-lg text-[14px] font-semibold whitespace-nowrap transition-all duration-200 rounded-lg"
                 >
-                  <Plus className="h-4 w-4 mr-1.5" />
-                  Create Bundle
+                  <Plus className="h-[18px] w-[18px] mr-2" />
+                  Bundle
                 </Button>
 
                 <Button
                   onClick={() => setAddDialogOpen(true)}
-                  className="flex-1 lg:flex-none h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md text-sm whitespace-nowrap"
+                  className="flex-1 lg:flex-none h-12 px-5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg text-[14px] font-semibold whitespace-nowrap transition-all duration-200 rounded-lg"
                 >
-                  <Plus className="h-4 w-4 mr-1.5" />
-                  Add Product
-                </Button>
-                
-                <Button
-                  onClick={() => setCategoryDialogOpen(true)}
-                  className="flex-1 lg:flex-none h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md text-sm whitespace-nowrap"
-                >
-                  <Plus className="h-4 w-4 mr-1.5" />
-                  Categories
-                </Button>
-                
-                <Button
-                  onClick={() => setStoreDialogOpen(true)}
-                  className="flex-1 lg:flex-none h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md text-sm whitespace-nowrap"
-                >
-                  <Plus className="h-4 w-4 mr-1.5" />
-                  Stores
+                  <Plus className="h-[18px] w-[18px] mr-2" />
+                  Product
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Active Filters + Results */}
@@ -1305,9 +1295,9 @@ export default function InventoryPage() {
           ) : (
             <>
               {viewMode === 'grid' ? (
-                /* Grid View - Enterprise Grade */
+                /* Grid View - Professional Layout */
                 <div className="p-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
                     {filteredItems.map((item) => {
                       const profitMargin = item.sellingPrice > 0 ? ((item.sellingPrice - item.costPrice) / item.sellingPrice * 100) : 0
                       const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
@@ -1393,18 +1383,10 @@ export default function InventoryPage() {
                             </div>
 
                             {/* Stock Info */}
-                            <div className="mb-4 space-y-2">
-                              <div className="flex items-center justify-between text-xs">
+                            <div className="mb-4">
+                              <div className="flex items-center justify-between text-sm">
                                 <span className="text-slate-600 dark:text-slate-400 font-medium">Stock Level</span>
-                                <span className="font-bold text-slate-900 dark:text-white">{item.quantity} units</span>
-                              </div>
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-slate-600 dark:text-slate-400 font-medium">Sales Channel</span>
-                                <span className="font-semibold text-slate-700 dark:text-slate-300">{item.salesChannel || 'N/A'}</span>
-                              </div>
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-slate-600 dark:text-slate-400 font-medium">Store</span>
-                                <span className="font-semibold text-slate-700 dark:text-slate-300">{item.store}</span>
+                                <span className="font-bold text-slate-900 dark:text-white text-lg">{item.quantity} units</span>
                               </div>
                             </div>
 
@@ -1464,79 +1446,52 @@ export default function InventoryPage() {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="text-sm" style={{ 
-                  width: `${
-                    columnWidths.product + 
-                    columnWidths.category + 
-                    columnWidths.status + 
-                    columnWidths.stock + 
-                    columnWidths.salesChannel + 
-                    columnWidths.store + 
-                    columnWidths.cost + 
-                    columnWidths.price + 
-                    columnWidths.margin + 
-                    (getCurrentUser()?.role === 'admin' ? columnWidths.actions : 0)
-                  }px` 
-                }}>
+                <table className="w-full min-w-[800px] text-sm table-fixed">
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.product }}>
+                      <th className="py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[25%]">
                         Product
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'product')}
                         />
                       </th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.category }}>
+                      <th className="py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[15%]">
                         Category
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'category')}
                         />
                       </th>
-                      <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.status }}>
+                      <th className="py-2.5 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[10%]">
                         Status
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'status')}
                         />
                       </th>
-                      <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.stock }}>
+                      <th className="py-2.5 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[10%]">
                         Stock
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'stock')}
                         />
                       </th>
-                      <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.salesChannel }}>
-                        Sales Channel
-                        <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
-                          onMouseDown={(e) => handleMouseDown(e, 'salesChannel')}
-                        />
-                      </th>
-                      <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.store }}>
-                        Store
-                        <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
-                          onMouseDown={(e) => handleMouseDown(e, 'store')}
-                        />
-                      </th>
-                      <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.cost }}>
+                      <th className="py-2.5 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[10%]">
                         Cost
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'cost')}
                         />
                       </th>
-                      <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.price }}>
+                      <th className="py-2.5 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[10%]">
                         Price
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'price')}
                         />
                       </th>
-                      <th className="py-3 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.margin }}>
+                      <th className="py-2.5 px-3 pr-6 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[10%]">
                         Margin
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
@@ -1544,7 +1499,7 @@ export default function InventoryPage() {
                         />
                       </th>
                       {getCurrentUser()?.role === 'admin' && (
-                        <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider" style={{ width: columnWidths.actions }}>
+                        <th className="py-2.5 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider w-[10%]">
                           Actions
                         </th>
                       )}
@@ -1570,15 +1525,15 @@ export default function InventoryPage() {
                           }
                         >
                           {/* Product Name */}
-                          <td className="py-3 px-4" style={{ width: columnWidths.product }}>
+                          <td className="py-2 px-3 w-[25%]">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                              <div className="w-7 h-7 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                <Package className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p 
                                   className={cn(
-                                    "text-xs font-semibold break-words",
+                                    "text-xs font-semibold break-words line-clamp-2",
                                     isSelected 
                                       ? "text-blue-900 dark:text-blue-100" 
                                       : "text-slate-900 dark:text-white"
@@ -1592,7 +1547,7 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Category */}
-                          <td className="py-3 px-4" style={{ width: columnWidths.category }}>
+                          <td className="py-2 px-3 w-[15%]">
                             <span 
                               className={cn(
                                 "text-xs block break-words",
@@ -1607,7 +1562,7 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Stock Status */}
-                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.status }}>
+                          <td className="py-2 px-3 text-center w-[10%]">
                             <div className="flex justify-center">
                               {isOutOfStock ? (
                                 <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 text-xs px-1.5 py-0.5">
@@ -1626,7 +1581,7 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Stock with Progress */}
-                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.stock }}>
+                          <td className="py-2 px-3 w-[10%]">
                             <div className="flex flex-col items-end gap-1">
                               <span className={
                                 isSelected 
@@ -1648,33 +1603,15 @@ export default function InventoryPage() {
                             </div>
                           </td>
 
-                          {/* Sales Channel */}
-                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.salesChannel }}>
-                            <div className="flex justify-center">
-                              <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                                {item.salesChannel || 'N/A'}
-                              </Badge>
-                            </div>
-                          </td>
-
-                          {/* Store */}
-                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.store }}>
-                            <div className="flex justify-center">
-                              <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                                {item.store || 'N/A'}
-                              </Badge>
-                            </div>
-                          </td>
-
                           {/* Cost */}
-                          <td className="py-3 px-4 text-right whitespace-nowrap" style={{ width: columnWidths.cost }}>
+                          <td className="py-2 px-3 text-right w-[10%]">
                             <span className="text-xs font-medium text-slate-800 dark:text-slate-200 tabular-nums">
                               {formatCurrency(item.costPrice)}
                             </span>
                           </td>
 
                           {/* Price */}
-                          <td className="py-3 px-4 text-right whitespace-nowrap" style={{ width: columnWidths.price }}>
+                          <td className="py-2 px-3 text-right w-[10%]">
                             <span className={
                               isSelected 
                                 ? "text-xs font-semibold tabular-nums text-blue-900 dark:text-blue-100" 
@@ -1685,7 +1622,7 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Profit Margin */}
-                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.margin }}>
+                          <td className="py-2 px-3 pr-6 w-[10%]">
                             <div className="flex items-center justify-end gap-1">
                               <span className={`text-xs font-bold tabular-nums ${profitMargin >= 30 ? 'text-green-600' : profitMargin >= 15 ? 'text-amber-600' : 'text-red-600'}`}>
                                 {profitMargin.toFixed(1)}%
@@ -1694,7 +1631,7 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Actions - Admin only */}
-                          <td className="py-3 px-4 whitespace-nowrap" style={{ width: columnWidths.actions }}>
+                          <td className="py-2 px-3 w-[10%]">
                             {getCurrentUser()?.role === 'admin' && (
                               <TooltipProvider>
                                 <div className="flex justify-center gap-0.5">
@@ -1845,41 +1782,69 @@ export default function InventoryPage() {
               Category Management
             </DialogTitle>
             <DialogDescription className="text-slate-600 dark:text-slate-400">
-              Manage product categories
+              Add and manage product categories
             </DialogDescription>
           </DialogHeader>
           
-          <div className="flex-1 overflow-y-auto space-y-3 py-2">
-            {/* Add New Category */}
-            <div className="flex gap-2 sticky top-0 bg-white dark:bg-slate-950 pb-2 z-10">
-              <Input
-                placeholder="Add new category"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && newCategory.trim()) {
-                    handleAddCategory()
-                  }
-                }}
-                className="h-10 text-sm rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-                disabled={submitting}
-              />
-              <Button
-                onClick={handleAddCategory}
-                disabled={!newCategory.trim() || submitting}
-                size="sm"
-                className="h-10 w-10 p-0 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white flex-shrink-0"
-              >
-                {submitting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Plus className="h-4 w-4" />
-                )}
-              </Button>
+          <div className="flex-1 overflow-y-auto space-y-4 py-2 pr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar]:opacity-0 hover:[&::-webkit-scrollbar]:opacity-100 transition-opacity">
+            {/* Add New Category Section - More Prominent */}
+            <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-2 border-dashed border-orange-300 dark:border-orange-700 rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Plus className="h-4 w-4 text-orange-600" />
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Add New Category</h3>
+              </div>
+              
+              <div>
+                <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 block">
+                  Category Name *
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter category name"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && newCategory.trim()) {
+                        handleAddCategory()
+                      }
+                    }}
+                    className="h-10 text-sm rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                    disabled={submitting}
+                  />
+                  <Button
+                    onClick={handleAddCategory}
+                    disabled={!newCategory.trim() || submitting}
+                    size="sm"
+                    className="h-10 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium"
+                  >
+                    {submitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4 mr-1.5" />
+                        Add
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
             </div>
 
+            {/* Existing Categories List */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 px-1">
+                Existing Categories ({categories.length})
+              </h3>
+
             {/* Category List */}
-            <div className="space-y-1.5">
+            {categories.length === 0 ? (
+              <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                <Tag className="h-12 w-12 mx-auto text-slate-400 mb-3" />
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">No categories yet</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Add your first category using the form above</p>
+              </div>
+            ) : (
+            <div className="space-y-2">
               {categories.map((category) => (
                 <div
                   key={category.id}
@@ -1958,6 +1923,8 @@ export default function InventoryPage() {
                 </div>
               ))}
             </div>
+            )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -1971,70 +1938,101 @@ export default function InventoryPage() {
               Store Management
             </DialogTitle>
             <DialogDescription className="text-slate-600 dark:text-slate-400">
-              Manage stores by sales channel
+              Add and manage stores organized by sales channel
             </DialogDescription>
           </DialogHeader>
           
-          <div className="flex-1 overflow-y-auto space-y-3 py-2">
-            {/* Add New Store */}
-            <div className="space-y-2 sticky top-0 bg-white dark:bg-slate-950 pb-2 z-10">
-              <Select 
-                value={newStore.salesChannel} 
-                onValueChange={(value) => setNewStore({ ...newStore, salesChannel: value })}
-                disabled={submitting}
-              >
-                <SelectTrigger className="h-10 text-sm rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                  <SelectValue placeholder="Select sales channel" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SALES_CHANNELS.map((channel) => (
-                    <SelectItem key={channel} value={channel}>
-                      {channel}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Store name"
-                  value={newStore.name}
-                  onChange={(e) => setNewStore({ ...newStore, name: e.target.value })}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddStore()}
-                  disabled={submitting}
-                  className="h-10 text-sm rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-                />
-                <Button
-                  onClick={handleAddStore}
-                  disabled={!newStore.name.trim() || !newStore.salesChannel || submitting}
-                  size="sm"
-                  className="h-10 w-10 p-0 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white flex-shrink-0"
-                >
-                  {submitting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4" />
-                  )}
-                </Button>
+          <div className="flex-1 overflow-y-auto space-y-4 py-2 pr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar]:opacity-0 hover:[&::-webkit-scrollbar]:opacity-100 transition-opacity">
+            {/* Add New Store Section - More Prominent */}
+            <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-2 border-dashed border-orange-300 dark:border-orange-700 rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Plus className="h-4 w-4 text-orange-600" />
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Add New Store</h3>
+              </div>
+              
+              <div className="space-y-2">
+                <div>
+                  <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 block">
+                    Sales Channel *
+                  </Label>
+                  <Select 
+                    value={newStore.salesChannel} 
+                    onValueChange={(value) => setNewStore({ ...newStore, salesChannel: value })}
+                    disabled={submitting}
+                  >
+                    <SelectTrigger className="h-10 text-sm rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                      <SelectValue placeholder="Choose a sales channel" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SALES_CHANNELS.map((channel) => (
+                        <SelectItem key={channel} value={channel}>
+                          {channel}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 block">
+                    Store Name *
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter store name"
+                      value={newStore.name}
+                      onChange={(e) => setNewStore({ ...newStore, name: e.target.value })}
+                      onKeyDown={(e) => e.key === "Enter" && handleAddStore()}
+                      disabled={submitting}
+                      className="h-10 text-sm rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                    />
+                    <Button
+                      onClick={handleAddStore}
+                      disabled={!newStore.name.trim() || !newStore.salesChannel || submitting}
+                      size="sm"
+                      className="h-10 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium"
+                    >
+                      {submitting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4 mr-1.5" />
+                          Add
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
 
+            {/* Existing Stores List */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 px-1">
+                Existing Stores ({stores.length})
+              </h3>
+
             {/* Store List */}
             {stores.length === 0 ? (
-              <div className="text-center py-8">
-                <Warehouse className="h-10 w-10 mx-auto text-slate-400 mb-2" />
-                <p className="text-sm text-slate-600 dark:text-slate-400">No stores yet</p>
-                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Add your first store</p>
+              <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                <Warehouse className="h-12 w-12 mx-auto text-slate-400 mb-3" />
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">No stores yet</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Add your first store using the form above</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {SALES_CHANNELS.map((channel) => {
                   const channelStores = stores.filter(s => s.sales_channel === channel)
                   if (channelStores.length === 0) return null
                   
                   return (
-                    <div key={channel} className="space-y-1.5">
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider px-2">
-                        {channel} ({channelStores.length})
+                    <div key={channel} className="space-y-2">
+                      <div className="flex items-center gap-2 px-2">
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
+                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+                          {channel} ({channelStores.length})
+                        </div>
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
                       </div>
                       {channelStores.map((store) => (
                         <div
@@ -2131,6 +2129,7 @@ export default function InventoryPage() {
                 })}
               </div>
             )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
