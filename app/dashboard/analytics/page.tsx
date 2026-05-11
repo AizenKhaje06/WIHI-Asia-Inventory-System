@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { DollarSign, TrendingUp, TrendingDown, Percent, BarChart3, ChevronLeft, ChevronRight, Calendar, ShoppingCart, Package, ArrowUpRight, ArrowDownRight } from "lucide-react"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Line, LineChart, Area, AreaChart } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Line, LineChart, Area, AreaChart, Tooltip } from "recharts"
 import {
   ChartContainer,
   ChartTooltipContent,
@@ -474,11 +474,29 @@ export default function AnalyticsPage() {
                         width={60}
                         stroke="hsl(var(--muted-foreground))"
                       />
-                      <ChartTooltipContent
-                        formatter={(value) => [formatCurrency(value as number), 'Revenue']}
-                        labelFormatter={(label) => new Date(label + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                        className="rounded-xl shadow-xl border-slate-200 dark:border-slate-700"
-                      />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload || !payload.length) return null
+                        const data = payload[0]
+                        return (
+                          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl p-4 min-w-[200px]">
+                            <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                              <div className="w-3 h-3 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600"></div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                {new Date(data.payload.month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Revenue</p>
+                              <p className="text-2xl font-bold bg-gradient-to-br from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
+                                {formatCurrency(data.value as number)}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      }}
+                      cursor={{ stroke: '#10b981', strokeWidth: 2, strokeDasharray: '5 5' }}
+                    />
                       <Bar 
                         dataKey="revenue" 
                         fill="url(#colorRevenue)" 
@@ -510,8 +528,28 @@ export default function AnalyticsPage() {
                       className="text-xs"
                       width={45}
                     />
-                    <ChartTooltipContent
-                      formatter={(value) => [formatCurrency(value as number), 'Revenue']}
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload || !payload.length) return null
+                        const data = payload[0]
+                        return (
+                          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl p-4 min-w-[200px]">
+                            <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                              <div className="w-3 h-3 rounded-full bg-gradient-to-br from-blue-500 to-blue-600"></div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                {new Date(data.payload.month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Revenue</p>
+                              <p className="text-2xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent">
+                                {formatCurrency(data.value as number)}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      }}
+                      cursor={{ stroke: '#3b82f6', strokeWidth: 2, strokeDasharray: '5 5' }}
                     />
                     <Line 
                       type="monotone"
@@ -553,10 +591,28 @@ export default function AnalyticsPage() {
                       className="text-xs fill-slate-400 dark:fill-slate-500"
                       width={50}
                     />
-                    <ChartTooltipContent
-                      formatter={(value) => [formatCurrency(value as number), 'Revenue']}
-                      labelFormatter={(label) => new Date(label + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                      className="rounded-lg shadow-lg border-slate-200 dark:border-slate-700"
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload || !payload.length) return null
+                        const data = payload[0]
+                        return (
+                          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl p-4 min-w-[200px] animate-in fade-in-0 zoom-in-95 duration-200">
+                            <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                              <div className="w-3 h-3 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg shadow-indigo-500/50"></div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                {new Date(data.payload.month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Revenue</p>
+                              <p className="text-2xl font-bold bg-gradient-to-br from-indigo-600 to-indigo-700 bg-clip-text text-transparent tabular-nums">
+                                {formatCurrency(data.value as number)}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      }}
+                      cursor={{ stroke: '#6366f1', strokeWidth: 2, strokeDasharray: '5 5', opacity: 0.5 }}
                     />
                     <Area 
                       type="monotone"

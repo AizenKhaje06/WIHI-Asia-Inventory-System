@@ -437,7 +437,7 @@ export function EnterpriseDateRangePicker({
               {/* Custom Dropdown and Date Inputs */}
               <div className="flex items-center gap-1.5">
                 <Select defaultValue="custom">
-                  <SelectTrigger className="w-[70px] h-7 border-slate-300 dark:border-slate-600 text-[11px]">
+                  <SelectTrigger className="w-[85px] h-7 border-slate-300 dark:border-slate-600 text-[11px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

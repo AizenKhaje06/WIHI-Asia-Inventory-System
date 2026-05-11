@@ -31,6 +31,7 @@ import { apiGet } from "@/lib/api-client"
 import { formatChartData, calculatePeriodComparison } from "@/lib/dashboard-utils"
 import { getCurrentUser } from "@/lib/auth"
 import { getCurrentUserRole } from "@/lib/role-utils"
+import { EnterpriseDateRangePicker } from "@/components/ui/enterprise-date-range-picker"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -40,6 +41,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("ID")
+  const [startDate, setStartDate] = useState<Date | null>(null)
+  const [endDate, setEndDate] = useState<Date | null>(null)
   const currentUser = getCurrentUser()
 
   const fetchData = async () => {
@@ -47,8 +50,17 @@ export default function DashboardPage() {
       setRefreshing(true)
       console.log('[Dashboard] Fetching data for period:', timePeriod)
       
+      // Build API URL with date filters if provided
+      let apiUrl = `/api/dashboard?period=${timePeriod}`
+      if (startDate) {
+        apiUrl += `&startDate=${startDate.toISOString()}`
+      }
+      if (endDate) {
+        apiUrl += `&endDate=${endDate.toISOString()}`
+      }
+      
       const [stats, items] = await Promise.all([
-        apiGet<DashboardStats>(`/api/dashboard?period=${timePeriod}`),
+        apiGet<DashboardStats>(apiUrl),
         apiGet<InventoryItem[]>("/api/items")
       ])
 
@@ -73,7 +85,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData()
-  }, [timePeriod])
+  }, [timePeriod, startDate, endDate])
 
   // Show loading state
   if (loading) {
@@ -119,10 +131,22 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 pt-2 pb-8">
-      {/* Page Header - Professional */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold gradient-text mb-2">Dashboard</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">Welcome back! Here's what's happening with your inventory.</p>
+      {/* Page Header - Professional with Date Picker */}
+      <div className="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl font-bold gradient-text mb-2">Dashboard</h1>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Welcome back! Here's what's happening with your inventory.</p>
+        </div>
+        <div className="flex-shrink-0">
+          <EnterpriseDateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onDateChange={(start, end) => {
+              setStartDate(start)
+              setEndDate(end)
+            }}
+          />
+        </div>
       </div>
 
       {/* Key Metrics - 5 Primary KPIs - Professional Corporate Design */}
@@ -140,17 +164,34 @@ export default function DashboardPage() {
               ₱<AnimatedNumber value={stats?.totalRevenue || 0} duration={1500} />
             </div>
             <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Total Revenue</div>
-            {stats?.revenueToday !== undefined && stats.revenueToday > 0 ? (
-              <div className="flex items-center gap-1">
-                <ArrowUpRight className="h-3 w-3 text-green-600 dark:text-green-400" />
-                <span className="text-xs text-green-600 dark:text-green-400 font-semibold">
-                  ₱{formatNumber(stats.revenueToday)} today
-                </span>
-              </div>
+            {startDate || endDate ? (
+              // When date filter is active, show filtered period info
+              stats?.totalRevenue && stats.totalRevenue > 0 ? (
+                <div className="flex items-center gap-1">
+                  <ArrowUpRight className="h-3 w-3 text-green-600 dark:text-green-400" />
+                  <span className="text-xs text-green-600 dark:text-green-400 font-semibold">
+                    Filtered period
+                  </span>
+                </div>
+              ) : (
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  No sales in period
+                </div>
+              )
             ) : (
-              <div className="text-xs text-slate-500 dark:text-slate-400">
-                No sales today yet
-              </div>
+              // When no date filter, show today's revenue
+              stats?.revenueToday !== undefined && stats.revenueToday > 0 ? (
+                <div className="flex items-center gap-1">
+                  <ArrowUpRight className="h-3 w-3 text-green-600 dark:text-green-400" />
+                  <span className="text-xs text-green-600 dark:text-green-400 font-semibold">
+                    ₱{formatNumber(stats.revenueToday)} today
+                  </span>
+                </div>
+              ) : (
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  No sales today yet
+                </div>
+              )
             )}
           </CardContent>
         </Card>
@@ -168,17 +209,34 @@ export default function DashboardPage() {
               ₱<AnimatedNumber value={netProfit} duration={1500} />
             </div>
             <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Net Profit</div>
-            {stats?.returnValue !== undefined && stats.returnValue > 0 ? (
-              <div className="flex items-center gap-1">
-                <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />
-                <span className="text-xs text-red-600 dark:text-red-400 font-semibold">
-                  ₱{formatNumber(stats.returnValue)} returns
-                </span>
-              </div>
+            {startDate || endDate ? (
+              // When date filter is active
+              stats?.returnValue !== undefined && stats.returnValue > 0 ? (
+                <div className="flex items-center gap-1">
+                  <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />
+                  <span className="text-xs text-red-600 dark:text-red-400 font-semibold">
+                    ₱{formatNumber(stats.returnValue)} returns
+                  </span>
+                </div>
+              ) : (
+                <div className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
+                  No returns
+                </div>
+              )
             ) : (
-              <div className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
-                No returns
-              </div>
+              // When no date filter
+              stats?.returnValue !== undefined && stats.returnValue > 0 ? (
+                <div className="flex items-center gap-1">
+                  <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />
+                  <span className="text-xs text-red-600 dark:text-red-400 font-semibold">
+                    ₱{formatNumber(stats.returnValue)} returns
+                  </span>
+                </div>
+              ) : (
+                <div className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
+                  No returns
+                </div>
+              )
             )}
           </CardContent>
         </Card>

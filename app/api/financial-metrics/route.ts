@@ -30,10 +30,12 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate')
 
     // Fetch all packed orders (dispatched orders)
+    // Exclude CANCELLED, RETURNED, DETAINED, and PROBLEMATIC orders from the query
     let query = supabase
       .from('orders')
       .select('*')
       .eq('status', 'Packed')
+      .not('parcel_status', 'in', '(CANCELLED,RETURNED,DETAINED,PROBLEMATIC)')
 
     // Apply date filters if provided
     if (startDate) {
@@ -57,7 +59,7 @@ export async function GET(request: NextRequest) {
       // Most conservative: Only confirmed delivered orders
       includedStatuses = ['DELIVERED']
     } else if (includeStatus === 'all-active') {
-      // Include all active orders (exclude only cancelled/returned)
+      // Include all active orders (already excluded cancelled/returned in query)
       includedStatuses = ['DELIVERED', 'IN TRANSIT', 'ON DELIVERY', 'PICKUP', 'PENDING']
     } else if (includeStatus === 'pending') {
       // Only pending/in-progress orders

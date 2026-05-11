@@ -29,6 +29,7 @@ function emptyDashboardStats(): DashboardStats {
     totalCost: 0,
     totalProfit: 0,
     profitMargin: 0,
+    totalTransactions: 0,
     salesOverTime: [],
     topProducts: [],
     recentTransactions: [],
@@ -67,8 +68,19 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || 'ID'
-    const startDate = searchParams.get('startDate')
-    const endDate = searchParams.get('endDate')
+    const startDateParam = searchParams.get('startDate')
+    const endDateParam = searchParams.get('endDate')
+
+    // Parse date parameters
+    let startDate: Date | null = null
+    let endDate: Date | null = null
+    
+    if (startDateParam) {
+      startDate = new Date(startDateParam)
+    }
+    if (endDateParam) {
+      endDate = new Date(endDateParam)
+    }
 
     // Fetch inventory items and restocks
     let items: InventoryItem[] = []
@@ -106,8 +118,8 @@ export async function GET(request: Request) {
     if (startDate || endDate) {
       filteredOrders = filteredOrders.filter(order => {
         const orderDate = new Date(order.date)
-        if (startDate && orderDate < new Date(startDate)) return false
-        if (endDate && orderDate > new Date(endDate)) return false
+        if (startDate && orderDate < startDate) return false
+        if (endDate && orderDate > endDate) return false
         return true
       })
     }

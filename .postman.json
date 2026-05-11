@@ -263,6 +263,189 @@
                 },
                 "description": "Update order status"
               }
+            },
+            {
+              "name": "Pack Order (Mark as Packed)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"packedBy\": \"Admin User\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/orders/{{orderId}}/pack",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "orders", "{{orderId}}", "pack"]
+                },
+                "description": "Mark order as packed with Manila timezone timestamp"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: Response has required fields",
+                      "pm.test('Response has required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('id');",
+                      "    pm.expect(jsonData).to.have.property('status');",
+                      "    pm.expect(jsonData).to.have.property('packed_by');",
+                      "    pm.expect(jsonData).to.have.property('packed_at');",
+                      "    pm.expect(jsonData).to.have.property('updated_at');",
+                      "});",
+                      "",
+                      "// Test 4: Status is 'Packed'",
+                      "pm.test('Order status is Packed', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.status).to.equal('Packed');",
+                      "});",
+                      "",
+                      "// Test 5: packed_by matches request",
+                      "pm.test('packed_by field is set correctly', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.packed_by).to.equal('Admin User');",
+                      "});",
+                      "",
+                      "// Test 6: packed_at timestamp format is correct (YYYY-MM-DD HH:mm:ss)",
+                      "pm.test('packed_at timestamp format is correct', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.packed_at).to.match(/^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$/);",
+                      "});",
+                      "",
+                      "// Test 7: updated_at timestamp format is correct",
+                      "pm.test('updated_at timestamp format is correct', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.updated_at).to.match(/^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$/);",
+                      "});",
+                      "",
+                      "// Test 8: packed_at and updated_at are the same (Manila time)",
+                      "pm.test('packed_at and updated_at are synchronized', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.packed_at).to.equal(jsonData.updated_at);",
+                      "});",
+                      "",
+                      "// Test 9: Timestamp is recent (within last 5 minutes)",
+                      "pm.test('Timestamp is recent', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const packedTime = new Date(jsonData.packed_at.replace(' ', 'T'));",
+                      "    const now = new Date();",
+                      "    const diffMinutes = (now - packedTime) / (1000 * 60);",
+                      "    pm.expect(Math.abs(diffMinutes)).to.be.below(5);",
+                      "});",
+                      "",
+                      "// Test 10: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Pack Order - Missing packedBy",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/orders/{{orderId}}/pack",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "orders", "{{orderId}}", "pack"]
+                },
+                "description": "Test validation - should fail without packedBy field"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 400 (Bad Request)",
+                      "pm.test('Status code is 400', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error message",
+                      "pm.test('Response has error message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "    pm.expect(jsonData.error).to.include('packedBy');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Pack Order - Invalid Order ID",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"packedBy\": \"Admin User\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/orders/INVALID-ORDER-ID/pack",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "orders", "INVALID-ORDER-ID", "pack"]
+                },
+                "description": "Test with non-existent order ID"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 500 (order not found)",
+                      "pm.test('Status code indicates error', function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([404, 500]);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error message",
+                      "pm.test('Response has error message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
             }
           ]
         },

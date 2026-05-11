@@ -530,33 +530,33 @@ export default function PackingQueuePage() {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full table-fixed min-w-[1200px]">
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                      <th className="text-left py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                      <th className="text-left py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[140px]">
                         Waybill No.
                       </th>
-                      <th className="text-left py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                      <th className="text-left py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[140px]">
                         Date & Time
                       </th>
                       {!isTeamLeader && (
-                        <th className="text-center py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                        <th className="text-center py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[110px]">
                           Channel
                         </th>
                       )}
-                      <th className="text-left py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                      <th className="text-left py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[150px]">
                         Store
                       </th>
-                      <th className="text-left py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                      <th className="text-left py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[200px]">
                         Product
                       </th>
-                      <th className="text-center py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                      <th className="text-center py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[80px]">
                         Qty
                       </th>
-                      <th className="text-right py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                      <th className="text-right py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[120px]">
                         Total
                       </th>
-                      <th className="text-center py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider">
+                      <th className="text-center py-4 px-5 text-[11px] font-bold text-white uppercase tracking-wider w-[200px]">
                         Action
                       </th>
                     </tr>
@@ -567,7 +567,7 @@ export default function PackingQueuePage() {
                         key={order.id}
                         className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
                       >
-                      <td className="py-4 px-4">
+                      <td className="py-3 px-4">
                         <div className="flex flex-col">
                           <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
                             {order.waybill || order.id || 'N/A'}
@@ -577,7 +577,7 @@ export default function PackingQueuePage() {
                           </span>
                         </div>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-3 px-4">
                         <div className="flex flex-col">
                           <span className="text-xs font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                             {parseAsPhilippineTime(order.created_at || order.orderDate || order.date || '').toLocaleDateString('en-US', { 
@@ -596,50 +596,49 @@ export default function PackingQueuePage() {
                         </div>
                       </td>
                       {!isTeamLeader && (
-                        <td className="py-4 px-4 text-center">
+                        <td className="py-3 px-4 text-center">
                           <Badge variant="outline" className="text-[10px] font-semibold whitespace-nowrap">
                             {order.sales_channel || order.channel || 'N/A'}
                           </Badge>
                         </td>
                       )}
-                      <td className="py-4 px-4">
-                        <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                      <td className="py-3 px-4">
+                        <span className="text-xs text-slate-700 dark:text-slate-300 font-medium truncate block">
                           {order.store}
                         </span>
                       </td>
-                      <td className="py-4 px-4">
-                        <div className="max-w-xs">
+                      <td className="py-3 px-4">
+                        <div className="max-w-full">
                           <p className="text-xs text-slate-900 dark:text-white font-medium line-clamp-2 leading-relaxed">
                             {order.product || order.itemName}
                           </p>
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-3 px-4 text-center">
                         <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-xs font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 rounded-md">
                           {order.qty || order.quantity}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-right">
+                      <td className="py-3 px-4 text-right">
                         <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
                           {formatCurrency(order.total || order.totalAmount || 0)}
                         </span>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-3 px-5">
                         <div className="flex items-center justify-center gap-2">
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             onClick={() => openDetailsModal(order)}
-                            className="h-8 px-3 text-[10px] font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/30 transition-colors whitespace-nowrap"
+                            className="h-9 px-4 text-xs font-medium border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200 whitespace-nowrap rounded-lg"
                           >
-                            <Eye className="h-3.5 w-3.5 mr-1.5" />
                             View
                           </Button>
                           <Button
                             size="sm"
                             onClick={() => openConfirmDialog(order)}
                             disabled={packing === order.id}
-                            className="h-8 px-3 text-[10px] font-semibold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-sm whitespace-nowrap"
+                            className="h-9 px-4 text-xs font-medium bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 whitespace-nowrap rounded-lg shadow-sm"
                           >
                             {packing === order.id ? (
                               <>
@@ -647,10 +646,7 @@ export default function PackingQueuePage() {
                                 Packing...
                               </>
                             ) : (
-                              <>
-                                <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
-                                Pack
-                              </>
+                              'Pack'
                             )}
                           </Button>
                         </div>

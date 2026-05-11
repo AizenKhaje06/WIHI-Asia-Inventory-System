@@ -81,6 +81,21 @@ export default function TrackOrdersPage() {
   const userRole = getCurrentUserRole()
   const isTeamLeader = false // Team leader role removed
 
+  // Helper function to parse date as Philippine time
+  const parseAsPhilippineTime = (dateString: string): Date => {
+    if (!dateString) return new Date()
+    
+    // If the date string doesn't have timezone info, treat it as Philippine time
+    if (dateString.includes('T') && !dateString.includes('+') && !dateString.includes('Z')) {
+      // ISO format without timezone: add Philippine timezone
+      return new Date(dateString + '+08:00')
+    } else if (!dateString.includes('T')) {
+      // Format: "YYYY-MM-DD HH:mm:ss" - treat as Philippine time
+      return new Date(dateString.replace(' ', 'T') + '+08:00')
+    }
+    return new Date(dateString)
+  }
+
   useEffect(() => {
     fetchOrders()
   }, [])
@@ -1761,10 +1776,10 @@ export default function TrackOrdersPage() {
                           <Calendar className="h-4 w-4 text-slate-400 flex-shrink-0" />
                           <div>
                             <span className="text-[11px] font-medium text-slate-900 dark:text-white block">
-                              {format(new Date(order.orderDate), 'MMM dd, yyyy')}
+                              {format(parseAsPhilippineTime(order.orderDate), 'MMM dd, yyyy')}
                             </span>
                             <span className="text-[9px] text-slate-500 dark:text-slate-400 block mt-0.5">
-                              {format(new Date(order.orderDate), 'hh:mm a')}
+                              {format(parseAsPhilippineTime(order.orderDate), 'hh:mm a')}
                             </span>
                           </div>
                         </div>
