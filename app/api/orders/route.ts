@@ -73,9 +73,23 @@ export async function POST(request: NextRequest) {
     const orderId = `ORD-${Date.now()}`
     
     // Get current Manila time for created_at
+    // Format: YYYY-MM-DD HH:mm:ss (without timezone, as Philippine time)
     const now = new Date()
-    const manilaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }))
-    const createdAt = manilaTime.toISOString()
+    const manilaTimeString = now.toLocaleString('en-US', { 
+      timeZone: 'Asia/Manila',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    })
+    
+    // Convert "MM/DD/YYYY, HH:mm:ss" to "YYYY-MM-DD HH:mm:ss"
+    const [datePart, timePart] = manilaTimeString.split(', ')
+    const [month, day, year] = datePart.split('/')
+    const createdAt = `${year}-${month}-${day} ${timePart}`
     
     // Insert order
     const { data: order, error: orderError } = await supabase

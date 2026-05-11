@@ -4,9 +4,10 @@ import { supabase } from '@/lib/supabase'
 // PATCH /api/orders/[id] - Update order details
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
     const {
       customer_name,
@@ -30,7 +31,7 @@ export async function PATCH(
         total,
         updated_at: new Date().toISOString()
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 
@@ -52,13 +53,15 @@ export async function PATCH(
 // DELETE /api/orders/[id] - Delete order
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     const { error } = await supabase
       .from('orders')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (error) {
       console.error('[API] Error deleting order:', error)
