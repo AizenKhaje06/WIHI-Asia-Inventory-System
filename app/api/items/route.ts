@@ -22,6 +22,12 @@ export const GET = withAuth(async (request, { user }) => {
       return NextResponse.json([])
     }
 
+    // DEPARTMENT FILTERING: Operations users only see their department's data
+    if (user.role === 'operations' && user.assignedChannel) {
+      items = items.filter(item => item.salesChannel === user.assignedChannel)
+    }
+    // Admin and packer see all items
+
     if (search) {
       const searchLower = search.toLowerCase()
       const filtered = items.filter(

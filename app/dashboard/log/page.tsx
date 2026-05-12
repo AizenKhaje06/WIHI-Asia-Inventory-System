@@ -262,6 +262,7 @@ export default function LogPage() {
     if (detailsLower.includes('lazada')) return 'Lazada'
     if (detailsLower.includes('facebook')) return 'Facebook'
     if (detailsLower.includes('tiktok')) return 'TikTok'
+    if (detailsLower.includes('office store')) return 'Office Store'
     if (detailsLower.includes('physical store')) return 'Physical Store'
     if (detailsLower.includes('warehouse')) return 'Warehouse'
     
@@ -277,6 +278,7 @@ export default function LogPage() {
       'Lazada': { color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: '🛒' },
       'Facebook': { color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400', icon: '📘' },
       'TikTok': { color: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400', icon: '🎵' },
+      'Office Store': { color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400', icon: '🏢' },
       'Physical Store': { color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: '🏪' },
       'Warehouse': { color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300', icon: '🏭' },
     }
@@ -469,6 +471,7 @@ export default function LogPage() {
               <SelectItem value="Lazada">Lazada</SelectItem>
               <SelectItem value="Facebook">Facebook</SelectItem>
               <SelectItem value="TikTok">TikTok</SelectItem>
+              <SelectItem value="Office Store">Office Store</SelectItem>
               <SelectItem value="Physical Store">Physical Store</SelectItem>
             </SelectContent>
           </Select>

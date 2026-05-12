@@ -39,6 +39,7 @@ export default function InternalUsagePage() {
   const [searchProducts, setSearchProducts] = useState("")
   const [loading, setLoading] = useState(false)
   const [staffName, setStaffName] = useState('')
+  const [staffPassword, setStaffPassword] = useState('')
   const [dispatchId, setDispatchId] = useState('')
   const [dispatchedItems, setDispatchedItems] = useState<Array<{name: string, quantity: number, price: number}>>([])
   const [successModalOpen, setSuccessModalOpen] = useState(false)
@@ -129,16 +130,8 @@ export default function InternalUsagePage() {
   }, {} as Record<string, { count: number, cost: number }>)
 
   useEffect(() => {
-    const currentUser = getCurrentUser()
-    if (currentUser) {
-      const name = currentUser.displayName || currentUser.username || 'Unknown User'
-      setStaffName(name)
-      
-      // Team leader role removed - no auto-filter needed
-      // All users see all sales channels
-    } else {
-      setStaffName('Unknown User')
-    }
+    // Remove auto-setting of staffName from logged-in user
+    // Staff will select their agent name from dropdown
     
     fetchTransactions()
     fetchItems()
@@ -222,23 +215,51 @@ export default function InternalUsagePage() {
   }
 
   async function handleDispatch() {
-    if (cart.length === 0 || !purpose || !staffName) {
-      alert('Please add items and select a purpose')
+    if (cart.length === 0 || !purpose || !staffName || !staffPassword) {
+      alert('Please add items, select a purpose, choose a department, and enter password')
+      return
+    }
+    
+    setLoading(true)
+    
+    try {
+      // Validate department password via API
+      const authResponse = await fetch('/api/departments/authenticate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          department: staffName,
+          password: staffPassword
+        })
+      })
+
+      const authData = await authResponse.json()
+
+      if (!authResponse.ok || !authData.success) {
+        alert(authData.error || 'Invalid password for selected department')
+        setLoading(false)
+        return
+      }
+    } catch (authError) {
+      console.error('Authentication error:', authError)
+      alert('Failed to authenticate department')
+      setLoading(false)
       return
     }
     
     // Check if purpose requires sales channel or destination
     if ((purpose === 'Demo/Display' || purpose === 'Internal Use') && !salesChannel) {
       alert('Please select a sales channel')
+      setLoading(false)
       return
     }
     
     if (purpose === 'Warehouse Transfer' && (!destinationChannel || !destinationStore)) {
       alert('Please select a destination sales channel and store')
+      setLoading(false)
       return
     }
 
-    setLoading(true)
     try {
       const saleItems = cart.map((cartItem) => ({
         itemId: cartItem.item.id,
@@ -275,6 +296,8 @@ export default function InternalUsagePage() {
       setDestinationChannel('')
       setDestinationStore('')
       setNotes('')
+      setStaffName('')
+      setStaffPassword('')
       setDispatchModalOpen(false)
       setSuccessModalOpen(true)
       
@@ -296,6 +319,8 @@ export default function InternalUsagePage() {
     setDestinationChannel('')
     setDestinationStore('')
     setNotes('')
+    setStaffName('')
+    setStaffPassword('')
     setSearchProducts('')
     setDispatchModalOpen(true)
   }
@@ -1098,23 +1123,130 @@ export default function InternalUsagePage() {
                     />
                   </div>
 
-                  {/* Dispatched By */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Dispatched By *</Label>
-                    <div className="flex items-center gap-3 p-3 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                        {staffName ? staffName.charAt(0).toUpperCase() : '?'}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                          {staffName || 'Unknown User'}
+                  {/* Agent Selection */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Agent * <span className="text-xs text-slate-500">(Select your agent account)</span></Label>
+                    <Select value={staffName} onValueChange={(value) => {
+                      setStaffName(value)
+                      setStaffPassword('') // Reset password when agent changes
+                    }}>
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder="Select Agent" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {/* Facebook Agents */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">Facebook</div>
+                        <SelectItem value="Facebook">
+                          <div className="flex items-center gap-2">
+                            <img src="/facebook.png" alt="Facebook" className="h-4 w-4" />
+                            <span>Facebook (Main)</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Facebook-Juan">
+                          <div className="flex items-center gap-2 pl-6">
+                            <span>Juan</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Facebook-Maria">
+                          <div className="flex items-center gap-2 pl-6">
+                            <span>Maria</span>
+                          </div>
+                        </SelectItem>
+                        
+                        {/* TikTok Agents */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2">TikTok</div>
+                        <SelectItem value="TikTok">
+                          <div className="flex items-center gap-2">
+                            <img src="/tiktok.png" alt="TikTok" className="h-4 w-4" />
+                            <span>TikTok (Main)</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="TikTok-Pedro">
+                          <div className="flex items-center gap-2 pl-6">
+                            <span>Pedro</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="TikTok-Ana">
+                          <div className="flex items-center gap-2 pl-6">
+                            <span>Ana</span>
+                          </div>
+                        </SelectItem>
+                        
+                        {/* Lazada Agents */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2">Lazada</div>
+                        <SelectItem value="Lazada">
+                          <div className="flex items-center gap-2">
+                            <img src="/Lazada.png" alt="Lazada" className="h-4 w-4" />
+                            <span>Lazada (Main)</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Lazada-Carlo">
+                          <div className="flex items-center gap-2 pl-6">
+                            <span>Carlo</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Lazada-Lisa">
+                          <div className="flex items-center gap-2 pl-6">
+                            <span>Lisa</span>
+                          </div>
+                        </SelectItem>
+                        
+                        {/* Shopee Agents */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2">Shopee</div>
+                        <SelectItem value="Shopee">
+                          <div className="flex items-center gap-2">
+                            <img src="/Shopee.png" alt="Shopee" className="h-4 w-4" />
+                            <span>Shopee (Main)</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Shopee-Rico">
+                          <div className="flex items-center gap-2 pl-6">
+                            <span>Rico</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Shopee-Nina">
+                          <div className="flex items-center gap-2 pl-6">
+                            <span>Nina</span>
+                          </div>
+                        </SelectItem>
+                        
+                        {/* Physical Store Agents */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2">Physical Store</div>
+                        <SelectItem value="Physical Store">
+                          <div className="flex items-center gap-2">
+                            <img src="/Physical Store.png" alt="Physical Store" className="h-4 w-4" />
+                            <span>Physical Store (Main)</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Physical Store-Ben">
+                          <div className="flex items-center gap-2 pl-6">
+                            <span>Ben</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Physical Store-Jane">
+                          <div className="flex items-center gap-2 pl-6">
+                            <span>Jane</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {/* Password Field */}
+                    {staffName && (
+                      <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                        <Label className="text-sm font-medium">Agent Password *</Label>
+                        <Input
+                          type="password"
+                          placeholder="Enter your password"
+                          value={staffPassword}
+                          onChange={(e) => setStaffPassword(e.target.value)}
+                          className="mt-1.5"
+                        />
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          Password required to verify agent identity
                         </p>
-                        <p className="text-xs text-slate-600 dark:text-slate-400">Currently logged in</p>
                       </div>
-                      <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 px-2 py-1 rounded bg-blue-100 dark:bg-blue-800">
-                        Verified
-                      </span>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

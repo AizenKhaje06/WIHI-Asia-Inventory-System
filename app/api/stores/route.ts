@@ -10,7 +10,15 @@ export const GET = withAuth(async (request, { user }) => {
       () => getStores(),
       5 * 60 * 1000 // 5 minutes
     )
-    return NextResponse.json(stores)
+
+    // DEPARTMENT FILTERING: Operations users only see their department's stores
+    let filteredStores = stores
+    if (user.role === 'operations' && user.assignedChannel) {
+      filteredStores = stores.filter(store => store.salesChannel === user.assignedChannel)
+    }
+    // Admin sees all stores
+
+    return NextResponse.json(filteredStores)
   } catch (error) {
     console.error("[API] Error fetching stores:", error)
     return NextResponse.json({ error: "Failed to fetch stores" }, { status: 500 })

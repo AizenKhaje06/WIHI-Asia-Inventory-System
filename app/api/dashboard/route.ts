@@ -71,6 +71,10 @@ export async function GET(request: Request) {
     const startDateParam = searchParams.get('startDate')
     const endDateParam = searchParams.get('endDate')
 
+    // Get user from headers for department filtering
+    const userRole = request.headers.get('x-user-role')
+    const assignedChannel = request.headers.get('x-assigned-channel')
+
     // Parse date parameters
     let startDate: Date | null = null
     let endDate: Date | null = null
@@ -103,10 +107,18 @@ export async function GET(request: Request) {
     }
 
     // Fetch orders from orders table (Track Orders data source)
-    const { data: allOrders, error: ordersError } = await supabase
+    let ordersQuery = supabase
       .from('orders')
       .select('*')
       .eq('status', 'Packed') // Only dispatched orders
+
+    // DEPARTMENT FILTERING: Operations users only see their department's orders
+    if (userRole === 'operations' && assignedChannel) {
+      ordersQuery = ordersQuery.eq('sales_channel', assignedChannel)
+    }
+    // Admin sees all orders
+
+    const { data: allOrders, error: ordersError } = await ordersQuery
 
     if (ordersError) {
       console.error("[Dashboard API] Error fetching orders:", ordersError)

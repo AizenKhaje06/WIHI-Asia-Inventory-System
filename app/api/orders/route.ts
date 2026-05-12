@@ -7,11 +7,30 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     
+    // Get user from headers (set by middleware)
+    const userRole = request.headers.get('x-user-role')
+    const assignedChannel = request.headers.get('x-assigned-channel')
+    
+    console.log('[Orders API] Request headers:', {
+      userRole,
+      assignedChannel,
+      allHeaders: Object.fromEntries(request.headers.entries())
+    })
+    
     let query = supabase
       .from('orders')
       .select('*')
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
+    
+    // DEPARTMENT FILTERING: Operations users only see their department's orders
+    if (userRole === 'operations' && assignedChannel) {
+      console.log('[Orders API] Filtering by channel:', assignedChannel)
+      query = query.eq('sales_channel', assignedChannel)
+    } else {
+      console.log('[Orders API] No filtering applied (admin or no channel)')
+    }
+    // Admin sees all orders
     
     // Filter by status if provided
     if (status) {

@@ -32,11 +32,23 @@ export async function GET(request: NextRequest) {
     const view = searchParams.get("view")
     const salesChannelFilter = searchParams.get("salesChannel")
 
+    // Get user from headers for department filtering
+    const userRole = request.headers.get('x-user-role')
+    const assignedChannel = request.headers.get('x-assigned-channel')
+
     // Fetch orders from orders table (same as dashboard)
-    const { data: allOrders, error: ordersError } = await supabase
+    let ordersQuery = supabase
       .from('orders')
       .select('*')
       // Don't filter by status here - get all orders and filter by parcel_status later
+
+    // DEPARTMENT FILTERING: Operations users only see their department's orders
+    if (userRole === 'operations' && assignedChannel) {
+      ordersQuery = ordersQuery.eq('sales_channel', assignedChannel)
+    }
+    // Admin sees all orders
+
+    const { data: allOrders, error: ordersError } = await ordersQuery
 
     if (ordersError) {
       console.error("[Reports API] Error fetching orders:", ordersError)
@@ -46,6 +58,9 @@ export async function GET(request: NextRequest) {
     let orders = allOrders || []
 
     console.log('[Reports API] Total orders fetched:', orders.length)
+    if (userRole === 'operations') {
+      console.log('[Reports API] Filtered by channel:', assignedChannel)
+    }
     console.log('[Reports API] Sample order:', orders[0])
 
     // Apply date filters

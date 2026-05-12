@@ -508,6 +508,220 @@
           ]
         },
         {
+          "name": "Departments",
+          "item": [
+            {
+              "name": "Authenticate Department",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"department\": \"Shopee\",\n  \"password\": \"shopee123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/departments/authenticate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "departments", "authenticate"]
+                },
+                "description": "Authenticate department for internal usage tracking. Returns department info on success."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200 (success) or 401 (invalid credentials)",
+                      "pm.test('Status code is 200 or 401', function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 401]);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: If successful, response has required fields",
+                      "if (pm.response.code === 200) {",
+                      "    pm.test('Success response has required fields', function () {",
+                      "        const jsonData = pm.response.json();",
+                      "        pm.expect(jsonData).to.have.property('success');",
+                      "        pm.expect(jsonData).to.have.property('department');",
+                      "        pm.expect(jsonData.success).to.be.true;",
+                      "    });",
+                      "    ",
+                      "    pm.test('Department object has required fields', function () {",
+                      "        const jsonData = pm.response.json();",
+                      "        pm.expect(jsonData.department).to.have.property('id');",
+                      "        pm.expect(jsonData.department).to.have.property('name');",
+                      "    });",
+                      "    ",
+                      "    pm.test('Department name matches request', function () {",
+                      "        const jsonData = pm.response.json();",
+                      "        const requestBody = JSON.parse(pm.request.body.raw);",
+                      "        pm.expect(jsonData.department.name).to.equal(requestBody.department);",
+                      "    });",
+                      "}",
+                      "",
+                      "// Test 4: If error, response has error field",
+                      "if (pm.response.code === 401) {",
+                      "    pm.test('Error response has error field', function () {",
+                      "        const jsonData = pm.response.json();",
+                      "        pm.expect(jsonData).to.have.property('error');",
+                      "    });",
+                      "}",
+                      "",
+                      "// Test 5: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Authenticate Department - Missing Fields",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"department\": \"Shopee\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/departments/authenticate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "departments", "authenticate"]
+                },
+                "description": "Test validation - should fail without password field"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 400 (Bad Request)",
+                      "pm.test('Status code is 400', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error message",
+                      "pm.test('Response has error message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include('required');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Authenticate Department - Invalid Department",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"department\": \"NonExistentDept\",\n  \"password\": \"anypassword\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/departments/authenticate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "departments", "authenticate"]
+                },
+                "description": "Test with non-existent department name"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 401 (Unauthorized)",
+                      "pm.test('Status code is 401', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error message",
+                      "pm.test('Response has error message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include('invalid');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Authenticate Department - Wrong Password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"department\": \"Shopee\",\n  \"password\": \"wrongpassword\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/departments/authenticate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "departments", "authenticate"]
+                },
+                "description": "Test with incorrect password"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 401 (Unauthorized)",
+                      "pm.test('Status code is 401', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error message",
+                      "pm.test('Response has error message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include('password');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "Authentication",
           "item": [
             {

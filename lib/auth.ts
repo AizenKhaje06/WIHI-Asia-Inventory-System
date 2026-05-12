@@ -8,6 +8,7 @@ export interface User {
   displayName: string
   email?: string
   phone?: string
+  assignedChannel?: string // NEW: Department/channel for operations users
 }
 
 // Role definitions with better names
@@ -147,6 +148,7 @@ export function getCurrentUser(): User | null {
     const username = localStorage.getItem('username')
     const role = localStorage.getItem('userRole') as UserRole
     const displayName = localStorage.getItem('displayName')
+    const assignedChannel = localStorage.getItem('assignedChannel') // NEW: Get assigned channel
     
     if (isLoggedIn === 'true' && username && role) {
       // Validate role is valid
@@ -156,7 +158,12 @@ export function getCurrentUser(): User | null {
         return null
       }
       
-      return { username, role, displayName: displayName || username }
+      return { 
+        username, 
+        role, 
+        displayName: displayName || username,
+        assignedChannel // NEW: Include in user object
+      }
     }
   } catch (error) {
     console.error('[Auth] Error reading user from localStorage:', error)
@@ -164,6 +171,24 @@ export function getCurrentUser(): User | null {
   }
   
   return null
+}
+
+/**
+ * Get the assigned channel/department for the current operations user
+ * Returns null for admin (sees all data) and packer roles
+ */
+export function getUserDepartment(): string | null {
+  if (typeof window === 'undefined') return null
+  
+  try {
+    const user = getCurrentUser()
+    if (!user || user.role !== 'operations') return null
+    
+    return user.assignedChannel || null
+  } catch (error) {
+    console.error('[Auth] Error getting user department:', error)
+    return null
+  }
 }
 
 export function setCurrentUser(user: User): void {

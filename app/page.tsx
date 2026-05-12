@@ -238,41 +238,49 @@ export default function EnterpriseLoginPage() {
         }
       }
 
-      // Operations login
+      // Operations login - Use department authentication
       if (formData.role === 'operations') {
-        const data = await apiPost("/api/accounts", {
-          action: "validate",
-          username: formData.username,
-          password: formData.password
+        const authResponse = await fetch('/api/departments/authenticate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            department: formData.username,
+            password: formData.password
+          })
         })
 
-        if (data.success && data.account && data.account.role === 'operations') {
-          if (typeof window !== 'undefined') {
-            if (formData.rememberDevice) {
-              localStorage.setItem("rememberedUsername", formData.username)
-            } else {
-              localStorage.removeItem("rememberedUsername")
-            }
-            
-            localStorage.setItem("isLoggedIn", "true")
-            localStorage.setItem("username", data.account.username)
-            localStorage.setItem("userRole", "operations")
-            localStorage.setItem("displayName", data.account.displayName)
-            
-            localStorage.setItem("currentUser", JSON.stringify({
-              username: data.account.username,
-              role: "operations",
-              displayName: data.account.displayName,
-              email: data.account.email || '',
-              phone: data.account.phone || ''
-            }))
+        const authData = await authResponse.json()
+
+        if (!authResponse.ok || !authData.success) {
+          throw new Error(authData.error || "Invalid department credentials")
+        }
+
+        // Authentication successful - Store department channel for filtering
+        if (typeof window !== 'undefined') {
+          if (formData.rememberDevice) {
+            localStorage.setItem("rememberedUsername", formData.username)
+          } else {
+            localStorage.removeItem("rememberedUsername")
           }
           
-          router.push('/dashboard/operations')
-          return
-        } else {
-          throw new Error("Invalid operations credentials or account is not operations staff")
+          localStorage.setItem("isLoggedIn", "true")
+          localStorage.setItem("username", authData.department.name)
+          localStorage.setItem("userRole", "operations")
+          localStorage.setItem("displayName", authData.department.display_name)
+          localStorage.setItem("assignedChannel", authData.department.assigned_channel) // NEW: Store for filtering
+          
+          localStorage.setItem("currentUser", JSON.stringify({
+            username: authData.department.name,
+            role: "operations",
+            displayName: authData.department.display_name,
+            assignedChannel: authData.department.assigned_channel,
+            email: '',
+            phone: ''
+          }))
         }
+        
+        router.push('/dashboard/operations')
+        return
       }
 
       // Admin login

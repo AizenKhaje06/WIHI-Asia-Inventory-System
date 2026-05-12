@@ -16,6 +16,7 @@ export interface AuthenticatedRequest extends NextRequest {
     username: string
     role: UserRole
     displayName: string
+    assignedChannel?: string
   }
 }
 
@@ -41,12 +42,13 @@ export const AuthErrors = {
  * Check if user is authenticated
  * This reads from the request headers (set by client)
  */
-export function getAuthUser(request: NextRequest): { username: string; role: UserRole; displayName: string } | null {
+export function getAuthUser(request: NextRequest): { username: string; role: UserRole; displayName: string; assignedChannel?: string } | null {
   try {
     // Check for admin/operations/packer headers
     const username = request.headers.get('x-user-username')
     const role = request.headers.get('x-user-role') as UserRole
     const displayName = request.headers.get('x-user-display-name')
+    const assignedChannel = request.headers.get('x-assigned-channel')
 
     if (!username || !role) {
       return null
@@ -58,7 +60,12 @@ export function getAuthUser(request: NextRequest): { username: string; role: Use
       return null
     }
 
-    return { username, role, displayName: displayName || username }
+    return { 
+      username, 
+      role, 
+      displayName: displayName || username,
+      assignedChannel: assignedChannel || undefined
+    }
   } catch (error) {
     console.error('[API Auth] Error reading auth headers:', error)
     return null
@@ -70,7 +77,7 @@ export function getAuthUser(request: NextRequest): { username: string; role: Use
  * Returns user if authenticated, otherwise returns error response
  */
 export function requireAuth(request: NextRequest): 
-  { user: { username: string; role: UserRole; displayName: string } } | NextResponse {
+  { user: { username: string; role: UserRole; displayName: string; assignedChannel?: string } } | NextResponse {
   
   const user = getAuthUser(request)
   
@@ -86,7 +93,7 @@ export function requireAuth(request: NextRequest):
  * Returns user if authorized, otherwise returns error response
  */
 export function requireRole(request: NextRequest, allowedRoles: UserRole[]): 
-  { user: { username: string; role: UserRole; displayName: string } } | NextResponse {
+  { user: { username: string; role: UserRole; displayName: string; assignedChannel?: string } } | NextResponse {
   
   const authResult = requireAuth(request)
   
@@ -110,7 +117,7 @@ export function requireRole(request: NextRequest, allowedRoles: UserRole[]):
  * Convenience function for admin-only routes
  */
 export function requireAdmin(request: NextRequest): 
-  { user: { username: string; role: UserRole; displayName: string } } | NextResponse {
+  { user: { username: string; role: UserRole; displayName: string; assignedChannel?: string } } | NextResponse {
   
   return requireRole(request, ['admin'])
 }
@@ -119,7 +126,7 @@ export function requireAdmin(request: NextRequest):
  * Check if user has permission to access a path
  */
 export function requirePermission(request: NextRequest, path: string): 
-  { user: { username: string; role: UserRole; displayName: string } } | NextResponse {
+  { user: { username: string; role: UserRole; displayName: string; assignedChannel?: string } } | NextResponse {
   
   const authResult = requireAuth(request)
   
@@ -148,10 +155,12 @@ export function addAuthHeaders(headers: Headers = new Headers()): Headers {
     const username = localStorage.getItem('username')
     const role = localStorage.getItem('userRole')
     const displayName = localStorage.getItem('displayName')
+    const assignedChannel = localStorage.getItem('assignedChannel')
 
     if (username) headers.set('x-user-username', username)
     if (role) headers.set('x-user-role', role)
     if (displayName) headers.set('x-user-display-name', displayName)
+    if (assignedChannel) headers.set('x-assigned-channel', assignedChannel)
   } catch (error) {
     console.error('[API Auth] Error adding auth headers:', error)
   }

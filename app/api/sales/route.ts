@@ -9,9 +9,25 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { items, department, staffName, notes } = body
 
+    // Get user from headers for department filtering
+    const userRole = request.headers.get('x-user-role')
+    const assignedChannel = request.headers.get('x-assigned-channel')
+
     if (!department) {
       return NextResponse.json({ error: "Department is required" }, { status: 400 })
     }
+
+    // DEPARTMENT VALIDATION: Operations users can only create sales for their department
+    if (userRole === 'operations' && assignedChannel) {
+      // Extract sales channel from department string (e.g., "Facebook / Store 1" -> "Facebook")
+      const departmentChannel = department.split(' / ')[0].trim()
+      if (departmentChannel !== assignedChannel) {
+        return NextResponse.json({ 
+          error: `You can only create sales for ${assignedChannel}` 
+        }, { status: 403 })
+      }
+    }
+    // Admin can create sales for any department
 
     // Determine transaction type based on destination
     const transactionType = department.startsWith('Demo/Display') 

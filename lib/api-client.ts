@@ -1,12 +1,13 @@
 /**
- * API Client
+ * API Client - UPDATED WITH DEPARTMENT FILTERING
  * 
  * Client-side wrapper for making authenticated API requests
- * Automatically adds authentication headers to all requests
+ * Automatically adds authentication headers INCLUDING assignedChannel
  */
 
 /**
  * Add authentication headers to fetch requests
+ * INCLUDES assignedChannel for department filtering
  */
 function getAuthHeaders(): HeadersInit {
   if (typeof window === 'undefined') return {}
@@ -14,14 +15,28 @@ function getAuthHeaders(): HeadersInit {
   try {
     const headers: Record<string, string> = {}
 
-    // Get user authentication from localStorage
+    // Get ALL user authentication from localStorage
     const username = localStorage.getItem('username')
     const role = localStorage.getItem('userRole')
     const displayName = localStorage.getItem('displayName')
+    const assignedChannel = localStorage.getItem('assignedChannel')
 
+    // DEBUG: Log what we're reading from localStorage
+    console.log('[API Client] Reading from localStorage:', {
+      username,
+      role,
+      displayName,
+      assignedChannel
+    })
+
+    // Add headers
     if (username) headers['x-user-username'] = username
     if (role) headers['x-user-role'] = role
     if (displayName) headers['x-user-display-name'] = displayName
+    if (assignedChannel) headers['x-assigned-channel'] = assignedChannel
+
+    // DEBUG: Log final headers
+    console.log('[API Client] Final headers:', headers)
 
     return headers
   } catch (error) {
@@ -33,10 +48,6 @@ function getAuthHeaders(): HeadersInit {
 /**
  * Authenticated fetch wrapper
  * Use this instead of fetch() for all API calls
- * 
- * @example
- * const items = await apiFetch('/api/items')
- * const newItem = await apiFetch('/api/items', { method: 'POST', body: JSON.stringify(data) })
  */
 export async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const authHeaders = getAuthHeaders()
@@ -47,6 +58,9 @@ export async function apiFetch(url: string, options: RequestInit = {}): Promise<
     ...options.headers,
   }
 
+  console.log('[API Client] Making request to:', url)
+  console.log('[API Client] With headers:', headers)
+
   return fetch(url, {
     ...options,
     headers,
@@ -55,10 +69,6 @@ export async function apiFetch(url: string, options: RequestInit = {}): Promise<
 
 /**
  * Authenticated fetch with JSON response
- * Automatically parses JSON and handles errors
- * 
- * @example
- * const items = await apiGet<InventoryItem[]>('/api/items')
  */
 export async function apiGet<T = any>(url: string): Promise<T> {
   const response = await apiFetch(url)
@@ -74,9 +84,6 @@ export async function apiGet<T = any>(url: string): Promise<T> {
 
 /**
  * Authenticated POST request
- * 
- * @example
- * const newItem = await apiPost('/api/items', { name: 'Product', quantity: 10 })
  */
 export async function apiPost<T = any>(url: string, data: any): Promise<T> {
   const response = await apiFetch(url, {
@@ -94,9 +101,6 @@ export async function apiPost<T = any>(url: string, data: any): Promise<T> {
 
 /**
  * Authenticated PUT request
- * 
- * @example
- * await apiPut('/api/items/123', { quantity: 20 })
  */
 export async function apiPut<T = any>(url: string, data: any): Promise<T> {
   const response = await apiFetch(url, {
@@ -114,9 +118,6 @@ export async function apiPut<T = any>(url: string, data: any): Promise<T> {
 
 /**
  * Authenticated DELETE request
- * 
- * @example
- * await apiDelete('/api/items/123')
  */
 export async function apiDelete(url: string): Promise<void> {
   const response = await apiFetch(url, {

@@ -11,10 +11,20 @@ export async function GET(request: NextRequest) {
     const store = searchParams.get('store')
     const activeOnly = searchParams.get('activeOnly') !== 'false'
     
+    // Get user from headers for department filtering
+    const userRole = request.headers.get('x-user-role')
+    const assignedChannel = request.headers.get('x-assigned-channel')
+    
     let query = supabase.from('bundles').select('*').order('created_at', { ascending: false })
     
     if (activeOnly) query = query.eq('is_active', true)
     if (store) query = query.eq('store', store)
+
+    // DEPARTMENT FILTERING: Operations users only see their department's bundles
+    if (userRole === 'operations' && assignedChannel) {
+      query = query.eq('sales_channel', assignedChannel)
+    }
+    // Admin sees all bundles
     
     const { data, error } = await query
     

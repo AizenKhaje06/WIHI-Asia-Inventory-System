@@ -29,6 +29,10 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
 
+    // Get user from headers for department filtering
+    const userRole = request.headers.get('x-user-role')
+    const assignedChannel = request.headers.get('x-assigned-channel')
+
     // Fetch all packed orders (dispatched orders)
     // Exclude CANCELLED, RETURNED, DETAINED, and PROBLEMATIC orders from the query
     let query = supabase
@@ -36,6 +40,12 @@ export async function GET(request: NextRequest) {
       .select('*')
       .eq('status', 'Packed')
       .not('parcel_status', 'in', '(CANCELLED,RETURNED,DETAINED,PROBLEMATIC)')
+
+    // DEPARTMENT FILTERING: Operations users only see their department's orders
+    if (userRole === 'operations' && assignedChannel) {
+      query = query.eq('sales_channel', assignedChannel)
+    }
+    // Admin sees all orders
 
     // Apply date filters if provided
     if (startDate) {
