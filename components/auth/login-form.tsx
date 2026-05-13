@@ -153,111 +153,52 @@ export function LoginForm({
         </Alert>
       )}
 
-      {/* Username Field - Dropdown for Operations (loads agents dynamically), Input for Others */}
+      {/* Username Field - Dropdown for Operations (shows departments only), Input for Others */}
       <div className="space-y-2">
         <Label htmlFor="username" className="text-slate-200 font-medium">
-          {role === 'operations' ? 'Agent' : 'Username'}
+          {role === 'operations' ? 'Department' : 'Username'}
         </Label>
         {role === 'operations' ? (
           <div className="relative group">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none" />
             <Select value={username} onValueChange={setUsername} disabled={loading}>
               <SelectTrigger className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50">
-                <SelectValue placeholder="Select Agent" />
+                <SelectValue placeholder="Select Department" />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
-                {/* Facebook Agents */}
-                <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">Facebook</div>
+                {/* Show only main departments - no individual agents */}
                 <SelectItem value="Facebook">
                   <div className="flex items-center gap-2">
                     <img src="/facebook.png" alt="Facebook" className="h-4 w-4" />
-                    <span>Facebook (Main)</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Facebook-Juan">
-                  <div className="flex items-center gap-2 pl-6">
-                    <span>Juan</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Facebook-Maria">
-                  <div className="flex items-center gap-2 pl-6">
-                    <span>Maria</span>
+                    <span>Facebook</span>
                   </div>
                 </SelectItem>
                 
-                {/* TikTok Agents */}
-                <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2">TikTok</div>
                 <SelectItem value="TikTok">
                   <div className="flex items-center gap-2">
                     <img src="/tiktok.png" alt="TikTok" className="h-4 w-4" />
-                    <span>TikTok (Main)</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="TikTok-Pedro">
-                  <div className="flex items-center gap-2 pl-6">
-                    <span>Pedro</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="TikTok-Ana">
-                  <div className="flex items-center gap-2 pl-6">
-                    <span>Ana</span>
+                    <span>TikTok</span>
                   </div>
                 </SelectItem>
                 
-                {/* Lazada Agents */}
-                <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2">Lazada</div>
                 <SelectItem value="Lazada">
                   <div className="flex items-center gap-2">
                     <img src="/Lazada.png" alt="Lazada" className="h-4 w-4" />
-                    <span>Lazada (Main)</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Lazada-Carlo">
-                  <div className="flex items-center gap-2 pl-6">
-                    <span>Carlo</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Lazada-Lisa">
-                  <div className="flex items-center gap-2 pl-6">
-                    <span>Lisa</span>
+                    <span>Lazada</span>
                   </div>
                 </SelectItem>
                 
-                {/* Shopee Agents */}
-                <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2">Shopee</div>
                 <SelectItem value="Shopee">
                   <div className="flex items-center gap-2">
                     <img src="/Shopee.png" alt="Shopee" className="h-4 w-4" />
-                    <span>Shopee (Main)</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Shopee-Rico">
-                  <div className="flex items-center gap-2 pl-6">
-                    <span>Rico</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Shopee-Nina">
-                  <div className="flex items-center gap-2 pl-6">
-                    <span>Nina</span>
+                    <span>Shopee</span>
                   </div>
                 </SelectItem>
                 
-                {/* Physical Store Agents */}
-                <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2">Physical Store</div>
                 <SelectItem value="Physical Store">
                   <div className="flex items-center gap-2">
                     <img src="/Physical Store.png" alt="Physical Store" className="h-4 w-4" />
-                    <span>Physical Store (Main)</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Physical Store-Ben">
-                  <div className="flex items-center gap-2 pl-6">
-                    <span>Ben</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Physical Store-Jane">
-                  <div className="flex items-center gap-2 pl-6">
-                    <span>Jane</span>
+                    <span>Physical Store</span>
                   </div>
                 </SelectItem>
               </SelectContent>
