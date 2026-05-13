@@ -3,12 +3,12 @@ import { supabase } from "@/lib/supabase"
 
 export async function GET() {
   try {
-    // Fetch all operations users (departments)
-    const { data: departments, error } = await supabase
+    // Fetch all operations users (departments and agents)
+    const { data: allUsers, error } = await supabase
       .from('users')
       .select('id, username, display_name, assigned_channel')
       .eq('role', 'operations')
-      .order('username')
+      .order('assigned_channel')
 
     if (error) {
       console.error("[Departments List] Error:", error)
@@ -18,17 +18,30 @@ export async function GET() {
       )
     }
 
-    // Map to include icon paths based on assigned_channel
-    const departmentsWithIcons = (departments || []).map(dept => ({
-      id: dept.id,
-      name: dept.username,
-      display_name: dept.display_name,
-      assigned_channel: dept.assigned_channel,
-      icon_path: getIconPath(dept.assigned_channel || dept.username)
-    }))
+    // Group by assigned_channel to get unique departments only
+    // This ensures we only show department names, not individual agents
+    const uniqueDepartments = new Map<string, any>()
+    
+    allUsers?.forEach(user => {
+      const channel = user.assigned_channel
+      if (channel && !uniqueDepartments.has(channel)) {
+        // Use the first user of each department as the representative
+        uniqueDepartments.set(channel, {
+          id: user.id,
+          name: channel, // Use channel name as the department name
+          display_name: channel, // Display the channel name
+          assigned_channel: channel,
+          icon_path: getIconPath(channel)
+        })
+      }
+    })
+
+    const departments = Array.from(uniqueDepartments.values())
+
+    console.log('[Departments List] Returning unique departments:', departments.map(d => d.name))
 
     return NextResponse.json({
-      departments: departmentsWithIcons
+      departments
     })
 
   } catch (error) {
