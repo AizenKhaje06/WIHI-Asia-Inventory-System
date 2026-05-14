@@ -16,11 +16,8 @@ export const GET = withAuth(async (request, { user }) => {
       .select('*')
       .order('name', { ascending: true })
 
-    // DEPARTMENT FILTERING: Operations users only see their department's products
-    if (user.role === 'operations' && user.assignedChannel) {
-      query = query.eq('sales_channel', user.assignedChannel)
-    }
-    // Admin sees all products
+    // Products are universal - all roles can see all products
+    // No department/channel filtering needed
 
     // Apply filters
     if (search) {
@@ -47,10 +44,6 @@ export const GET = withAuth(async (request, { user }) => {
     }
 
     console.log('[Products API] Fetched products count:', data?.length)
-    console.log('[Products API] User role:', user.role)
-    if (user.role === 'operations') {
-      console.log('[Products API] Filtered by channel:', user.assignedChannel)
-    }
 
     return NextResponse.json(data || [])
   } catch (error) {
