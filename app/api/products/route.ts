@@ -44,6 +44,7 @@ export const GET = withAuth(async (request, { user }) => {
     }
 
     console.log('[Products API] Fetched products count:', data?.length)
+    console.log('[Products API] First 3 products:', data?.slice(0, 3))
 
     return NextResponse.json(data || [])
   } catch (error) {

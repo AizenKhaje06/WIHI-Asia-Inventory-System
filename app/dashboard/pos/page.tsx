@@ -99,6 +99,9 @@ export default function POSPage() {
       // Fetch from unified products view (includes both inventory and bundles)
       const data = await apiGet<InventoryItem[]>("/api/products")
       const itemsArray = Array.isArray(data) ? data : []
+      console.log('[POS] Fetched items count:', itemsArray.length)
+      console.log('[POS] First 5 items:', itemsArray.slice(0, 5))
+      console.log('[POS] Product types:', itemsArray.map(i => i.productType))
       setItems(itemsArray)
     } catch (error) {
       console.error("[POS] Error fetching items:", error)
