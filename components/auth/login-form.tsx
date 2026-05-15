@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Eye, EyeOff, Lock, User, Loader2, ArrowRight, AlertCircle, Info } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -21,6 +21,14 @@ interface Staff {
   id: string
   name: string
   identifier: string
+}
+
+interface Agent {
+  id: string
+  username: string
+  displayName: string
+  assignedChannel: string
+  iconPath: string
 }
 
 interface LoginFormProps {
@@ -62,6 +70,34 @@ export function LoginForm({
   const [error, setError] = useState("")
   const [capsLockOn, setCapsLockOn] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState(0)
+  
+  // Operations agents state
+  const [agents, setAgents] = useState<Agent[]>([])
+  const [agentsLoading, setAgentsLoading] = useState(false)
+
+  // Fetch agents when operations role is selected
+  useEffect(() => {
+    if (role === 'operations') {
+      fetchAgents()
+    }
+  }, [role])
+
+  const fetchAgents = async () => {
+    setAgentsLoading(true)
+    try {
+      const response = await fetch('/api/departments/agents')
+      const data = await response.json()
+      
+      if (data.success && data.agents) {
+        setAgents(data.agents)
+        console.log('[LoginForm] Loaded agents:', data.agents.length)
+      }
+    } catch (error) {
+      console.error('[LoginForm] Error fetching agents:', error)
+    } finally {
+      setAgentsLoading(false)
+    }
+  }
 
   // Password strength calculator
   const calculatePasswordStrength = (pwd: string) => {
@@ -153,7 +189,7 @@ export function LoginForm({
         </Alert>
       )}
 
-      {/* Username Field - Dropdown for Operations (shows individual agents), Input for Others */}
+      {/* Username Field - Dropdown for Operations (dynamically loaded agents), Input for Others */}
       <div className="space-y-2">
         <Label htmlFor="username" className="text-slate-200 font-medium">
           {role === 'operations' ? 'Agent Account' : 'Username'}
@@ -161,80 +197,30 @@ export function LoginForm({
         {role === 'operations' ? (
           <div className="relative group">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none" />
-            <Select value={username} onValueChange={setUsername} disabled={loading}>
+            <Select value={username} onValueChange={setUsername} disabled={loading || agentsLoading}>
               <SelectTrigger className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50">
-                <SelectValue placeholder="Select Agent Account" />
+                <SelectValue placeholder={agentsLoading ? "Loading agents..." : "Select Agent Account"} />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
-                {/* Facebook Agents */}
-                <SelectItem value="Facebook-Juan">
-                  <div className="flex items-center gap-2">
-                    <img src="/facebook.png" alt="Facebook" className="h-4 w-4" />
-                    <span>Juan (Facebook)</span>
+                {agentsLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                    <span className="ml-2 text-sm text-slate-400">Loading agents...</span>
                   </div>
-                </SelectItem>
-                <SelectItem value="Facebook-Maria">
-                  <div className="flex items-center gap-2">
-                    <img src="/facebook.png" alt="Facebook" className="h-4 w-4" />
-                    <span>Maria (Facebook)</span>
+                ) : agents.length === 0 ? (
+                  <div className="py-4 text-center text-sm text-slate-400">
+                    No agents found
                   </div>
-                </SelectItem>
-                
-                {/* TikTok Agents */}
-                <SelectItem value="TikTok-Pedro">
-                  <div className="flex items-center gap-2">
-                    <img src="/tiktok.png" alt="TikTok" className="h-4 w-4" />
-                    <span>Pedro (TikTok)</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="TikTok-Ana">
-                  <div className="flex items-center gap-2">
-                    <img src="/tiktok.png" alt="TikTok" className="h-4 w-4" />
-                    <span>Ana (TikTok)</span>
-                  </div>
-                </SelectItem>
-                
-                {/* Lazada Agents */}
-                <SelectItem value="Lazada-Carlo">
-                  <div className="flex items-center gap-2">
-                    <img src="/Lazada.png" alt="Lazada" className="h-4 w-4" />
-                    <span>Carlo (Lazada)</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Lazada-Lisa">
-                  <div className="flex items-center gap-2">
-                    <img src="/Lazada.png" alt="Lazada" className="h-4 w-4" />
-                    <span>Lisa (Lazada)</span>
-                  </div>
-                </SelectItem>
-                
-                {/* Shopee Agents */}
-                <SelectItem value="Shopee-Rico">
-                  <div className="flex items-center gap-2">
-                    <img src="/Shopee.png" alt="Shopee" className="h-4 w-4" />
-                    <span>Rico (Shopee)</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Shopee-Nina">
-                  <div className="flex items-center gap-2">
-                    <img src="/Shopee.png" alt="Shopee" className="h-4 w-4" />
-                    <span>Nina (Shopee)</span>
-                  </div>
-                </SelectItem>
-                
-                {/* Physical Store Agents */}
-                <SelectItem value="Physical Store-Ben">
-                  <div className="flex items-center gap-2">
-                    <img src="/Physical Store.png" alt="Physical Store" className="h-4 w-4" />
-                    <span>Ben (Physical Store)</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Physical Store-Jane">
-                  <div className="flex items-center gap-2">
-                    <img src="/Physical Store.png" alt="Physical Store" className="h-4 w-4" />
-                    <span>Jane (Physical Store)</span>
-                  </div>
-                </SelectItem>
+                ) : (
+                  agents.map((agent) => (
+                    <SelectItem key={agent.id} value={agent.username}>
+                      <div className="flex items-center gap-2">
+                        <img src={agent.iconPath} alt={agent.assignedChannel} className="h-4 w-4" />
+                        <span>{agent.displayName}</span>
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
