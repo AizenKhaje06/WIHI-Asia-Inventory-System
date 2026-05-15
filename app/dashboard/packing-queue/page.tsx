@@ -170,11 +170,11 @@ export default function PackingQueuePage() {
         return
       }
 
-      // Admin: Fetch only pending orders (not yet packed)
+      // Fetch only pending orders (not yet packed)
       const data = await apiGet<any[]>('/api/orders?status=Pending')
       
       // Map database fields to Order interface
-      const mappedOrders: Order[] = data.map(order => ({
+      let mappedOrders: Order[] = data.map(order => ({
         id: order.id,
         orderNumber: order.id,
         date: order.date,
@@ -203,6 +203,14 @@ export default function PackingQueuePage() {
         created_at: order.created_at,
         orderDate: order.created_at
       } as any))
+      
+      // DEPARTMENT FILTERING: Operations users only see their department's orders
+      if (currentUser?.role === 'operations' && currentUser?.assignedChannel) {
+        mappedOrders = mappedOrders.filter(order => 
+          order.sales_channel === currentUser.assignedChannel
+        )
+      }
+      // Admin sees all orders
       
       setOrders(mappedOrders)
       setFilteredOrders(mappedOrders)
