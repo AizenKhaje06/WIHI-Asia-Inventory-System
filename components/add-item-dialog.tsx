@@ -9,11 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Package, Loader2 } from "lucide-react"
-import type { Store } from "@/lib/types"
 import { apiGet, apiPost } from "@/lib/api-client"
 import { toast } from "sonner"
-
-const SALES_CHANNELS = ['Shopee', 'Lazada', 'Facebook', 'TikTok', 'Physical Store'] as const
 
 interface AddItemDialogProps {
   open: boolean
@@ -23,39 +20,24 @@ interface AddItemDialogProps {
 
 export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogProps) {
   const [loading, setLoading] = useState(false)
-  const [stores, setStores] = useState<Store[]>([])
   const [categories, setCategories] = useState<Array<{id: string, name: string}>>([])
-  const [loadingStores, setLoadingStores] = useState(true)
   const [loadingCategories, setLoadingCategories] = useState(true)
   const [formData, setFormData] = useState({
     name: "",
     category: "",
-    salesChannel: "",
-    store: "",
     quantity: 0,
     costPrice: 0,
     sellingPrice: 0,
     reorderLevel: 0,
+    salesChannel: "Physical Store", // Default value for universal products
+    store: "Main Store", // Default value for universal products
   })
 
   useEffect(() => {
     if (open) {
-      fetchStores()
       fetchCategories()
     }
   }, [open])
-
-  async function fetchStores() {
-    try {
-      setLoadingStores(true)
-      const data = await apiGet<Store[]>("/api/stores")
-      setStores(data)
-    } catch (error) {
-      console.error("Error fetching stores:", error)
-    } finally {
-      setLoadingStores(false)
-    }
-  }
 
   async function fetchCategories() {
     try {
@@ -74,6 +56,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
     setLoading(true)
 
     try {
+      // Products are now universal - no sales channel or store needed
       await apiPost("/api/items", formData)
       toast.success("Product added successfully!")
       onSuccess()
@@ -81,15 +64,15 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
       setFormData({
         name: "",
         category: "",
-        salesChannel: "",
-        store: "",
         quantity: 0,
         costPrice: 0,
         sellingPrice: 0,
         reorderLevel: 0,
+        salesChannel: "Physical Store",
+        store: "Main Store",
       })
     } catch (error: any) {
-      console.error("[v0] Error adding item:", error)
+      console.error("[Add Item] Error adding item:", error)
       
       // Show user-friendly error message
       if (error.message) {
@@ -205,53 +188,6 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 onChange={(e) => setFormData({ ...formData, reorderLevel: Number.parseInt(e.target.value) })}
                 className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="salesChannel" className="text-slate-700 dark:text-slate-300 font-medium">
-                Sales Channel
-              </Label>
-              <Select value={formData.salesChannel} onValueChange={(value) => setFormData({ ...formData, salesChannel: value, store: "" })} required>
-                <SelectTrigger id="salesChannel" className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
-                  <SelectValue placeholder="Select sales channel" />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  {SALES_CHANNELS.map((channel) => (
-                    <SelectItem key={channel} value={channel}>
-                      {channel}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="store" className="text-slate-700 dark:text-slate-300 font-medium">
-                Store
-              </Label>
-              <Select 
-                value={formData.store} 
-                onValueChange={(value) => setFormData({ ...formData, store: value })} 
-                required
-                disabled={!formData.salesChannel}
-              >
-                <SelectTrigger id="store" className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
-                  <SelectValue placeholder={!formData.salesChannel ? "Select sales channel first" : loadingStores ? "Loading stores..." : "Select a store"} />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  {loadingStores ? (
-                    <SelectItem value="loading" disabled>Loading...</SelectItem>
-                  ) : stores.filter(s => s.sales_channel === formData.salesChannel).length === 0 ? (
-                    <SelectItem value="none" disabled>No stores available for this channel</SelectItem>
-                  ) : (
-                    stores
-                      .filter(s => s.sales_channel === formData.salesChannel)
-                      .map((store) => (
-                        <SelectItem key={store.id} value={store.store_name}>
-                          {store.store_name}
-                        </SelectItem>
-                      ))
-                  )}
-                </SelectContent>
-              </Select>
             </div>
           </div>
           <div className="flex justify-end gap-2">

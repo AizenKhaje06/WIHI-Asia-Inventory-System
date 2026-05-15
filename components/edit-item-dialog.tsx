@@ -10,12 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Package, AlertCircle } from "lucide-react"
-import type { InventoryItem, Store } from "@/lib/types"
+import type { InventoryItem } from "@/lib/types"
 import { apiGet, apiPut } from "@/lib/api-client"
 import { getCurrentUser } from "@/lib/auth"
 import { formatCurrency, cn } from "@/lib/utils"
-
-const SALES_CHANNELS = ['Shopee', 'Lazada', 'Facebook', 'TikTok', 'Physical Store'] as const
 
 // Helper functions for bundle calculations
 function calculateBundleCost(components: Array<{ quantity: number; costPrice: number }>): number {
@@ -36,9 +34,7 @@ interface EditItemDialogProps {
 
 export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItemDialogProps) {
   const [loading, setLoading] = useState(false)
-  const [stores, setStores] = useState<Store[]>([])
   const [categories, setCategories] = useState<Array<{id: string, name: string}>>([])
-  const [loadingStores, setLoadingStores] = useState(true)
   const [loadingCategories, setLoadingCategories] = useState(true)
   const [componentItems, setComponentItems] = useState<InventoryItem[]>([])
   const [loadingComponents, setLoadingComponents] = useState(false)
@@ -52,8 +48,6 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
   const [formData, setFormData] = useState({
     name: item.name,
     category: item.category,
-    salesChannel: item.salesChannel || "",
-    store: item.store,
     quantity: item.quantity,
     costPrice: item.costPrice,
     sellingPrice: item.sellingPrice,
@@ -64,8 +58,6 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
     setFormData({
       name: item.name,
       category: item.category,
-      salesChannel: item.salesChannel || "",
-      store: item.store,
       quantity: item.quantity,
       costPrice: item.costPrice,
       sellingPrice: item.sellingPrice,
@@ -75,7 +67,6 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
 
   useEffect(() => {
     if (open) {
-      fetchStores()
       fetchCategories()
       if (isBundle && bundleComponents.length > 0) {
         fetchComponentDetails()
@@ -94,18 +85,6 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
       console.error("Error fetching component details:", error)
     } finally {
       setLoadingComponents(false)
-    }
-  }
-
-  async function fetchStores() {
-    try {
-      setLoadingStores(true)
-      const data = await apiGet<Store[]>("/api/stores")
-      setStores(data)
-    } catch (error) {
-      console.error("Error fetching stores:", error)
-    } finally {
-      setLoadingStores(false)
     }
   }
 
@@ -226,55 +205,6 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
               {isAdmin && (
                 <p className="text-xs text-orange-600 dark:text-orange-400">⚠️ Admin: Direct quantity edit enabled</p>
               )}
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="edit-salesChannel" className="text-slate-700 dark:text-slate-300 font-medium">
-                Sales Channel
-              </Label>
-              <Select value={formData.salesChannel} onValueChange={(value) => setFormData({ ...formData, salesChannel: value, store: "" })} required>
-                <SelectTrigger id="edit-salesChannel" className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
-                  <SelectValue placeholder="Select sales channel" />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  {SALES_CHANNELS.map((channel) => (
-                    <SelectItem key={channel} value={channel}>
-                      {channel}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="edit-store" className="text-slate-700 dark:text-slate-300 font-medium">
-                Store
-              </Label>
-              <Select 
-                value={formData.store} 
-                onValueChange={(value) => setFormData({ ...formData, store: value })} 
-                required
-                disabled={!formData.salesChannel}
-              >
-                <SelectTrigger id="edit-store" className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20">
-                  <SelectValue placeholder={!formData.salesChannel ? "Select sales channel first" : loadingStores ? "Loading stores..." : "Select a store"} />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  {loadingStores ? (
-                    <SelectItem value="loading" disabled>Loading...</SelectItem>
-                  ) : stores.filter(s => s.sales_channel === formData.salesChannel).length === 0 ? (
-                    <SelectItem value="none" disabled>No stores available for this channel</SelectItem>
-                  ) : (
-                    stores
-                      .filter(s => s.sales_channel === formData.salesChannel)
-                      .map((store) => (
-                        <SelectItem key={store.id} value={store.store_name}>
-                          {store.store_name}
-                        </SelectItem>
-                      ))
-                  )}
-                </SelectContent>
-              </Select>
             </div>
             
             <div className="space-y-2">
