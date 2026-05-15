@@ -1204,7 +1204,7 @@ export default function InventoryPage() {
                 </div>
               </div>
 
-              {/* Total Value - Green Gradient */}
+              {/* Total Value - Green Gradient (Excludes Bundles) */}
               <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
                 <div className="relative">
@@ -1215,17 +1215,17 @@ export default function InventoryPage() {
                   </div>
                   <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Value</p>
                   <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent tabular-nums mb-2">
-                    {formatCurrency(Array.isArray(items) ? items.reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0) : 0)}
+                    {formatCurrency(Array.isArray(items) ? items.filter(item => item.productType !== 'bundle').reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0) : 0)}
                   </p>
                   {(search || salesChannelFilter !== "all") && (
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Filtered: {formatCurrency(Array.isArray(filteredItems) ? filteredItems.reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0) : 0)}
+                      Filtered: {formatCurrency(Array.isArray(filteredItems) ? filteredItems.filter(item => item.productType !== 'bundle').reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0) : 0)}
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* Total COGS - Orange Gradient */}
+              {/* Total COGS - Orange Gradient (Excludes Bundles) */}
               <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-full -mr-16 -mt-16" />
                 <div className="relative">
@@ -1236,11 +1236,11 @@ export default function InventoryPage() {
                   </div>
                   <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total COGS</p>
                   <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-orange-600 to-orange-700 bg-clip-text text-transparent tabular-nums mb-2">
-                    {formatCurrency(Array.isArray(items) ? items.reduce((sum, item) => sum + (item.totalCOGS || (item.costPrice * item.quantity)), 0) : 0)}
+                    {formatCurrency(Array.isArray(items) ? items.filter(item => item.productType !== 'bundle').reduce((sum, item) => sum + (item.totalCOGS || (item.costPrice * item.quantity)), 0) : 0)}
                   </p>
                   {(search || salesChannelFilter !== "all") && (
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Filtered: {formatCurrency(Array.isArray(filteredItems) ? filteredItems.reduce((sum, item) => sum + (item.totalCOGS || (item.costPrice * item.quantity)), 0) : 0)}
+                      Filtered: {formatCurrency(Array.isArray(filteredItems) ? filteredItems.filter(item => item.productType !== 'bundle').reduce((sum, item) => sum + (item.totalCOGS || (item.costPrice * item.quantity)), 0) : 0)}
                     </p>
                   )}
                 </div>
