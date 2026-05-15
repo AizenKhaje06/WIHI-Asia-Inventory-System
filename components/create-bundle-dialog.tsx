@@ -40,10 +40,10 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    store: '',
-    salesChannel: '',
     bundlePrice: 0,
-    badge: ''
+    badge: '',
+    salesChannel: 'Physical Store', // Default value for universal bundles
+    store: 'Main Store', // Default value for universal bundles
   })
 
   // Close dropdown when clicking outside
@@ -170,11 +170,6 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
       return
     }
     
-    if (!formData.store) {
-      toast.error('Please select a store')
-      return
-    }
-    
     if (bundleItems.length === 0) {
       toast.error('Please add at least one item to the bundle')
       return
@@ -265,36 +260,16 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
     setFormData({
       name: '',
       description: '',
-      store: '',
-      salesChannel: '',
       bundlePrice: 0,
-      badge: ''
+      badge: '',
+      salesChannel: 'Physical Store',
+      store: 'Main Store',
     })
     setBundleItems([])
     setSearchValue('')
   }
 
   const totals = calculateTotals()
-  
-  // Fetch stores from API with sales_channel
-  const [storesData, setStoresData] = useState<Array<{id: string, store_name: string, sales_channel: string}>>([])
-  
-  useEffect(() => {
-    const fetchStores = async () => {
-      try {
-        const data = await apiGet<Array<{id: string, store_name: string, sales_channel: string}>>('/api/stores')
-        setStoresData(data)
-      } catch (error) {
-        console.error('Error fetching stores:', error)
-      }
-    }
-    if (open) fetchStores()
-  }, [open])
-  
-  // Filter stores based on selected sales channel
-  const filteredStores = formData.salesChannel && formData.salesChannel !== 'none'
-    ? storesData.filter(s => s.sales_channel === formData.salesChannel)
-    : storesData
 
   // Filter items for search
   const filteredItems = items.filter(item => 
@@ -341,54 +316,6 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
                   rows={3}
                   className="resize-none"
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Sales Channel *</Label>
-                  <Select value={formData.salesChannel || "none"} onValueChange={(value) => {
-                    const newChannel = value === "none" ? "" : value
-                    setFormData({...formData, salesChannel: newChannel, store: ''}) // Reset store when channel changes
-                  }}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select sales channel" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">All Channels</SelectItem>
-                      <SelectItem value="Physical Store">Physical Store</SelectItem>
-                      <SelectItem value="Shopee">Shopee</SelectItem>
-                      <SelectItem value="Lazada">Lazada</SelectItem>
-                      <SelectItem value="Facebook">Facebook</SelectItem>
-                      <SelectItem value="TikTok">TikTok</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Store *</Label>
-                  <Select value={formData.store} onValueChange={(value) => setFormData({...formData, store: value})}>
-                    <SelectTrigger className="h-11 w-full">
-                      <SelectValue placeholder="Select store" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredStores.length > 0 ? (
-                        filteredStores.map(store => (
-                          <SelectItem key={store.id} value={store.store_name}>
-                            <span className="truncate">
-                              {store.store_name} {store.sales_channel && `(${store.sales_channel})`}
-                            </span>
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="default" disabled>
-                          {formData.salesChannel && formData.salesChannel !== 'none' 
-                            ? `No stores for ${formData.salesChannel}` 
-                            : 'No stores available'}
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
 
               <div className="space-y-2">
