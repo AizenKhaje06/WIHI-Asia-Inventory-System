@@ -87,6 +87,13 @@ export async function POST(request: Request) {
 
     // Authentication successful
     console.log('[Department Auth] Authentication successful:', matchingAgent.username)
+    console.log('[Department Auth] Returning data:', {
+      id: matchingAgent.id,
+      name: matchingAgent.username,
+      display_name: matchingAgent.display_name,
+      assigned_channel: matchingAgent.assigned_channel
+    })
+    
     return NextResponse.json({
       success: true,
       department: {

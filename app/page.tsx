@@ -251,6 +251,12 @@ export default function EnterpriseLoginPage() {
 
         const authData = await authResponse.json()
 
+        console.log('[Operations Login] ===== AUTH RESPONSE DEBUG =====')
+        console.log('[Operations Login] Auth data:', authData)
+        console.log('[Operations Login] Department:', authData.department)
+        console.log('[Operations Login] Assigned channel:', authData.department?.assigned_channel)
+        console.log('[Operations Login] ===== END DEBUG =====')
+
         if (!authResponse.ok || !authData.success) {
           throw new Error(authData.error || "Invalid department credentials")
         }
@@ -263,17 +269,26 @@ export default function EnterpriseLoginPage() {
             localStorage.removeItem("rememberedUsername")
           }
           
+          const assignedChannel = authData.department.assigned_channel
+          console.log('[Operations Login] Saving to localStorage:', {
+            username: authData.department.name,
+            displayName: authData.department.display_name,
+            assignedChannel: assignedChannel
+          })
+          
           localStorage.setItem("isLoggedIn", "true")
           localStorage.setItem("username", authData.department.name)
           localStorage.setItem("userRole", "operations")
           localStorage.setItem("displayName", authData.department.display_name)
-          localStorage.setItem("assignedChannel", authData.department.assigned_channel) // NEW: Store for filtering
+          localStorage.setItem("assignedChannel", assignedChannel || '') // Store even if null/undefined
+          
+          console.log('[Operations Login] Saved assignedChannel:', localStorage.getItem('assignedChannel'))
           
           localStorage.setItem("currentUser", JSON.stringify({
             username: authData.department.name,
             role: "operations",
             displayName: authData.department.display_name,
-            assignedChannel: authData.department.assigned_channel,
+            assignedChannel: assignedChannel,
             email: '',
             phone: ''
           }))

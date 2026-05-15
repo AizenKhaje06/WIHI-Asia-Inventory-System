@@ -153,52 +153,86 @@ export function LoginForm({
         </Alert>
       )}
 
-      {/* Username Field - Dropdown for Operations (shows departments only), Input for Others */}
+      {/* Username Field - Dropdown for Operations (shows individual agents), Input for Others */}
       <div className="space-y-2">
         <Label htmlFor="username" className="text-slate-200 font-medium">
-          {role === 'operations' ? 'Department' : 'Username'}
+          {role === 'operations' ? 'Agent Account' : 'Username'}
         </Label>
         {role === 'operations' ? (
           <div className="relative group">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none" />
             <Select value={username} onValueChange={setUsername} disabled={loading}>
               <SelectTrigger className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50">
-                <SelectValue placeholder="Select Department" />
+                <SelectValue placeholder="Select Agent Account" />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
-                {/* Show only main departments - no individual agents */}
-                <SelectItem value="Facebook">
+                {/* Facebook Agents */}
+                <SelectItem value="Facebook-Juan">
                   <div className="flex items-center gap-2">
                     <img src="/facebook.png" alt="Facebook" className="h-4 w-4" />
-                    <span>Facebook</span>
+                    <span>Juan (Facebook)</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Facebook-Maria">
+                  <div className="flex items-center gap-2">
+                    <img src="/facebook.png" alt="Facebook" className="h-4 w-4" />
+                    <span>Maria (Facebook)</span>
                   </div>
                 </SelectItem>
                 
-                <SelectItem value="TikTok">
+                {/* TikTok Agents */}
+                <SelectItem value="TikTok-Pedro">
                   <div className="flex items-center gap-2">
                     <img src="/tiktok.png" alt="TikTok" className="h-4 w-4" />
-                    <span>TikTok</span>
+                    <span>Pedro (TikTok)</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="TikTok-Ana">
+                  <div className="flex items-center gap-2">
+                    <img src="/tiktok.png" alt="TikTok" className="h-4 w-4" />
+                    <span>Ana (TikTok)</span>
                   </div>
                 </SelectItem>
                 
-                <SelectItem value="Lazada">
+                {/* Lazada Agents */}
+                <SelectItem value="Lazada-Carlo">
                   <div className="flex items-center gap-2">
                     <img src="/Lazada.png" alt="Lazada" className="h-4 w-4" />
-                    <span>Lazada</span>
+                    <span>Carlo (Lazada)</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Lazada-Lisa">
+                  <div className="flex items-center gap-2">
+                    <img src="/Lazada.png" alt="Lazada" className="h-4 w-4" />
+                    <span>Lisa (Lazada)</span>
                   </div>
                 </SelectItem>
                 
-                <SelectItem value="Shopee">
+                {/* Shopee Agents */}
+                <SelectItem value="Shopee-Rico">
                   <div className="flex items-center gap-2">
                     <img src="/Shopee.png" alt="Shopee" className="h-4 w-4" />
-                    <span>Shopee</span>
+                    <span>Rico (Shopee)</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Shopee-Nina">
+                  <div className="flex items-center gap-2">
+                    <img src="/Shopee.png" alt="Shopee" className="h-4 w-4" />
+                    <span>Nina (Shopee)</span>
                   </div>
                 </SelectItem>
                 
-                <SelectItem value="Physical Store">
+                {/* Physical Store Agents */}
+                <SelectItem value="Physical Store-Ben">
                   <div className="flex items-center gap-2">
                     <img src="/Physical Store.png" alt="Physical Store" className="h-4 w-4" />
-                    <span>Physical Store</span>
+                    <span>Ben (Physical Store)</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Physical Store-Jane">
+                  <div className="flex items-center gap-2">
+                    <img src="/Physical Store.png" alt="Physical Store" className="h-4 w-4" />
+                    <span>Jane (Physical Store)</span>
                   </div>
                 </SelectItem>
               </SelectContent>
