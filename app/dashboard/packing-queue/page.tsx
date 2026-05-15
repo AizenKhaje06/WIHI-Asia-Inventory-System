@@ -632,23 +632,26 @@ export default function PackingQueuePage() {
                             onClick={() => openDetailsModal(order)}
                             className="h-9 px-4 text-xs font-medium border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200 whitespace-nowrap rounded-lg"
                           >
-                            View
+                            <Eye className="h-3.5 w-3.5 mr-1.5" />
+                            View Details
                           </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => openConfirmDialog(order)}
-                            disabled={packing === order.id}
-                            className="h-9 px-4 text-xs font-medium bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 whitespace-nowrap rounded-lg shadow-sm"
-                          >
-                            {packing === order.id ? (
-                              <>
-                                <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                                Packing...
-                              </>
-                            ) : (
-                              'Pack'
-                            )}
-                          </Button>
+                          {currentUser?.role === 'admin' && (
+                            <Button
+                              size="sm"
+                              onClick={() => openConfirmDialog(order)}
+                              disabled={packing === order.id}
+                              className="h-9 px-4 text-xs font-medium bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 whitespace-nowrap rounded-lg shadow-sm"
+                            >
+                              {packing === order.id ? (
+                                <>
+                                  <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                                  Packing...
+                                </>
+                              ) : (
+                                'Pack'
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
