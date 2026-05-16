@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getStores, addStore, addLog } from "@/lib/supabase-db"
 import { getCachedData, invalidateCachePattern } from "@/lib/cache"
-import { withAuth, withAdmin } from "@/lib/api-helpers"
+import { withAuth, withAdmin, withRoles } from "@/lib/api-helpers"
 
 export const GET = withAuth(async (request, { user }) => {
   try {
@@ -14,7 +14,7 @@ export const GET = withAuth(async (request, { user }) => {
     // DEPARTMENT FILTERING: Operations users only see their department's stores
     let filteredStores = stores
     if (user.role === 'operations' && user.assignedChannel) {
-      filteredStores = stores.filter(store => store.salesChannel === user.assignedChannel)
+      filteredStores = stores.filter(store => store.sales_channel === user.assignedChannel)
     }
     // Admin sees all stores
 
@@ -25,7 +25,7 @@ export const GET = withAuth(async (request, { user }) => {
   }
 })
 
-export const POST = withAdmin(async (request, { user }) => {
+export const POST = withRoles(['admin', 'operations'], async (request, { user }) => {
   try {
     const { store_name, sales_channel } = await request.json()
     

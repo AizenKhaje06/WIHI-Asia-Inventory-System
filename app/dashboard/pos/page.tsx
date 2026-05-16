@@ -26,6 +26,8 @@ export default function POSPage() {
   const [loading, setLoading] = useState(false)
   const [stores, setStores] = useState<Array<{id: string, store_name: string, sales_channel: string}>>([])
   const [staffName, setStaffName] = useState('')
+  const [currentUserRole, setCurrentUserRole] = useState<string>('')
+  const [assignedChannel, setAssignedChannel] = useState<string>('')
   const [dispatchId, setDispatchId] = useState('')
   const [dispatchedItems, setDispatchedItems] = useState<Array<{name: string, quantity: number, price: number}>>([])
   const [successModalOpen, setSuccessModalOpen] = useState(false)
@@ -85,6 +87,8 @@ export default function POSPage() {
       const name = currentUser.displayName || currentUser.username || 'Unknown User'
       console.log('[POS] Setting staff name to:', name) // Debug log
       setStaffName(name)
+      setCurrentUserRole(currentUser.role || '')
+      setAssignedChannel(currentUser.assignedChannel || '')
     } else {
       console.warn('[POS] No current user found in localStorage')
       setStaffName('Unknown User')
@@ -135,7 +139,7 @@ export default function POSPage() {
     
     setOrderForm({
       date: getLocalDateString(),
-      salesChannel: firstItem.salesChannel || '',
+      salesChannel: currentUserRole === 'operations' ? assignedChannel : (firstItem.salesChannel || ''),
       store: firstItem.store || '',
       courier: '',
       waybill: '',
@@ -599,21 +603,31 @@ export default function POSPage() {
             {/* Sales Channel */}
             <div>
               <Label className="text-sm font-medium">Sales Channel</Label>
-              <Select 
-                value={orderForm.salesChannel} 
-                onValueChange={(value) => setOrderForm({...orderForm, salesChannel: value})}
-              >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Select sales channel" />
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  {Array.from(new Set(stores.map(s => s.sales_channel))).sort().map((channel) => (
-                    <SelectItem key={channel} value={channel}>
-                      {channel}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {currentUserRole === 'operations' ? (
+                // Operations users: locked to their assigned channel
+                <Input
+                  value={assignedChannel}
+                  readOnly
+                  className="mt-1.5 bg-slate-100 dark:bg-slate-800 cursor-not-allowed font-medium"
+                />
+              ) : (
+                // Admin: can select any channel
+                <Select 
+                  value={orderForm.salesChannel} 
+                  onValueChange={(value) => setOrderForm({...orderForm, salesChannel: value, store: ''})}
+                >
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue placeholder="Select sales channel" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {Array.from(new Set(stores.map(s => s.sales_channel))).sort().map((channel) => (
+                      <SelectItem key={channel} value={channel}>
+                        {channel}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             {/* Store */}
@@ -628,12 +642,15 @@ export default function POSPage() {
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px]">
                   {stores
-                    .filter(s => !orderForm.salesChannel || s.sales_channel === orderForm.salesChannel)
+                    .filter(s => currentUserRole === 'operations' 
+                      ? true  // API already filtered by assignedChannel
+                      : (!orderForm.salesChannel || s.sales_channel === orderForm.salesChannel)
+                    )
                     .sort((a, b) => a.store_name.localeCompare(b.store_name))
                     .map((store) => (
                       <SelectItem key={store.id} value={store.store_name}>
                         {store.store_name}
-                        {orderForm.salesChannel && (
+                        {currentUserRole !== 'operations' && orderForm.salesChannel && (
                           <span className="text-xs text-slate-500 ml-2">({store.sales_channel})</span>
                         )}
                       </SelectItem>

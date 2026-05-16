@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getCategories, addCategory, addLog } from "@/lib/supabase-db"
 import { getCachedData, invalidateCachePattern } from "@/lib/cache"
-import { withAuth, withAdmin } from "@/lib/api-helpers"
+import { withAuth, withAdmin, withRoles } from "@/lib/api-helpers"
 
 export const GET = withAuth(async (request, { user }) => {
   try {
@@ -17,7 +17,7 @@ export const GET = withAuth(async (request, { user }) => {
   }
 })
 
-export const POST = withAdmin(async (request, { user }) => {
+export const POST = withRoles(['admin', 'operations'], async (request, { user }) => {
   try {
     const { name } = await request.json()
     

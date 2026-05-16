@@ -133,17 +133,10 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
           )}
         </div>
 
-        {/* Center: Command Palette Search */}
-        <div className="flex-1 max-w-2xl mx-auto hidden lg:block">
-          <CommandPaletteSearch />
-        </div>
+        {/* Center: Command Palette Search - REMOVED */}
 
         {/* Right: Actions */}
         <div className="flex items-center gap-1.5 flex-shrink-0 lg:flex-1 lg:justify-end">
-          {/* Mobile Search Button */}
-          <div className="lg:hidden">
-            <CommandPaletteSearch />
-          </div>
 
           {/* Theme Toggle */}
           <ToggleTheme 

@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 // Using Supabase as primary database
 import { getInventoryItems, addInventoryItem, addLog } from "@/lib/supabase-db"
 import { getCachedData, invalidateCachePattern } from "@/lib/cache"
-import { withAuth, withAdmin } from "@/lib/api-helpers"
+import { withAuth, withAdmin, withRoles } from "@/lib/api-helpers"
 
 // GET - Requires authentication (any role)
 export const GET = withAuth(async (request, { user }) => {
@@ -22,11 +22,8 @@ export const GET = withAuth(async (request, { user }) => {
       return NextResponse.json([])
     }
 
-    // DEPARTMENT FILTERING: Operations users only see their department's data
-    if (user.role === 'operations' && user.assignedChannel) {
-      items = items.filter(item => item.salesChannel === user.assignedChannel)
-    }
-    // Admin and packer see all items
+    // Products are universal - all roles can see all products
+    // No department/channel filtering needed
 
     if (search) {
       const searchLower = search.toLowerCase()
@@ -45,8 +42,8 @@ export const GET = withAuth(async (request, { user }) => {
   }
 })
 
-// POST - Requires admin role
-export const POST = withAdmin(async (request, { user }) => {
+// POST - Requires admin or operations role
+export const POST = withRoles(['admin', 'operations'], async (request, { user }) => {
   try {
     const body = await request.json()
     
