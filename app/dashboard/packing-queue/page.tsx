@@ -179,12 +179,14 @@ export default function PackingQueuePage() {
       }
 
       // Fetch only pending orders (not yet packed)
+      // API already filters by department for operations users
       const data = await apiGet<any[]>('/api/orders?status=Pending')
       
-      console.log('[Packing Queue] Total orders fetched:', data.length)
+      console.log('[Packing Queue] Total orders fetched from API:', data.length)
+      console.log('[Packing Queue] User info:', { role: user?.role, assignedChannel: user?.assignedChannel })
       
       // Map database fields to Order interface
-      let mappedOrders: Order[] = data.map(order => ({
+      const mappedOrders: Order[] = data.map(order => ({
         id: order.id,
         orderNumber: order.id,
         date: order.date,
@@ -214,28 +216,10 @@ export default function PackingQueuePage() {
         orderDate: order.created_at
       } as any))
       
-      console.log('[Packing Queue] Orders before filtering:', mappedOrders.map(o => ({
+      console.log('[Packing Queue] Orders to display:', mappedOrders.map(o => ({
         id: o.id.slice(-6),
         channel: o.sales_channel
       })))
-      
-      // DEPARTMENT FILTERING: Operations users only see their department's orders
-      if (user?.role === 'operations' && user?.assignedChannel) {
-        console.log('[Packing Queue] Applying department filter for:', user.assignedChannel)
-        mappedOrders = mappedOrders.filter(order => 
-          order.sales_channel === user.assignedChannel
-        )
-        console.log('[Packing Queue] Orders after filtering:', mappedOrders.length)
-      } else {
-        console.log('[Packing Queue] No filtering applied (Admin or no assignedChannel)')
-      }
-      // Admin sees all orders
-      
-      console.log('[Packing Queue] Final orders to display:', mappedOrders.map(o => ({
-        id: o.id.slice(-6),
-        channel: o.sales_channel
-      })))
-      console.log('[Packing Queue] ===== END DEBUG =====')
       
       setOrders(mappedOrders)
       setFilteredOrders(mappedOrders)
