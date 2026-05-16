@@ -19,8 +19,9 @@ export async function POST(request: NextRequest) {
 
     // DEPARTMENT VALIDATION: Operations users can only create sales for their department
     if (userRole === 'operations' && assignedChannel) {
-      // Extract sales channel from department string (e.g., "Facebook / Store 1" -> "Facebook")
-      const departmentChannel = department.split(' / ')[0].trim()
+      // Extract sales channel from department string
+      // Handles both formats: "Facebook / Store 1" and "Facebook - Store 1"
+      const departmentChannel = department.split(/\s*[-/]\s*/)[0].trim()
       if (departmentChannel !== assignedChannel) {
         return NextResponse.json({ 
           error: `You can only create sales for ${assignedChannel}` 
