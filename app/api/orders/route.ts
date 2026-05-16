@@ -7,15 +7,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     
-    // Get user from headers (set by middleware)
+    // Get user from headers (set by API client)
     const userRole = request.headers.get('x-user-role')
     const assignedChannel = request.headers.get('x-assigned-channel')
     
-    console.log('[Orders API] Request headers:', {
-      userRole,
-      assignedChannel,
-      allHeaders: Object.fromEntries(request.headers.entries())
-    })
+    console.log('[Orders API] ===== DEPARTMENT FILTERING DEBUG =====')
+    console.log('[Orders API] User Role:', userRole)
+    console.log('[Orders API] Assigned Channel:', assignedChannel)
+    console.log('[Orders API] All Headers:', Object.fromEntries(request.headers.entries()))
+    console.log('[Orders API] ===== END DEBUG =====')
     
     let query = supabase
       .from('orders')
@@ -25,10 +25,16 @@ export async function GET(request: NextRequest) {
     
     // DEPARTMENT FILTERING: Operations users only see their department's orders
     if (userRole === 'operations' && assignedChannel) {
-      console.log('[Orders API] Filtering by channel:', assignedChannel)
+      console.log('[Orders API] 🔒 FILTERING ORDERS by channel:', assignedChannel)
       query = query.eq('sales_channel', assignedChannel)
     } else {
-      console.log('[Orders API] No filtering applied (admin or no channel)')
+      console.log('[Orders API] ✅ NO FILTERING - Admin or no assigned channel')
+      console.log('[Orders API] Reason:', {
+        isOperations: userRole === 'operations',
+        hasChannel: !!assignedChannel,
+        userRole,
+        assignedChannel
+      })
     }
     // Admin sees all orders
     
@@ -42,6 +48,17 @@ export async function GET(request: NextRequest) {
     }
     
     const { data, error } = await query
+    
+    console.log('[Orders API] 📊 Query Results:')
+    console.log('[Orders API] Total orders returned:', data?.length || 0)
+    if (data && data.length > 0) {
+      console.log('[Orders API] Orders by channel:', 
+        data.reduce((acc: any, order: any) => {
+          acc[order.sales_channel] = (acc[order.sales_channel] || 0) + 1
+          return acc
+        }, {})
+      )
+    }
     
     if (error) {
       console.error('[API] Error fetching orders:', error)
