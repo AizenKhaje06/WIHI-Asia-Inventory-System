@@ -59,7 +59,6 @@ export default function TrackOrdersPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [salesChannelFilter, setSalesChannelFilter] = useState<string>('all')
   const [startDate, setStartDate] = useState<Date | null>(null)
   const [endDate, setEndDate] = useState<Date | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -102,7 +101,7 @@ export default function TrackOrdersPage() {
 
   useEffect(() => {
     filterOrders()
-  }, [searchTerm, statusFilter, salesChannelFilter, startDate, endDate, orders])
+  }, [searchTerm, statusFilter, startDate, endDate, orders])
 
   const fetchOrders = async () => {
     try {
@@ -951,10 +950,6 @@ export default function TrackOrdersPage() {
       filtered = filtered.filter(order => order.parcelStatus === statusFilter)
     }
     
-    if (salesChannelFilter !== 'all') {
-      filtered = filtered.filter(order => order.department === salesChannelFilter)
-    }
-    
     // Date filtering
     if (startDate) {
       const start = new Date(startDate)
@@ -974,7 +969,6 @@ export default function TrackOrdersPage() {
   const clearFilters = () => {
     setSearchTerm('')
     setStatusFilter('all')
-    setSalesChannelFilter('all')
     setStartDate(null)
     setEndDate(null)
     toast.success('Filters cleared')
@@ -1651,48 +1645,6 @@ export default function TrackOrdersPage() {
                     <div className="flex items-center gap-2">
                       <RotateCcw className="h-3.5 w-3.5 text-slate-600" />
                       <span>RETURNED</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Sales Channel Filter */}
-            <div className="w-[200px]">
-              <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-                <SelectTrigger className="h-12 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all">
-                  <SelectValue placeholder="Sales Channel" />
-                </SelectTrigger>
-                <SelectContent className="rounded-lg">
-                  <SelectItem value="all" className="font-semibold">All Channels</SelectItem>
-                  <SelectItem value="Shopee">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                      <span>Shopee</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="Lazada">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                      <span>Lazada</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="Facebook">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-600"></div>
-                      <span>Facebook</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="TikTok">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-black dark:bg-white"></div>
-                      <span>TikTok</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="Physical Store">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                      <span>Physical Store</span>
                     </div>
                   </SelectItem>
                 </SelectContent>

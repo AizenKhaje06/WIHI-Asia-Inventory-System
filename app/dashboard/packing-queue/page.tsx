@@ -56,7 +56,6 @@ export default function PackingQueuePage() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [salesChannelFilter, setSalesChannelFilter] = useState<string>('all')
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [packing, setPacking] = useState<string | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -142,7 +141,7 @@ export default function PackingQueuePage() {
 
   useEffect(() => {
     filterOrders()
-  }, [searchTerm, salesChannelFilter, orders])
+  }, [searchTerm, orders])
 
   const fetchOrders = async () => {
     try {
@@ -242,12 +241,6 @@ export default function PackingQueuePage() {
         (order.waybill || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (order.product || order.itemName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (order.customerName || '').toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-    
-    if (salesChannelFilter !== 'all') {
-      filtered = filtered.filter(order => 
-        (order.sales_channel || order.channel) === salesChannelFilter
       )
     }
     
@@ -491,38 +484,19 @@ export default function PackingQueuePage() {
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder="Search orders..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            {!isTeamLeader && (
-              <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="All Channels" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Channels</SelectItem>
-                  <SelectItem value="Shopee">Shopee</SelectItem>
-                  <SelectItem value="Lazada">Lazada</SelectItem>
-                  <SelectItem value="Facebook">Facebook</SelectItem>
-                  <SelectItem value="TikTok">TikTok</SelectItem>
-                  <SelectItem value="Physical Store">Physical Store</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 sm:max-w-md">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Search orders..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Orders Table */}
       <Card>
