@@ -110,7 +110,7 @@ export async function GET(request: Request) {
     let ordersQuery = supabase
       .from('orders')
       .select('*')
-      .eq('status', 'Packed') // Only dispatched orders
+      // Fetch ALL orders (not just Packed) for accurate metrics
 
     // DEPARTMENT FILTERING: Operations users only see their department's orders
     if (userRole === 'operations' && assignedChannel) {
@@ -125,11 +125,11 @@ export async function GET(request: Request) {
       return NextResponse.json(emptyDashboardStats())
     }
 
-    // Apply date filters if provided
+    // Apply date filters if provided (filter by created_at, not date)
     let filteredOrders = allOrders || []
     if (startDate || endDate) {
       filteredOrders = filteredOrders.filter(order => {
-        const orderDate = new Date(order.date)
+        const orderDate = new Date(order.created_at) // Use created_at instead of date
         if (startDate && orderDate < startDate) return false
         if (endDate && orderDate > endDate) return false
         return true
@@ -145,7 +145,8 @@ export async function GET(request: Request) {
       parcel_status: o.parcel_status || 'PENDING',
       payment_status: o.payment_status || 'pending',
       sales_channel: o.sales_channel,
-      date: o.date
+      date: o.date,
+      created_at: o.created_at // Add created_at for accurate time-based filtering
     }))
 
     // Filter to active orders only for revenue calculation (exclude CANCELLED and RETURNED)
@@ -185,12 +186,12 @@ export async function GET(request: Request) {
     todayEnd.setHours(23, 59, 59, 999)
 
     const todayAllOrders = allOrdersMapped.filter(order => {
-      const orderDate = new Date(order.date)
+      const orderDate = new Date(order.created_at) // Use created_at for accurate timing
       return orderDate >= today && orderDate <= todayEnd
     })
 
     const todayActiveOrders = activeOrders.filter(order => {
-      const orderDate = new Date(order.date)
+      const orderDate = new Date(order.created_at) // Use created_at for accurate timing
       return orderDate >= today && orderDate <= todayEnd
     })
 
@@ -206,7 +207,7 @@ export async function GET(request: Request) {
     yesterdayEnd.setHours(0, 0, 0, 0)
 
     const yesterdayOrders = activeOrders.filter(order => {
-      const orderDate = new Date(order.date)
+      const orderDate = new Date(order.created_at) // Use created_at for accurate timing
       return orderDate >= yesterday && orderDate < yesterdayEnd
     })
     const yesterdaySales = yesterdayOrders.reduce((sum, o) => sum + o.total, 0)
@@ -219,7 +220,7 @@ export async function GET(request: Request) {
     lastWeekEnd.setDate(lastWeekEnd.getDate() - 7)
 
     const lastWeekOrders = activeOrders.filter(order => {
-      const orderDate = new Date(order.date)
+      const orderDate = new Date(order.created_at) // Use created_at for accurate timing
       return orderDate >= lastWeekStart && orderDate < lastWeekEnd
     })
     const lastWeekSales = lastWeekOrders.reduce((sum, o) => sum + o.total, 0)
@@ -232,7 +233,7 @@ export async function GET(request: Request) {
     lastMonthEnd.setHours(0, 0, 0, 0)
 
     const lastMonthOrders = activeOrders.filter(order => {
-      const orderDate = new Date(order.date)
+      const orderDate = new Date(order.created_at) // Use created_at for accurate timing
       return orderDate >= lastMonthStart && orderDate < lastMonthEnd
     })
     const lastMonthSales = lastMonthOrders.reduce((sum, o) => sum + o.total, 0)
@@ -252,7 +253,7 @@ export async function GET(request: Request) {
         const hourStr = i.toString().padStart(2, '0') + ':00'
 
         const hourOrders = activeOrders.filter(order => {
-          const orderDate = new Date(order.date)
+          const orderDate = new Date(order.created_at) // Use created_at for accurate timing
           return orderDate >= hourStart && orderDate <= hourEnd
         })
 
@@ -273,7 +274,7 @@ export async function GET(request: Request) {
         const dayStr = day.toISOString().split('T')[0]
 
         const dayOrders = activeOrders.filter(order => {
-          const orderDate = new Date(order.date)
+          const orderDate = new Date(order.created_at) // Use created_at for accurate timing
           return orderDate >= day && orderDate < nextDay
         })
 
@@ -295,7 +296,7 @@ export async function GET(request: Request) {
         const dayStr = `${today.toLocaleDateString('en-US', { month: 'short' })} ${i + 1}`
 
         const dayOrders = activeOrders.filter(order => {
-          const orderDate = new Date(order.date)
+          const orderDate = new Date(order.created_at) // Use created_at for accurate timing
           return orderDate >= day && orderDate < nextDay
         })
 

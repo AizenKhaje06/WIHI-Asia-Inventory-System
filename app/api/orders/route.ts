@@ -6,6 +6,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
+    const startDate = searchParams.get('startDate')
+    const endDate = searchParams.get('endDate')
     
     // Get user from headers (set by API client)
     const userRole = request.headers.get('x-user-role')
@@ -14,6 +16,7 @@ export async function GET(request: NextRequest) {
     console.log('[Orders API] ===== DEPARTMENT FILTERING DEBUG =====')
     console.log('[Orders API] User Role:', userRole)
     console.log('[Orders API] Assigned Channel:', assignedChannel)
+    console.log('[Orders API] Date Filter:', { startDate, endDate })
     console.log('[Orders API] All Headers:', Object.fromEntries(request.headers.entries()))
     console.log('[Orders API] ===== END DEBUG =====')
     
@@ -37,6 +40,16 @@ export async function GET(request: NextRequest) {
       })
     }
     // Admin sees all orders
+    
+    // Filter by date range if provided
+    if (startDate) {
+      query = query.gte('created_at', startDate)
+      console.log('[Orders API] 📅 Filtering from:', startDate)
+    }
+    if (endDate) {
+      query = query.lte('created_at', endDate)
+      console.log('[Orders API] 📅 Filtering to:', endDate)
+    }
     
     // Filter by status if provided
     if (status) {

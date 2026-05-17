@@ -41,8 +41,18 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("ID")
-  const [startDate, setStartDate] = useState<Date | null>(null)
-  const [endDate, setEndDate] = useState<Date | null>(null)
+  
+  // Default to current month (first day to last day)
+  const getDefaultDateRange = () => {
+    const now = new Date()
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    return { firstDay, lastDay }
+  }
+  
+  const { firstDay, lastDay } = getDefaultDateRange()
+  const [startDate, setStartDate] = useState<Date | null>(firstDay)
+  const [endDate, setEndDate] = useState<Date | null>(lastDay)
   const currentUser = getCurrentUser()
 
   const fetchData = async () => {

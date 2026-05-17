@@ -23,6 +23,7 @@ export interface Order {
   payment_status: string
   sales_channel?: string
   date: string
+  created_at?: string // Timestamp when order was created
 }
 
 export interface FinancialMetrics {
