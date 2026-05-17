@@ -59,6 +59,7 @@ export default function TrackOrdersPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [salesChannelFilter, setChannelFilter] = useState<string>('all')
   const [startDate, setStartDate] = useState<Date | null>(null)
   const [endDate, setEndDate] = useState<Date | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -101,7 +102,7 @@ export default function TrackOrdersPage() {
 
   useEffect(() => {
     filterOrders()
-  }, [searchTerm, statusFilter, startDate, endDate, orders])
+  }, [searchTerm, statusFilter, salesChannelFilter, startDate, endDate, orders])
 
   const fetchOrders = async () => {
     try {
@@ -950,6 +951,11 @@ export default function TrackOrdersPage() {
       filtered = filtered.filter(order => order.parcelStatus === statusFilter)
     }
     
+    // Sales channel filter (Admin only)
+    if (salesChannelFilter !== 'all') {
+      filtered = filtered.filter(order => order.department === salesChannelFilter)
+    }
+    
     // Date filtering
     if (startDate) {
       const start = new Date(startDate)
@@ -969,6 +975,7 @@ export default function TrackOrdersPage() {
   const clearFilters = () => {
     setSearchTerm('')
     setStatusFilter('all')
+    setChannelFilter('all')
     setStartDate(null)
     setEndDate(null)
     toast.success('Filters cleared')
@@ -1197,29 +1204,43 @@ export default function TrackOrdersPage() {
             Manage customer orders and delivery tracking
           </p>
         </div>
-        {/* Export button - Admin only */}
+        {/* Date Filter and Export button - Admin only */}
         {!isTeamLeader && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="group relative inline-flex items-center justify-center p-0.5 text-sm font-medium text-gray-900 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 transition-all duration-200">
-                <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0 flex items-center gap-2">
-                  <FileDown className="h-4 w-4" />
-                  Export Report
-                  <ChevronDown className="h-4 w-4" />
-                </span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={exportToPDF}>
-                <FileDown className="h-4 w-4 mr-2" />
-                <span>Export as PDF</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={exportToExcel}>
-                <FileSpreadsheet className="h-4 w-4 mr-2" />
-                <span>Export as Excel</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-3">
+            {/* Date Range Picker */}
+            <EnterpriseDateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onDateChange={(start, end) => {
+                setStartDate(start)
+                setEndDate(end)
+              }}
+              className="h-11 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all shadow-sm"
+            />
+            
+            {/* Export Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="group relative inline-flex items-center justify-center p-0.5 text-sm font-medium text-gray-900 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 transition-all duration-200">
+                  <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0 flex items-center gap-2">
+                    <FileDown className="h-4 w-4" />
+                    Export Report
+                    <ChevronDown className="h-4 w-4" />
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={exportToPDF}>
+                  <FileDown className="h-4 w-4 mr-2" />
+                  <span>Export as PDF</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={exportToExcel}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  <span>Export as Excel</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
       </div>
 
@@ -1651,18 +1672,24 @@ export default function TrackOrdersPage() {
               </Select>
             </div>
 
-            {/* Date Range Picker - Enterprise Style */}
-            <div className="w-auto">
-              <EnterpriseDateRangePicker
-                startDate={startDate}
-                endDate={endDate}
-                onDateChange={(start, end) => {
-                  setStartDate(start)
-                  setEndDate(end)
-                }}
-                className="h-12 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all shadow-sm"
-              />
-            </div>
+            {/* Sales Channel Filter - Admin Only */}
+            {userRole === 'admin' && (
+              <div className="w-[200px]">
+                <Select value={salesChannelFilter} onValueChange={setChannelFilter}>
+                  <SelectTrigger className="h-12 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all">
+                    <SelectValue placeholder="All Channels" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg">
+                    <SelectItem value="all" className="font-semibold">All Channels</SelectItem>
+                    <SelectItem value="Shopee">Shopee</SelectItem>
+                    <SelectItem value="Lazada">Lazada</SelectItem>
+                    <SelectItem value="TikTok">TikTok</SelectItem>
+                    <SelectItem value="Facebook">Facebook</SelectItem>
+                    <SelectItem value="Physical Store">Physical Store</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Clear Filters Button */}
             <Button

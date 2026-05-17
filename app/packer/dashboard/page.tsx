@@ -8,14 +8,12 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { BarcodeScanner } from '@/components/barcode-scanner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
-import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Activity, CalendarIcon } from 'lucide-react'
+import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
+import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Activity } from 'lucide-react'
 import { toast } from 'sonner'
 import { getCurrentUser } from '@/lib/auth'
 import { AnimatedNumber } from '@/components/ui/animated-number'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 
 interface Order {
   id: string
@@ -59,13 +57,16 @@ export default function PackerDashboard() {
   const [packing, setPacking] = useState(false)
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
   
-  // Date filter states
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: startOfDay(new Date()),
-    to: endOfDay(new Date())
+  // Date filter states - using same format as Admin/Operations dashboard (Date objects, not strings)
+  // Default to current month
+  const [startDate, setStartDate] = useState<Date | null>(() => {
+    const now = new Date()
+    return new Date(now.getFullYear(), now.getMonth(), 1)
   })
-  const [showDatePicker, setShowDatePicker] = useState(false)
-  const [datePreset, setDatePreset] = useState<string>('today')
+  const [endDate, setEndDate] = useState<Date | null>(() => {
+    const now = new Date()
+    return new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  })
 
   // Get unique channels
   const channels = useMemo(() => {
@@ -73,50 +74,25 @@ export default function PackerDashboard() {
     return ['All', ...uniqueChannels.sort()]
   }, [pendingOrders])
 
-  // Date preset handler
-  const handleDatePreset = (preset: string) => {
-    setDatePreset(preset)
-    const now = new Date()
-    
-    switch (preset) {
-      case 'today':
-        setDateRange({ from: startOfDay(now), to: endOfDay(now) })
-        break
-      case 'yesterday':
-        setDateRange({ from: startOfDay(subDays(now, 1)), to: endOfDay(subDays(now, 1)) })
-        break
-      case 'last7days':
-        setDateRange({ from: startOfDay(subDays(now, 6)), to: endOfDay(now) })
-        break
-      case 'last14days':
-        setDateRange({ from: startOfDay(subDays(now, 13)), to: endOfDay(now) })
-        break
-      case 'last30days':
-        setDateRange({ from: startOfDay(subDays(now, 29)), to: endOfDay(now) })
-        break
-      default:
-        break
-    }
-  }
-
-  // Performance metrics - filtered by channel AND date range
+  // Performance metrics - filtered by date range
   const todayPacked = useMemo(() => {
+    if (!startDate || !endDate) return packedHistory
+    
     return packedHistory.filter(p => {
       const packedDate = new Date(p.packedAt)
-      return packedDate >= dateRange.from && packedDate <= dateRange.to
+      return packedDate >= startDate && packedDate <= endDate
     })
-  }, [packedHistory, dateRange])
+  }, [packedHistory, startDate, endDate])
 
-  // Filtered packed history by channel AND date range
+  // Filtered packed history by date range
   const filteredPackedHistory = useMemo(() => {
-    let filtered = packedHistory.filter(p => {
-      const packedDate = new Date(p.packedAt)
-      return packedDate >= dateRange.from && packedDate <= dateRange.to
-    })
+    if (!startDate || !endDate) return packedHistory
     
-    // Note: We don't filter by channel for packed history since channel info is not stored
-    return filtered
-  }, [packedHistory, dateRange])
+    return packedHistory.filter(p => {
+      const packedDate = new Date(p.packedAt)
+      return packedDate >= startDate && packedDate <= endDate
+    })
+  }, [packedHistory, startDate, endDate])
 
   // Pending count filtered by channel
   const pendingCount = useMemo(() => {
@@ -382,138 +358,18 @@ export default function PackerDashboard() {
         </div>
       </div>
 
-      {/* Date Filter - Facebook Ads Manager Style */}
-      <Card className="shadow-lg border-2">
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-              <CalendarIcon className="h-4 w-4" />
-              <span>Date Range:</span>
-            </div>
-            
-            {/* Date Presets */}
-            <div className="flex flex-wrap gap-2">
-              {[
-                { value: 'today', label: 'Today' },
-                { value: 'yesterday', label: 'Yesterday' },
-                { value: 'last7days', label: 'Last 7 days' },
-                { value: 'last14days', label: 'Last 14 days' },
-                { value: 'last30days', label: 'Last 30 days' }
-              ].map((preset) => (
-                <Button
-                  key={preset.value}
-                  variant={datePreset === preset.value ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleDatePreset(preset.value)}
-                  className={datePreset === preset.value ? 'bg-blue-600 hover:bg-blue-700' : ''}
-                >
-                  {preset.label}
-                </Button>
-              ))}
-              
-              {/* Custom Date Picker */}
-              <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={datePreset === 'custom' ? 'default' : 'outline'}
-                    size="sm"
-                    className={datePreset === 'custom' ? 'bg-blue-600 hover:bg-blue-700' : ''}
-                  >
-                    <CalendarIcon className="h-4 w-4 mr-2" />
-                    Custom
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-2xl" align="start">
-                  <div className="p-5">
-                    {/* Header */}
-                    <div className="mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
-                      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Select Date Range</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Click start date, then click end date</p>
-                    </div>
-                    
-                    {/* Single Calendar with Range Selection */}
-                    <Calendar
-                      mode="range"
-                      selected={{ from: dateRange.from, to: dateRange.to }}
-                      onSelect={(range) => {
-                        if (range?.from) {
-                          setDateRange({
-                            from: startOfDay(range.from),
-                            to: range.to ? endOfDay(range.to) : endOfDay(range.from)
-                          })
-                          setDatePreset('custom')
-                        }
-                      }}
-                      numberOfMonths={1}
-                      showOutsideDays={false}
-                      initialFocus
-                      className="dark:text-slate-100"
-                      classNames={{
-                        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                        month: "space-y-4",
-                        caption: "flex justify-center pt-1 relative items-center",
-                        caption_label: "text-sm font-bold text-slate-900 dark:text-slate-100",
-                        nav: "space-x-1 flex items-center",
-                        nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-all",
-                        nav_button_previous: "absolute left-1",
-                        nav_button_next: "absolute right-1",
-                        table: "w-full border-collapse space-y-1",
-                        head_row: "flex",
-                        head_cell: "text-slate-500 dark:text-slate-400 rounded-md w-9 font-semibold text-[0.8rem]",
-                        row: "flex w-full mt-2",
-                        cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-slate-100 dark:[&:has([aria-selected])]:bg-slate-800",
-                        day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors flex items-center justify-center",
-                        day_selected: "bg-blue-600 text-white hover:bg-blue-700 hover:text-white focus:bg-blue-600 focus:text-white",
-                        day_today: "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold",
-                        day_outside: "text-slate-400 opacity-50",
-                        day_disabled: "text-slate-400 opacity-50",
-                        day_range_middle: "aria-selected:bg-blue-100 dark:aria-selected:bg-blue-900/40 aria-selected:text-blue-900 dark:aria-selected:text-blue-100 rounded-none",
-                        day_range_start: "rounded-l-md rounded-r-none",
-                        day_range_end: "rounded-r-md rounded-l-none",
-                        day_hidden: "invisible",
-                      }}
-                    />
-                    
-                    {/* Selected Range Display */}
-                    <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500 dark:text-slate-400 font-medium">Selected Range:</span>
-                        <span className="text-slate-900 dark:text-slate-100 font-bold">
-                          {format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d, yyyy')}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 mt-4">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setShowDatePicker(false)}
-                        className="flex-1 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => setShowDatePicker(false)}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md"
-                      >
-                        Apply Filter
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-            
-            {/* Selected Date Range Display */}
-            <div className="ml-auto text-sm text-slate-600 dark:text-slate-400 font-medium">
-              {format(dateRange.from, 'MMM d, yyyy')} - {format(dateRange.to, 'MMM d, yyyy')}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Date Filter - Enterprise Style (Same as Admin/Operations) */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Filter by Date Range</h2>
+        <EnterpriseDateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onDateChange={(start, end) => {
+            setStartDate(start)
+            setEndDate(end)
+          }}
+        />
+      </div>
 
       {/* Enhanced Stats Cards - Professional 4-Card Layout */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -670,13 +526,26 @@ export default function PackerDashboard() {
         </CardHeader>
         <CardContent className="p-3 sm:p-6">
           {/* Filters */}
-          <div className="mb-3 sm:mb-4 space-y-2 sm:space-y-0 sm:flex sm:gap-3">
-            {/* Channel Filter */}
+          <div className="mb-3 sm:mb-4 space-y-2 sm:space-y-0 sm:flex sm:gap-3 sm:items-center">
+            {/* Search - Now First */}
+            <div className="sm:w-64">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Search order, waybill..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-10 text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Channel Filter - Now Second */}
             <div className="sm:w-48">
               <select
                 value={selectedChannel}
                 onChange={(e) => setSelectedChannel(e.target.value)}
-                className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-800 rounded-md bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-10 px-3 py-2 text-sm font-medium border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-0 focus:border-slate-300 dark:focus:border-slate-600 transition-colors cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22M6%208l4%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat pr-10"
               >
                 {channels.map(channel => (
                   <option key={channel} value={channel}>
@@ -685,79 +554,143 @@ export default function PackerDashboard() {
                 ))}
               </select>
             </div>
-
-            {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="Search order, waybill..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 text-sm"
-              />
-            </div>
           </div>
 
           {/* Table */}
           {filteredPending.length === 0 ? (
-            <div className="text-center py-12 bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed">
-              <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-              <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">
+            <div className="text-center py-12">
+              <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-600 dark:text-slate-400 font-medium">
                 {searchTerm ? 'No matching orders' : 'No orders in queue'}
               </p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">
                 {searchTerm ? 'Try different search' : 'All packed! 🎉'}
               </p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-lg border">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gradient-to-r from-slate-800 to-slate-900 text-white">
-                    <th className="text-left py-3 px-3 text-[10px] sm:text-xs font-bold tracking-wider border-r border-slate-700/50">
-                      WAYBILL NO.
-                    </th>
-                    <th className="text-left py-3 px-3 text-[10px] sm:text-xs font-bold tracking-wider border-r border-slate-700/50">
-                      CHANNEL
-                    </th>
-                    <th className="text-center py-3 px-3 text-[10px] sm:text-xs font-bold tracking-wider">
-                      ACTION
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPending.map((order, index) => (
-                    <tr
-                      key={order.id}
-                      className={`border-b border-slate-100 dark:border-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors ${
-                        index % 2 === 0 ? 'bg-white dark:bg-slate-950' : 'bg-slate-50/50 dark:bg-slate-900/50'
-                      }`}
-                    >
-                      <td className="py-3 px-3">
-                        <span className="font-mono text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 block">
-                          {order.waybill}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3">
-                        <Badge variant="secondary" className="text-[10px] sm:text-xs">
-                          {order.channel}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-3 text-center">
-                        <Button
-                          size="sm"
-                          onClick={() => handleViewOrder(order)}
-                          className="h-9 px-4 text-sm bg-blue-600 hover:bg-blue-700 gap-2 font-medium"
-                        >
-                          <Eye className="h-4 w-4" />
-                          <span>View Details</span>
-                        </Button>
-                      </td>
+            <>
+              {/* Mobile Scroll Hint */}
+              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
+                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
+                  <span className="text-blue-500">←</span>
+                  <span>Swipe to see all columns • Tap row to highlight</span>
+                  <span className="text-blue-500">→</span>
+                </p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="sticky top-0 z-10">
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '8%' }}>
+                        Date
+                      </th>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>
+                        Name
+                      </th>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '20%' }}>
+                        Address
+                      </th>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>
+                        Contact No.
+                      </th>
+                      <th className="text-right py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '8%' }}>
+                        Price
+                      </th>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '18%' }}>
+                        Items
+                      </th>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '12%' }}>
+                        Tracking
+                      </th>
+                      <th className="text-center py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider" style={{ width: '14%' }}>
+                        Action
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                    {filteredPending.map((order) => (
+                      <tr
+                        key={order.id}
+                        className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                      >
+                        <td className="py-3 px-2">
+                          <div className="flex flex-col">
+                            <span className="text-[11px] font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                              {new Date(order.orderDate).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: '2-digit', 
+                                year: 'numeric'
+                              })}
+                            </span>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                              {new Date(order.orderDate).toLocaleTimeString('en-US', { 
+                                hour: '2-digit', 
+                                minute: '2-digit', 
+                                hour12: true
+                              })}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-2">
+                          <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
+                            {order.customerName}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2">
+                          <span className="text-[11px] text-slate-700 dark:text-slate-300 block break-words leading-relaxed">
+                            {order.customerAddress}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2">
+                          <span className="text-[11px] font-mono text-slate-900 dark:text-white font-medium block break-words">
+                            {order.customerPhone}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-right">
+                          <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
+                            ₱{order.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
+                              {order.itemName}
+                            </span>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                              Qty: {order.quantity}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-2">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 block break-all">
+                              {order.waybill}
+                            </span>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                              {order.courier}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-2">
+                          <div className="flex items-center justify-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewOrder(order)}
+                              className="h-8 px-3 text-[11px] font-medium border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200 whitespace-nowrap rounded-lg"
+                            >
+                              <Eye className="h-3.5 w-3.5 mr-1.5" />
+                              View Details
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -861,7 +794,7 @@ export default function PackerDashboard() {
             </AlertDialogTitle>
           </AlertDialogHeader>
           {selectedOrder && (
-            <div className="space-y-6 max-h-[60vh] overflow-y-auto py-2">
+            <div className="space-y-6 max-h-[60vh] overflow-y-auto py-2 pr-4">
               {/* Waybill Highlight Section */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 rounded-xl border-2 border-blue-200 dark:border-blue-800">
                 <div className="text-center space-y-2">

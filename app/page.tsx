@@ -11,7 +11,7 @@ import {
   Loader2, Mail, CheckCircle2, AlertCircle
 } from "lucide-react"
 import { apiPost } from "@/lib/api-client"
-import { RoleSelector, type UserRole } from "@/components/auth/role-selector"
+import { RoleSelector, type UserRole, type LogisticsSubRole } from "@/components/auth/role-selector"
 import { LoginForm, type LoginFormData } from "@/components/auth/login-form"
 import { SecurityIndicator } from "@/components/auth/security-indicator"
 
@@ -23,6 +23,7 @@ interface Channel {
 
 export default function EnterpriseLoginPage() {
   const [selectedRole, setSelectedRole] = useState<UserRole>("admin")
+  const [logisticsSubRole, setLogisticsSubRole] = useState<LogisticsSubRole>("packer")
   const [mounted, setMounted] = useState(false)
   const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false)
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("")
@@ -205,24 +206,26 @@ export default function EnterpriseLoginPage() {
     setError("")
 
     try {
-      // Packer login
-      if (formData.role === 'packer') {
+      // Logistics login (Packer or Tracker)
+      if (formData.role === 'logistics') {
+        const actualRole = formData.logisticsSubRole || 'packer'
+        
         const data = await apiPost("/api/accounts", {
           action: "validate",
           username: formData.username,
           password: formData.password
         })
 
-        if (data.success && data.account && data.account.role === 'packer') {
+        if (data.success && data.account && data.account.role === actualRole) {
           if (typeof window !== 'undefined') {
             localStorage.setItem("isLoggedIn", "true")
             localStorage.setItem("username", data.account.username)
-            localStorage.setItem("userRole", "packer")
+            localStorage.setItem("userRole", actualRole)
             localStorage.setItem("displayName", data.account.displayName)
             
             localStorage.setItem("currentUser", JSON.stringify({
               username: data.account.username,
-              role: "packer",
+              role: actualRole,
               displayName: data.account.displayName
             }))
 
@@ -231,10 +234,15 @@ export default function EnterpriseLoginPage() {
             }
           }
           
-          router.push('/packer/dashboard')
+          // Route based on sub-role
+          if (actualRole === 'tracker') {
+            router.push('/tracker/dashboard')
+          } else {
+            router.push('/packer/dashboard')
+          }
           return
         } else {
-          throw new Error("Invalid packer credentials or account is not a packer")
+          throw new Error(`Invalid ${actualRole} credentials or account is not a ${actualRole}`)
         }
       }
 
@@ -413,6 +421,8 @@ export default function EnterpriseLoginPage() {
                 selectedChannel={selectedChannel}
                 onChannelChange={setSelectedChannel}
                 channelsLoading={channelsLoading}
+                logisticsSubRole={logisticsSubRole}
+                onLogisticsSubRoleChange={setLogisticsSubRole}
               />
             </div>
 

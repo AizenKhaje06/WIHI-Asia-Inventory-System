@@ -9,7 +9,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-export type UserRole = "admin" | "operations" | "packer"
+export type UserRole = "admin" | "operations" | "logistics"
+export type LogisticsSubRole = "packer" | "tracker"
 
 interface RoleSelectorProps {
   selectedRole: UserRole
@@ -33,10 +34,10 @@ const roles = [
     color: "emerald",
   },
   {
-    id: "packer" as UserRole,
-    label: "Packer",
+    id: "logistics" as UserRole,
+    label: "Logistics",
     icon: Package,
-    description: "Order fulfillment and packing",
+    description: "Order fulfillment and tracking",
     color: "purple",
   },
 ]

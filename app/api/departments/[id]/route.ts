@@ -10,8 +10,11 @@ import {
 /**
  * Sales Channel Detail API - Accurate Financial Metrics
  * 
- * Data Source: orders table (Track Orders page)
- * Revenue Recognition: Active orders only (excludes CANCELLED and RETURNED)
+ * Data Source: orders table (Track Orders page ONLY - status='Packed')
+ * Revenue Recognition: 
+ * - Only orders with status='Packed' (Track Orders)
+ * - Excludes orders with status='Pending' (Packing Queue)
+ * - Within Track Orders, excludes CANCELLED, RETURNED, PROBLEMATIC parcel statuses
  */
 
 export async function GET(
@@ -30,12 +33,12 @@ export async function GET(
     console.log('[Sales Channel API] Channel:', departmentName)
     console.log('[Sales Channel API] Date range:', { startDate, endDate })
 
-    // Fetch orders from orders table
+    // Fetch orders from orders table (Track Orders ONLY - status='Packed')
     let ordersQuery = supabase
       .from('orders')
       .select('*')
       .eq('sales_channel', departmentName)
-      // Don't filter by status here - get all orders and filter by parcel_status later
+      .eq('status', 'Packed') // CRITICAL: Only fetch Track Orders, exclude Packing Queue
 
     // Apply date filters
     if (startDate) {

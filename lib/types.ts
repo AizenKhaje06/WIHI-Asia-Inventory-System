@@ -171,6 +171,7 @@ export interface DashboardStats {
   cancelledOrdersValue?: number
   cancellationRate?: number
   topCancellationReasons?: { reason: string; count: number }[]
+  cancelledOrdersByChannel?: { channel: string; count: number; value: number }[]
 }
 
 export interface Log {

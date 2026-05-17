@@ -1,4 +1,4 @@
--- Update Packer Password with Bcrypt Hash
+ -- Update Packer Password with Bcrypt Hash
 -- This will hash the password 'pack789' using bcrypt
 
 -- First, let's check the current password

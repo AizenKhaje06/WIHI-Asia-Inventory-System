@@ -12,11 +12,11 @@ export const GET = withAuth(async (request, { user }) => {
 
     console.log('[Departments API] Params:', { startDate, endDate, departmentFilter })
 
-    // Fetch orders from orders table (same as Dashboard)
+    // Fetch orders from orders table (Track Orders ONLY - status='Packed')
     const { data: allOrders, error: ordersError } = await supabase
       .from('orders')
       .select('*')
-      // Don't filter by status - get ALL orders from Track Orders page
+      .eq('status', 'Packed') // CRITICAL: Only fetch Track Orders, exclude Packing Queue
 
     if (ordersError) {
       console.error("[Departments API] Error fetching orders:", ordersError)

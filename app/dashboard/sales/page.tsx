@@ -8,6 +8,7 @@ import { Calendar, BarChart3, TrendingUp, DollarSign, Package, Users, ShoppingCa
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { apiGet } from '@/lib/api-client';
 import { BrandLoader } from '@/components/ui/brand-loader';
+import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker';
 
 interface SalesData {
   totalRevenue: number;
@@ -35,16 +36,32 @@ export default function SalesAnalyticsPage() {
   const [salesData, setSalesData] = useState<SalesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchSalesData();
-  }, []); // Remove currentMonth dependency to fetch all data once
+  }, [startDate, endDate]); // Fetch when date filter changes
 
   const fetchSalesData = async () => {
     try {
       setLoading(true);
-      // Fetch ALL sales data without date filtering
-      const data = await apiGet<SalesData>('/api/reports');
+      // Build API URL with date filters if provided
+      let apiUrl = '/api/reports';
+      const params = new URLSearchParams();
+      
+      if (startDate) {
+        params.append('startDate', startDate.toISOString());
+      }
+      if (endDate) {
+        params.append('endDate', endDate.toISOString());
+      }
+      
+      if (params.toString()) {
+        apiUrl += `?${params.toString()}`;
+      }
+      
+      const data = await apiGet<SalesData>(apiUrl);
       console.log('Sales Analytics Data:', data); // Debug log
       console.log('Total Orders:', data.totalOrders); // Debug log
       console.log('Total Revenue:', data.totalRevenue); // Debug log
@@ -194,13 +211,25 @@ export default function SalesAnalyticsPage() {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
       {/* Page Header */}
-      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold gradient-text mb-2">
-          Sales Analytics
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
-          Track your sales performance and trends
-        </p>
+      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold gradient-text mb-2">
+            Sales Analytics
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 text-base">
+            Track your sales performance and trends
+          </p>
+        </div>
+        <div className="flex-shrink-0">
+          <EnterpriseDateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onDateChange={(start, end) => {
+              setStartDate(start)
+              setEndDate(end)
+            }}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">

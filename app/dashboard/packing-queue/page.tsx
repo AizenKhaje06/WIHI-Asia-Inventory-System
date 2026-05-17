@@ -56,6 +56,7 @@ export default function PackingQueuePage() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [salesChannelFilter, setChannelFilter] = useState<string>('all')
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [packing, setPacking] = useState<string | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -141,7 +142,7 @@ export default function PackingQueuePage() {
 
   useEffect(() => {
     filterOrders()
-  }, [searchTerm, orders])
+  }, [searchTerm, salesChannelFilter, orders])
 
   const fetchOrders = async () => {
     try {
@@ -241,6 +242,13 @@ export default function PackingQueuePage() {
         (order.waybill || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (order.product || order.itemName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (order.customerName || '').toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+    
+    // Sales channel filter (Admin only)
+    if (salesChannelFilter !== 'all') {
+      filtered = filtered.filter(order => 
+        (order.sales_channel || order.channel) === salesChannelFilter
       )
     }
     
@@ -496,6 +504,25 @@ export default function PackingQueuePage() {
             />
           </div>
         </div>
+        
+        {/* Sales Channel Filter - Admin Only */}
+        {userRole === 'admin' && (
+          <div className="w-full sm:w-[200px]">
+            <Select value={salesChannelFilter} onValueChange={setChannelFilter}>
+              <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <SelectValue placeholder="All Channels" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Channels</SelectItem>
+                <SelectItem value="Shopee">Shopee</SelectItem>
+                <SelectItem value="Lazada">Lazada</SelectItem>
+                <SelectItem value="TikTok">TikTok</SelectItem>
+                <SelectItem value="Facebook">Facebook</SelectItem>
+                <SelectItem value="Physical Store">Physical Store</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {/* Orders Table */}
@@ -626,23 +653,6 @@ export default function PackingQueuePage() {
                             <Eye className="h-3.5 w-3.5 mr-1.5" />
                             View Details
                           </Button>
-                          {currentUser?.role === 'admin' && (
-                            <Button
-                              size="sm"
-                              onClick={() => openConfirmDialog(order)}
-                              disabled={packing === order.id}
-                              className="h-9 px-4 text-xs font-medium bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 whitespace-nowrap rounded-lg shadow-sm"
-                            >
-                              {packing === order.id ? (
-                                <>
-                                  <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                                  Packing...
-                                </>
-                              ) : (
-                                'Pack'
-                              )}
-                            </Button>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -661,51 +671,6 @@ export default function PackingQueuePage() {
           <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4 pr-12">
             <div className="flex items-center justify-between gap-4">
               <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">Order Details</DialogTitle>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                {!isEditMode ? (
-                  <>
-                    <Button
-                      onClick={handleEditMode}
-                      variant="outline"
-                      size="sm"
-                      className="text-blue-600 border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-blue-900/30"
-                    >
-                      <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      Edit Order
-                    </Button>
-                    <Button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 border-red-600 hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900/30"
-                    >
-                      <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Delete
-                    </Button>
-                  </>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleCancelEdit}
-                      variant="outline"
-                      size="sm"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleSaveEdit}
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      Save Changes
-                    </Button>
-                  </div>
-                )}
-              </div>
             </div>
           </DialogHeader>
           

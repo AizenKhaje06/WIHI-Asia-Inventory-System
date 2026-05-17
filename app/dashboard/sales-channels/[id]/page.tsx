@@ -583,58 +583,46 @@ export default function SalesChannelDetailPage() {
             </p>
           </div>
           
-          {/* Export Button - Admin only */}
+          {/* Date Filter and Export Button - Admin only */}
           {!isTeamLeader && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="group relative inline-flex items-center justify-center p-0.5 text-sm font-medium text-gray-900 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 transition-all duration-200">
-                  <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0 flex items-center gap-2">
-                    <FileDown className="h-4 w-4" />
-                    Export Report
-                    <ChevronDown className="h-4 w-4" />
-                  </span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => handleExportChannel('pdf')}>
-                  <FileDown className="h-4 w-4 mr-2" />
-                  <span>Export as PDF</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExportChannel('excel')}>
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  <span>Export as Excel</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </div>
-
-      {/* Date Filter - Enterprise Style */}
-      <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
-                Date Range
-              </Label>
+            <div className="flex items-center gap-3">
+              {/* Date Range Picker */}
               <EnterpriseDateRangePicker
                 startDate={startDate}
                 endDate={endDate}
                 onDateChange={(start, end) => {
                   setStartDate(start)
                   setEndDate(end)
-                  // Auto-fetch when dates change
-                  if (start && end) {
-                    fetchData()
-                  }
                 }}
-                className="w-full"
+                className="h-11 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all shadow-sm"
               />
+              
+              {/* Export Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="group relative inline-flex items-center justify-center p-0.5 text-sm font-medium text-gray-900 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 transition-all duration-200">
+                    <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0 flex items-center gap-2">
+                      <FileDown className="h-4 w-4" />
+                      Export Report
+                      <ChevronDown className="h-4 w-4" />
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => handleExportChannel('pdf')}>
+                    <FileDown className="h-4 w-4 mr-2" />
+                    <span>Export as PDF</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExportChannel('excel')}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    <span>Export as Excel</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          )}
+        </div>
+      </div>
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">

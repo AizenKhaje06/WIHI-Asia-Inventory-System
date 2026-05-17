@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Eye, EyeOff, Lock, User, Loader2, ArrowRight, AlertCircle, Info } from "lucide-react"
+import { Eye, EyeOff, Lock, User, Loader2, ArrowRight, AlertCircle, Info, Package, Truck } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import type { UserRole } from "./role-selector"
+import type { UserRole, LogisticsSubRole } from "./role-selector"
 
 interface Channel {
   id: string
@@ -42,6 +42,9 @@ interface LoginFormProps {
   channelsLoading?: boolean
   staffList?: Staff[]
   staffLoading?: boolean
+  // Logistics-specific props
+  logisticsSubRole?: LogisticsSubRole
+  onLogisticsSubRoleChange?: (subRole: LogisticsSubRole) => void
 }
 
 export interface LoginFormData {
@@ -49,6 +52,7 @@ export interface LoginFormData {
   password: string
   rememberDevice: boolean
   role: UserRole
+  logisticsSubRole?: LogisticsSubRole
 }
 
 export function LoginForm({ 
@@ -60,7 +64,9 @@ export function LoginForm({
   onChannelChange,
   channelsLoading = false,
   staffList = [],
-  staffLoading = false
+  staffLoading = false,
+  logisticsSubRole = "packer",
+  onLogisticsSubRoleChange
 }: LoginFormProps) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -143,6 +149,7 @@ export function LoginForm({
         password,
         rememberDevice,
         role,
+        logisticsSubRole: role === 'logistics' ? logisticsSubRole : undefined
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed. Please try again.")
@@ -157,8 +164,8 @@ export function LoginForm({
         return "admin dashboard"
       case "operations":
         return "warehouse operations"
-      case "packer":
-        return "packer dashboard"
+      case "logistics":
+        return logisticsSubRole === "tracker" ? "tracker dashboard" : "packer dashboard"
       default:
         return "dashboard"
     }
@@ -178,6 +185,37 @@ export function LoginForm({
 
       {/* Operations Channel Selector - REMOVED */}
       {/* Team leader role has been removed from the system */}
+
+      {/* Logistics Sub-Role Selector */}
+      {role === 'logistics' && onLogisticsSubRoleChange && (
+        <div className="space-y-2">
+          <Label htmlFor="logistics-subrole" className="text-slate-200 font-medium">
+            Select Role
+          </Label>
+          <div className="relative group">
+            <Package className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none" />
+            <Select value={logisticsSubRole} onValueChange={onLogisticsSubRoleChange} disabled={loading}>
+              <SelectTrigger className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50">
+                <SelectValue placeholder="Select logistics role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="packer">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    <span>Packer</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="tracker">
+                  <div className="flex items-center gap-2">
+                    <Truck className="h-4 w-4" />
+                    <span>Tracker</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
 
       {/* Error Alert */}
       {error && (

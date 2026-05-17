@@ -36,11 +36,11 @@ export async function GET(request: NextRequest) {
     const userRole = request.headers.get('x-user-role')
     const assignedChannel = request.headers.get('x-assigned-channel')
 
-    // Fetch orders from orders table (same as dashboard)
+    // Fetch orders from orders table (Track Orders ONLY - status='Packed')
     let ordersQuery = supabase
       .from('orders')
       .select('*')
-      // Don't filter by status here - get all orders and filter by parcel_status later
+      .eq('status', 'Packed') // CRITICAL: Only fetch Track Orders, exclude Packing Queue
 
     // DEPARTMENT FILTERING: Operations users only see their department's orders
     if (userRole === 'operations' && assignedChannel) {

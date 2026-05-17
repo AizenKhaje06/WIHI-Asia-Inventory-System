@@ -114,15 +114,6 @@ export default function DashboardPage() {
   const netProfit = stats?.totalProfit || 0
   const lowStockCount = lowStockItems.length
   const outOfStockCount = outOfStockItems.length
-  
-  // Calculate damaged and supplier return counts from percentages
-  const totalSales = stats?.totalSales || 0
-  const damagedReturnsCount = totalSales > 0 && stats?.damagedReturnRate 
-    ? Math.round((stats.damagedReturnRate / 100) * totalSales) 
-    : 0
-  const supplierReturnsCount = totalSales > 0 && stats?.supplierReturnRate 
-    ? Math.round((stats.supplierReturnRate / 100) * totalSales) 
-    : 0
 
   const stocksCountData = stats?.stocksCountByCategory?.map((cat) => ({
     name: cat.name,
@@ -366,24 +357,31 @@ export default function DashboardPage() {
 
         <Card className="border-0 shadow-md bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 hover:shadow-lg transition-shadow">
           <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
                 <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">
                   <AnimatedNumber value={stats?.totalReturns || 0} duration={1000} />
                 </div>
-                <div className="text-xs font-medium text-orange-700 dark:text-orange-300 mb-2">Total Returns</div>
-                {(damagedReturnsCount > 0 || supplierReturnsCount > 0) && (
-                  <div className="space-y-0.5">
-                    <div className="text-xs text-orange-600 dark:text-orange-400">
-                      • Damaged: {damagedReturnsCount}
+                <div className="text-xs font-medium text-orange-700 dark:text-orange-300 mb-1">Total Returns</div>
+                {stats?.returnValue !== undefined && stats.returnValue > 0 && (
+                  <div className="text-xs text-orange-600 dark:text-orange-400">
+                    ₱{formatNumber(stats.returnValue)} returned
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <RotateCcw className="h-6 w-6 text-orange-400 dark:text-orange-500 opacity-50" />
+                {stats?.returnRate !== undefined && stats.returnRate > 0 && (
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-orange-600 dark:text-orange-400 leading-none">
+                      {stats.returnRate.toFixed(1)}%
                     </div>
-                    <div className="text-xs text-orange-600 dark:text-orange-400">
-                      • Supplier: {supplierReturnsCount}
+                    <div className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">
+                      Return Rate
                     </div>
                   </div>
                 )}
               </div>
-              <RotateCcw className="h-8 w-8 text-orange-400 dark:text-orange-500 opacity-50" />
             </div>
           </CardContent>
         </Card>

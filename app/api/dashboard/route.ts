@@ -106,11 +106,11 @@ export async function GET(request: Request) {
       return NextResponse.json(emptyDashboardStats())
     }
 
-    // Fetch orders from orders table (Track Orders data source)
+    // Fetch orders from orders table (Track Orders data source ONLY)
     let ordersQuery = supabase
       .from('orders')
       .select('*')
-      // Fetch ALL orders (not just Packed) for accurate metrics
+      .eq('status', 'Packed') // CRITICAL: Only fetch Track Orders (status='Packed'), exclude Packing Queue (status='Pending')
 
     // DEPARTMENT FILTERING: Operations users only see their department's orders
     if (userRole === 'operations' && assignedChannel) {
@@ -431,39 +431,23 @@ export async function GET(request: Request) {
       .map(([name, revenue]) => ({ name, count: revenue as number }))
       .sort((a, b) => b.count - a.count)
 
-    // Return metrics from restock history
-    const returns = restockHistory.filter(r => r.reason === 'damaged-return' || r.reason === 'supplier-return')
-    const totalReturns = returns.reduce((sum, r) => sum + r.quantity, 0)
-    const totalSales = financialMetrics.totalQuantity
-    const returnRate = totalSales > 0 ? (totalReturns / totalSales) * 100 : 0
-    const damagedReturns = returns.filter(r => r.reason === 'damaged-return').reduce((sum, r) => sum + r.quantity, 0)
-    const supplierReturnsCount = returns.filter(r => r.reason === 'supplier-return').reduce((sum, r) => sum + r.quantity, 0)
-    const damagedReturnRate = totalSales > 0 ? (damagedReturns / totalSales) * 100 : 0
-    const supplierReturnRate = totalSales > 0 ? (supplierReturnsCount / totalSales) * 100 : 0
+    // Return metrics from Track Orders (orders with parcel_status = 'RETURNED')
+    const returnedOrders = filteredOrders.filter(o => o.parcel_status === 'RETURNED')
+    const totalReturns = returnedOrders.reduce((sum, o) => sum + (o.qty || 0), 0)
+    const returnValue = returnedOrders.reduce((sum, o) => sum + (o.total || 0), 0)
+    
+    // Calculate return rate based on total orders (not just active orders)
+    const totalOrdersQuantity = filteredOrders.reduce((sum, o) => sum + (o.qty || 0), 0)
+    const returnRate = totalOrdersQuantity > 0 ? (totalReturns / totalOrdersQuantity) * 100 : 0
+    
+    // For backward compatibility with restock history metrics
+    const damagedReturns = 0 // Not tracked in orders table
+    const supplierReturnsCount = 0 // Not tracked in orders table
+    const damagedReturnRate = 0
+    const supplierReturnRate = 0
 
-    // Supplier returns
-    const supplierReturnsData = restockHistory
-      .filter(r => r.reason === 'supplier-return')
-      .reduce((acc: { [key: string]: { quantity: number; value: number } }, r: any) => {
-        if (!acc[r.itemName]) {
-          acc[r.itemName] = { quantity: 0, value: 0 }
-        }
-        acc[r.itemName].quantity += r.quantity
-        acc[r.itemName].value += r.totalCost
-        return acc
-      }, {})
-
-    const topSupplierReturns = Object.entries(supplierReturnsData)
-      .sort(([, a], [, b]) => (b as { quantity: number; value: number }).value - (a as { quantity: number; value: number }).value)
-      .slice(0, 5)
-      .map(([name, data]) => {
-        const typedData = data as { quantity: number; value: number }
-        return {
-          itemName: name,
-          quantity: typedData.quantity,
-          value: typedData.value
-        }
-      })
+    // Supplier returns (empty for now, not tracked in orders table)
+    const topSupplierReturns: { itemName: string; quantity: number; value: number }[] = []
 
     // Recent restocks
     const recentRestocks = restockHistory
@@ -575,7 +559,7 @@ export async function GET(request: Request) {
       damagedReturnRate: Math.round(damagedReturnRate * 100) / 100,
       supplierReturnRate: Math.round(supplierReturnRate * 100) / 100,
       totalReturns,
-      returnValue: returns.reduce((sum, r) => sum + r.totalCost, 0),
+      returnValue,
       itemsSoldToday,
       revenueToday,
       supplierReturns: topSupplierReturns,

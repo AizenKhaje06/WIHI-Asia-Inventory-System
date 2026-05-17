@@ -1,6 +1,6 @@
 // Role-based access control system
 
-export type UserRole = 'admin' | 'operations' | 'packer'
+export type UserRole = 'admin' | 'operations' | 'packer' | 'tracker'
 
 export interface User {
   username: string
@@ -30,6 +30,12 @@ export const ROLES = {
     name: 'Packer',
     description: 'Packing queue and order fulfillment',
     icon: '📦'
+  },
+  tracker: {
+    id: 'tracker' as const,
+    name: 'Tracker',
+    description: 'Track orders and update parcel status',
+    icon: '🚚'
   }
 } as const
 
@@ -68,6 +74,9 @@ export const ROLE_PERMISSIONS = {
   ],
   packer: [
     '/packer/dashboard'
+  ],
+  tracker: [
+    '/tracker/dashboard'
   ]
 } as const
 
@@ -75,7 +84,8 @@ export const ROLE_PERMISSIONS = {
 export const DEFAULT_PASSWORDS: Record<UserRole, string> = {
   admin: 'admin123',
   operations: 'ops456',
-  packer: 'pack789'
+  packer: 'pack789',
+  tracker: 'tracker123'
 }
 
 // Auth helpers
@@ -122,6 +132,9 @@ export function getDefaultRoute(role: UserRole): string {
   if (role === 'packer') {
     return '/packer/dashboard'
   }
+  if (role === 'tracker') {
+    return '/tracker/dashboard'
+  }
   return '/dashboard'
 }
 
@@ -152,7 +165,7 @@ export function getCurrentUser(): User | null {
     
     if (isLoggedIn === 'true' && username && role) {
       // Validate role is valid
-      if (!['admin', 'operations', 'packer'].includes(role)) {
+      if (!['admin', 'operations', 'packer', 'tracker'].includes(role)) {
         console.warn('[Auth] Invalid role in session, clearing...')
         clearCurrentUser()
         return null

@@ -263,14 +263,14 @@ export function EnterpriseDateRangePicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-2xl" 
+        className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-2xl max-h-[500px] overflow-auto" 
         align="start"
         sideOffset={4}
       >
         <div className="flex">
           {/* Left Sidebar - Presets */}
           <div className="w-36 border-r border-slate-200 dark:border-slate-700 p-2.5 bg-slate-50 dark:bg-slate-900/50">
-            <div className="space-y-0.5 max-h-[380px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600">
+            <div className="space-y-0.5 max-h-[300px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600">
               {presets.map((preset) => (
                 <button
                   key={preset.value}

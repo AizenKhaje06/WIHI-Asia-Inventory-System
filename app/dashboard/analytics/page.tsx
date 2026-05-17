@@ -14,6 +14,7 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+import { EnterpriseDateRangePicker } from "@/components/ui/enterprise-date-range-picker"
 
 import type { SalesReport } from "@/lib/types"
 import { formatCurrency, formatNumber } from "@/lib/utils"
@@ -26,6 +27,8 @@ export default function AnalyticsPage() {
   const [chartType, setChartType] = useState<'bar' | 'line' | 'area'>('bar')
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [salesChannelFilter, setSalesChannelFilter] = useState("all")
+  const [startDate, setStartDate] = useState<Date | null>(null)
+  const [endDate, setEndDate] = useState<Date | null>(null)
 
   useEffect(() => {
     async function fetchData() {
@@ -34,19 +37,21 @@ export default function AnalyticsPage() {
         const year = currentMonth.getFullYear()
         const month = currentMonth.getMonth()
         
-        // For monthly view, fetch entire year data
-        // For daily view, fetch only the selected month
-        let startDate, endDate
-        if (view === 'monthly') {
-          startDate = new Date(year, 0, 1) // January 1st
-          endDate = new Date(year, 11, 31) // December 31st
+        // Use custom date range if provided, otherwise use view-based dates
+        let fetchStartDate, fetchEndDate
+        if (startDate && endDate) {
+          fetchStartDate = startDate
+          fetchEndDate = endDate
+        } else if (view === 'monthly') {
+          fetchStartDate = new Date(year, 0, 1) // January 1st
+          fetchEndDate = new Date(year, 11, 31) // December 31st
         } else {
-          startDate = new Date(year, month, 1)
-          endDate = new Date(year, month + 1, 0)
+          fetchStartDate = new Date(year, month, 1)
+          fetchEndDate = new Date(year, month + 1, 0)
         }
 
-        const startDateStr = startDate.toISOString().split('T')[0]
-        const endDateStr = endDate.toISOString().split('T')[0]
+        const startDateStr = fetchStartDate.toISOString().split('T')[0]
+        const endDateStr = fetchEndDate.toISOString().split('T')[0]
 
         const url = new URL('/api/reports', window.location.origin)
         url.searchParams.append('startDate', startDateStr)
@@ -75,7 +80,7 @@ export default function AnalyticsPage() {
     }
 
     fetchData()
-  }, [view, currentMonth, salesChannelFilter])
+  }, [view, currentMonth, salesChannelFilter, startDate, endDate])
 
   const prevMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
@@ -148,13 +153,25 @@ export default function AnalyticsPage() {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
       {/* Page Header */}
-      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold gradient-text mb-2">
-          Sales Analytics
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
-          Comprehensive sales performance analysis and business insights
-        </p>
+      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold gradient-text mb-2">
+            Sales Analytics
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 text-base">
+            Comprehensive sales performance analysis and business insights
+          </p>
+        </div>
+        <div className="flex-shrink-0">
+          <EnterpriseDateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onDateChange={(start, end) => {
+              setStartDate(start)
+              setEndDate(end)
+            }}
+          />
+        </div>
       </div>
 
       {/* Sales Performance Metrics */}
