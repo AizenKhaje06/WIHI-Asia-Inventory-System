@@ -484,6 +484,9 @@ export default function TrackerDashboardPage() {
                       <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '12%' }}>
                         Tracking
                       </th>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '14%' }}>
+                        Status
+                      </th>
                       <th className="text-center py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider" style={{ width: '14%' }}>
                         Action
                       </th>
@@ -552,6 +555,30 @@ export default function TrackerDashboardPage() {
                               {order.courier}
                             </span>
                           </div>
+                        </td>
+                        <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
+                          <Select 
+                            value={order.parcelStatus} 
+                            onValueChange={(value) => {
+                              // Update status directly without modal
+                              updateOrderStatus(order.id, value)
+                            }}
+                          >
+                            <SelectTrigger className="h-8 text-xs border-slate-200 dark:border-slate-700">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="PENDING">Pending</SelectItem>
+                              <SelectItem value="IN TRANSIT">In Transit</SelectItem>
+                              <SelectItem value="ON DELIVERY">On Delivery</SelectItem>
+                              <SelectItem value="PICKUP">Pickup</SelectItem>
+                              <SelectItem value="DELIVERED">Delivered</SelectItem>
+                              <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                              <SelectItem value="DETAINED">Detained</SelectItem>
+                              <SelectItem value="PROBLEMATIC">Problematic</SelectItem>
+                              <SelectItem value="RETURNED">Returned</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </td>
                         <td className="py-3 px-2">
                           <div className="flex items-center justify-center">
