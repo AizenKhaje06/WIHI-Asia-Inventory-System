@@ -1454,6 +1454,100 @@
           ]
         },
         {
+          "name": "Admin Utilities",
+          "item": [
+            {
+              "name": "Fix Packer & Tracker Passwords",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/fix-passwords",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "fix-passwords"]
+                },
+                "description": "Fix packer1 and tracker passwords by hashing them with bcrypt. Sets packer1 password to 'pack789' and tracker password to 'tracker123'."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: Response has success field",
+                      "pm.test('Response has success field', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('success');",
+                      "    pm.expect(jsonData.success).to.be.true;",
+                      "});",
+                      "",
+                      "// Test 4: Response has message",
+                      "pm.test('Response has success message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.include('successfully');",
+                      "});",
+                      "",
+                      "// Test 5: Response has users array",
+                      "pm.test('Response has users array', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('users');",
+                      "    pm.expect(jsonData.users).to.be.an('array');",
+                      "    pm.expect(jsonData.users).to.have.lengthOf(2);",
+                      "});",
+                      "",
+                      "// Test 6: Both users have bcrypt hashed passwords",
+                      "pm.test('Both users have bcrypt hashed passwords', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    jsonData.users.forEach(user => {",
+                      "        pm.expect(user.passwordStatus).to.equal('Bcrypt hashed ✓');",
+                      "    });",
+                      "});",
+                      "",
+                      "// Test 7: Packer1 user exists",
+                      "pm.test('Packer1 user exists in response', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const packer = jsonData.users.find(u => u.username === 'packer1');",
+                      "    pm.expect(packer).to.exist;",
+                      "    pm.expect(packer.role).to.equal('packer');",
+                      "});",
+                      "",
+                      "// Test 8: Tracker user exists",
+                      "pm.test('Tracker user exists in response', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const tracker = jsonData.users.find(u => u.username === 'tracker');",
+                      "    pm.expect(tracker).to.exist;",
+                      "    pm.expect(tracker.role).to.equal('tracker');",
+                      "});",
+                      "",
+                      "// Test 9: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "Bundles (NEW - TO BE IMPLEMENTED)",
           "item": [
             {

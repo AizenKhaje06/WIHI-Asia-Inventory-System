@@ -271,11 +271,14 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
 
   const totals = calculateTotals()
 
-  // Filter items for search
+  // Filter items for search - EXCLUDE BUNDLES (only show regular items)
   const filteredItems = items.filter(item => 
-    item.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-    item.category.toLowerCase().includes(searchValue.toLowerCase()) ||
-    item.sku?.toLowerCase().includes(searchValue.toLowerCase())
+    !item.id.startsWith('BUNDLE-') && // Exclude bundles - bundles cannot contain other bundles
+    (
+      item.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchValue.toLowerCase()) ||
+      item.sku?.toLowerCase().includes(searchValue.toLowerCase())
+    )
   )
 
   return (

@@ -210,7 +210,7 @@ export default function TransactionHistoryPage() {
         
         <div className="w-[200px]">
           <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-            <SelectTrigger className="h-11">
+            <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
               <SelectValue placeholder="All Channels" />
             </SelectTrigger>
             <SelectContent>

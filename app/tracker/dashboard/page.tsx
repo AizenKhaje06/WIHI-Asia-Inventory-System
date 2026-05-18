@@ -4,13 +4,15 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { 
   Search, Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, 
-  User, Phone, MapPin, AlertCircle, PackageCheck, AlertTriangle, RotateCcw
+  User, Phone, MapPin, AlertCircle, PackageCheck, AlertTriangle, RotateCcw, Eye, LogOut
 } from 'lucide-react'
 import { formatCurrency, cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -51,6 +53,7 @@ export default function TrackerDashboardPage() {
   const [endDate, setEndDate] = useState<Date | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
 
   useEffect(() => {
     fetchOrders()
@@ -230,7 +233,24 @@ export default function TrackerDashboardPage() {
     setShowDetailsModal(true)
   }
 
+  const handleLogout = () => {
+    // Clear auth data
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('currentUser')
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('username')
+    localStorage.removeItem('userRole')
+    localStorage.removeItem('displayName')
+    
+    // Redirect to login (main page)
+    window.location.href = '/'
+    
+    toast.success('Logged out successfully')
+  }
+
   const totalOrders = filteredOrders.length
+  const deliveredCount = filteredOrders.filter(o => o.parcelStatus === 'DELIVERED').length
+  const inTransitCount = filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT' || o.parcelStatus === 'ON DELIVERY').length
 
   if (loading) {
     return (
@@ -244,7 +264,7 @@ export default function TrackerDashboardPage() {
   }
 
   return (
-    <div className="space-y-6 pt-2">
+    <div className="space-y-6 pt-2 px-4 sm:px-6 lg:px-8 pb-8">
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -263,7 +283,61 @@ export default function TrackerDashboardPage() {
             }}
             className="h-11 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all shadow-sm"
           />
+          <Button
+            variant="outline"
+            size="default"
+            onClick={() => setShowLogoutDialog(true)}
+            className="h-11 px-4 border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 transition-all shadow-sm"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
         </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Total Orders */}
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
+          <CardHeader className="pb-3 relative">
+            <CardTitle className="text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <span>Total Orders</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pb-4 relative">
+            <div className="text-3xl font-bold text-slate-900 dark:text-white">
+              {totalOrders}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              {inTransitCount} in transit
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Delivered */}
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
+          <CardHeader className="pb-3 relative">
+            <CardTitle className="text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+              </div>
+              <span>Delivered</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pb-4 relative">
+            <div className="text-3xl font-bold text-slate-900 dark:text-white">
+              {deliveredCount}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              {totalOrders > 0 ? `${Math.round((deliveredCount / totalOrders) * 100)}% delivery rate` : 'No orders yet'}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
@@ -329,101 +403,174 @@ export default function TrackerDashboardPage() {
       </Card>
 
       {/* Orders Table */}
-      <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
-        <CardHeader className="bg-gradient-to-r from-slate-800 to-slate-700 dark:from-slate-900 dark:to-slate-800 border-b border-slate-700">
-          <CardTitle className="text-white text-lg font-semibold">
-            Orders ({totalOrders})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-                <tr>
-                  <th className="text-left p-3 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-[8%]">Date</th>
-                  <th className="text-left p-3 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-[10%]">Name</th>
-                  <th className="text-left p-3 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-[20%]">Address</th>
-                  <th className="text-left p-3 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-[10%]">Contact No.</th>
-                  <th className="text-right p-3 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-[8%]">Price</th>
-                  <th className="text-left p-3 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-[18%]">Items</th>
-                  <th className="text-left p-3 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-[12%]">Tracking</th>
-                  <th className="text-left p-3 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-[14%]">Status</th>
-                  <th className="text-left p-3 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-[20%]">Reason</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                {filteredOrders.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="p-8 text-center text-slate-500 dark:text-slate-400">
-                      No orders found
-                    </td>
-                  </tr>
-                ) : (
-                  filteredOrders.map((order) => (
-                    <tr 
-                      key={order.id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
-                      onClick={() => openDetailsModal(order)}
-                    >
-                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">
-                        {new Date(order.orderDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })}
-                      </td>
-                      <td className="p-3 text-sm font-medium text-slate-900 dark:text-white">
-                        {order.customerName}
-                      </td>
-                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">
-                        {order.customerAddress}
-                      </td>
-                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">
-                        {order.customerPhone}
-                      </td>
-                      <td className="p-3 text-sm font-semibold text-right text-emerald-600 dark:text-emerald-400">
-                        {formatCurrency(order.totalAmount)}
-                      </td>
-                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">
-                        {order.itemName}
-                      </td>
-                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300 font-mono">
-                        {order.trackingNumber}
-                      </td>
-                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                        <Select 
-                          value={order.parcelStatus} 
-                          onValueChange={(value) => {
-                            // If status requires reason, show modal
-                            if (['CANCELLED', 'RETURNED', 'PROBLEMATIC'].includes(value)) {
-                              setSelectedOrder(order)
-                              setShowDetailsModal(true)
-                            } else {
-                              updateOrderStatus(order.id, value)
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="h-8 text-xs border-slate-200 dark:border-slate-700">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="PENDING">Pending</SelectItem>
-                            <SelectItem value="IN TRANSIT">In Transit</SelectItem>
-                            <SelectItem value="ON DELIVERY">On Delivery</SelectItem>
-                            <SelectItem value="PICKUP">Pickup</SelectItem>
-                            <SelectItem value="DELIVERED">Delivered</SelectItem>
-                            <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                            <SelectItem value="DETAINED">Detained</SelectItem>
-                            <SelectItem value="PROBLEMATIC">Problematic</SelectItem>
-                            <SelectItem value="RETURNED">Returned</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">
-                        {order.reason || '-'}
-                      </td>
-                    </tr>
-                  ))
+      <Card className="shadow-lg overflow-hidden">
+        <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-3 sm:p-6">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-lg">
+                  <Package className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                  Orders Queue
+                </CardTitle>
+                <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                  {filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'} ready
+                </p>
+              </div>
+              <div className="flex gap-2 flex-wrap justify-end flex-shrink-0">
+                {statusFilter !== 'all' && (
+                  <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                    {statusFilter}
+                  </Badge>
                 )}
-              </tbody>
-            </table>
+                {searchTerm && (
+                  <Badge variant="outline" className="text-xs whitespace-nowrap">
+                    Searching
+                  </Badge>
+                )}
+                {!searchTerm && statusFilter === 'all' && (
+                  <Badge variant="outline" className="text-xs whitespace-nowrap">
+                    All Orders
+                  </Badge>
+                )}
+              </div>
+            </div>
           </div>
+        </CardHeader>
+        <CardContent className="p-3 sm:p-6">
+          {/* Table */}
+          {filteredOrders.length === 0 ? (
+            <div className="text-center py-12">
+              <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-600 dark:text-slate-400 font-medium">
+                {searchTerm ? 'No matching orders' : 'No orders found'}
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">
+                {searchTerm ? 'Try different search' : 'All orders tracked! 🎉'}
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Mobile Scroll Hint */}
+              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
+                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
+                  <span className="text-blue-500">←</span>
+                  <span>Swipe to see all columns • Tap row to highlight</span>
+                  <span className="text-blue-500">→</span>
+                </p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="sticky top-0 z-10">
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '8%' }}>
+                        Date
+                      </th>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>
+                        Name
+                      </th>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '20%' }}>
+                        Address
+                      </th>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>
+                        Contact No.
+                      </th>
+                      <th className="text-right py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '8%' }}>
+                        Price
+                      </th>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '18%' }}>
+                        Items
+                      </th>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '12%' }}>
+                        Tracking
+                      </th>
+                      <th className="text-center py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider" style={{ width: '14%' }}>
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                    {filteredOrders.map((order) => (
+                      <tr
+                        key={order.id}
+                        className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                      >
+                        <td className="py-3 px-2">
+                          <div className="flex flex-col">
+                            <span className="text-[11px] font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                              {new Date(order.orderDate).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: '2-digit', 
+                                year: 'numeric'
+                              })}
+                            </span>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                              {new Date(order.orderDate).toLocaleTimeString('en-US', { 
+                                hour: '2-digit', 
+                                minute: '2-digit', 
+                                hour12: true
+                              })}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-2">
+                          <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
+                            {order.customerName}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2">
+                          <span className="text-[11px] text-slate-700 dark:text-slate-300 block break-words leading-relaxed">
+                            {order.customerAddress}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2">
+                          <span className="text-[11px] font-mono text-slate-900 dark:text-white font-medium block break-words">
+                            {order.customerPhone}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-right">
+                          <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
+                            ₱{order.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
+                              {order.itemName}
+                            </span>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                              Qty: {order.quantity}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-2">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 block break-all">
+                              {order.trackingNumber}
+                            </span>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                              {order.courier}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-2">
+                          <div className="flex items-center justify-center">
+                            <button
+                              onClick={() => openDetailsModal(order)}
+                              className="h-8 px-3 text-[11px] font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200 whitespace-nowrap rounded-lg inline-flex items-center gap-1.5"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              View Details
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -569,6 +716,30 @@ export default function TrackerDashboardPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <LogOut className="h-5 w-5 text-red-600" />
+              Sign Out
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to sign out? You will need to log in again to access the tracker dashboard.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
+            >
+              Yes, Sign Out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

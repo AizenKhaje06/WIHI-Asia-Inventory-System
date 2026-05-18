@@ -32,16 +32,15 @@ const generateId = (prefix: string) => `${prefix}-${Date.now()}`
 // ==================== INVENTORY ====================
 
 export async function getInventoryItems(): Promise<InventoryItem[]> {
-  // Only fetch from inventory table (NOT bundles)
-  // Bundles are virtual products - their items are already in inventory
+  // Fetch from unified view that includes both inventory items AND bundles
   const { data, error } = await supabaseAdmin
-    .from('inventory')
+    .from('products_unified')
     .select('*')
     .order('name', { ascending: true })
 
   if (error) {
-    console.error('Error fetching inventory:', error)
-    throw new Error(`Failed to fetch inventory: ${error.message}`)
+    console.error('Error fetching products (inventory + bundles):', error)
+    throw new Error(`Failed to fetch products: ${error.message}`)
   }
 
   return (data || []).map(item => ({
@@ -49,13 +48,13 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
     name: item.name,
     category: item.category,
     store: item.store,
-    salesChannel: item.sales_channel,
+    salesChannel: item.salesChannel,
     quantity: item.quantity,
-    totalCOGS: item.total_cogs,
-    costPrice: item.cost_price,
-    sellingPrice: item.selling_price,
-    reorderLevel: item.reorder_level,
-    lastUpdated: item.last_updated,
+    totalCOGS: item.quantity * item.costPrice, // Calculate from quantity * cost
+    costPrice: item.costPrice,
+    sellingPrice: item.sellingPrice,
+    reorderLevel: item.reorderLevel,
+    lastUpdated: item.lastUpdated,
   }))
 }
 

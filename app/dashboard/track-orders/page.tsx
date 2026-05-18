@@ -1609,7 +1609,7 @@ export default function TrackOrdersPage() {
             {/* Status Filter */}
             <div className="w-[200px]">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-12 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all">
+                <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent className="rounded-lg">
@@ -1676,7 +1676,7 @@ export default function TrackOrdersPage() {
             {userRole === 'admin' && (
               <div className="w-[200px]">
                 <Select value={salesChannelFilter} onValueChange={setChannelFilter}>
-                  <SelectTrigger className="h-12 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all">
+                  <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
                     <SelectValue placeholder="All Channels" />
                   </SelectTrigger>
                   <SelectContent className="rounded-lg">

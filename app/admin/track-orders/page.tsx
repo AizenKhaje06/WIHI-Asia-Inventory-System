@@ -258,7 +258,7 @@ export default function TrackOrdersPage() {
         
         <div className="w-[180px]">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-11">
+            <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
@@ -274,7 +274,7 @@ export default function TrackOrdersPage() {
 
         <div className="w-[180px]">
           <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-            <SelectTrigger className="h-11">
+            <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
               <SelectValue placeholder="Payment Status" />
             </SelectTrigger>
             <SelectContent>

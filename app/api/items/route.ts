@@ -12,9 +12,10 @@ export const GET = withAuth(async (request, { user }) => {
 
     let items
     try {
+      // Fetch from unified view that includes both items and bundles
       items = await getCachedData(
-        'inventory-items',
-        () => getInventoryItems(),
+        'inventory-items-with-bundles',
+        () => getInventoryItems(), // This should query products_unified view
         2 * 60 * 1000 // 2 minutes
       )
     } catch (dbError) {
@@ -22,7 +23,7 @@ export const GET = withAuth(async (request, { user }) => {
       return NextResponse.json([])
     }
 
-    // Products are universal - all roles can see all products
+    // Products are universal - all roles can see all products (including bundles)
     // No department/channel filtering needed
 
     if (search) {

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { BarcodeScanner } from '@/components/barcode-scanner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
-import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Activity } from 'lucide-react'
+import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Activity, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 import { getCurrentUser } from '@/lib/auth'
 import { AnimatedNumber } from '@/components/ui/animated-number'
@@ -56,6 +56,7 @@ export default function PackerDashboard() {
   const [showOrderDetails, setShowOrderDetails] = useState(false)
   const [packing, setPacking] = useState(false)
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   
   // Date filter states - using same format as Admin/Operations dashboard (Date objects, not strings)
   // Default to current month
@@ -266,6 +267,21 @@ export default function PackerDashboard() {
     await handleAutoPackOrder(selectedOrder)
   }
 
+  const handleLogout = () => {
+    // Clear auth data
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('currentUser')
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('username')
+    localStorage.removeItem('userRole')
+    localStorage.removeItem('displayName')
+    
+    // Redirect to login (main page)
+    window.location.href = '/'
+    
+    toast.success('Logged out successfully')
+  }
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center min-h-[600px]">
@@ -280,44 +296,48 @@ export default function PackerDashboard() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-8 px-2 sm:px-0">
+    <div className="space-y-6 pb-8 px-4 sm:px-6 lg:px-8">
       {/* Professional Corporate Header */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           {/* Title Section with Branding */}
           <div className="flex items-start gap-4">
-            <div className="hidden sm:flex h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 items-center justify-center shadow-lg shadow-blue-500/30 flex-shrink-0">
-              <Package className="h-7 w-7 text-white" strokeWidth={2.5} />
+            <div className="hidden sm:flex h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 items-center justify-center shadow-xl shadow-blue-500/30 flex-shrink-0">
+              <Package className="h-8 w-8 text-white" strokeWidth={2.5} />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
+              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-2">
                 Packer Dashboard
               </h1>
-              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1.5 flex items-center gap-2 flex-wrap font-medium">
-                <Activity className="h-4 w-4 text-blue-600" />
-                <span>Real-time Order Fulfillment System</span>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Real-time Order Fulfillment System</span>
+                </div>
                 {currentUser && (
                   <>
-                    <span className="hidden sm:inline text-slate-400">•</span>
-                    <span className="text-blue-600 dark:text-blue-400 font-semibold">
-                      {currentUser.displayName || currentUser.username}
-                    </span>
+                    <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                      <div className="h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
+                      <span className="text-sm font-semibold text-blue-700 dark:text-blue-400">
+                        {currentUser.displayName || currentUser.username}
+                      </span>
+                    </div>
                   </>
                 )}
-              </p>
+              </div>
             </div>
           </div>
 
           {/* Action Buttons - Professional Layout */}
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button 
               onClick={() => setScannerOpen(true)} 
               size="lg" 
-              className="flex-1 lg:flex-none gap-2.5 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 h-12 px-6 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 font-semibold"
+              className="flex-1 sm:flex-none gap-2.5 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 h-12 px-6 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 font-semibold"
             >
               <Camera className="h-5 w-5" strokeWidth={2.5} />
-              <span className="hidden sm:inline">Scan Barcode</span>
-              <span className="sm:hidden">Scan</span>
+              <span>Scan Barcode</span>
             </Button>
             <Button 
               onClick={() => fetchData()} 
@@ -331,30 +351,41 @@ export default function PackerDashboard() {
             <div className="h-12 flex items-center">
               <ThemeToggle />
             </div>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setShowLogoutDialog(true)}
+              className="h-12 px-4 border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 transition-all"
+            >
+              <LogOut className="h-5 w-5" strokeWidth={2.5} />
+              <span className="hidden lg:inline ml-2">Sign Out</span>
+            </Button>
           </div>
         </div>
 
-        {/* Quick Stats Bar - Professional Metrics */}
-        <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-2 text-sm">
-            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="font-semibold text-slate-700 dark:text-slate-300">System Active</span>
+        {/* Quick Stats Bar - Integrated */}
+        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">System Active</span>
+            </div>
+            <div className="h-4 w-px bg-slate-300 dark:bg-slate-600" />
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <Clock className="h-4 w-4" />
+              <span className="font-medium">
+                {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+            {selectedChannel !== 'All' && (
+              <>
+                <div className="h-4 w-px bg-slate-300 dark:bg-slate-600" />
+                <Badge variant="secondary" className="font-semibold">
+                  {selectedChannel}
+                </Badge>
+              </>
+            )}
           </div>
-          <div className="h-4 w-px bg-slate-300 dark:bg-slate-600" />
-          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-            <Clock className="h-4 w-4" />
-            <span className="font-medium">
-              {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-            </span>
-          </div>
-          {selectedChannel !== 'All' && (
-            <>
-              <div className="h-4 w-px bg-slate-300 dark:bg-slate-600" />
-              <Badge variant="secondary" className="font-semibold">
-                {selectedChannel}
-              </Badge>
-            </>
-          )}
         </div>
       </div>
 
@@ -928,6 +959,30 @@ export default function PackerDashboard() {
                   Mark as Packed
                 </>
               )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <LogOut className="h-5 w-5 text-red-600" />
+              Sign Out
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to sign out? You will need to log in again to access the packer dashboard.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
+            >
+              Yes, Sign Out
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -307,7 +307,7 @@ export default function DispatchPage() {
             </div>
             {!isTeamLeader && (
               <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-                <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectTrigger className="w-full sm:w-[200px] h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
                   <SelectValue placeholder="All Channels" />
                 </SelectTrigger>
                 <SelectContent>

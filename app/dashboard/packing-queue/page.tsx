@@ -509,7 +509,7 @@ export default function PackingQueuePage() {
         {userRole === 'admin' && (
           <div className="w-full sm:w-[200px]">
             <Select value={salesChannelFilter} onValueChange={setChannelFilter}>
-              <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
                 <SelectValue placeholder="All Channels" />
               </SelectTrigger>
               <SelectContent>

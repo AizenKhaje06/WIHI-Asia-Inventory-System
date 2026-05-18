@@ -777,11 +777,11 @@ export default function InternalUsagePage() {
                     onChange={(e) => setSearchTable(e.target.value)}
                     className="pl-10 h-11"
                   />
-                </div>
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="w-full sm:w-[200px] h-11">
-                    <SelectValue placeholder="Filter by type" />
-                  </SelectTrigger>
+        <div className="w-full sm:w-[200px]">
+          <Select value={filterType} onValueChange={setFilterType}>
+            <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
+              <SelectValue placeholder="Filter by type" />
+            </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="demo">Demo/Display</SelectItem>
@@ -791,7 +791,7 @@ export default function InternalUsagePage() {
                 </Select>
                 {getCurrentUser()?.role === 'admin' && (
                   <Select value={filterSalesChannel} onValueChange={setFilterSalesChannel}>
-                    <SelectTrigger className="w-full sm:w-[200px] h-11">
+                    <SelectTrigger className="w-full sm:w-[200px] h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
                       <SelectValue placeholder="Sales Channel" />
                     </SelectTrigger>
                     <SelectContent>

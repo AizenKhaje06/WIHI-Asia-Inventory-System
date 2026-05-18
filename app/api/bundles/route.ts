@@ -123,8 +123,19 @@ export async function POST(request: NextRequest) {
     
     if (itemsInsertError) {
       console.error('[Bundles API] Error inserting items:', itemsInsertError)
+      console.error('[Bundles API] Items data:', JSON.stringify(bundleItemsData, null, 2))
+      console.error('[Bundles API] Error details:', {
+        message: itemsInsertError.message,
+        details: itemsInsertError.details,
+        hint: itemsInsertError.hint,
+        code: itemsInsertError.code
+      })
+      // Rollback: delete the bundle
       await supabase.from('bundles').delete().eq('id', bundleId)
-      return NextResponse.json({ error: 'Failed to add items' }, { status: 500 })
+      return NextResponse.json({ 
+        error: 'Failed to add items', 
+        details: itemsInsertError.message 
+      }, { status: 500 })
     }
     
     // Fetch updated bundle with correct quantity (set by trigger)
