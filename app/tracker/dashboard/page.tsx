@@ -150,6 +150,48 @@ export default function TrackerDashboardPage() {
     }
   }
 
+  const updateOrderPaymentStatus = async (orderId: string, paymentStatus: 'pending' | 'paid' | 'cod' | 'refunded') => {
+    try {
+      // Optimistic update
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId 
+            ? { ...order, paymentStatus }
+            : order
+        )
+      )
+      setFilteredOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId 
+            ? { ...order, paymentStatus }
+            : order
+        )
+      )
+
+      // Update in background
+      const response = await fetch(`/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          payment_status: paymentStatus
+        }),
+      })
+
+      if (!response.ok) {
+        // Revert optimistic update on error
+        await fetchOrders()
+        throw new Error('Failed to update payment status')
+      }
+
+      toast.success('Payment status updated successfully')
+    } catch (error) {
+      console.error('Error updating payment status:', error)
+      toast.error('Failed to update payment status')
+    }
+  }
+
   const filterOrders = () => {
     let filtered = [...orders]
     
@@ -250,7 +292,7 @@ export default function TrackerDashboardPage() {
 
   const totalOrders = filteredOrders.length
   const deliveredCount = filteredOrders.filter(o => o.parcelStatus === 'DELIVERED').length
-  const inTransitCount = filteredOrders.filter(o => o.parcelStatus === 'IN TRANSIT' || o.parcelStatus === 'ON DELIVERY').length
+  const returnedCount = filteredOrders.filter(o => o.parcelStatus === 'RETURNED').length
 
   if (loading) {
     return (
@@ -296,7 +338,7 @@ export default function TrackerDashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Total Orders */}
         <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
@@ -313,7 +355,7 @@ export default function TrackerDashboardPage() {
               {totalOrders}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
-              {inTransitCount} in transit
+              All tracked orders
             </p>
           </CardContent>
         </Card>
@@ -335,6 +377,27 @@ export default function TrackerDashboardPage() {
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
               {totalOrders > 0 ? `${Math.round((deliveredCount / totalOrders) * 100)}% delivery rate` : 'No orders yet'}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Returned */}
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-red-600/5 rounded-full -mr-16 -mt-16" />
+          <CardHeader className="pb-3 relative">
+            <CardTitle className="text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+                <RotateCcw className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              </div>
+              <span>Returned</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pb-4 relative">
+            <div className="text-3xl font-bold text-slate-900 dark:text-white">
+              {returnedCount}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              {totalOrders > 0 ? `${Math.round((returnedCount / totalOrders) * 100)}% return rate` : 'No returns yet'}
             </p>
           </CardContent>
         </Card>
@@ -484,10 +547,13 @@ export default function TrackerDashboardPage() {
                       <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '12%' }}>
                         Tracking
                       </th>
-                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '14%' }}>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>
+                        Payment
+                      </th>
+                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '12%' }}>
                         Status
                       </th>
-                      <th className="text-center py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider" style={{ width: '14%' }}>
+                      <th className="text-center py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider" style={{ width: '12%' }}>
                         Action
                       </th>
                     </tr>
@@ -558,6 +624,24 @@ export default function TrackerDashboardPage() {
                         </td>
                         <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
                           <Select 
+                            value={order.paymentStatus} 
+                            onValueChange={(value) => {
+                              updateOrderPaymentStatus(order.id, value as any)
+                            }}
+                          >
+                            <SelectTrigger className="h-8 text-xs border-slate-200 dark:border-slate-700">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="paid">Paid</SelectItem>
+                              <SelectItem value="cod">COD</SelectItem>
+                              <SelectItem value="refunded">Refunded</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
+                          <Select 
                             value={order.parcelStatus} 
                             onValueChange={(value) => {
                               // Update status directly without modal
@@ -601,142 +685,314 @@ export default function TrackerDashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Order Details Modal */}
+      {/* Order Details Modal - Professional Design */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Order Details</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0">
+          {/* Modal Header with Gradient */}
+          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                  <Package className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-white">Order Details</span>
+              </DialogTitle>
+              <p className="text-slate-200 text-sm mt-2 font-medium">
+                View and update order tracking information
+              </p>
+            </DialogHeader>
+          </div>
+
           {selectedOrder && (
-            <div className="space-y-6 pr-4">
-              {/* Customer Info */}
-              <div className="space-y-3">
-                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Customer Information
-                </h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-slate-500 dark:text-slate-400">Name</p>
-                    <p className="font-medium text-slate-900 dark:text-white">{selectedOrder.customerName}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-500 dark:text-slate-400">Phone</p>
-                    <p className="font-medium text-slate-900 dark:text-white">{selectedOrder.customerPhone}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-slate-500 dark:text-slate-400">Address</p>
-                    <p className="font-medium text-slate-900 dark:text-white">{selectedOrder.customerAddress}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Order Info */}
-              <div className="space-y-3">
-                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Package className="h-4 w-4" />
-                  Order Information
-                </h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-slate-500 dark:text-slate-400">Order #</p>
-                    <p className="font-medium text-slate-900 dark:text-white">#{selectedOrder.id.slice(-6)}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-500 dark:text-slate-400">Date</p>
-                    <p className="font-medium text-slate-900 dark:text-white">
-                      {new Date(selectedOrder.orderDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-slate-500 dark:text-slate-400">Items</p>
-                    <p className="font-medium text-slate-900 dark:text-white">{selectedOrder.itemName}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-500 dark:text-slate-400">Total Amount</p>
-                    <p className="font-medium text-emerald-600 dark:text-emerald-400">
-                      {formatCurrency(selectedOrder.totalAmount)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tracking Info */}
-              <div className="space-y-3">
-                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Truck className="h-4 w-4" />
-                  Tracking Information
-                </h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-slate-500 dark:text-slate-400">Courier</p>
-                    <p className="font-medium text-slate-900 dark:text-white">{selectedOrder.courier}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-500 dark:text-slate-400">Tracking #</p>
-                    <p className="font-medium text-slate-900 dark:text-white font-mono">{selectedOrder.trackingNumber}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Update Status */}
-              <div className="space-y-3">
-                <h3 className="font-semibold text-slate-900 dark:text-white">Update Status</h3>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="status">Parcel Status</Label>
-                    <Select 
-                      value={selectedOrder.parcelStatus} 
-                      onValueChange={(value) => {
-                        setSelectedOrder({ ...selectedOrder, parcelStatus: value as any })
-                      }}
-                    >
-                      <SelectTrigger id="status">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PENDING">Pending</SelectItem>
-                        <SelectItem value="IN TRANSIT">In Transit</SelectItem>
-                        <SelectItem value="ON DELIVERY">On Delivery</SelectItem>
-                        <SelectItem value="PICKUP">Pickup</SelectItem>
-                        <SelectItem value="DELIVERED">Delivered</SelectItem>
-                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                        <SelectItem value="DETAINED">Detained</SelectItem>
-                        <SelectItem value="PROBLEMATIC">Problematic</SelectItem>
-                        <SelectItem value="RETURNED">Returned</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Reason field - shown for CANCELLED, RETURNED, PROBLEMATIC */}
-                  {['CANCELLED', 'RETURNED', 'PROBLEMATIC'].includes(selectedOrder.parcelStatus) && (
-                    <div>
-                      <Label htmlFor="reason">Reason</Label>
-                      <Textarea
-                        id="reason"
-                        placeholder="Enter reason..."
-                        value={selectedOrder.reason || ''}
-                        onChange={(e) => setSelectedOrder({ ...selectedOrder, reason: e.target.value })}
-                        rows={3}
-                      />
+            <div className="overflow-y-auto max-h-[calc(90vh-140px)] px-8 py-6">
+              <div className="space-y-6">
+                {/* Customer Information Card */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-blue-600 rounded-lg">
+                      <User className="h-5 w-5 text-white" />
                     </div>
-                  )}
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                      Customer Information
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Full Name
+                      </p>
+                      <p className="text-base font-semibold text-slate-900 dark:text-white">
+                        {selectedOrder.customerName}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Phone Number
+                      </p>
+                      <p className="text-base font-mono font-semibold text-slate-900 dark:text-white">
+                        {selectedOrder.customerPhone}
+                      </p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Delivery Address
+                      </p>
+                      <p className="text-base font-medium text-slate-900 dark:text-white leading-relaxed">
+                        {selectedOrder.customerAddress}
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-                  <button
-                    onClick={() => {
-                      updateOrderStatus(
-                        selectedOrder.id, 
-                        selectedOrder.parcelStatus,
-                        ['CANCELLED', 'RETURNED', 'PROBLEMATIC'].includes(selectedOrder.parcelStatus) 
-                          ? selectedOrder.reason 
-                          : undefined
+                {/* Order Information Card */}
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-6 border border-emerald-100 dark:border-emerald-800">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-emerald-600 rounded-lg">
+                      <Package className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                      Order Information
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Order Number
+                      </p>
+                      <p className="text-base font-mono font-bold text-slate-900 dark:text-white">
+                        #{selectedOrder.id.slice(-6)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Order Date
+                      </p>
+                      <p className="text-base font-semibold text-slate-900 dark:text-white">
+                        {new Date(selectedOrder.orderDate).toLocaleDateString('en-US', { 
+                          month: 'long', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Product Items
+                      </p>
+                      <p className="text-base font-semibold text-slate-900 dark:text-white">
+                        {selectedOrder.itemName}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Total Amount
+                      </p>
+                      <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                        {formatCurrency(selectedOrder.totalAmount)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tracking Information Card */}
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-purple-600 rounded-lg">
+                      <Truck className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                      Tracking Information
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Courier Service
+                      </p>
+                      <p className="text-base font-semibold text-slate-900 dark:text-white">
+                        {selectedOrder.courier}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Tracking Number
+                      </p>
+                      <p className="text-base font-mono font-bold text-purple-600 dark:text-purple-400">
+                        {selectedOrder.trackingNumber}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Status Card */}
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-amber-100 dark:border-amber-800">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-amber-600 rounded-lg">
+                      <Package className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                      Payment Status
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Current Payment Status
+                      </p>
+                      <Badge className={cn(
+                        "text-sm px-3 py-1.5 font-bold border-0",
+                        selectedOrder.paymentStatus === 'paid' && "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+                        selectedOrder.paymentStatus === 'cod' && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                        selectedOrder.paymentStatus === 'pending' && "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+                        selectedOrder.paymentStatus === 'refunded' && "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400"
+                      )}>
+                        {selectedOrder.paymentStatus.toUpperCase()}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Timeline Section */}
+                <div className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-6 border border-amber-100 dark:border-amber-800">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-amber-600 rounded-lg">
+                      <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                      Timeline
+                    </h3>
+                  </div>
+                  {(() => {
+                    try {
+                      const notesData = JSON.parse(selectedOrder.notes || '{}')
+                      return (
+                        <div className="grid grid-cols-2 gap-4">
+                          {/* Dispatched */}
+                          <div className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-amber-200 dark:border-amber-800">
+                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                              <svg className="h-4 w-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Dispatched</p>
+                              <p className="text-sm font-bold text-slate-900 dark:text-white">{notesData.dispatchedBy || 'N/A'}</p>
+                              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                                {notesData.dispatchedAt ? new Date(notesData.dispatchedAt).toLocaleString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                }) : 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {/* Packed */}
+                          <div className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-amber-200 dark:border-amber-800">
+                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                              <svg className="h-4 w-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Packed</p>
+                              <p className="text-sm font-bold text-slate-900 dark:text-white">{notesData.packedBy || 'N/A'}</p>
+                              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                                {notesData.packedAt ? new Date(notesData.packedAt).toLocaleString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                }) : 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       )
-                      setShowDetailsModal(false)
-                    }}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-                  >
-                    Update Status
-                  </button>
+                    } catch (e) {
+                      return (
+                        <p className="text-sm text-slate-500 dark:text-slate-400 italic">
+                          No timeline information available
+                        </p>
+                      )
+                    }
+                  })()}
+                </div>
+
+                {/* Update Status Section */}
+                <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 tracking-tight">
+                    Update Parcel Status
+                  </h3>
+                  <div className="space-y-5">
+                    <div>
+                      <Label htmlFor="status" className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+                        Parcel Status
+                      </Label>
+                      <Select 
+                        value={selectedOrder.parcelStatus} 
+                        onValueChange={(value) => {
+                          setSelectedOrder({ ...selectedOrder, parcelStatus: value as any })
+                        }}
+                      >
+                        <SelectTrigger id="status" className="h-12 text-base font-medium border-2 border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PENDING" className="text-base">📦 Pending</SelectItem>
+                          <SelectItem value="IN TRANSIT" className="text-base">🚚 In Transit</SelectItem>
+                          <SelectItem value="ON DELIVERY" className="text-base">🚛 On Delivery</SelectItem>
+                          <SelectItem value="PICKUP" className="text-base">📍 Pickup</SelectItem>
+                          <SelectItem value="DELIVERED" className="text-base">✅ Delivered</SelectItem>
+                          <SelectItem value="CANCELLED" className="text-base">❌ Cancelled</SelectItem>
+                          <SelectItem value="DETAINED" className="text-base">⚠️ Detained</SelectItem>
+                          <SelectItem value="PROBLEMATIC" className="text-base">🔴 Problematic</SelectItem>
+                          <SelectItem value="RETURNED" className="text-base">↩️ Returned</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Reason field - shown for CANCELLED, RETURNED, PROBLEMATIC */}
+                    {['CANCELLED', 'RETURNED', 'PROBLEMATIC'].includes(selectedOrder.parcelStatus) && (
+                      <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                        <Label htmlFor="reason" className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+                          Reason <span className="text-red-500">*</span>
+                        </Label>
+                        <Textarea
+                          id="reason"
+                          placeholder="Please provide a detailed reason for this status..."
+                          value={selectedOrder.reason || ''}
+                          onChange={(e) => setSelectedOrder({ ...selectedOrder, reason: e.target.value })}
+                          rows={4}
+                          className="text-base border-2 border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none"
+                        />
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                          This information will be recorded for tracking purposes
+                        </p>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        updateOrderStatus(
+                          selectedOrder.id, 
+                          selectedOrder.parcelStatus,
+                          ['CANCELLED', 'RETURNED', 'PROBLEMATIC'].includes(selectedOrder.parcelStatus) 
+                            ? selectedOrder.reason 
+                            : undefined
+                        )
+                        setShowDetailsModal(false)
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] text-base"
+                    >
+                      Update Status
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
