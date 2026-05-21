@@ -1955,7 +1955,7 @@ export default function TrackOrdersPage() {
                           {selectedOrder.customerPhone}
                         </p>
                       </div>
-                      <div className="col-span-2">
+                      <div>
                         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                           Delivery Address
                         </p>
@@ -1963,6 +1963,16 @@ export default function TrackOrdersPage() {
                           {selectedOrder.customerAddress}
                         </p>
                       </div>
+                      {selectedOrder.dispatchNotes && (
+                        <div>
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                            Dispatch Notes
+                          </p>
+                          <p className="text-base font-medium text-slate-900 dark:text-white leading-relaxed">
+                            {selectedOrder.dispatchNotes}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

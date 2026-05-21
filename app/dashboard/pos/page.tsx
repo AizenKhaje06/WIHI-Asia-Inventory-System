@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, ShoppingCart, Trash2, CheckCircle, Package } from "lucide-react"
+import { Search, ShoppingCart, Trash2, CheckCircle, Package, Truck, User } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import type { InventoryItem } from "@/lib/types"
 import { apiGet, apiPost } from "@/lib/api-client"
@@ -576,273 +576,294 @@ export default function POSPage() {
         </CardContent>
       </Card>
 
-      {/* Order Form Modal - NEW */}
+      {/* Order Form Modal - Professional Design */}
       <Dialog open={orderFormOpen} onOpenChange={setOrderFormOpen}>
-        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold">
-              Order Dispatch Form
-            </DialogTitle>
-            <DialogDescription className="text-slate-600 dark:text-slate-400">
-              Fill in courier and tracking details for this dispatch
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid grid-cols-2 gap-4 py-4">
-            {/* Date */}
-            <div>
-              <Label className="text-sm font-medium">Date</Label>
-              <Input
-                type="date"
-                value={orderForm.date}
-                onChange={(e) => setOrderForm({...orderForm, date: e.target.value})}
-                className="mt-1.5"
-              />
-            </div>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0">
+          {/* Modal Header with Gradient */}
+          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600">
+            <DialogHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                  <Truck className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-bold tracking-tight" style={{ color: 'white' }}>
+                    Order Dispatch Form
+                  </DialogTitle>
+                  <p className="text-slate-200 text-sm mt-1 font-medium">
+                    Fill in courier and tracking details for this dispatch
+                  </p>
+                </div>
+              </div>
+            </DialogHeader>
+          </div>
 
-            {/* Sales Channel */}
-            <div>
-              <Label className="text-sm font-medium">Sales Channel</Label>
-              {currentUserRole === 'operations' ? (
-                // Operations users: locked to their assigned channel
-                <Input
-                  value={assignedChannel}
-                  readOnly
-                  className="mt-1.5 bg-slate-100 dark:bg-slate-800 cursor-not-allowed font-medium"
-                />
-              ) : (
-                // Admin: can select any channel
-                <Select 
-                  value={orderForm.salesChannel} 
-                  onValueChange={(value) => setOrderForm({...orderForm, salesChannel: value, store: ''})}
-                >
-                  <SelectTrigger className="mt-1.5">
-                    <SelectValue placeholder="Select sales channel" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[300px]">
-                    {Array.from(new Set(stores.map(s => s.sales_channel))).sort().map((channel) => (
-                      <SelectItem key={channel} value={channel}>
-                        {channel}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
+          {/* Form Content with Scrollable Area */}
+          <div className="overflow-y-auto max-h-[calc(90vh-220px)] px-8 py-6">
+            <div className="space-y-6">
+              {/* Order Information Card - Emerald/Teal Gradient */}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-6 border border-emerald-100 dark:border-emerald-800">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-emerald-600 rounded-lg">
+                    <Package className="h-5 w-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                    Order Information
+                  </h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</Label>
+                    <Input
+                      type="date"
+                      value={orderForm.date}
+                      onChange={(e) => setOrderForm({...orderForm, date: e.target.value})}
+                      className="mt-2 h-11 border-2"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sales Channel</Label>
+                    {currentUserRole === 'operations' ? (
+                      <Input
+                        value={assignedChannel}
+                        readOnly
+                        className="mt-2 h-11 bg-slate-100 dark:bg-slate-800 cursor-not-allowed font-medium border-2"
+                      />
+                    ) : (
+                      <Select 
+                        value={orderForm.salesChannel} 
+                        onValueChange={(value) => setOrderForm({...orderForm, salesChannel: value, store: ''})}
+                      >
+                        <SelectTrigger className="mt-2 h-11 border-2">
+                          <SelectValue placeholder="Select sales channel" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[300px]">
+                          {Array.from(new Set(stores.map(s => s.sales_channel))).sort().map((channel) => (
+                            <SelectItem key={channel} value={channel}>{channel}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Store</Label>
+                    <Select 
+                      value={orderForm.store} 
+                      onValueChange={(value) => setOrderForm({...orderForm, store: value})}
+                    >
+                      <SelectTrigger className="mt-2 h-11 border-2">
+                        <SelectValue placeholder="Select store" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {stores
+                          .filter(s => currentUserRole === 'operations' 
+                            ? true 
+                            : (!orderForm.salesChannel || s.sales_channel === orderForm.salesChannel)
+                          )
+                          .sort((a, b) => a.store_name.localeCompare(b.store_name))
+                          .map((store) => (
+                            <SelectItem key={store.id} value={store.store_name}>
+                              {store.store_name}
+                              {currentUserRole !== 'operations' && orderForm.salesChannel && (
+                                <span className="text-xs text-slate-500 ml-2">({store.sales_channel})</span>
+                              )}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</Label>
+                    <Input
+                      value={orderForm.status}
+                      readOnly
+                      className="mt-2 h-11 bg-slate-50 dark:bg-slate-800 border-2"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Quantity</Label>
+                    <Input
+                      type="number"
+                      value={orderForm.qty}
+                      readOnly
+                      className="mt-2 h-11 bg-slate-50 dark:bg-slate-800 border-2 font-bold text-emerald-600 dark:text-emerald-400"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total COGS</Label>
+                    <Input
+                      value={formatCurrency(orderForm.cogs)}
+                      readOnly
+                      className="mt-2 h-11 bg-slate-50 dark:bg-slate-800 border-2"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Amount *</Label>
+                    <Input
+                      type="number"
+                      value={orderForm.total}
+                      onChange={(e) => setOrderForm({...orderForm, total: parseFloat(e.target.value) || 0})}
+                      placeholder="Enter total amount"
+                      className="mt-2 h-11 font-bold text-emerald-600 dark:text-emerald-400 border-2"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Parcel Status</Label>
+                    <Input
+                      value={orderForm.parcelStatus}
+                      readOnly
+                      className="mt-2 h-11 bg-slate-50 dark:bg-slate-800 border-2"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Products</Label>
+                    <textarea
+                      value={orderForm.product}
+                      readOnly
+                      rows={2}
+                      className="mt-2 w-full px-3 py-2 rounded-md border-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
 
-            {/* Store */}
-            <div>
-              <Label className="text-sm font-medium">Store</Label>
-              <Select 
-                value={orderForm.store} 
-                onValueChange={(value) => setOrderForm({...orderForm, store: value})}
-              >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Select store" />
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  {stores
-                    .filter(s => currentUserRole === 'operations' 
-                      ? true  // API already filtered by assignedChannel
-                      : (!orderForm.salesChannel || s.sales_channel === orderForm.salesChannel)
-                    )
-                    .sort((a, b) => a.store_name.localeCompare(b.store_name))
-                    .map((store) => (
-                      <SelectItem key={store.id} value={store.store_name}>
-                        {store.store_name}
-                        {currentUserRole !== 'operations' && orderForm.salesChannel && (
-                          <span className="text-xs text-slate-500 ml-2">({store.sales_channel})</span>
-                        )}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
+              {/* Customer Information Card - Blue/Indigo Gradient */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-blue-600 rounded-lg">
+                    <User className="h-5 w-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                    Customer Information
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Customer Full Name *</Label>
+                    <Input
+                      value={orderForm.customerName}
+                      onChange={(e) => setOrderForm({...orderForm, customerName: e.target.value})}
+                      placeholder="Enter customer name"
+                      className="mt-2 h-11 border-2"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Customer Contact Number *</Label>
+                    <Input
+                      value={orderForm.customerContact}
+                      onChange={(e) => setOrderForm({...orderForm, customerContact: e.target.value})}
+                      placeholder="Enter contact number (e.g., 09123456789)"
+                      className="mt-2 h-11 border-2"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Customer Delivery Address *</Label>
+                    <textarea
+                      value={orderForm.customerAddress}
+                      onChange={(e) => setOrderForm({...orderForm, customerAddress: e.target.value})}
+                      placeholder="Enter complete delivery address"
+                      rows={3}
+                      className="mt-2 w-full px-3 py-2 rounded-md border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
 
-            {/* Courier - REQUIRED */}
-            <div>
-              <Label className="text-sm font-medium">Courier *</Label>
-              <Select value={orderForm.courier} onValueChange={(value) => setOrderForm({...orderForm, courier: value})}>
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Select courier" />
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  <SelectItem value="Flash">Flash</SelectItem>
-                  <SelectItem value="J&T">J&T</SelectItem>
-                  <SelectItem value="Ninja Van">Ninja Van</SelectItem>
-                  <SelectItem value="Lalamove">Lalamove</SelectItem>
-                  <SelectItem value="Grab">Grab</SelectItem>
-                  <SelectItem value="LBC">LBC</SelectItem>
-                  <SelectItem value="2GO">2GO</SelectItem>
-                  <SelectItem value="JRS Express">JRS Express</SelectItem>
-                  <SelectItem value="Entrego">Entrego</SelectItem>
-                  <SelectItem value="ABest Express">ABest Express</SelectItem>
-                  <SelectItem value="Gogo Xpress">Gogo Xpress</SelectItem>
-                  <SelectItem value="XDE Logistics">XDE Logistics</SelectItem>
-                  <SelectItem value="AP Cargo">AP Cargo</SelectItem>
-                  <SelectItem value="Gryffon Courier Services">Gryffon Courier Services</SelectItem>
-                  <SelectItem value="Delivery Parcel Express">Delivery Parcel Express</SelectItem>
-                  <SelectItem value="Bluebee Express">Bluebee Express</SelectItem>
-                  <SelectItem value="GrabExpress">GrabExpress</SelectItem>
-                  <SelectItem value="Borzo">Borzo</SelectItem>
-                  <SelectItem value="Transportify">Transportify</SelectItem>
-                  <SelectItem value="DHL Express">DHL Express</SelectItem>
-                  <SelectItem value="UPS">UPS</SelectItem>
-                  <SelectItem value="FedEx">FedEx</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Waybill - REQUIRED */}
-            <div>
-              <Label className="text-sm font-medium">Waybill / Tracking Number *</Label>
-              <Input
-                value={orderForm.waybill}
-                onChange={(e) => setOrderForm({...orderForm, waybill: e.target.value})}
-                placeholder="Enter tracking number"
-                className="mt-1.5"
-              />
-            </div>
-
-            {/* Customer Name - REQUIRED */}
-            <div>
-              <Label className="text-sm font-medium">Customer Full Name *</Label>
-              <Input
-                value={orderForm.customerName}
-                onChange={(e) => setOrderForm({...orderForm, customerName: e.target.value})}
-                placeholder="Enter customer name"
-                className="mt-1.5"
-              />
-            </div>
-
-            {/* Customer Contact - REQUIRED */}
-            <div className="col-span-2">
-              <Label className="text-sm font-medium">Customer Contact Number *</Label>
-              <Input
-                value={orderForm.customerContact}
-                onChange={(e) => setOrderForm({...orderForm, customerContact: e.target.value})}
-                placeholder="Enter contact number (e.g., 09123456789)"
-                className="mt-1.5"
-              />
-            </div>
-
-            {/* Customer Address - REQUIRED - Full Width */}
-            <div className="col-span-2">
-              <Label className="text-sm font-medium">Customer Delivery Address *</Label>
-              <textarea
-                value={orderForm.customerAddress}
-                onChange={(e) => setOrderForm({...orderForm, customerAddress: e.target.value})}
-                placeholder="Enter complete delivery address"
-                rows={2}
-                className="mt-1.5 w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            {/* Status */}
-            <div>
-              <Label className="text-sm font-medium">Status</Label>
-              <Input
-                value={orderForm.status}
-                readOnly
-                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
-              />
-            </div>
-
-            {/* QTY */}
-            <div>
-              <Label className="text-sm font-medium">Total Quantity</Label>
-              <Input
-                type="number"
-                value={orderForm.qty}
-                readOnly
-                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
-              />
-            </div>
-
-            {/* COGS */}
-            <div>
-              <Label className="text-sm font-medium">Total COGS</Label>
-              <Input
-                value={formatCurrency(orderForm.cogs)}
-                readOnly
-                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
-              />
-            </div>
-
-            {/* Total Amount - Now Editable */}
-            <div>
-              <Label className="text-sm font-medium">Total Amount *</Label>
-              <Input
-                type="number"
-                value={orderForm.total}
-                onChange={(e) => setOrderForm({...orderForm, total: parseFloat(e.target.value) || 0})}
-                placeholder="Enter total amount"
-                className="mt-1.5 font-bold"
-                min="0"
-                step="0.01"
-              />
-            </div>
-
-            {/* Parcel Status */}
-            <div>
-              <Label className="text-sm font-medium">Parcel Status</Label>
-              <Input
-                value={orderForm.parcelStatus}
-                readOnly
-                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
-              />
-            </div>
-
-            {/* Product - Full Width */}
-            <div className="col-span-2">
-              <Label className="text-sm font-medium">Products</Label>
-              <textarea
-                value={orderForm.product}
-                readOnly
-                rows={3}
-                className="mt-1.5 w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"
-              />
-            </div>
-
-            {/* Notes - Full Width */}
-            <div className="col-span-2">
-              <Label className="text-sm font-medium">Notes (Optional)</Label>
-              <textarea
-                value={orderForm.notes}
-                onChange={(e) => setOrderForm({...orderForm, notes: e.target.value})}
-                rows={3}
-                placeholder="Add any special instructions or notes for this order..."
-                className="mt-1.5 w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            {/* Dispatched By */}
-            <div className="col-span-2">
-              <Label className="text-sm font-medium">Dispatched By</Label>
-              <Input
-                value={orderForm.dispatchedBy}
-                readOnly
-                className="mt-1.5 bg-slate-50 dark:bg-slate-800"
-              />
+              {/* Dispatch Details Card - Purple/Pink Gradient */}
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-purple-600 rounded-lg">
+                    <Truck className="h-5 w-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                    Dispatch Details
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Courier Service *</Label>
+                    <Select value={orderForm.courier} onValueChange={(value) => setOrderForm({...orderForm, courier: value})}>
+                      <SelectTrigger className="mt-2 h-11 border-2 focus:ring-2 focus:ring-purple-500">
+                        <SelectValue placeholder="Select courier" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        <SelectItem value="Flash">Flash</SelectItem>
+                        <SelectItem value="J&T">J&T</SelectItem>
+                        <SelectItem value="Ninja Van">Ninja Van</SelectItem>
+                        <SelectItem value="Lalamove">Lalamove</SelectItem>
+                        <SelectItem value="Grab">Grab</SelectItem>
+                        <SelectItem value="LBC">LBC</SelectItem>
+                        <SelectItem value="2GO">2GO</SelectItem>
+                        <SelectItem value="JRS Express">JRS Express</SelectItem>
+                        <SelectItem value="Entrego">Entrego</SelectItem>
+                        <SelectItem value="ABest Express">ABest Express</SelectItem>
+                        <SelectItem value="Gogo Xpress">Gogo Xpress</SelectItem>
+                        <SelectItem value="XDE Logistics">XDE Logistics</SelectItem>
+                        <SelectItem value="AP Cargo">AP Cargo</SelectItem>
+                        <SelectItem value="Gryffon Courier Services">Gryffon Courier Services</SelectItem>
+                        <SelectItem value="Delivery Parcel Express">Delivery Parcel Express</SelectItem>
+                        <SelectItem value="Bluebee Express">Bluebee Express</SelectItem>
+                        <SelectItem value="GrabExpress">GrabExpress</SelectItem>
+                        <SelectItem value="Borzo">Borzo</SelectItem>
+                        <SelectItem value="Transportify">Transportify</SelectItem>
+                        <SelectItem value="DHL Express">DHL Express</SelectItem>
+                        <SelectItem value="UPS">UPS</SelectItem>
+                        <SelectItem value="FedEx">FedEx</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Waybill / Tracking Number *</Label>
+                    <Input
+                      value={orderForm.waybill}
+                      onChange={(e) => setOrderForm({...orderForm, waybill: e.target.value})}
+                      placeholder="Enter tracking number"
+                      className="mt-2 h-11 border-2 focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Notes (Optional)</Label>
+                    <textarea
+                      value={orderForm.notes}
+                      onChange={(e) => setOrderForm({...orderForm, notes: e.target.value})}
+                      rows={3}
+                      placeholder="Add any special instructions or notes for this order..."
+                      className="mt-2 w-full px-3 py-2 rounded-md border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Dispatched By</Label>
+                    <Input
+                      value={orderForm.dispatchedBy}
+                      readOnly
+                      className="mt-2 h-11 bg-slate-50 dark:bg-slate-800 border-2"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <DialogFooter>
+          {/* Footer Actions - Professional Design */}
+          <div className="px-8 py-5 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-3">
             <Button
               variant="outline"
               onClick={() => setOrderFormOpen(false)}
               disabled={loading}
+              className="h-11 px-6 font-semibold border-2 hover:bg-slate-50 dark:hover:bg-slate-700"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSubmitOrder}
               disabled={loading || !orderForm.salesChannel || !orderForm.store || !orderForm.courier || !orderForm.waybill || !orderForm.customerName || !orderForm.customerAddress || !orderForm.customerContact}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="h-11 px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 font-semibold shadow-lg shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Submitting..." : "Submit Order"}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 

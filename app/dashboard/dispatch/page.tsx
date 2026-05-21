@@ -432,145 +432,183 @@ export default function DispatchPage() {
         </CardContent>
       </Card>
 
-      {/* Dispatch Form Dialog - Modern SaaS Design */}
+      {/* Dispatch Form Dialog - Professional Design */}
       <Dialog open={showDispatchForm} onOpenChange={setShowDispatchForm}>
-        <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden">
-          {/* Header with gradient background */}
-          <div className="bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 px-8 py-6">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0">
+          {/* Modal Header with Gradient */}
+          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
                   <Truck className="h-6 w-6 text-white" />
                 </div>
-                Order Dispatch Form
-              </DialogTitle>
-              <p className="text-blue-100 text-sm mt-2">
-                Fill in courier and tracking details for this dispatch
-              </p>
+                <div>
+                  <DialogTitle className="text-2xl font-bold tracking-tight" style={{ color: 'white' }}>
+                    Order Dispatch Form
+                  </DialogTitle>
+                  <p className="text-slate-200 text-sm mt-1 font-medium">
+                    Fill in courier and tracking details for this dispatch
+                  </p>
+                </div>
+              </div>
             </DialogHeader>
           </div>
 
-          {/* Form Content */}
-          <div className="px-8 py-6 space-y-6 bg-slate-50 dark:bg-slate-900/50">
-            {/* Order Info Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Order Number
-                  </label>
-                  <div className="font-mono text-lg font-bold text-slate-900 dark:text-white mt-1">
-                    #{(selectedOrder?.orderNumber || selectedOrder?.id || '').slice(-6)}
+          {/* Form Content with Scrollable Area */}
+          <div className="overflow-y-auto max-h-[calc(90vh-220px)] px-8 py-6">
+            <div className="space-y-6">
+              {/* Order Information Card - Emerald/Teal Gradient */}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-6 border border-emerald-100 dark:border-emerald-800">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-emerald-600 rounded-lg">
+                    <Package className="h-5 w-5 text-white" />
                   </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                    Order Information
+                  </h3>
                 </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Customer
-                  </label>
-                  <div className="text-base font-semibold text-slate-900 dark:text-white mt-1">
-                    {selectedOrder?.customerName}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Order Number
+                    </p>
+                    <p className="text-base font-mono font-bold text-slate-900 dark:text-white">
+                      #{(selectedOrder?.orderNumber || selectedOrder?.id || '').slice(-6)}
+                    </p>
                   </div>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Customer Name
+                    </p>
+                    <p className="text-base font-semibold text-slate-900 dark:text-white">
+                      {selectedOrder?.customerName}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Quantity
+                    </p>
+                    <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                      {selectedOrder?.qty || selectedOrder?.quantity || 1}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Total Amount
+                    </p>
+                    <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                      {formatCurrency(selectedOrder?.total || selectedOrder?.totalAmount || 0)}
+                    </p>
+                  </div>
+                  {selectedOrder?.sales_channel && (
+                    <div className="col-span-2">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Sales Channel
+                      </p>
+                      <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-sm font-semibold px-3 py-1.5">
+                        {selectedOrder.sales_channel || selectedOrder.channel}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               </div>
-              {selectedOrder?.sales_channel && (
-                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Sales Channel
-                  </label>
-                  <Badge variant="outline" className="mt-2">
-                    {selectedOrder.sales_channel || selectedOrder.channel}
-                  </Badge>
-                </div>
-              )}
-            </div>
 
-            {/* Courier Selection */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                Courier <span className="text-red-500">*</span>
-              </label>
-              <Select 
-                value={dispatchForm.courier} 
-                onValueChange={(value) => setDispatchForm({ ...dispatchForm, courier: value })}
-              >
-                <SelectTrigger className="h-12 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500">
-                  <SelectValue placeholder="Select courier" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="J&T Express">J&T Express</SelectItem>
-                  <SelectItem value="LBC">LBC</SelectItem>
-                  <SelectItem value="Ninja Van">Ninja Van</SelectItem>
-                  <SelectItem value="Flash Express">Flash Express</SelectItem>
-                  <SelectItem value="Grab Express">Grab Express</SelectItem>
-                  <SelectItem value="Lalamove">Lalamove</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Tracking Number */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                Waybill / Tracking Number <span className="text-red-500">*</span>
-              </label>
-              <Input
-                placeholder="Enter tracking number"
-                value={dispatchForm.trackingNumber}
-                onChange={(e) => setDispatchForm({ ...dispatchForm, trackingNumber: e.target.value })}
-                className="h-12 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400"
-              />
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Enter the complete delivery address
-              </p>
-            </div>
-
-            {/* Customer Details */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  Status
-                </label>
-                <div className="h-12 px-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">Pending</span>
+              {/* Dispatch Details Card - Purple/Pink Gradient */}
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-purple-600 rounded-lg">
+                    <Truck className="h-5 w-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                    Dispatch Details
+                  </h3>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  Total Quantity
-                </label>
-                <div className="h-12 px-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center">
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                    {selectedOrder?.qty || selectedOrder?.quantity || 1}
-                  </span>
-                </div>
-              </div>
-            </div>
+                
+                <div className="space-y-4">
+                  {/* Courier Selection */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                      Courier Service <span className="text-red-500">*</span>
+                    </label>
+                    <Select 
+                      value={dispatchForm.courier} 
+                      onValueChange={(value) => setDispatchForm({ ...dispatchForm, courier: value })}
+                    >
+                      <SelectTrigger className="h-12 bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium">
+                        <SelectValue placeholder="Select courier service" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-lg">
+                        <SelectItem value="J&T Express">
+                          <div className="flex items-center gap-2">
+                            <Truck className="h-4 w-4 text-purple-600" />
+                            <span>J&T Express</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="LBC">
+                          <div className="flex items-center gap-2">
+                            <Truck className="h-4 w-4 text-red-600" />
+                            <span>LBC</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Ninja Van">
+                          <div className="flex items-center gap-2">
+                            <Truck className="h-4 w-4 text-orange-600" />
+                            <span>Ninja Van</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Flash Express">
+                          <div className="flex items-center gap-2">
+                            <Truck className="h-4 w-4 text-yellow-600" />
+                            <span>Flash Express</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Grab Express">
+                          <div className="flex items-center gap-2">
+                            <Truck className="h-4 w-4 text-green-600" />
+                            <span>Grab Express</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Lalamove">
+                          <div className="flex items-center gap-2">
+                            <Truck className="h-4 w-4 text-blue-600" />
+                            <span>Lalamove</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Other">
+                          <div className="flex items-center gap-2">
+                            <Truck className="h-4 w-4 text-slate-600" />
+                            <span>Other</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-            {/* Amount Details */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  Total COGS
-                </label>
-                <div className="h-12 px-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">₱50.00</span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                  Total Amount <span className="text-red-500">*</span>
-                </label>
-                <div className="h-12 px-4 bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200 dark:border-blue-800 rounded-lg flex items-center">
-                  <span className="text-base font-bold text-blue-700 dark:text-blue-400">
-                    {formatCurrency(selectedOrder?.total || selectedOrder?.totalAmount || 0)}
-                  </span>
+                  {/* Tracking Number */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                      Waybill / Tracking Number <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      placeholder="Enter tracking number (e.g., JT1234567890)"
+                      value={dispatchForm.trackingNumber}
+                      onChange={(e) => setDispatchForm({ ...dispatchForm, trackingNumber: e.target.value })}
+                      className="h-12 bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 placeholder:text-slate-400 font-medium"
+                    />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Enter the complete waybill or tracking number from the courier
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Footer Actions */}
-          <div className="px-8 py-5 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
+          {/* Footer Actions - Professional Design */}
+          <div className="px-8 py-5 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-3">
             <Button
               variant="outline"
               onClick={() => {
@@ -578,14 +616,14 @@ export default function DispatchPage() {
                 setSelectedOrder(null)
                 setDispatchForm({ courier: '', trackingNumber: '' })
               }}
-              className="h-11 px-6 font-semibold"
+              className="h-11 px-6 font-semibold border-2 hover:bg-slate-50 dark:hover:bg-slate-700"
             >
               Cancel
             </Button>
             <Button
               onClick={handleDispatch}
               disabled={dispatching !== null || !dispatchForm.courier || !dispatchForm.trackingNumber}
-              className="h-11 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 font-semibold shadow-lg shadow-blue-500/30"
+              className="h-11 px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 font-semibold shadow-lg shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {dispatching ? (
                 <>

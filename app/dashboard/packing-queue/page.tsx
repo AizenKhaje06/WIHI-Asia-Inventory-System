@@ -734,7 +734,7 @@ export default function PackingQueuePage() {
                             placeholder="Enter contact number"
                           />
                         </div>
-                        <div className="col-span-2">
+                        <div>
                           <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2 block">
                             Delivery Address
                           </Label>
@@ -744,6 +744,18 @@ export default function PackingQueuePage() {
                             rows={3}
                             className="w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Enter delivery address"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2 block">
+                            Dispatch Notes
+                          </Label>
+                          <textarea
+                            value={editForm.dispatchNotes}
+                            onChange={(e) => setEditForm({...editForm, dispatchNotes: e.target.value})}
+                            rows={3}
+                            className="w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                            placeholder="Add any special instructions or notes..."
                           />
                         </div>
                       </div>
@@ -765,7 +777,7 @@ export default function PackingQueuePage() {
                             {selectedOrder.customerPhone || 'N/A'}
                           </p>
                         </div>
-                        <div className="col-span-2">
+                        <div>
                           <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                             Delivery Address
                           </p>
@@ -773,6 +785,16 @@ export default function PackingQueuePage() {
                             {selectedOrder.customerAddress || 'N/A'}
                           </p>
                         </div>
+                        {selectedOrder.dispatchNotes && (
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                              Dispatch Notes
+                            </p>
+                            <p className="text-base font-medium text-slate-900 dark:text-white leading-relaxed">
+                              {selectedOrder.dispatchNotes}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -910,41 +932,6 @@ export default function PackingQueuePage() {
                             {selectedOrder.waybill || 'N/A'}
                           </p>
                         </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Dispatch Notes Card */}
-                  <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-amber-100 dark:border-amber-800">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-amber-600 rounded-lg">
-                        <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </div>
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                        Dispatch Notes
-                      </h3>
-                    </div>
-                    {isEditMode ? (
-                      <textarea
-                        value={editForm.dispatchNotes}
-                        onChange={(e) => setEditForm({...editForm, dispatchNotes: e.target.value})}
-                        rows={4}
-                        className="w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                        placeholder="Add any special instructions or notes for this order..."
-                      />
-                    ) : (
-                      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                        {selectedOrder.dispatchNotes ? (
-                          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-                            {selectedOrder.dispatchNotes}
-                          </p>
-                        ) : (
-                          <p className="text-sm text-slate-400 dark:text-slate-500 italic">
-                            No notes added for this order
-                          </p>
-                        )}
                       </div>
                     )}
                   </div>
