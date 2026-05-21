@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { BarcodeScanner } from '@/components/barcode-scanner'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
-import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Activity, LogOut } from 'lucide-react'
+import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Activity, LogOut, User, Truck } from 'lucide-react'
 import { toast } from 'sonner'
 import { getCurrentUser } from '@/lib/auth'
 import { AnimatedNumber } from '@/components/ui/animated-number'
@@ -813,156 +814,212 @@ export default function PackerDashboard() {
         onScan={handleScan}
       />
 
-      {/* Order Details Dialog (for View button) - Enterprise Level */}
-      <AlertDialog open={showOrderDetails} onOpenChange={setShowOrderDetails}>
-        <AlertDialogContent className="max-w-[95vw] sm:max-w-2xl border-t-4 border-t-blue-600">
-          <AlertDialogHeader className="border-b pb-4">
-            <AlertDialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              Order Details
-            </AlertDialogTitle>
-          </AlertDialogHeader>
+      {/* Order Details Dialog (for View button) - Professional Design matching Tracker */}
+      <Dialog open={showOrderDetails} onOpenChange={setShowOrderDetails}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0 flex flex-col">
+          {/* Modal Header with Gradient */}
+          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600 flex-shrink-0">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                  <Package className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-white">Order Details</span>
+              </DialogTitle>
+              <p className="text-slate-200 text-sm mt-2 font-medium">
+                Review order information before packing
+              </p>
+            </DialogHeader>
+          </div>
+
           {selectedOrder && (
-            <div className="space-y-6 max-h-[60vh] overflow-y-auto py-2 pr-4">
-              {/* Waybill Highlight Section */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 rounded-xl border-2 border-blue-200 dark:border-blue-800">
-                <div className="text-center space-y-2">
-                  <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-                    Waybill Number
+            <>
+              {/* Scrollable Content */}
+              <div className="overflow-y-auto flex-1 px-8 py-6">
+                <div className="space-y-6">
+                  {/* Customer Information Card */}
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-blue-600 rounded-lg">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                        Customer Information
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Full Name
+                        </p>
+                        <p className="text-base font-semibold text-slate-900 dark:text-white">
+                          {selectedOrder.customerName}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Phone Number
+                        </p>
+                        <p className="text-base font-mono font-semibold text-slate-900 dark:text-white">
+                          {selectedOrder.customerPhone}
+                        </p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Delivery Address
+                        </p>
+                        <p className="text-base font-medium text-slate-900 dark:text-white leading-relaxed">
+                          {selectedOrder.customerAddress}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="font-mono text-3xl sm:text-4xl font-bold text-blue-700 dark:text-blue-300 break-all">
-                    {selectedOrder.waybill}
+
+                  {/* Order Information Card */}
+                  <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-6 border border-emerald-100 dark:border-emerald-800">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-emerald-600 rounded-lg">
+                        <Package className="h-5 w-5 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                        Order Information
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Order Number
+                        </p>
+                        <p className="text-base font-mono font-bold text-slate-900 dark:text-white">
+                          #{selectedOrder.orderNumber.slice(-6)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Order Date
+                        </p>
+                        <p className="text-base font-semibold text-slate-900 dark:text-white">
+                          {new Date(selectedOrder.orderDate).toLocaleDateString('en-US', { 
+                            month: 'long', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                          })}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Product Items
+                        </p>
+                        <p className="text-base font-semibold text-slate-900 dark:text-white">
+                          {selectedOrder.itemName}
+                        </p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                          Qty: {selectedOrder.quantity}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Total Amount
+                        </p>
+                        <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                          ₱{selectedOrder.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tracking Information Card */}
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-purple-600 rounded-lg">
+                        <Truck className="h-5 w-5 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                        Tracking Information
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Courier Service
+                        </p>
+                        <p className="text-base font-semibold text-slate-900 dark:text-white">
+                          {selectedOrder.courier}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Waybill Number
+                        </p>
+                        <p className="text-base font-mono font-bold text-purple-600 dark:text-purple-400">
+                          {selectedOrder.waybill}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Sales Channel
+                        </p>
+                        <Badge variant="secondary" className="text-sm font-semibold">
+                          {selectedOrder.channel}
+                        </Badge>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Store
+                        </p>
+                        <p className="text-base font-semibold text-slate-900 dark:text-white">
+                          {selectedOrder.store}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Order Information Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Order Number */}
-                <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
-                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                    Order Number
+              {/* Footer with Action Buttons - Fixed at bottom */}
+              <div className="border-t border-slate-200 dark:border-slate-700 px-8 py-6 bg-slate-50 dark:bg-slate-900/50 flex-shrink-0">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+                      Ready to Pack?
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Confirm that all items are packed and ready for dispatch. This action will mark the order as packed.
+                    </p>
                   </div>
-                  <div className="font-mono text-sm font-bold text-slate-900 dark:text-slate-100 break-all">
-                    {selectedOrder.orderNumber}
-                  </div>
-                </div>
-
-                {/* Channel */}
-                <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
-                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                    Sales Channel
-                  </div>
-                  <Badge variant="secondary" className="text-sm font-semibold">
-                    {selectedOrder.channel}
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Product Information */}
-              <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
-                <div className="flex items-start gap-3">
-                  <div className="h-12 w-12 rounded-lg bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center flex-shrink-0">
-                    <Package className="h-6 w-6 text-slate-600 dark:text-slate-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                      Product
-                    </div>
-                    <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 break-words">
-                      {selectedOrder.itemName}
-                    </div>
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="text-xs text-slate-500 dark:text-slate-400">Quantity:</span>
-                      <Badge variant="outline" className="font-bold">
-                        {selectedOrder.quantity} {selectedOrder.quantity === 1 ? 'pc' : 'pcs'}
-                      </Badge>
-                    </div>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowOrderDetails(false)}
+                      disabled={packing}
+                      className="flex-1 h-12 text-base border-2"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleConfirmPack}
+                      disabled={packing}
+                      className="flex-1 h-12 text-base bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 font-semibold shadow-lg"
+                    >
+                      {packing ? (
+                        <>
+                          <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                          Packing...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="h-5 w-5 mr-2" />
+                          Mark as Packed
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
               </div>
-
-              {/* Customer Information */}
-              <div className="space-y-3">
-                <div className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                  <div className="h-1 w-1 rounded-full bg-slate-400"></div>
-                  Customer Information
-                </div>
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-800">
-                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-20 flex-shrink-0 pt-1">
-                      Name
-                    </div>
-                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 break-words flex-1">
-                      {selectedOrder.customerName}
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-800">
-                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-20 flex-shrink-0 pt-1">
-                      Phone
-                    </div>
-                    <div className="text-sm font-mono font-semibold text-slate-900 dark:text-slate-100 break-all flex-1">
-                      {selectedOrder.customerPhone}
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-800">
-                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-20 flex-shrink-0 pt-1">
-                      Address
-                    </div>
-                    <div className="text-sm text-slate-900 dark:text-slate-100 break-words flex-1">
-                      {selectedOrder.customerAddress}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Store & Courier */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-800">
-                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Store
-                  </div>
-                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    {selectedOrder.store}
-                  </div>
-                </div>
-                <div className="p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-800">
-                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Courier
-                  </div>
-                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    {selectedOrder.courier}
-                  </div>
-                </div>
-              </div>
-            </div>
+            </>
           )}
-          <AlertDialogFooter className="flex-col sm:flex-row gap-3 pt-4 border-t">
-            <AlertDialogCancel className="w-full sm:w-auto m-0 h-11 text-base" disabled={packing}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleConfirmPack} 
-              disabled={packing} 
-              className="w-full sm:w-auto m-0 h-11 text-base bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 font-semibold"
-            >
-              {packing ? (
-                <>
-                  <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                  Packing...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  Mark as Packed
-                </>
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        </DialogContent>
+      </Dialog>
 
       {/* Logout Confirmation Dialog */}
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>

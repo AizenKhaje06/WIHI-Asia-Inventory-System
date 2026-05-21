@@ -665,319 +665,310 @@ export default function PackingQueuePage() {
         </CardContent>
       </Card>
 
-      {/* Order Details Modal - Enterprise Grade */}
+      {/* Order Details Modal - Professional Design matching Tracker/Packer */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-0 shadow-2xl">
-          <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4 pr-12">
-            <div className="flex items-center justify-between gap-4">
-              <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">Order Details</DialogTitle>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0 flex flex-col">
+          {/* Modal Header with Gradient */}
+          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600 flex-shrink-0">
+            <div className="flex items-start justify-between gap-4">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                  <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                    <Package className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-white">Order Details</span>
+                </DialogTitle>
+                <p className="text-slate-200 text-sm mt-2 font-medium">
+                  Review and manage order information
+                </p>
+              </DialogHeader>
+              {!isEditMode && (
+                <Button
+                  variant="outline"
+                  onClick={handleEditMode}
+                  className="h-10 px-4 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 transition-all"
+                >
+                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit Order
+                </Button>
+              )}
             </div>
-          </DialogHeader>
-          
-          {selectedOrder && (
-            <div className="space-y-6 pt-2">
-              {/* Order Header - Centered */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
-                <div className="text-center mb-4">
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-                    Order #{(selectedOrder.orderNumber || selectedOrder.id || '').slice(-8)}
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 flex items-center justify-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    {parseAsPhilippineTime(selectedOrder.created_at || selectedOrder.orderDate || selectedOrder.date || '').toLocaleString('en-US', { 
-                      month: 'long', 
-                      day: 'numeric', 
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </div>
-                
-                {/* Order Summary Grid */}
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t border-blue-200 dark:border-blue-800">
-                  <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Item</p>
-                    <p className="text-base font-bold text-slate-900 dark:text-white">
-                      {selectedOrder.product || selectedOrder.itemName}
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Quantity</p>
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {selectedOrder.qty || selectedOrder.quantity}
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">COGS</p>
-                    <p className="text-xl font-bold text-slate-700 dark:text-slate-300">
-                      {formatCurrency((selectedOrder.total || selectedOrder.totalAmount || 0) * 0.6)}
-                    </p>
-                  </div>
-                </div>
+          </div>
 
-                {/* Second Row */}
-                <div className="grid grid-cols-3 gap-4 pt-4">
-                  <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Total Amount</p>
+          {selectedOrder && (
+            <>
+              {/* Scrollable Content */}
+              <div className="overflow-y-auto flex-1 px-8 py-6">
+                <div className="space-y-6">
+                  {/* Customer Information Card */}
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-blue-600 rounded-lg">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                        Customer Information
+                      </h3>
+                    </div>
                     {isEditMode ? (
-                      <Input
-                        type="number"
-                        value={editForm.totalAmount}
-                        onChange={(e) => setEditForm({...editForm, totalAmount: parseFloat(e.target.value) || 0})}
-                        className="text-2xl font-bold text-green-600 dark:text-green-400 h-12"
-                        min="0"
-                        step="0.01"
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2 block">
+                            Full Name
+                          </Label>
+                          <Input
+                            value={editForm.customerName}
+                            onChange={(e) => setEditForm({...editForm, customerName: e.target.value})}
+                            placeholder="Enter customer name"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2 block">
+                            Phone Number
+                          </Label>
+                          <Input
+                            value={editForm.customerPhone}
+                            onChange={(e) => setEditForm({...editForm, customerPhone: e.target.value})}
+                            placeholder="Enter contact number"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2 block">
+                            Delivery Address
+                          </Label>
+                          <textarea
+                            value={editForm.customerAddress}
+                            onChange={(e) => setEditForm({...editForm, customerAddress: e.target.value})}
+                            rows={3}
+                            className="w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter delivery address"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                            Full Name
+                          </p>
+                          <p className="text-base font-semibold text-slate-900 dark:text-white">
+                            {selectedOrder.customerName || 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                            Phone Number
+                          </p>
+                          <p className="text-base font-mono font-semibold text-slate-900 dark:text-white">
+                            {selectedOrder.customerPhone || 'N/A'}
+                          </p>
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                            Delivery Address
+                          </p>
+                          <p className="text-base font-medium text-slate-900 dark:text-white leading-relaxed">
+                            {selectedOrder.customerAddress || 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Order Information Card */}
+                  <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-6 border border-emerald-100 dark:border-emerald-800">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-emerald-600 rounded-lg">
+                        <Package className="h-5 w-5 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                        Order Information
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Order Number
+                        </p>
+                        <p className="text-base font-mono font-bold text-slate-900 dark:text-white">
+                          #{(selectedOrder.orderNumber || selectedOrder.id || '').slice(-6)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Order Date
+                        </p>
+                        <p className="text-base font-semibold text-slate-900 dark:text-white">
+                          {parseAsPhilippineTime(selectedOrder.created_at || selectedOrder.orderDate || selectedOrder.date || '').toLocaleDateString('en-US', { 
+                            month: 'long', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                          })}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Product Items
+                        </p>
+                        <p className="text-base font-semibold text-slate-900 dark:text-white">
+                          {selectedOrder.product || selectedOrder.itemName}
+                        </p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                          Qty: {selectedOrder.qty || selectedOrder.quantity}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Total Amount
+                        </p>
+                        {isEditMode ? (
+                          <Input
+                            type="number"
+                            value={editForm.totalAmount}
+                            onChange={(e) => setEditForm({...editForm, totalAmount: parseFloat(e.target.value) || 0})}
+                            className="text-xl font-bold text-emerald-600 dark:text-emerald-400 h-12"
+                            min="0"
+                            step="0.01"
+                          />
+                        ) : (
+                          <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                            {formatCurrency(selectedOrder.total || selectedOrder.totalAmount || 0)}
+                          </p>
+                        )}
+                      </div>
+                      {!isTeamLeader && (
+                        <div>
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                            Sales Channel
+                          </p>
+                          <Badge variant="secondary" className="text-sm font-semibold">
+                            {selectedOrder.sales_channel || selectedOrder.channel || 'N/A'}
+                          </Badge>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                          Store
+                        </p>
+                        <p className="text-base font-semibold text-slate-900 dark:text-white">
+                          {selectedOrder.store}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tracking Information Card */}
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-purple-600 rounded-lg">
+                        <Truck className="h-5 w-5 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                        Tracking Information
+                      </h3>
+                    </div>
+                    {isEditMode ? (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2 block">
+                            Courier
+                          </Label>
+                          <Input
+                            value={editForm.courier}
+                            onChange={(e) => setEditForm({...editForm, courier: e.target.value})}
+                            placeholder="Enter courier name"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2 block">
+                            Waybill Number
+                          </Label>
+                          <Input
+                            value={editForm.waybill}
+                            onChange={(e) => setEditForm({...editForm, waybill: e.target.value})}
+                            placeholder="Enter waybill number"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                            Courier Service
+                          </p>
+                          <p className="text-base font-semibold text-slate-900 dark:text-white">
+                            {selectedOrder.courier || 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                            Waybill Number
+                          </p>
+                          <p className="text-base font-mono font-bold text-purple-600 dark:text-purple-400">
+                            {selectedOrder.waybill || 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dispatch Notes Card */}
+                  <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-amber-100 dark:border-amber-800">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-amber-600 rounded-lg">
+                        <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                        Dispatch Notes
+                      </h3>
+                    </div>
+                    {isEditMode ? (
+                      <textarea
+                        value={editForm.dispatchNotes}
+                        onChange={(e) => setEditForm({...editForm, dispatchNotes: e.target.value})}
+                        rows={4}
+                        className="w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        placeholder="Add any special instructions or notes for this order..."
                       />
                     ) : (
-                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {formatCurrency(selectedOrder.total || selectedOrder.totalAmount || 0)}
-                      </p>
+                      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                        {selectedOrder.dispatchNotes ? (
+                          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                            {selectedOrder.dispatchNotes}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-slate-400 dark:text-slate-500 italic">
+                            No notes added for this order
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
-                  <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Store</p>
-                    <p className="text-base font-bold text-slate-900 dark:text-white mb-1">
-                      {selectedOrder.store}
-                    </p>
-                    {!isTeamLeader && (selectedOrder.sales_channel || selectedOrder.channel) && (
-                      <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-xs font-semibold px-2 py-1">
-                        {selectedOrder.sales_channel || selectedOrder.channel}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Status</p>
-                    <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-semibold px-3 py-1">
-                      Pending
-                    </Badge>
-                  </div>
-                </div>
-              </div>
 
-              {/* Delivery Information - Enterprise Style - Always Visible */}
-              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                    <Truck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <h4 className="text-lg font-bold text-slate-900 dark:text-white">
-                    Delivery Information
-                  </h4>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  {isEditMode ? (
-                    <>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">Courier</label>
-                        <Input
-                          value={editForm.courier}
-                          onChange={(e) => setEditForm({...editForm, courier: e.target.value})}
-                          className="mt-1"
-                          placeholder="Enter courier name"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">Waybill Number</label>
-                        <Input
-                          value={editForm.waybill}
-                          onChange={(e) => setEditForm({...editForm, waybill: e.target.value})}
-                          className="mt-1"
-                          placeholder="Enter waybill number"
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Courier</p>
-                        {selectedOrder.courier ? (
-                          <p className="text-base font-bold text-slate-900 dark:text-white">
-                            {selectedOrder.courier}
-                          </p>
-                        ) : (
-                          <p className="text-sm text-slate-400 dark:text-slate-500 italic">
-                            No courier assigned
-                          </p>
-                        )}
-                      </div>
-                      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Waybill Number</p>
-                        {selectedOrder.waybill ? (
-                          <p className="text-base font-bold text-slate-900 dark:text-white font-mono">
-                            {selectedOrder.waybill}
-                          </p>
-                        ) : (
-                          <p className="text-sm text-slate-400 dark:text-slate-500 italic">
-                            No waybill number
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Customer Information - Enterprise Style - Always Visible */}
-              <div className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <h4 className="text-lg font-bold text-slate-900 dark:text-white">
-                    Customer Information
-                  </h4>
-                </div>
-                <div className="grid grid-cols-1 gap-4">
-                  {isEditMode ? (
-                    <>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-2">
-                          <User className="h-4 w-4" />
-                          Full Name
-                        </label>
-                        <Input
-                          value={editForm.customerName}
-                          onChange={(e) => setEditForm({...editForm, customerName: e.target.value})}
-                          className="mt-1"
-                          placeholder="Enter customer name"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-2">
-                          <Phone className="h-4 w-4" />
-                          Contact Number
-                        </label>
-                        <Input
-                          value={editForm.customerPhone}
-                          onChange={(e) => setEditForm({...editForm, customerPhone: e.target.value})}
-                          className="mt-1"
-                          placeholder="Enter contact number"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-2">
-                          <MapPin className="h-4 w-4" />
-                          Delivery Address
-                        </label>
-                        <textarea
-                          value={editForm.customerAddress}
-                          onChange={(e) => setEditForm({...editForm, customerAddress: e.target.value})}
-                          rows={3}
-                          className="mt-1 w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Enter delivery address"
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center gap-2 mb-2">
-                          <User className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Full Name</p>
+                  {/* Timeline - Dispatch Information */}
+                  {selectedOrder.dispatched_by && (
+                    <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-slate-600 rounded-lg">
+                          <Clock className="h-5 w-5 text-white" />
                         </div>
-                        {selectedOrder.customerName ? (
-                          <p className="text-base font-bold text-slate-900 dark:text-white">
-                            {selectedOrder.customerName}
-                          </p>
-                        ) : (
-                          <p className="text-sm text-slate-400 dark:text-slate-500 italic">
-                            No customer name provided
-                          </p>
-                        )}
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                          Timeline
+                        </h3>
                       </div>
-                      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Phone className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Contact Number</p>
-                        </div>
-                        {selectedOrder.customerPhone ? (
-                          <p className="text-base font-bold text-slate-900 dark:text-white font-mono">
-                            {selectedOrder.customerPhone}
-                          </p>
-                        ) : (
-                          <p className="text-sm text-slate-400 dark:text-slate-500 italic">
-                            No contact number provided
-                          </p>
-                        )}
-                      </div>
-                      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center gap-2 mb-2">
-                          <MapPin className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Delivery Address</p>
-                        </div>
-                        {selectedOrder.customerAddress ? (
-                          <p className="text-base font-semibold text-slate-900 dark:text-white leading-relaxed">
-                            {selectedOrder.customerAddress}
-                          </p>
-                        ) : (
-                          <p className="text-sm text-slate-400 dark:text-slate-500 italic">
-                            No delivery address provided
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Dispatch Notes Section - Always visible */}
-              <div className="bg-purple-50 dark:bg-purple-900/10 rounded-xl p-6 border border-purple-200 dark:border-purple-800">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                    <svg className="h-5 w-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </div>
-                  <h4 className="text-lg font-bold text-slate-900 dark:text-white">
-                    Dispatch Notes
-                  </h4>
-                </div>
-                {isEditMode ? (
-                  <textarea
-                    value={editForm.dispatchNotes}
-                    onChange={(e) => setEditForm({...editForm, dispatchNotes: e.target.value})}
-                    rows={4}
-                    className="w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    placeholder="Add any special instructions or notes for this order..."
-                  />
-                ) : (
-                  <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                    {selectedOrder.dispatchNotes ? (
-                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-                        {selectedOrder.dispatchNotes}
-                      </p>
-                    ) : (
-                      <p className="text-sm text-slate-400 dark:text-slate-500 italic">
-                        No notes added for this order
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Dispatch Information */}
-              {selectedOrder.dispatched_by && (
-                <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl p-5 border border-amber-200 dark:border-amber-800">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 mt-0.5">
-                      <svg className="h-4 w-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-3">Timeline</p>
-                      <div className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-amber-200 dark:border-amber-800">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                          <svg className="h-4 w-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
+                      <div className="flex items-start gap-3 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                          <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Dispatched</p>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white">{selectedOrder.dispatched_by}</p>
+                          <p className="text-base font-bold text-slate-900 dark:text-white">{selectedOrder.dispatched_by}</p>
                           {selectedOrder.created_at && (
-                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                               {parseAsPhilippineTime(selectedOrder.created_at).toLocaleString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
@@ -990,10 +981,74 @@ export default function PackingQueuePage() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+
+              {/* Footer with Action Buttons - Fixed at bottom */}
+              <div className="border-t border-slate-200 dark:border-slate-700 px-8 py-6 bg-slate-50 dark:bg-slate-900/50 flex-shrink-0">
+                <div className="space-y-4">
+                  {isEditMode ? (
+                    <>
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+                          Save Changes?
+                        </h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          Review your changes before saving. You can cancel to discard changes.
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={handleCancelEdit}
+                          className="flex-1 h-11 text-sm border-2"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSaveEdit}
+                          className="flex-1 h-11 text-sm bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 font-semibold shadow-lg"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Save Changes
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 tracking-tight">
+                          Actions
+                        </h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          Mark this order as packed or delete it from the queue.
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={() => {
+                            setShowDetailsModal(false)
+                            openConfirmDialog(selectedOrder)
+                          }}
+                          className="flex-1 h-11 text-sm bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 font-semibold shadow-lg"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Mark as Packed
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() => setShowDeleteConfirm(true)}
+                          className="h-11 px-6 text-sm font-semibold"
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
