@@ -49,13 +49,32 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
       )
     }
 
+    // Get current Manila time for packed_at
+    // Format: YYYY-MM-DD HH:mm:ss (without timezone, as Philippine time)
+    const now = new Date()
+    const manilaTimeString = now.toLocaleString('en-US', { 
+      timeZone: 'Asia/Manila',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    })
+    
+    // Convert "MM/DD/YYYY, HH:mm:ss" to "YYYY-MM-DD HH:mm:ss"
+    const [datePart, timePart] = manilaTimeString.split(', ')
+    const [month, day, year] = datePart.split('/')
+    const packedAt = `${year}-${month}-${day} ${timePart}`
+
     // Update order status to Packed
     const { data: updatedOrder, error: updateError } = await supabaseAdmin
       .from('orders')
       .update({
         status: 'Packed',
         packed_by: context.userId,
-        packed_at: new Date().toISOString()
+        packed_at: packedAt
       })
       .eq('id', orderId)
       .select()
