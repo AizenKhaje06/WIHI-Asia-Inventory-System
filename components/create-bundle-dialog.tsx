@@ -296,7 +296,7 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto py-4 min-h-0">
+        <div className="flex-1 overflow-y-auto py-4 px-6 min-h-0">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Bundle Info */}
             <div className="space-y-5">

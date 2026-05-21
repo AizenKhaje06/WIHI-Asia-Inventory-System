@@ -28,6 +28,8 @@ import {
 import type { Log } from "@/lib/types"
 import { toast } from "sonner"
 import { apiGet } from "@/lib/api-client"
+import { getCurrentUserRole } from "@/lib/role-utils"
+import { getCurrentUser } from "@/lib/auth"
 
 const ITEMS_PER_PAGE = 50
 
@@ -48,6 +50,12 @@ const OPERATION_CONFIG = {
 export default function LogPage() {
   const [logs, setLogs] = useState<Log[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Role detection
+  const userRole = getCurrentUserRole()
+  const currentUser = getCurrentUser()
+  const isDepartment = userRole === 'operations'
+  const userChannel = currentUser?.assignedChannel || null
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState("")
@@ -101,6 +109,15 @@ export default function LogPage() {
     
     let filtered = [...logs]
 
+    // Department auto-filter: Only show logs for their assigned channel
+    if (isDepartment && userChannel) {
+      filtered = filtered.filter(log => {
+        const detailsLower = log.details?.toLowerCase() || ''
+        const channelLower = userChannel.toLowerCase()
+        return detailsLower.includes(channelLower)
+      })
+    }
+
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
@@ -144,8 +161,8 @@ export default function LogPage() {
       })
     }
 
-    // Sales Channel filter - check if details contains the channel name
-    if (salesChannelFilter !== "all") {
+    // Sales Channel filter - Admin only (departments are auto-filtered above)
+    if (!isDepartment && salesChannelFilter !== "all") {
       filtered = filtered.filter(log => {
         const detailsLower = log.details?.toLowerCase() || ''
         const channelLower = salesChannelFilter.toLowerCase()
@@ -460,21 +477,23 @@ export default function LogPage() {
             </SelectContent>
           </Select>
 
-          {/* Sales Channel Filter */}
-          <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="All Channels" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Channels</SelectItem>
-              <SelectItem value="Shopee">Shopee</SelectItem>
-              <SelectItem value="Lazada">Lazada</SelectItem>
-              <SelectItem value="Facebook">Facebook</SelectItem>
-              <SelectItem value="TikTok">TikTok</SelectItem>
-              <SelectItem value="Office Store">Office Store</SelectItem>
-              <SelectItem value="Physical Store">Physical Store</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* Sales Channel Filter - Admin Only */}
+          {!isDepartment && (
+            <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Channels" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Channels</SelectItem>
+                <SelectItem value="Shopee">Shopee</SelectItem>
+                <SelectItem value="Lazada">Lazada</SelectItem>
+                <SelectItem value="Facebook">Facebook</SelectItem>
+                <SelectItem value="TikTok">TikTok</SelectItem>
+                <SelectItem value="Office Store">Office Store</SelectItem>
+                <SelectItem value="Physical Store">Physical Store</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
 
           {/* Date Range Filter */}
           <DateRangePicker
