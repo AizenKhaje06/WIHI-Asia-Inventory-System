@@ -40,12 +40,12 @@ export async function GET(
       .eq('sales_channel', departmentName)
       .eq('status', 'Packed') // CRITICAL: Only fetch Track Orders, exclude Packing Queue
 
-    // Apply date filters
+    // Apply date filters - use packed_at for accurate revenue recognition timing
     if (startDate) {
-      ordersQuery = ordersQuery.gte('date', startDate)
+      ordersQuery = ordersQuery.gte('packed_at', startDate)
     }
     if (endDate) {
-      ordersQuery = ordersQuery.lte('date', endDate)
+      ordersQuery = ordersQuery.lte('packed_at', endDate)
     }
 
     const { data: allOrders, error: ordersError } = await ordersQuery
@@ -58,7 +58,12 @@ export async function GET(
     const orders = allOrders || []
 
     console.log('[Sales Channel API] Total orders fetched:', orders.length)
-    console.log('[Sales Channel API] Sample order:', orders[0])
+    console.log('[Sales Channel API] Date filter applied:', { startDate, endDate })
+    if (orders.length > 0) {
+      console.log('[Sales Channel API] Sample order:', orders[0])
+    } else {
+      console.log('[Sales Channel API] ⚠️  NO ORDERS FOUND for this date range!')
+    }
 
     // Filter to active orders only (exclude CANCELLED and RETURNED)
     const activeOrders = filterRevenueOrders(
@@ -78,20 +83,83 @@ export async function GET(
     // Calculate overall metrics
     const metrics = calculateFinancialMetrics(activeOrders)
 
-    // Parcel status counts (all orders, not just active)
+    // Parcel status counts and amounts (all orders, not just active)
+    const getStatusData = (status: string) => {
+      const statusOrders = orders.filter(o => o.parcel_status === status)
+      return {
+        count: statusOrders.length,
+        amount: statusOrders.reduce((sum, o) => sum + (o.total || 0), 0)
+      }
+    }
+
+    const pendingData = getStatusData('PENDING')
+    const inTransitData = getStatusData('IN TRANSIT')
+    const onDeliveryData = getStatusData('ON DELIVERY')
+    const pickupData = getStatusData('PICKUP')
+    const detainedData = getStatusData('DETAINED')
+    const deliveredData = getStatusData('DELIVERED')
+    const cancelledData = getStatusData('CANCELLED')
+    const returnedData = getStatusData('RETURNED')
+    const problematicData = getStatusData('PROBLEMATIC')
+
+    // Calculate undelivered (IN TRANSIT + ON DELIVERY + PICKUP + DETAINED only, exclude PENDING)
+    const undeliveredOrders = orders.filter(o => 
+      ['IN TRANSIT', 'ON DELIVERY', 'PICKUP', 'DETAINED'].includes(o.parcel_status)
+    )
+    const undeliveredData = {
+      count: undeliveredOrders.length,
+      amount: undeliveredOrders.reduce((sum, o) => sum + (o.total || 0), 0)
+    }
+
+    // Calculate loss revenue (RETURNED + CANCELLED + PROBLEMATIC)
+    const lossRevenueOrders = orders.filter(o => 
+      ['RETURNED', 'CANCELLED', 'PROBLEMATIC'].includes(o.parcel_status)
+    )
+    const lossRevenueData = {
+      count: lossRevenueOrders.length,
+      amount: lossRevenueOrders.reduce((sum, o) => sum + (o.total || 0), 0)
+    }
+
+    const totalOrders = orders.length
+
     const parcelStatusCounts = {
-      pending: orders.filter(o => o.parcel_status === 'PENDING').length,
-      inTransit: orders.filter(o => o.parcel_status === 'IN TRANSIT').length,
-      onDelivery: orders.filter(o => o.parcel_status === 'ON DELIVERY').length,
-      pickup: orders.filter(o => o.parcel_status === 'PICKUP').length,
-      delivered: orders.filter(o => o.parcel_status === 'DELIVERED').length,
-      cancelled: orders.filter(o => o.parcel_status === 'CANCELLED').length,
-      returned: orders.filter(o => o.parcel_status === 'RETURNED').length,
-      detained: orders.filter(o => o.parcel_status === 'DETAINED').length,
-      problematic: orders.filter(o => o.parcel_status === 'PROBLEMATIC').length,
+      pending: pendingData.count,
+      pendingAmount: pendingData.amount,
+      pendingPercentage: totalOrders > 0 ? (pendingData.count / totalOrders) * 100 : 0,
+      
+      undelivered: undeliveredData.count,
+      undeliveredAmount: undeliveredData.amount,
+      undeliveredPercentage: totalOrders > 0 ? (undeliveredData.count / totalOrders) * 100 : 0,
+      
+      delivered: deliveredData.count,
+      deliveredAmount: deliveredData.amount,
+      deliveredPercentage: totalOrders > 0 ? (deliveredData.count / totalOrders) * 100 : 0,
+      
+      lossRevenue: lossRevenueData.count,
+      lossRevenueAmount: lossRevenueData.amount,
+      lossRevenuePercentage: totalOrders > 0 ? (lossRevenueData.count / totalOrders) * 100 : 0,
+      
+      // Breakdown for loss revenue card
+      returned: returnedData.count,
+      returnedAmount: returnedData.amount,
+      returnedPercentage: totalOrders > 0 ? (returnedData.count / totalOrders) * 100 : 0,
+      
+      cancelled: cancelledData.count,
+      cancelledAmount: cancelledData.amount,
+      cancelledPercentage: totalOrders > 0 ? (cancelledData.count / totalOrders) * 100 : 0,
+      
+      problematic: problematicData.count,
+      problematicAmount: problematicData.amount,
+      problematicPercentage: totalOrders > 0 ? (problematicData.count / totalOrders) * 100 : 0,
+      
+      // Legacy fields (for backward compatibility)
+      inTransit: inTransitData.count,
+      onDelivery: onDeliveryData.count,
+      pickup: pickupData.count,
+      detained: detainedData.count,
       total: orders.length,
       deliveryRate: orders.length > 0 
-        ? (orders.filter(o => o.parcel_status === 'DELIVERED').length / orders.length) * 100 
+        ? (deliveredData.count / orders.length) * 100 
         : 0
     }
 

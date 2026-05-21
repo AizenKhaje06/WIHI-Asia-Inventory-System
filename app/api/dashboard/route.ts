@@ -125,11 +125,11 @@ export async function GET(request: Request) {
       return NextResponse.json(emptyDashboardStats())
     }
 
-    // Apply date filters if provided (filter by created_at, not date)
+    // Apply date filters if provided (filter by packed_at for accurate revenue recognition)
     let filteredOrders = allOrders || []
     if (startDate || endDate) {
       filteredOrders = filteredOrders.filter(order => {
-        const orderDate = new Date(order.created_at) // Use created_at instead of date
+        const orderDate = new Date(order.packed_at || order.created_at) // Use packed_at (when revenue recognized)
         if (startDate && orderDate < startDate) return false
         if (endDate && orderDate > endDate) return false
         return true

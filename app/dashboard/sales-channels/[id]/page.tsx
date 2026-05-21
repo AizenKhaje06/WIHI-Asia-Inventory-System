@@ -25,7 +25,8 @@ import {
   Percent,
   FileDown,
   FileSpreadsheet,
-  ChevronDown
+  ChevronDown,
+  AlertTriangle
 } from "lucide-react"
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts"
@@ -54,8 +55,27 @@ interface DepartmentDetail {
   }
   parcelStatusCounts?: {
     pending: number
+    pendingAmount?: number
+    pendingPercentage?: number
+    undelivered?: number
+    undeliveredAmount?: number
+    undeliveredPercentage?: number
     inTransit: number
     delivered: number
+    deliveredAmount?: number
+    deliveredPercentage?: number
+    lossRevenue?: number
+    lossRevenueAmount?: number
+    lossRevenuePercentage?: number
+    returned?: number
+    returnedAmount?: number
+    returnedPercentage?: number
+    cancelled?: number
+    cancelledAmount?: number
+    cancelledPercentage?: number
+    problematic?: number
+    problematicAmount?: number
+    problematicPercentage?: number
     total: number
   }
   cashFlow: Array<{
@@ -135,7 +155,20 @@ export default function SalesChannelDetailPage() {
       if (startDate) params.append('startDate', startDate.toISOString().split('T')[0])
       if (endDate) params.append('endDate', endDate.toISOString().split('T')[0])
 
+      console.log('[Sales Channel Page] Fetching data with params:', {
+        channel: departmentName,
+        startDate: startDate?.toISOString().split('T')[0],
+        endDate: endDate?.toISOString().split('T')[0]
+      })
+
       const result = await apiGet<{ department: DepartmentDetail }>(`/api/departments/${encodeURIComponent(departmentName)}?${params}`)
+      
+      console.log('[Sales Channel Page] Received data:', {
+        revenue: result.department.metrics.totalRevenue,
+        orderCount: result.department.metrics.transactionCount,
+        parcelStatusTotal: result.department.parcelStatusCounts?.total
+      })
+      
       setData(result.department)
     } catch (error) {
       console.error("Error fetching department details:", error)
@@ -625,6 +658,21 @@ export default function SalesChannelDetailPage() {
       </div>
 
       {/* Metrics Cards */}
+      {data.metrics.transactionCount === 0 && (
+        <div className="mb-6 p-6 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-lg">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+            <div>
+              <h3 className="font-semibold text-amber-900 dark:text-amber-100">No Orders Found</h3>
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                No orders were packed in the selected date range ({startDate?.toLocaleDateString()} - {endDate?.toLocaleDateString()}). 
+                Try expanding your date range to see data.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
         <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
           <CardContent className="p-4">
@@ -692,7 +740,7 @@ export default function SalesChannelDetailPage() {
             <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {formatNumber(data.metrics.transactionCount)}
             </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">Transactions</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400">Orders Sold</div>
           </CardContent>
         </Card>
 
@@ -718,6 +766,7 @@ export default function SalesChannelDetailPage() {
             Parcel Status Overview
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Pending Card */}
             <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
@@ -731,31 +780,61 @@ export default function SalesChannelDetailPage() {
                 <div className="text-3xl font-bold text-amber-900 dark:text-amber-100 mb-1">
                   {formatNumber(data.parcelStatusCounts.pending)}
                 </div>
-                <div className="text-xs text-amber-700 dark:text-amber-300">
+                <div className="text-xs text-amber-700 dark:text-amber-300 mb-2">
                   Awaiting Dispatch
                 </div>
+                <div className="mt-2 pt-2 border-t border-amber-300 dark:border-amber-700">
+                  <div className="flex items-center justify-between text-[10px] mb-1">
+                    <span className="text-amber-600 dark:text-amber-400">Amount:</span>
+                    <span className="font-semibold text-amber-900 dark:text-amber-100">
+                      ₱{formatNumber(data.parcelStatusCounts.pendingAmount || 0)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-amber-600 dark:text-amber-400">% of Total:</span>
+                    <span className="font-semibold text-amber-900 dark:text-amber-100">
+                      {(data.parcelStatusCounts.pendingPercentage || 0).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
+            {/* Undelivered Card (replaces In Transit) */}
+            <Card className="border-0 shadow-md bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-[5px] bg-blue-200 dark:bg-blue-700/50">
-                    <TrendingUp className="h-4 w-4 text-blue-700 dark:text-blue-300" />
+                  <div className="p-2 rounded-[5px] bg-orange-200 dark:bg-orange-700/50">
+                    <TrendingUp className="h-4 w-4 text-orange-700 dark:text-orange-300" />
                   </div>
-                  <Badge className="bg-blue-200 text-blue-800 dark:bg-blue-700/50 dark:text-blue-200 border-0">
-                    In Transit
+                  <Badge className="bg-orange-200 text-orange-800 dark:bg-orange-700/50 dark:text-orange-200 border-0">
+                    Undelivered
                   </Badge>
                 </div>
-                <div className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-1">
-                  {formatNumber(data.parcelStatusCounts.inTransit)}
+                <div className="text-3xl font-bold text-orange-900 dark:text-orange-100 mb-1">
+                  {formatNumber(data.parcelStatusCounts.undelivered)}
                 </div>
-                <div className="text-xs text-blue-700 dark:text-blue-300">
-                  On the Way
+                <div className="text-xs text-orange-700 dark:text-orange-300 mb-2">
+                  In Progress
+                </div>
+                <div className="mt-2 pt-2 border-t border-orange-300 dark:border-orange-700">
+                  <div className="flex items-center justify-between text-[10px] mb-1">
+                    <span className="text-orange-600 dark:text-orange-400">Amount:</span>
+                    <span className="font-semibold text-orange-900 dark:text-orange-100">
+                      ₱{formatNumber(data.parcelStatusCounts.undeliveredAmount || 0)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-orange-600 dark:text-orange-400">% of Total:</span>
+                    <span className="font-semibold text-orange-900 dark:text-orange-100">
+                      {(data.parcelStatusCounts.undeliveredPercentage || 0).toFixed(1)}%
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
+            {/* Delivered Card */}
             <Card className="border-0 shadow-md bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
@@ -769,36 +848,82 @@ export default function SalesChannelDetailPage() {
                 <div className="text-3xl font-bold text-green-900 dark:text-green-100 mb-1">
                   {formatNumber(data.parcelStatusCounts.delivered)}
                 </div>
-                <div className="text-xs text-green-700 dark:text-green-300">
+                <div className="text-xs text-green-700 dark:text-green-300 mb-2">
                   Successfully Delivered
+                </div>
+                <div className="mt-2 pt-2 border-t border-green-300 dark:border-green-700">
+                  <div className="flex items-center justify-between text-[10px] mb-1">
+                    <span className="text-green-600 dark:text-green-400">Amount:</span>
+                    <span className="font-semibold text-green-900 dark:text-green-100">
+                      ₱{formatNumber(data.parcelStatusCounts.deliveredAmount || 0)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-green-600 dark:text-green-400">% of Total:</span>
+                    <span className="font-semibold text-green-900 dark:text-green-100">
+                      {(data.parcelStatusCounts.deliveredPercentage || 0).toFixed(1)}%
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-md bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-700/50">
+            {/* Loss Revenue Card (NEW) */}
+            <Card className="border-0 shadow-md bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-[5px] bg-slate-200 dark:bg-slate-600/50">
-                    <Package className="h-4 w-4 text-slate-700 dark:text-slate-300" />
+                  <div className="p-2 rounded-[5px] bg-red-200 dark:bg-red-700/50">
+                    <AlertTriangle className="h-4 w-4 text-red-700 dark:text-red-300" />
                   </div>
-                  <Badge className="bg-slate-200 text-slate-800 dark:bg-slate-600/50 dark:text-slate-200 border-0">
-                    Total
+                  <Badge className="bg-red-200 text-red-800 dark:bg-red-700/50 dark:text-red-200 border-0">
+                    Loss Revenue
                   </Badge>
                 </div>
-                <div className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">
-                  {formatNumber(data.parcelStatusCounts.total)}
+                <div className="text-3xl font-bold text-red-900 dark:text-red-100 mb-1">
+                  {formatNumber(data.parcelStatusCounts.lossRevenue)}
                 </div>
-                <div className="text-xs text-slate-700 dark:text-slate-300">
-                  All Parcels
+                <div className="text-xs text-red-700 dark:text-red-300 mb-2">
+                  Cancelled/Returned/Issues
                 </div>
-                <div className="mt-2 pt-2 border-t border-slate-300 dark:border-slate-600">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-slate-600 dark:text-slate-400">Delivery Rate:</span>
-                    <span className="font-semibold text-green-600 dark:text-green-400">
-                      {data.parcelStatusCounts.total > 0 
-                        ? ((data.parcelStatusCounts.delivered / data.parcelStatusCounts.total) * 100).toFixed(1)
-                        : 0}%
+                <div className="mt-2 pt-2 border-t border-red-300 dark:border-red-700">
+                  <div className="flex items-center justify-between text-[10px] mb-1">
+                    <span className="text-red-600 dark:text-red-400">Amount:</span>
+                    <span className="font-semibold text-red-900 dark:text-red-100">
+                      ₱{formatNumber(data.parcelStatusCounts.lossRevenueAmount || 0)}
                     </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] mb-2">
+                    <span className="text-red-600 dark:text-red-400">% of Total:</span>
+                    <span className="font-semibold text-red-900 dark:text-red-100">
+                      {(data.parcelStatusCounts.lossRevenuePercentage || 0).toFixed(1)}%
+                    </span>
+                  </div>
+                  {/* Breakdown */}
+                  <div className="mt-2 pt-2 border-t border-red-300 dark:border-red-700 space-y-1">
+                    <div className="flex items-center justify-between text-[9px]">
+                      <span className="text-red-600 dark:text-red-400">Returned:</span>
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium text-red-800 dark:text-red-200">{data.parcelStatusCounts.returned}</span>
+                        <span className="text-red-700 dark:text-red-300">₱{formatNumber(data.parcelStatusCounts.returnedAmount || 0)}</span>
+                        <span className="text-red-600 dark:text-red-400">({(data.parcelStatusCounts.returnedPercentage || 0).toFixed(1)}%)</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[9px]">
+                      <span className="text-red-600 dark:text-red-400">Cancelled:</span>
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium text-red-800 dark:text-red-200">{data.parcelStatusCounts.cancelled}</span>
+                        <span className="text-red-700 dark:text-red-300">₱{formatNumber(data.parcelStatusCounts.cancelledAmount || 0)}</span>
+                        <span className="text-red-600 dark:text-red-400">({(data.parcelStatusCounts.cancelledPercentage || 0).toFixed(1)}%)</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[9px]">
+                      <span className="text-red-600 dark:text-red-400">Problematic:</span>
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium text-red-800 dark:text-red-200">{data.parcelStatusCounts.problematic}</span>
+                        <span className="text-red-700 dark:text-red-300">₱{formatNumber(data.parcelStatusCounts.problematicAmount || 0)}</span>
+                        <span className="text-red-600 dark:text-red-400">({(data.parcelStatusCounts.problematicPercentage || 0).toFixed(1)}%)</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
