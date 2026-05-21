@@ -283,18 +283,21 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
-        <DialogHeader className="pb-4 border-b flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-              <Package className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-            </div>
-            Create Product Bundle
-          </DialogTitle>
-          <DialogDescription className="text-base">
-            Create a bundle of products with special pricing to increase sales
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col p-0 gap-0">
+        {/* Professional Header with Dark Gradient */}
+        <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600 flex-shrink-0">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+              <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                <Package className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-white">Create Product Bundle</span>
+            </DialogTitle>
+            <DialogDescription className="text-slate-200 text-sm mt-2 font-medium">
+              Create a bundle of products with special pricing to increase sales
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
         <div className="flex-1 overflow-y-auto py-4 px-6 min-h-0">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -318,16 +321,6 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
                   placeholder="Describe this bundle..."
                   rows={3}
                   className="resize-none"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">Badge (Optional)</Label>
-                <Input
-                  value={formData.badge}
-                  onChange={(e) => setFormData({...formData, badge: e.target.value})}
-                  placeholder="e.g., BEST VALUE, SAVE 20%"
-                  className="h-11"
                 />
               </div>
 
@@ -645,36 +638,39 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
           </div>
         </div>
 
-        <DialogFooter className="pt-4 border-t flex-shrink-0">
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              resetForm()
-              onOpenChange(false)
-            }} 
-            disabled={loading}
-            className="h-11"
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={loading || bundleItems.length === 0}
-            className="h-11 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-          >
-            {loading ? (
-              <>
-                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Creating Bundle...
-              </>
-            ) : (
-              <>
-                <Check className="h-4 w-4 mr-2" />
-                Create Bundle
-              </>
-            )}
-          </Button>
-        </DialogFooter>
+        {/* Professional Footer */}
+        <div className="border-t border-slate-200 dark:border-slate-700 px-8 py-6 bg-slate-50 dark:bg-slate-900/50 flex-shrink-0">
+          <div className="flex items-center justify-end gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                resetForm()
+                onOpenChange(false)
+              }} 
+              disabled={loading}
+              className="h-11 px-6 text-sm font-semibold border-2"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmit} 
+              disabled={loading || bundleItems.length === 0}
+              className="h-11 px-6 text-sm font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg"
+            >
+              {loading ? (
+                <>
+                  <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Creating Bundle...
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Create Bundle
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   )

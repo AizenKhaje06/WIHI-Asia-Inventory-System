@@ -87,17 +87,23 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 max-w-2xl shadow-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold flex items-center gap-2">
-            <Package className="h-5 w-5 text-orange-600" />
-            Add New Product
-          </DialogTitle>
-          <DialogDescription className="text-slate-600 dark:text-slate-400">
-            Create a new product in your inventory
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+        {/* Professional Header with Dark Gradient */}
+        <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600 flex-shrink-0">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+              <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                <Package className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-white">Add New Product</span>
+            </DialogTitle>
+            <DialogDescription className="text-slate-200 text-sm mt-2 font-medium">
+              Create a new product in your inventory
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-slate-700 dark:text-slate-300 font-medium text-sm">
@@ -190,11 +196,25 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
               />
             </div>
           </div>
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+        </form>
+
+        {/* Professional Footer */}
+        <div className="border-t border-slate-200 dark:border-slate-700 px-8 py-6 bg-slate-50 dark:bg-slate-900/50 flex-shrink-0">
+          <div className="flex items-center justify-end gap-3">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              className="h-11 px-6 text-sm font-semibold border-2"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg">
+            <Button 
+              type="submit" 
+              disabled={loading} 
+              onClick={handleSubmit}
+              className="h-11 px-6 text-sm font-semibold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg"
+            >
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -208,7 +228,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
               )}
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   )

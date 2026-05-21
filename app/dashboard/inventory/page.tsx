@@ -52,6 +52,26 @@ export default function InventoryPage() {
   const userRole = getCurrentUserRole()
   const isTeamLeader = false // Team leader role removed
   
+  // Department detection - check if user is an operations user with assigned channel
+  const [isDepartment, setIsDepartment] = useState(false)
+  const [userDepartment, setUserDepartment] = useState<string>("")
+  
+  useEffect(() => {
+    const checkDepartment = () => {
+      const user = getCurrentUser()
+      const role = getCurrentUserRole()
+      
+      if (role === 'operations' && user?.assignedChannel) {
+        setIsDepartment(true)
+        setUserDepartment(user.assignedChannel)
+        // Pre-fill sales channel for departments
+        setNewStore({ name: "", salesChannel: user.assignedChannel })
+      }
+    }
+    
+    checkDepartment()
+  }, [])
+  
   // Category Management
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
   const [categories, setCategories] = useState<Array<{id: string, name: string, createdAt: string}>>([])
@@ -1751,18 +1771,23 @@ export default function InventoryPage() {
 
       {/* Category Management Dialog */}
       <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
-        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl max-h-[85vh] flex flex-col">
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold flex items-center gap-2">
-              <Tag className="h-5 w-5 text-orange-600" />
-              Category Management
-            </DialogTitle>
-            <DialogDescription className="text-slate-600 dark:text-slate-400">
-              Add and manage product categories
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+          {/* Professional Header with Dark Gradient */}
+          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600 flex-shrink-0">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                  <Tag className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-white">Category Management</span>
+              </DialogTitle>
+              <DialogDescription className="text-slate-200 text-sm mt-2 font-medium">
+                Add and manage product categories
+              </DialogDescription>
+            </DialogHeader>
+          </div>
           
-          <div className="flex-1 overflow-y-auto space-y-4 py-2 pr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar]:opacity-0 hover:[&::-webkit-scrollbar]:opacity-100 transition-opacity">
+          <div className="flex-1 overflow-y-auto space-y-4 px-8 py-6 min-h-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar]:opacity-0 hover:[&::-webkit-scrollbar]:opacity-100 transition-opacity">
             {/* Add New Category Section - More Prominent */}
             <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-2 border-dashed border-orange-300 dark:border-orange-700 rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-2 mb-2">
@@ -1774,7 +1799,7 @@ export default function InventoryPage() {
                 <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 block">
                   Category Name *
                 </Label>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <Input
                     placeholder="Enter category name"
                     value={newCategory}
@@ -1790,8 +1815,7 @@ export default function InventoryPage() {
                   <Button
                     onClick={handleAddCategory}
                     disabled={!newCategory.trim() || submitting}
-                    size="sm"
-                    className="h-10 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium"
+                    className="h-10 px-6 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold flex-shrink-0 shadow-sm"
                   >
                     {submitting ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -1907,18 +1931,23 @@ export default function InventoryPage() {
 
       {/* Store Management Dialog */}
       <Dialog open={storeDialogOpen} onOpenChange={setStoreDialogOpen}>
-        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl max-h-[85vh] flex flex-col">
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold flex items-center gap-2">
-              <Warehouse className="h-5 w-5 text-orange-600" />
-              Store Management
-            </DialogTitle>
-            <DialogDescription className="text-slate-600 dark:text-slate-400">
-              Add and manage stores organized by sales channel
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+          {/* Professional Header with Dark Gradient */}
+          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600 flex-shrink-0">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                  <Warehouse className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-white">Store Management</span>
+              </DialogTitle>
+              <DialogDescription className="text-slate-200 text-sm mt-2 font-medium">
+                Add and manage stores organized by sales channel
+              </DialogDescription>
+            </DialogHeader>
+          </div>
           
-          <div className="flex-1 overflow-y-auto space-y-4 py-2 pr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar]:opacity-0 hover:[&::-webkit-scrollbar]:opacity-100 transition-opacity">
+          <div className="flex-1 overflow-y-auto space-y-4 px-8 py-6 min-h-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar]:opacity-0 hover:[&::-webkit-scrollbar]:opacity-100 transition-opacity">
             {/* Add New Store Section - More Prominent */}
             <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-2 border-dashed border-orange-300 dark:border-orange-700 rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-2 mb-2">
@@ -1934,26 +1963,35 @@ export default function InventoryPage() {
                   <Select 
                     value={newStore.salesChannel} 
                     onValueChange={(value) => setNewStore({ ...newStore, salesChannel: value })}
-                    disabled={submitting}
+                    disabled={submitting || isDepartment}
                   >
                     <SelectTrigger className="h-10 text-sm rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800">
-                      <SelectValue placeholder="Choose a sales channel" />
+                      <SelectValue placeholder={isDepartment ? userDepartment : "Choose a sales channel"} />
                     </SelectTrigger>
                     <SelectContent>
-                      {SALES_CHANNELS.map((channel) => (
-                        <SelectItem key={channel} value={channel}>
-                          {channel}
-                        </SelectItem>
-                      ))}
+                      {isDepartment ? (
+                        <SelectItem value={userDepartment}>{userDepartment}</SelectItem>
+                      ) : (
+                        SALES_CHANNELS.map((channel) => (
+                          <SelectItem key={channel} value={channel}>
+                            {channel}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
+                  {isDepartment && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      You can only add stores for your department ({userDepartment})
+                    </p>
+                  )}
                 </div>
                 
                 <div>
                   <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 block">
                     Store Name *
                   </Label>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     <Input
                       placeholder="Enter store name"
                       value={newStore.name}
@@ -1965,8 +2003,7 @@ export default function InventoryPage() {
                     <Button
                       onClick={handleAddStore}
                       disabled={!newStore.name.trim() || !newStore.salesChannel || submitting}
-                      size="sm"
-                      className="h-10 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium"
+                      className="h-10 px-6 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold flex-shrink-0 shadow-sm"
                     >
                       {submitting ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -1985,11 +2022,11 @@ export default function InventoryPage() {
             {/* Existing Stores List */}
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 px-1">
-                Existing Stores ({stores.length})
+                Existing Stores ({isDepartment ? stores.filter(s => s.sales_channel === userDepartment).length : stores.length})
               </h3>
 
             {/* Store List */}
-            {stores.length === 0 ? (
+            {(isDepartment ? stores.filter(s => s.sales_channel === userDepartment) : stores).length === 0 ? (
               <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
                 <Warehouse className="h-12 w-12 mx-auto text-slate-400 mb-3" />
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">No stores yet</p>
@@ -1997,7 +2034,7 @@ export default function InventoryPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {SALES_CHANNELS.map((channel) => {
+                {(isDepartment ? [userDepartment] : SALES_CHANNELS).map((channel) => {
                   const channelStores = stores.filter(s => s.sales_channel === channel)
                   if (channelStores.length === 0) return null
                   
