@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
       .from('orders')
       .select('*')
       .is('deleted_at', null)
-      .order('created_at', { ascending: false })
     
     // DEPARTMENT FILTERING: Operations users only see their department's orders
     if (userRole === 'operations' && assignedChannel) {
@@ -58,6 +57,15 @@ export async function GET(request: NextRequest) {
       } else if (status === 'Packed') {
         query = query.in('status', ['Packed', 'Shipped', 'Delivered'])
       }
+    }
+    
+    // Sort by appropriate timestamp based on status
+    // For Packed orders: sort by packed_at (latest packed first)
+    // For Pending orders: sort by created_at (latest created first)
+    if (status === 'Packed') {
+      query = query.order('packed_at', { ascending: false })
+    } else {
+      query = query.order('created_at', { ascending: false })
     }
     
     const { data, error } = await query
@@ -155,7 +163,7 @@ export async function POST(request: NextRequest) {
         total,
         product,
         status: 'Pending',
-        parcel_status: 'Pending',
+        parcel_status: 'PENDING',
         dispatched_by: dispatchedBy,
         customer_name: customerName || null,
         customer_address: customerAddress || null,

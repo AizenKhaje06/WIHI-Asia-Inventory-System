@@ -605,7 +605,7 @@ export default function TrackerDashboardPage() {
                         <td className="py-3 px-2">
                           <div className="flex flex-col gap-0.5">
                             <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
-                              {order.itemName}
+                              {order.itemName.replace(/\s*\(\d+\)\s*$/, '')}
                             </span>
                             <span className="text-[10px] text-slate-500 dark:text-slate-400">
                               Qty: {order.quantity}
@@ -733,7 +733,7 @@ export default function TrackerDashboardPage() {
                         {selectedOrder.customerPhone}
                       </p>
                     </div>
-                    <div className="col-span-2">
+                    <div>
                       <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                         Delivery Address
                       </p>
@@ -741,13 +741,13 @@ export default function TrackerDashboardPage() {
                         {selectedOrder.customerAddress}
                       </p>
                     </div>
-                    {selectedOrder.dispatch_notes && (
-                      <div className="col-span-2">
+                    {selectedOrder.dispatchNotes && (
+                      <div>
                         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                           Dispatch Notes
                         </p>
                         <p className="text-base font-medium text-slate-900 dark:text-white leading-relaxed">
-                          {selectedOrder.dispatch_notes}
+                          {selectedOrder.dispatchNotes}
                         </p>
                       </div>
                     )}
@@ -790,7 +790,15 @@ export default function TrackerDashboardPage() {
                         Product Items
                       </p>
                       <p className="text-base font-semibold text-slate-900 dark:text-white">
-                        {selectedOrder.itemName}
+                        {selectedOrder.itemName.replace(/\s*\(\d+\)\s*$/, '')}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Quantity
+                      </p>
+                      <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                        {selectedOrder.quantity}
                       </p>
                     </div>
                     <div>
@@ -800,6 +808,14 @@ export default function TrackerDashboardPage() {
                       <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                         {formatCurrency(selectedOrder.totalAmount)}
                       </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        Sales Channel
+                      </p>
+                      <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-sm font-semibold px-3 py-1.5">
+                        {selectedOrder.department || 'N/A'}
+                      </Badge>
                     </div>
                   </div>
                 </div>
@@ -830,34 +846,6 @@ export default function TrackerDashboardPage() {
                       <p className="text-base font-mono font-bold text-purple-600 dark:text-purple-400">
                         {selectedOrder.trackingNumber}
                       </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Payment Status Card */}
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-amber-100 dark:border-amber-800">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-amber-600 rounded-lg">
-                      <Package className="h-5 w-5 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                      Payment Status
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                        Current Payment Status
-                      </p>
-                      <Badge className={cn(
-                        "text-sm px-3 py-1.5 font-bold border-0",
-                        selectedOrder.paymentStatus === 'paid' && "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-                        selectedOrder.paymentStatus === 'cod' && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-                        selectedOrder.paymentStatus === 'pending' && "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-                        selectedOrder.paymentStatus === 'refunded' && "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400"
-                      )}>
-                        {selectedOrder.paymentStatus.toUpperCase()}
-                      </Badge>
                     </div>
                   </div>
                 </div>

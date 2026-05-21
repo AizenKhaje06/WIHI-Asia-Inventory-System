@@ -339,9 +339,9 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           "lg:left-0 lg:top-0 lg:h-screen",
           // Mobile: full screen
           "left-0 top-0 h-screen",
-          // Light mode - vibrant purple/magenta gradient
-          "bg-gradient-to-b from-fuchsia-600 to-purple-700 border-r border-fuchsia-500/30",
-          // Dark mode - pure black with subtle border (remove gradient)
+          // Light mode - dark slate gradient (matching modal headers)
+          "bg-gradient-to-b from-slate-800 via-slate-700 to-slate-800 border-r border-slate-600/30",
+          // Dark mode - pure black with subtle border
           "dark:bg-none dark:bg-black dark:border-slate-800/60"
         )}
         role="navigation"

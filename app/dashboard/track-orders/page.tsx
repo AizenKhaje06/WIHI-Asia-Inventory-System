@@ -74,6 +74,7 @@ export default function TrackOrdersPage() {
     courier: '',
     trackingNumber: '',
     dispatchNotes: '',
+    quantity: 0,
     totalAmount: 0
   })
 
@@ -165,7 +166,7 @@ export default function TrackOrdersPage() {
         customerEmail: undefined,
         customerAddress: order.customer_address || 'N/A',
         storeName: order.store || 'N/A', // Store name
-        itemName: order.product || 'N/A', // Product name (keep full text with quantities)
+        itemName: order.product ? order.product.replace(/\s*\(\d+\)\s*$/, '') : 'N/A', // Product name - remove (quantity) suffix
         quantity: order.qty || 0,
         totalAmount: order.total || 0,
         orderStatus: order.status as 'Pending' | 'Packed',
@@ -1068,6 +1069,7 @@ export default function TrackOrdersPage() {
       courier: order.courier || '',
       trackingNumber: order.trackingNumber || '',
       dispatchNotes: order.dispatchNotes || '',
+      quantity: order.quantity || 0,
       totalAmount: order.totalAmount || 0
     })
   }
@@ -1087,6 +1089,7 @@ export default function TrackOrdersPage() {
         courier: selectedOrder.courier || '',
         trackingNumber: selectedOrder.trackingNumber || '',
         dispatchNotes: selectedOrder.dispatchNotes || '',
+        quantity: selectedOrder.quantity || 0,
         totalAmount: selectedOrder.totalAmount || 0
       })
     }
@@ -1108,6 +1111,7 @@ export default function TrackOrdersPage() {
           courier: editForm.courier,
           waybill: editForm.trackingNumber,
           dispatch_notes: editForm.dispatchNotes,
+          qty: editForm.quantity,
           total: editForm.totalAmount
         }),
       })
@@ -1132,17 +1136,23 @@ export default function TrackOrdersPage() {
         method: 'DELETE',
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        throw new Error('Failed to delete order')
+        console.error('Delete order error:', data)
+        throw new Error(data.error || data.details || 'Failed to delete order')
       }
 
-      toast.success('Order deleted successfully')
+      toast.success(data.message || 'Order deleted successfully')
+      if (data.inventoryRestored) {
+        toast.success('Inventory restored successfully')
+      }
       fetchOrders() // Refresh the list
       setShowDeleteDialog(false)
       setOrderToDelete(null)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting order:', error)
-      toast.error('Failed to delete order')
+      toast.error(error.message || 'Failed to delete order')
     }
   }
 
@@ -2020,9 +2030,29 @@ export default function TrackOrdersPage() {
                       <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                         Quantity
                       </p>
-                      <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-                        {selectedOrder.quantity}
-                      </p>
+                      {isEditMode ? (
+                        <Input
+                          type="number"
+                          value={editForm.quantity}
+                          onChange={(e) => {
+                            const newQty = parseInt(e.target.value) || 0
+                            const unitPrice = selectedOrder.totalAmount && selectedOrder.quantity 
+                              ? selectedOrder.totalAmount / selectedOrder.quantity 
+                              : 0
+                            setEditForm({
+                              ...editForm, 
+                              quantity: newQty,
+                              totalAmount: newQty * unitPrice
+                            })
+                          }}
+                          className="h-12 text-xl font-bold text-emerald-600 dark:text-emerald-400 border-2"
+                          min="1"
+                        />
+                      ) : (
+                        <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                          {selectedOrder.quantity}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
@@ -2031,7 +2061,7 @@ export default function TrackOrdersPage() {
                       {isEditMode ? (
                         <Input
                           type="number"
-                          value={editForm.totalAmount}
+                          value={editForm.totalAmount.toFixed(2)}
                           onChange={(e) => setEditForm({...editForm, totalAmount: parseFloat(e.target.value) || 0})}
                           className="h-12 text-xl font-bold text-emerald-600 dark:text-emerald-400 border-2"
                           min="0"

@@ -53,7 +53,7 @@ export default function POSPage() {
     qty: 0,
     cogs: 0,
     total: 0,
-    parcelStatus: 'Pending',
+    parcelStatus: 'PENDING',
     product: '',
     dispatchedBy: '',
     customerName: '',
@@ -147,7 +147,7 @@ export default function POSPage() {
       qty: totalQty,
       cogs: totalCOGS,
       total: totalPrice,
-      parcelStatus: 'Pending',
+      parcelStatus: 'PENDING',
       product: productList,
       dispatchedBy: staffName,
       customerName: '',
@@ -193,6 +193,7 @@ export default function POSPage() {
       }))
 
       // Create order in orders table (for tracking system)
+      // NOTE: Inventory is NOT deducted here - only when order is marked as packed
       await apiPost("/api/orders", {
         date: orderForm.date,
         salesChannel: orderForm.salesChannel,
@@ -209,19 +210,6 @@ export default function POSPage() {
         customerContact: orderForm.customerContact,
         notes: orderForm.notes,
         orderItems: orderItems
-      })
-
-      // Also process as sale/dispatch for inventory update
-      const saleItems = cart.map((cartItem) => ({
-        itemId: cartItem.item.id,
-        quantity: cartItem.quantity,
-      }))
-
-      await apiPost("/api/sales", {
-        items: saleItems,
-        department: `${orderForm.salesChannel} - ${orderForm.store}`,
-        staffName: orderForm.dispatchedBy,
-        notes: `Courier: ${orderForm.courier}, Waybill: ${orderForm.waybill}`,
       })
 
       // Generate dispatch ID
@@ -251,7 +239,7 @@ export default function POSPage() {
         qty: 0,
         cogs: 0,
         total: 0,
-        parcelStatus: 'Pending',
+        parcelStatus: 'PENDING',
         product: '',
         dispatchedBy: staffName,
         customerName: '',
@@ -260,7 +248,7 @@ export default function POSPage() {
         notes: ''
       })
 
-      toast.success('Order created successfully! Check Transaction History to mark as packed.')
+      toast.success('Order created successfully! Go to Packing Queue to mark as packed.')
     } catch (error) {
       console.error("Error submitting order:", error)
       toast.error("Failed to submit order. Please check all fields and try again.")
@@ -926,9 +914,12 @@ export default function POSPage() {
             )}
             
             <div className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
-              <p>✓ Inventory has been updated</p>
-              <p>✓ Transaction logged successfully</p>
+              <p>✓ Order created in Packing Queue</p>
+              <p>✓ Awaiting packing confirmation</p>
               <p>✓ Staff: {staffName}</p>
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                ⚠️ Inventory will be deducted when order is marked as packed
+              </p>
             </div>
           </div>
           <DialogFooter>

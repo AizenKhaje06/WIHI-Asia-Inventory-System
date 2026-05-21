@@ -122,28 +122,30 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-slate-900 dark:text-white text-xl font-semibold flex items-center gap-2">
-              {isBundle && (
-                <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600">
-                  <Package className="h-4 w-4 text-white" />
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+        {/* Professional Header with Dark Gradient */}
+        <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600 flex-shrink-0">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                  <Package className="h-6 w-6 text-white" />
                 </div>
+                <span className="text-white">Edit {isBundle ? 'Bundle' : 'Product'}</span>
+              </DialogTitle>
+              {isBundle && (
+                <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                  Bundle
+                </Badge>
               )}
-              Edit {isBundle ? 'Bundle' : 'Product'}
-            </DialogTitle>
-            {isBundle && (
-              <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0">
-                Bundle
-              </Badge>
-            )}
-          </div>
-          <DialogDescription className="text-slate-600 dark:text-slate-400">
-            Update {isBundle ? 'bundle' : 'product'} information and pricing
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+            </div>
+            <DialogDescription className="text-slate-200 text-sm mt-2 font-medium">
+              Update {isBundle ? 'bundle' : 'product'} information and pricing
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-6 space-y-4 min-h-0">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="edit-name" className="text-slate-700 dark:text-slate-300 font-medium">
@@ -389,25 +391,27 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
               )}
             </div>
           )}
-          
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={loading}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
-            >
-              {loading ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
         </form>
+        
+        {/* Professional Footer */}
+        <div className="bg-slate-50 dark:bg-slate-900/50 px-8 py-6 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 flex-shrink-0">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            className="px-6 border-2 font-semibold"
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={loading}
+            onClick={handleSubmit}
+            className="px-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg"
+          >
+            {loading ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   )

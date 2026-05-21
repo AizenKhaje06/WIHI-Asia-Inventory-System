@@ -97,7 +97,7 @@ export default function ProductEditPage() {
       setRestockDialogOpen(false)
       setSelectedRestockItem(null)
       fetchItems()
-      alert("Item restocked successfully!")
+      showSuccess("Item restocked successfully!")
     } catch (error) {
       console.error("[v0] Error restocking item:", error)
       alert("Failed to restock item")

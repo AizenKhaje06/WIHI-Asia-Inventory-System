@@ -71,6 +71,7 @@ export default function PackingQueuePage() {
     customerAddress: '',
     courier: '',
     waybill: '',
+    quantity: 0,
     totalAmount: 0,
     dispatchNotes: ''
   })
@@ -203,8 +204,8 @@ export default function PackingQueuePage() {
         total: order.total,
         totalAmount: order.total,
         parcel_status: order.parcel_status,
-        product: order.product,
-        itemName: order.product,
+        product: order.product ? order.product.replace(/\s*\(\d+\)\s*$/, '') : order.product, // Remove (quantity) from product name
+        itemName: order.product ? order.product.replace(/\s*\(\d+\)\s*$/, '') : order.product, // Remove (quantity) from product name
         customerName: order.customer_name,
         customerPhone: order.customer_contact,
         customerAddress: order.customer_address,
@@ -315,6 +316,7 @@ export default function PackingQueuePage() {
       customerAddress: order.customerAddress || '',
       courier: order.courier || '',
       waybill: order.waybill || '',
+      quantity: order.qty || order.quantity || 0,
       totalAmount: order.total || order.totalAmount || 0,
       dispatchNotes: order.dispatchNotes || ''
     })
@@ -334,6 +336,7 @@ export default function PackingQueuePage() {
         customerAddress: selectedOrder.customerAddress || '',
         courier: selectedOrder.courier || '',
         waybill: selectedOrder.waybill || '',
+        quantity: selectedOrder.qty || selectedOrder.quantity || 0,
         totalAmount: selectedOrder.total || selectedOrder.totalAmount || 0,
         dispatchNotes: selectedOrder.dispatchNotes || ''
       })
@@ -358,6 +361,7 @@ export default function PackingQueuePage() {
           customer_address: editForm.customerAddress,
           courier: editForm.courier,
           waybill: editForm.waybill,
+          qty: editForm.quantity,
           total: editForm.totalAmount,
           dispatch_notes: editForm.dispatchNotes
         })
@@ -391,18 +395,24 @@ export default function PackingQueuePage() {
         }
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        throw new Error('Failed to delete order')
+        console.error('Delete order error:', data)
+        throw new Error(data.error || data.details || 'Failed to delete order')
       }
 
-      toast.success('Order deleted successfully')
+      toast.success(data.message || 'Order deleted successfully')
+      if (data.inventoryRestored) {
+        toast.success('Inventory restored successfully')
+      }
       setShowDeleteConfirm(false)
       setShowDetailsModal(false)
       setSelectedOrder(null)
       fetchOrders()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting order:', error)
-      toast.error('Failed to delete order')
+      toast.error(error.message || 'Failed to delete order')
     } finally {
       setDeleting(false)
     }
@@ -837,9 +847,34 @@ export default function PackingQueuePage() {
                         <p className="text-base font-semibold text-slate-900 dark:text-white">
                           {selectedOrder.product || selectedOrder.itemName}
                         </p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                          Qty: {selectedOrder.qty || selectedOrder.quantity}
-                        </p>
+                        {isEditMode ? (
+                          <div className="mt-2">
+                            <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1 block">
+                              Quantity
+                            </Label>
+                            <Input
+                              type="number"
+                              value={editForm.quantity}
+                              onChange={(e) => {
+                                const newQty = parseInt(e.target.value) || 0
+                                const unitPrice = selectedOrder.total && selectedOrder.qty 
+                                  ? selectedOrder.total / selectedOrder.qty 
+                                  : 0
+                                setEditForm({
+                                  ...editForm, 
+                                  quantity: newQty,
+                                  totalAmount: newQty * unitPrice
+                                })
+                              }}
+                              className="text-sm font-semibold h-10"
+                              min="1"
+                            />
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                            Qty: {selectedOrder.qty || selectedOrder.quantity}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
@@ -848,7 +883,7 @@ export default function PackingQueuePage() {
                         {isEditMode ? (
                           <Input
                             type="number"
-                            value={editForm.totalAmount}
+                            value={editForm.totalAmount.toFixed(2)}
                             onChange={(e) => setEditForm({...editForm, totalAmount: parseFloat(e.target.value) || 0})}
                             className="text-xl font-bold text-emerald-600 dark:text-emerald-400 h-12"
                             min="0"
@@ -1042,25 +1077,38 @@ export default function PackingQueuePage() {
 
       {/* Confirmation Dialog */}
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Packing</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to mark order{' '}
-              <span className="font-mono font-semibold">
-                #{(selectedOrder?.orderNumber || selectedOrder?.id || '').slice(-6)}
-              </span>{' '}
-              as packed?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogContent className="max-w-md p-0 gap-0">
+          {/* Professional Header with Dark Gradient */}
+          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-6 py-5 border-b border-slate-600">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                  <Package className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-white">Confirm Packing</span>
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-slate-200 text-sm mt-2 font-medium">
+                Are you sure you want to mark order{' '}
+                <span className="font-mono font-bold text-white">
+                  #{(selectedOrder?.orderNumber || selectedOrder?.id || '').slice(-6)}
+                </span>{' '}
+                as packed?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+          </div>
+          
+          {/* Professional Footer */}
+          <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-5 flex justify-end gap-3">
+            <AlertDialogCancel className="px-6 border-2 font-semibold">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => selectedOrder && handleMarkAsPacked(selectedOrder.id)}
+              className="px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg"
             >
               Confirm
             </AlertDialogAction>
-          </AlertDialogFooter>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
 
