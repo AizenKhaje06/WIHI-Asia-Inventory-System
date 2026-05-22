@@ -24,25 +24,37 @@ export const GET = withAuth(async (request, { user }) => {
     }
 
     console.log('[Departments API] Total orders fetched:', allOrders?.length || 0)
-    if (allOrders && allOrders.length > 0) {
-      console.log('[Departments API] Sample order:', allOrders[0])
-    }
 
-    // Apply date filters if provided
+    // Apply date filters if provided (filter by packed_at for accurate revenue recognition)
+    // Use same approach as Dashboard API for consistency
     let filteredOrders = allOrders || []
+    
+    // Parse date parameters
+    let startDateObj: Date | null = null
+    let endDateObj: Date | null = null
+    
     if (startDate) {
-      const start = new Date(startDate)
-      start.setHours(0, 0, 0, 0)
-      filteredOrders = filteredOrders.filter(order => new Date(order.date) >= start)
+      startDateObj = new Date(startDate)
+    }
+    if (endDate) {
+      endDateObj = new Date(endDate)
     }
     
-    if (endDate) {
-      const end = new Date(endDate)
-      end.setHours(23, 59, 59, 999)
-      filteredOrders = filteredOrders.filter(order => new Date(order.date) <= end)
+    if (startDateObj || endDateObj) {
+      filteredOrders = filteredOrders.filter(order => {
+        const orderDate = new Date(order.packed_at || order.created_at) // Use packed_at (when revenue recognized)
+        if (startDateObj && orderDate < startDateObj) return false
+        if (endDateObj && orderDate > endDateObj) return false
+        return true
+      })
     }
 
-    console.log('[Departments API] After date filter:', filteredOrders.length)
+    console.log('[Departments API] Orders after date filter:', filteredOrders.length)
+    if (filteredOrders.length > 0) {
+      console.log('[Departments API] Sample order packed_at:', filteredOrders[0].packed_at)
+    } else {
+      console.log('[Departments API] ⚠️  NO ORDERS FOUND for this date range!')
+    }
 
     // Filter to active orders only (exclude CANCELLED and RETURNED)
     const activeOrders = filterRevenueOrders(

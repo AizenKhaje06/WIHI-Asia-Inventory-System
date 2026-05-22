@@ -34,30 +34,44 @@ export async function GET(
     console.log('[Sales Channel API] Date range:', { startDate, endDate })
 
     // Fetch orders from orders table (Track Orders ONLY - status='Packed')
-    let ordersQuery = supabase
+    const { data: allOrders, error: ordersError } = await supabase
       .from('orders')
       .select('*')
       .eq('sales_channel', departmentName)
       .eq('status', 'Packed') // CRITICAL: Only fetch Track Orders, exclude Packing Queue
-
-    // Apply date filters - use packed_at for accurate revenue recognition timing
-    if (startDate) {
-      ordersQuery = ordersQuery.gte('packed_at', startDate)
-    }
-    if (endDate) {
-      ordersQuery = ordersQuery.lte('packed_at', endDate)
-    }
-
-    const { data: allOrders, error: ordersError } = await ordersQuery
 
     if (ordersError) {
       console.error('[Sales Channel API] Error fetching orders:', ordersError)
       return NextResponse.json({ error: ordersError.message }, { status: 500 })
     }
 
-    const orders = allOrders || []
+    console.log('[Sales Channel API] Total orders fetched (before date filter):', allOrders?.length || 0)
 
-    console.log('[Sales Channel API] Total orders fetched:', orders.length)
+    // Apply date filters if provided (filter by packed_at for accurate revenue recognition)
+    // Use same approach as Dashboard API for consistency
+    let orders = allOrders || []
+    
+    // Parse date parameters
+    let startDateObj: Date | null = null
+    let endDateObj: Date | null = null
+    
+    if (startDate) {
+      startDateObj = new Date(startDate)
+    }
+    if (endDate) {
+      endDateObj = new Date(endDate)
+    }
+    
+    if (startDateObj || endDateObj) {
+      orders = orders.filter(order => {
+        const orderDate = new Date(order.packed_at || order.created_at) // Use packed_at (when revenue recognized)
+        if (startDateObj && orderDate < startDateObj) return false
+        if (endDateObj && orderDate > endDateObj) return false
+        return true
+      })
+    }
+
+    console.log('[Sales Channel API] Total orders fetched (after date filter):', orders.length)
     console.log('[Sales Channel API] Date filter applied:', { startDate, endDate })
     if (orders.length > 0) {
       console.log('[Sales Channel API] Sample order:', orders[0])

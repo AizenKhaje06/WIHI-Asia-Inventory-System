@@ -511,6 +511,287 @@
           "name": "Departments",
           "item": [
             {
+              "name": "Get Department Revenue Analytics",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/departments",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "departments"]
+                },
+                "description": "Get revenue analytics grouped by sales channel (department). Uses packed_at timestamp for accurate revenue recognition timing. Only includes Packed orders (Track Orders), excludes Pending orders (Packing Queue)."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: Response has required structure",
+                      "pm.test('Response has required structure', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('departments');",
+                      "    pm.expect(jsonData).to.have.property('totals');",
+                      "    pm.expect(jsonData).to.have.property('dateRange');",
+                      "});",
+                      "",
+                      "// Test 4: Departments is an array",
+                      "pm.test('Departments is an array', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.departments).to.be.an('array');",
+                      "});",
+                      "",
+                      "// Test 5: Each department has required fields",
+                      "pm.test('Department structure is valid', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.departments.length > 0) {",
+                      "        const dept = jsonData.departments[0];",
+                      "        pm.expect(dept).to.have.property('name');",
+                      "        pm.expect(dept).to.have.property('type');",
+                      "        pm.expect(dept).to.have.property('revenue');",
+                      "        pm.expect(dept).to.have.property('cost');",
+                      "        pm.expect(dept).to.have.property('profit');",
+                      "        pm.expect(dept).to.have.property('transactions');",
+                      "        pm.expect(dept).to.have.property('quantity');",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 6: Totals object has required fields",
+                      "pm.test('Totals structure is valid', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.totals).to.have.property('revenue');",
+                      "    pm.expect(jsonData.totals).to.have.property('cost');",
+                      "    pm.expect(jsonData.totals).to.have.property('profit');",
+                      "    pm.expect(jsonData.totals).to.have.property('transactions');",
+                      "    pm.expect(jsonData.totals).to.have.property('quantity');",
+                      "});",
+                      "",
+                      "// Test 7: Profit calculation is correct",
+                      "pm.test('Profit calculation is correct', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const expectedProfit = jsonData.totals.revenue - jsonData.totals.cost;",
+                      "    pm.expect(Math.abs(jsonData.totals.profit - expectedProfit)).to.be.below(0.01);",
+                      "});",
+                      "",
+                      "// Test 8: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Department Revenue - Date Filtered (packed_at)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/departments?startDate=2026-05-01&endDate=2026-05-31",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "departments"],
+                  "query": [
+                    {
+                      "key": "startDate",
+                      "value": "2026-05-01",
+                      "description": "Start date for filtering (uses packed_at timestamp)"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "2026-05-31",
+                      "description": "End date for filtering (uses packed_at timestamp)"
+                    }
+                  ]
+                },
+                "description": "Get department revenue filtered by date range. CRITICAL: Uses packed_at timestamp (not order.date) for accurate revenue recognition timing. Only includes orders that were packed within the date range."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response has date range info",
+                      "pm.test('Response includes date range', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.dateRange).to.have.property('start');",
+                      "    pm.expect(jsonData.dateRange).to.have.property('end');",
+                      "    pm.expect(jsonData.dateRange.start).to.equal('2026-05-01');",
+                      "    pm.expect(jsonData.dateRange.end).to.equal('2026-05-31');",
+                      "});",
+                      "",
+                      "// Test 3: Departments array exists",
+                      "pm.test('Departments array exists', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.departments).to.be.an('array');",
+                      "});",
+                      "",
+                      "// Test 4: Totals are calculated",
+                      "pm.test('Totals are calculated', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.totals.revenue).to.be.a('number');",
+                      "    pm.expect(jsonData.totals.cost).to.be.a('number');",
+                      "    pm.expect(jsonData.totals.profit).to.be.a('number');",
+                      "});",
+                      "",
+                      "// Test 5: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Department Revenue - Specific Department",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/departments?department=Shopee",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "departments"],
+                  "query": [
+                    {
+                      "key": "department",
+                      "value": "Shopee",
+                      "description": "Filter by specific sales channel"
+                    }
+                  ]
+                },
+                "description": "Get revenue analytics for a specific sales channel (department)"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Only requested department is returned",
+                      "pm.test('Only Shopee department is returned', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.departments.length > 0) {",
+                      "        jsonData.departments.forEach(dept => {",
+                      "            pm.expect(dept.name).to.equal('Shopee');",
+                      "        });",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 3: Response structure is valid",
+                      "pm.test('Response structure is valid', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('departments');",
+                      "    pm.expect(jsonData).to.have.property('totals');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Department Revenue - Combined Filters",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/departments?startDate=2026-05-01&endDate=2026-05-31&department=Shopee",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "departments"],
+                  "query": [
+                    {
+                      "key": "startDate",
+                      "value": "2026-05-01"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "2026-05-31"
+                    },
+                    {
+                      "key": "department",
+                      "value": "Shopee"
+                    }
+                  ]
+                },
+                "description": "Get department revenue with both date range and department filters applied. Uses packed_at for date filtering."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Date range is reflected",
+                      "pm.test('Date range is reflected', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.dateRange.start).to.equal('2026-05-01');",
+                      "    pm.expect(jsonData.dateRange.end).to.equal('2026-05-31');",
+                      "});",
+                      "",
+                      "// Test 3: Only Shopee department",
+                      "pm.test('Only Shopee department is returned', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.departments.length > 0) {",
+                      "        pm.expect(jsonData.departments[0].name).to.equal('Shopee');",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
               "name": "Authenticate Department",
               "request": {
                 "method": "POST",

@@ -105,8 +105,8 @@ export default function SalesChannelsPage() {
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      if (startDate) params.append('startDate', startDate.toISOString().split('T')[0])
-      if (endDate) params.append('endDate', endDate.toISOString().split('T')[0])
+      if (startDate) params.append('startDate', startDate.toISOString())
+      if (endDate) params.append('endDate', endDate.toISOString())
 
       const result = await apiGet<DepartmentsData>(`/api/departments?${params}`)
       setData(result)

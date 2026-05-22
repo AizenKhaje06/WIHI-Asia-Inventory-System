@@ -164,6 +164,12 @@ export function EnterpriseDateRangePicker({
     const range = preset.getRange()
     setTempStart(range.from)
     setTempEnd(range.to)
+    
+    // Auto-update when preset is clicked
+    if (onDateChange) {
+      onDateChange(range.from, range.to)
+    }
+    setOpen(false)
   }
 
   const handleDateClick = (day: number, monthDate: Date) => {

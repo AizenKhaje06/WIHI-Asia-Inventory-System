@@ -152,13 +152,13 @@ export default function SalesChannelDetailPage() {
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      if (startDate) params.append('startDate', startDate.toISOString().split('T')[0])
-      if (endDate) params.append('endDate', endDate.toISOString().split('T')[0])
+      if (startDate) params.append('startDate', startDate.toISOString())
+      if (endDate) params.append('endDate', endDate.toISOString())
 
       console.log('[Sales Channel Page] Fetching data with params:', {
         channel: departmentName,
-        startDate: startDate?.toISOString().split('T')[0],
-        endDate: endDate?.toISOString().split('T')[0]
+        startDate: startDate?.toISOString(),
+        endDate: endDate?.toISOString()
       })
 
       const result = await apiGet<{ department: DepartmentDetail }>(`/api/departments/${encodeURIComponent(departmentName)}?${params}`)
