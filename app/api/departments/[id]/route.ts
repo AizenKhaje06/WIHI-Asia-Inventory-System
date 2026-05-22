@@ -7,6 +7,10 @@ import {
   EXCLUDED_STATUSES 
 } from "@/lib/financial-utils"
 
+// Disable caching for this API route
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 /**
  * Sales Channel Detail API - Accurate Financial Metrics
  * 
@@ -57,18 +61,41 @@ export async function GET(
     
     if (startDate) {
       startDateObj = new Date(startDate)
+      console.log('[Sales Channel API] Start date filter:', {
+        raw: startDate,
+        parsed: startDateObj.toISOString(),
+        timestamp: startDateObj.getTime()
+      })
     }
     if (endDate) {
       endDateObj = new Date(endDate)
+      console.log('[Sales Channel API] End date filter:', {
+        raw: endDate,
+        parsed: endDateObj.toISOString(),
+        timestamp: endDateObj.getTime()
+      })
     }
     
     if (startDateObj || endDateObj) {
+      const beforeFilter = orders.length
       orders = orders.filter(order => {
-        const orderDate = new Date(order.packed_at || order.created_at) // Use packed_at (when revenue recognized)
-        if (startDateObj && orderDate < startDateObj) return false
-        if (endDateObj && orderDate > endDateObj) return false
+        if (!order.packed_at && !order.created_at) {
+          console.log('[Sales Channel API] Order without packed_at or created_at:', order.id)
+          return false
+        }
+        
+        const orderDate = new Date(order.packed_at || order.created_at)
+        const orderTimestamp = orderDate.getTime()
+        
+        if (startDateObj && orderTimestamp < startDateObj.getTime()) {
+          return false
+        }
+        if (endDateObj && orderTimestamp > endDateObj.getTime()) {
+          return false
+        }
         return true
       })
+      console.log('[Sales Channel API] Date filter:', beforeFilter, '->', orders.length)
     }
 
     console.log('[Sales Channel API] Total orders fetched (after date filter):', orders.length)

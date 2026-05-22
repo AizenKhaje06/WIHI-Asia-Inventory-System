@@ -3,6 +3,10 @@ import { supabase } from "@/lib/supabase"
 import { withAuth } from "@/lib/api-helpers"
 import { filterRevenueOrders, EXCLUDED_STATUSES } from "@/lib/financial-utils"
 
+// Disable caching for this API route
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export const GET = withAuth(async (request, { user }) => {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -35,18 +39,53 @@ export const GET = withAuth(async (request, { user }) => {
     
     if (startDate) {
       startDateObj = new Date(startDate)
+      console.log('[Departments API] Start date filter:', {
+        raw: startDate,
+        parsed: startDateObj.toISOString(),
+        timestamp: startDateObj.getTime()
+      })
     }
     if (endDate) {
       endDateObj = new Date(endDate)
+      console.log('[Departments API] End date filter:', {
+        raw: endDate,
+        parsed: endDateObj.toISOString(),
+        timestamp: endDateObj.getTime()
+      })
     }
     
     if (startDateObj || endDateObj) {
+      const beforeFilter = filteredOrders.length
       filteredOrders = filteredOrders.filter(order => {
-        const orderDate = new Date(order.packed_at || order.created_at) // Use packed_at (when revenue recognized)
-        if (startDateObj && orderDate < startDateObj) return false
-        if (endDateObj && orderDate > endDateObj) return false
+        if (!order.packed_at && !order.created_at) {
+          console.log('[Departments API] Order without packed_at or created_at:', order.id)
+          return false
+        }
+        
+        const orderDate = new Date(order.packed_at || order.created_at)
+        const orderTimestamp = orderDate.getTime()
+        
+        if (startDateObj && orderTimestamp < startDateObj.getTime()) {
+          console.log('[Departments API] Filtered out (before start):', {
+            orderId: order.id,
+            packedAt: order.packed_at,
+            orderTimestamp,
+            startTimestamp: startDateObj.getTime()
+          })
+          return false
+        }
+        if (endDateObj && orderTimestamp > endDateObj.getTime()) {
+          console.log('[Departments API] Filtered out (after end):', {
+            orderId: order.id,
+            packedAt: order.packed_at,
+            orderTimestamp,
+            endTimestamp: endDateObj.getTime()
+          })
+          return false
+        }
         return true
       })
+      console.log('[Departments API] Date filter: ', beforeFilter, '->', filteredOrders.length)
     }
 
     console.log('[Departments API] Orders after date filter:', filteredOrders.length)
