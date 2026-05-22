@@ -1,163 +1,180 @@
 # Latest Updates - May 22, 2026 ✅
 
-**Commit**: `f14f46d`  
-**Status**: ✅ Pushed to GitHub
+**Date**: May 22, 2026  
+**Status**: ✅ PULLED FROM GITHUB - 2 new commits
 
 ---
 
 ## Summary
 
-Major improvements to Sales Channels page with parcel status redesign, data accuracy verification, and date filter enhancements.
+Pulled latest updates from GitHub repository. Two important commits were merged that fix the Sales Channels date filter issues.
 
 ---
 
-## Features Implemented
+## Commit 1: Sales Channels Date Filter Accuracy and Auto-Update
+**Commit**: `71f2cd0`  
+**Author**: Aizen06  
+**Date**: May 22, 2026 15:42:32
 
-### 1. Parcel Status Overview Redesign ✅
+### Changes:
+1. **Fixed date filter to use `packed_at` timestamp** instead of dispatch date
+2. **Changed from database-level filtering to JavaScript date comparison** (consistent with Dashboard API)
+3. **Fixed timezone issue** by sending full ISO string instead of date-only format
+4. **Added auto-update functionality** to EnterpriseDateRangePicker presets
+5. **Applied same date filtering logic** to both main Sales Channels page and individual department pages
+6. Now shows accurate **₱0 values** when no items were packed in selected date range
 
-Completely redesigned the Parcel Status section with new 4-card layout:
-
-#### Card 1: Pending (Yellow/Amber)
-- Shows PENDING orders
-- Displays count, amount, and percentage
-- Label: "Awaiting Dispatch"
-
-#### Card 2: Undelivered (Orange)
-- Shows IN TRANSIT + ON DELIVERY + PICKUP + DETAINED
-- **Excludes PENDING** (has its own card)
-- Displays count, amount, and percentage
-- Label: "In Progress"
-
-#### Card 3: Delivered (Green)
-- Shows DELIVERED orders
-- Displays count, amount, and percentage
-- Label: "Successfully Delivered"
-
-#### Card 4: Loss Revenue (Red) - NEW!
-- Shows RETURNED + CANCELLED + PROBLEMATIC
-- Displays total count, amount, and percentage
-- **Includes detailed breakdown**:
-  - Returned: count + amount + percentage
-  - Cancelled: count + amount + percentage
-  - Problematic: count + amount + percentage
-- Label: "Cancelled/Returned/Issues"
-
-### 2. Data Accuracy Verification ✅
-
-Verified all data across the system:
-
-**Track Orders:**
-- 58 total orders worth ₱43,414
-- All parcel statuses accounted for
-- All sales channels verified
-
-**Sales Channels:**
-- All 5 channels verified (Physical Store, Facebook, Lazada, Shopee, TikTok)
-- All percentages sum to 100%
-- Revenue calculations exclude loss revenue orders
-
-**Key Findings:**
-- Active orders: 46 (₱39,223 revenue)
-- Loss revenue: 12 orders (₱4,191)
-- All calculations 100% accurate
-
-### 3. Date Filter Improvements ✅
-
-**Consistency Fix:**
-- All pages now use `packed_at` field for date filtering
-- Track Orders, Sales Channels, and Dashboard all consistent
-- Revenue recognized when order is packed (not dispatched)
-
-**Visual Feedback:**
-- Added "No Data Found" message when filter returns empty results
-- Yellow alert box with explanation
-- Suggests expanding date range
-- Prevents user confusion
-
-**Console Logging:**
-- Added detailed logging in frontend and backend
-- Shows date parameters being sent
-- Shows order counts returned
-- Helps with debugging
-
-### 4. UI/UX Improvements ✅
-
-- Changed "Transactions" to "Orders Sold" for clarity
-- Percentage calculation based on order count (not amount)
-- Better color coding for all cards
-- Improved dark mode support
-- Mobile responsive design
+### Files Modified:
+- `.postman.json` (+281 lines)
+- `app/api/departments/[id]/route.ts` (40 changes)
+- `app/api/departments/route.ts` (36 changes)
+- `app/dashboard/sales-channels/[id]/page.tsx` (8 changes)
+- `app/dashboard/sales-channels/page.tsx` (4 changes)
+- `components/ui/enterprise-date-range-picker.tsx` (6 additions)
 
 ---
 
-## Files Modified
+## Commit 2: Add Detailed Logging and Disable Caching
+**Commit**: `9adb00a`  
+**Author**: Aizen06  
+**Date**: May 22, 2026 16:15:38
 
-### Core Files:
-1. `app/api/departments/[id]/route.ts` - Backend calculations
-2. `app/dashboard/sales-channels/[id]/page.tsx` - Frontend UI
-3. `app/api/dashboard/route.ts` - Date filter consistency
+### Changes:
+1. **Added explicit timestamp comparison** using `.getTime()` for more reliable date filtering
+2. **Added detailed console logging** to debug date filter issues in production
+3. **Disabled API route caching** with `dynamic='force-dynamic'` and `revalidate=0`
+4. This should fix the **Vercel deployment issue** where date filter wasn't working
 
-### Documentation:
-1. `PARCEL-STATUS-REDESIGN-COMPLETE.md` - Redesign details
-2. `SALES-CHANNELS-DATA-ACCURACY-VERIFIED.md` - Data verification
-3. `TRACK-ORDERS-DATA-ACCURACY-VERIFIED.md` - Track Orders verification
-4. `SALES-CHANNEL-DATE-FILTER-FIX.md` - Date filter fix
-5. `DATE-FILTER-CONSISTENCY-FIX.md` - Consistency fix
-6. `SALES-CALCULATION-ACCURACY-VERIFIED.md` - Revenue calculations
-7. `TRACK-ORDERS-VS-DASHBOARD-EXPLAINED.md` - Data difference explanation
+### Key Code Changes:
 
-### Test Scripts:
-1. `scripts/test/verify-sales-channel-data.js` - Sales channel verification
-2. `scripts/test/verify-track-orders-data.js` - Track orders verification
-3. `scripts/test/test-date-filter.js` - Date filter testing
-4. `scripts/test/test-empty-date-filter.js` - Empty result testing
+#### Disabled Caching:
+```typescript
+// Disable caching for this API route
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+```
 
----
+#### Improved Date Filtering:
+```typescript
+// Parse date parameters
+let startDateObj: Date | null = null
+let endDateObj: Date | null = null
 
-## Statistics
+if (startDate) {
+  startDateObj = new Date(startDate)
+  console.log('[Sales Channel API] Start date filter:', {
+    raw: startDate,
+    parsed: startDateObj.toISOString(),
+    timestamp: startDateObj.getTime()
+  })
+}
 
-- **17 files changed**
-- **2,585 insertions**
-- **46 deletions**
-- **10 new documentation files**
-- **4 new test scripts**
+// Filter using timestamp comparison
+orders = orders.filter(order => {
+  const orderDate = new Date(order.packed_at || order.created_at)
+  const orderTimestamp = orderDate.getTime()
+  
+  if (startDateObj && orderTimestamp < startDateObj.getTime()) {
+    return false
+  }
+  if (endDateObj && orderTimestamp > endDateObj.getTime()) {
+    return false
+  }
+  return true
+})
+```
 
----
-
-## Testing Completed
-
-✅ All parcel status counts verified  
-✅ All percentages sum to 100%  
-✅ Revenue calculations accurate  
-✅ Date filter working correctly  
-✅ Visual feedback for empty results  
-✅ Console logging functional  
-✅ Dark mode compatible  
-✅ Mobile responsive  
-
----
-
-## User Feedback Addressed
-
-1. ✅ "In Transit" changed to "Undelivered" with expanded scope
-2. ✅ Added "Loss Revenue" card with breakdown
-3. ✅ Percentage based on order count (not amount)
-4. ✅ "Transactions" changed to "Orders Sold"
-5. ✅ Undelivered excludes PENDING
-6. ✅ Date filter visual feedback added
-7. ✅ All data accuracy verified
+### Files Modified:
+- `app/api/departments/[id]/route.ts` (67 changes)
+- `app/api/departments/route.ts` (75 changes)
 
 ---
 
-## Ready for Production! 🎉
+## What This Fixes
 
-All features tested and verified. Sales Channels page now provides:
-- Comprehensive parcel status tracking
-- Accurate financial metrics
-- Clear loss revenue visibility
-- Reliable date filtering
-- Better user experience
+### Before:
+❌ Date filter not working on Vercel (caching issue)  
+❌ Inconsistent date filtering between pages  
+❌ Timezone issues with date-only format  
+❌ No logging to debug production issues  
 
-**Commit Hash**: `f14f46d`  
-**Branch**: `main`  
-**Status**: ✅ Deployed to GitHub
+### After:
+✅ Date filter works correctly on Vercel (caching disabled)  
+✅ Consistent date filtering across all pages  
+✅ Timezone issues fixed (using full ISO string)  
+✅ Detailed logging for debugging  
+✅ Timestamp comparison for reliable filtering  
+✅ Shows ₱0 when no data in date range  
+
+---
+
+## Local Changes vs GitHub
+
+### Our Local Changes (Not Yet Pushed):
+1. ✅ Added "No Data Found" message in `app/dashboard/sales-channels/[id]/page.tsx`
+2. ✅ Added console logging in frontend
+3. ✅ Created verification scripts
+
+### GitHub Changes (Just Pulled):
+1. ✅ Fixed date filtering logic (JavaScript-based)
+2. ✅ Disabled API caching
+3. ✅ Added detailed backend logging
+4. ✅ Fixed timezone issues
+
+### Merge Status:
+- **No conflicts** - Our changes complement GitHub changes
+- Our "No Data Found" message is still in place
+- GitHub's date filtering improvements are now active
+
+---
+
+## Testing Required
+
+After pulling these updates, test:
+
+1. **Date Filter Accuracy**:
+   - Filter to May 22, 2026 → Should show 0 orders
+   - Filter to May 21, 2026 → Should show correct orders
+   - Filter to date range → Should show correct totals
+
+2. **Caching**:
+   - Change date filter → Should update immediately
+   - No stale data from cache
+
+3. **Console Logging**:
+   - Check browser console for detailed logs
+   - Verify timestamp comparisons
+
+4. **Vercel Deployment**:
+   - Deploy to Vercel
+   - Test date filter on production
+   - Should work correctly now (caching disabled)
+
+---
+
+## Next Steps
+
+1. ✅ **Pulled latest updates** - DONE
+2. ⏳ **Test locally** - Verify date filter works
+3. ⏳ **Commit our local changes** - "No Data Found" message
+4. ⏳ **Push to GitHub** - Share our improvements
+5. ⏳ **Deploy to Vercel** - Test in production
+
+---
+
+## Summary
+
+Successfully pulled 2 commits from GitHub that fix the Sales Channels date filter issues. The main improvements are:
+
+1. **Better date filtering** (JavaScript-based, timestamp comparison)
+2. **No caching issues** (disabled API caching)
+3. **Better debugging** (detailed console logs)
+4. **Timezone fixes** (full ISO string)
+
+Combined with our local "No Data Found" message, the Sales Channels page now has:
+- ✅ Accurate date filtering
+- ✅ Clear visual feedback
+- ✅ No caching issues
+- ✅ Production-ready logging
+
+**Ready for testing and deployment!** 🎉

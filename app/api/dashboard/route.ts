@@ -125,18 +125,35 @@ export async function GET(request: Request) {
       return NextResponse.json(emptyDashboardStats())
     }
 
-    // Apply date filters if provided (filter by packed_at for accurate revenue recognition)
-    let filteredOrders = allOrders || []
+    // Apply date filters ONLY for KPI cards (not for chart data)
+    // Chart data is controlled by period tabs (Day/Week/Month)
+    let filteredOrdersForKPIs = allOrders || []
     if (startDate || endDate) {
-      filteredOrders = filteredOrders.filter(order => {
+      const beforeFilter = filteredOrdersForKPIs.length
+      filteredOrdersForKPIs = filteredOrdersForKPIs.filter(order => {
         const orderDate = new Date(order.packed_at || order.created_at) // Use packed_at (when revenue recognized)
-        if (startDate && orderDate < startDate) return false
-        if (endDate && orderDate > endDate) return false
+        
+        // Set time boundaries for inclusive date range
+        if (startDate) {
+          const startOfDay = new Date(startDate)
+          startOfDay.setHours(0, 0, 0, 0)
+          if (orderDate < startOfDay) return false
+        }
+        if (endDate) {
+          const endOfDay = new Date(endDate)
+          endOfDay.setHours(23, 59, 59, 999)
+          if (orderDate > endOfDay) return false
+        }
         return true
       })
+      console.log('[Dashboard API] Date filter applied for KPI cards:', beforeFilter, '->', filteredOrdersForKPIs.length)
     }
+    
+    // For chart data, ALWAYS use all orders (ignore date filter)
+    // Chart is controlled by period tabs (Day/Week/Month)
+    const filteredOrders = allOrders || []
 
-    // Map all orders for processing
+    // Map all orders for chart processing (ignore date filter)
     const allOrdersMapped = filteredOrders.map(o => ({
       id: o.id,
       qty: o.qty || 0,
@@ -149,15 +166,29 @@ export async function GET(request: Request) {
       created_at: o.created_at // Add created_at for accurate time-based filtering
     }))
 
+    // Map filtered orders for KPI cards (respects date filter)
+    const kpiOrdersMapped = filteredOrdersForKPIs.map(o => ({
+      id: o.id,
+      qty: o.qty || 0,
+      total: o.total || 0,
+      cogs: o.cogs || 0,
+      parcel_status: o.parcel_status || 'PENDING',
+      payment_status: o.payment_status || 'pending',
+      sales_channel: o.sales_channel,
+      date: o.date,
+      created_at: o.created_at
+    }))
+
     // Filter to active orders only for revenue calculation (exclude CANCELLED and RETURNED)
-    const activeOrders = filterRevenueOrders(allOrdersMapped, 'active')
+    const activeOrders = filterRevenueOrders(allOrdersMapped, 'active') // For chart
+    const activeOrdersKPI = filterRevenueOrders(kpiOrdersMapped, 'active') // For KPI cards
 
-    // Calculate overall financial metrics
-    const financialMetrics = calculateFinancialMetrics(activeOrders)
+    // Calculate overall financial metrics (for KPI cards - respects date filter)
+    const financialMetrics = calculateFinancialMetrics(activeOrdersKPI)
 
-    // Calculate excluded orders summary
+    // Calculate excluded orders summary (for KPI cards)
     const excludedSummary = getExcludedOrdersSummary(
-      filteredOrders.map(o => ({
+      filteredOrdersForKPIs.map(o => ({
         id: o.id,
         qty: o.qty || 0,
         total: o.total || 0,
@@ -179,19 +210,31 @@ export async function GET(request: Request) {
       sum + item.quantity * item.sellingPrice, 0
     )
 
-    // Today's metrics - count ALL orders (including cancelled/returned)
+    // Today's metrics for comparison (for Revenue Overview card - ignores date filter)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const todayEnd = new Date()
     todayEnd.setHours(23, 59, 59, 999)
 
-    const todayAllOrders = allOrdersMapped.filter(order => {
-      const orderDate = new Date(order.created_at) // Use created_at for accurate timing
+    // Use activeOrders (all orders, ignores date filter) for chart comparison
+    const todayAllOrdersChart = allOrdersMapped.filter(order => {
+      const orderDate = new Date(order.created_at)
       return orderDate >= today && orderDate <= todayEnd
     })
 
-    const todayActiveOrders = activeOrders.filter(order => {
-      const orderDate = new Date(order.created_at) // Use created_at for accurate timing
+    const todayActiveOrdersChart = activeOrders.filter(order => {
+      const orderDate = new Date(order.created_at)
+      return orderDate >= today && orderDate <= todayEnd
+    })
+
+    // For KPI cards (respects date filter)
+    const todayAllOrders = kpiOrdersMapped.filter(order => {
+      const orderDate = new Date(order.created_at)
+      return orderDate >= today && orderDate <= todayEnd
+    })
+
+    const todayActiveOrders = activeOrdersKPI.filter(order => {
+      const orderDate = new Date(order.created_at)
       return orderDate >= today && orderDate <= todayEnd
     })
 
@@ -199,7 +242,7 @@ export async function GET(request: Request) {
     const revenueToday = todayActiveOrders.reduce((sum, o) => sum + o.total, 0)
     const recentSales = todayAllOrders.length // Count ALL orders as transactions
 
-    // Yesterday's sales for comparison
+    // Yesterday's sales for comparison (for Revenue Overview card - ignores date filter)
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
     yesterday.setHours(0, 0, 0, 0)
@@ -207,33 +250,33 @@ export async function GET(request: Request) {
     yesterdayEnd.setHours(0, 0, 0, 0)
 
     const yesterdayOrders = activeOrders.filter(order => {
-      const orderDate = new Date(order.created_at) // Use created_at for accurate timing
+      const orderDate = new Date(order.created_at)
       return orderDate >= yesterday && orderDate < yesterdayEnd
     })
     const yesterdaySales = yesterdayOrders.reduce((sum, o) => sum + o.total, 0)
     const yesterdayQuantity = yesterdayOrders.reduce((sum, o) => sum + o.qty, 0)
 
-    // Last week sales (7-14 days ago)
+    // Last week sales (7-14 days ago) (for Revenue Overview card - ignores date filter)
     const lastWeekStart = new Date(today)
     lastWeekStart.setDate(lastWeekStart.getDate() - 14)
     const lastWeekEnd = new Date(today)
     lastWeekEnd.setDate(lastWeekEnd.getDate() - 7)
 
     const lastWeekOrders = activeOrders.filter(order => {
-      const orderDate = new Date(order.created_at) // Use created_at for accurate timing
+      const orderDate = new Date(order.created_at)
       return orderDate >= lastWeekStart && orderDate < lastWeekEnd
     })
     const lastWeekSales = lastWeekOrders.reduce((sum, o) => sum + o.total, 0)
     const lastWeekQuantity = lastWeekOrders.reduce((sum, o) => sum + o.qty, 0)
 
-    // Last month sales
+    // Last month sales (for Revenue Overview card - ignores date filter)
     const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1)
     lastMonthStart.setHours(0, 0, 0, 0)
     const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 1)
     lastMonthEnd.setHours(0, 0, 0, 0)
 
     const lastMonthOrders = activeOrders.filter(order => {
-      const orderDate = new Date(order.created_at) // Use created_at for accurate timing
+      const orderDate = new Date(order.created_at)
       return orderDate >= lastMonthStart && orderDate < lastMonthEnd
     })
     const lastMonthSales = lastMonthOrders.reduce((sum, o) => sum + o.total, 0)
@@ -253,7 +296,7 @@ export async function GET(request: Request) {
         const hourStr = i.toString().padStart(2, '0') + ':00'
 
         const hourOrders = activeOrders.filter(order => {
-          const orderDate = new Date(order.created_at) // Use created_at for accurate timing
+          const orderDate = new Date(order.date) // Use packed_at (stored in date field) for revenue recognition
           return orderDate >= hourStart && orderDate <= hourEnd
         })
 
@@ -274,7 +317,7 @@ export async function GET(request: Request) {
         const dayStr = day.toISOString().split('T')[0]
 
         const dayOrders = activeOrders.filter(order => {
-          const orderDate = new Date(order.created_at) // Use created_at for accurate timing
+          const orderDate = new Date(order.date) // Use packed_at (stored in date field) for revenue recognition
           return orderDate >= day && orderDate < nextDay
         })
 
@@ -296,7 +339,7 @@ export async function GET(request: Request) {
         const dayStr = `${today.toLocaleDateString('en-US', { month: 'short' })} ${i + 1}`
 
         const dayOrders = activeOrders.filter(order => {
-          const orderDate = new Date(order.created_at) // Use created_at for accurate timing
+          const orderDate = new Date(order.date) // Use packed_at (stored in date field) for revenue recognition
           return orderDate >= day && orderDate < nextDay
         })
 
@@ -307,8 +350,8 @@ export async function GET(request: Request) {
       })
     }
 
-    // Top products by quantity sold - Group by first product name only
-    const productSales = filteredOrders.reduce((acc: { [key: string]: { quantity: number; revenue: number; status: string } }, order) => {
+    // Top products by quantity sold - Group by first product name only (for KPI cards)
+    const productSales = filteredOrdersForKPIs.reduce((acc: { [key: string]: { quantity: number; revenue: number; status: string } }, order) => {
       const fullProduct = order.product || 'Unknown'
       // Extract first product name (before comma or parenthesis)
       const product = fullProduct.split(',')[0].split('(')[0].trim()
@@ -336,8 +379,8 @@ export async function GET(request: Request) {
         }
       })
 
-    // Recent transactions (last 5 active orders)
-    const recentTransactions = filteredOrders
+    // Recent transactions (last 5 active orders) (for KPI cards)
+    const recentTransactions = filteredOrdersForKPIs
       .filter(order => !EXCLUDED_STATUSES.includes(order.parcel_status))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 5)
@@ -363,9 +406,9 @@ export async function GET(request: Request) {
         }
       })
 
-    // Top categories (from inventory items)
+    // Top categories (from inventory items) (for KPI cards)
     const categorySales = items.reduce((acc: { [key: string]: number }, item: InventoryItem) => {
-      const sales = filteredOrders
+      const sales = filteredOrdersForKPIs
         .filter(order => 
           order.product?.includes(item.name) && 
           !EXCLUDED_STATUSES.includes(order.parcel_status)
@@ -406,8 +449,8 @@ export async function GET(request: Request) {
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
 
-    // Sales performance by sales channel (Department Performance - for left chart)
-    const salesByChannel = activeOrders.reduce((acc: { [key: string]: number }, order) => {
+    // Sales performance by sales channel (Department Performance - for left chart) (for KPI cards)
+    const salesByChannel = activeOrdersKPI.reduce((acc: { [key: string]: number }, order) => {
       const channel = order.sales_channel || 'Unknown'
       acc[channel] = (acc[channel] || 0) + order.total
       return acc
@@ -417,9 +460,9 @@ export async function GET(request: Request) {
       .map(([name, revenue]) => ({ name, count: revenue })) // Using 'count' for backward compatibility
       .sort((a, b) => b.count - a.count)
 
-    // Store performance by actual store names (Store Performance - for right chart)
+    // Store performance by actual store names (Store Performance - for right chart) (for KPI cards)
     // Use the store field directly from orders table
-    const storePerformance = filteredOrders
+    const storePerformance = filteredOrdersForKPIs
       .filter(o => !EXCLUDED_STATUSES.includes(o.parcel_status)) // Only active orders
       .reduce((acc: { [key: string]: number }, order) => {
         const storeName = order.store || 'Unknown'
@@ -431,13 +474,13 @@ export async function GET(request: Request) {
       .map(([name, revenue]) => ({ name, count: revenue as number }))
       .sort((a, b) => b.count - a.count)
 
-    // Return metrics from Track Orders (orders with parcel_status = 'RETURNED')
-    const returnedOrders = filteredOrders.filter(o => o.parcel_status === 'RETURNED')
+    // Return metrics from Track Orders (orders with parcel_status = 'RETURNED') (for KPI cards)
+    const returnedOrders = filteredOrdersForKPIs.filter(o => o.parcel_status === 'RETURNED')
     const totalReturns = returnedOrders.reduce((sum, o) => sum + (o.qty || 0), 0)
     const returnValue = returnedOrders.reduce((sum, o) => sum + (o.total || 0), 0)
     
-    // Calculate return rate based on total orders (not just active orders)
-    const totalOrdersQuantity = filteredOrders.reduce((sum, o) => sum + (o.qty || 0), 0)
+    // Calculate return rate based on total orders (not just active orders) (for KPI cards)
+    const totalOrdersQuantity = filteredOrdersForKPIs.reduce((sum, o) => sum + (o.qty || 0), 0)
     const returnRate = totalOrdersQuantity > 0 ? (totalReturns / totalOrdersQuantity) * 100 : 0
     
     // For backward compatibility with restock history metrics
@@ -455,12 +498,12 @@ export async function GET(request: Request) {
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, 5)
 
-    // Cancelled orders metrics
-    const cancelledOrders = filteredOrders.filter(o => o.parcel_status === 'CANCELLED')
+    // Cancelled orders metrics (for KPI cards)
+    const cancelledOrders = filteredOrdersForKPIs.filter(o => o.parcel_status === 'CANCELLED')
     
     const totalCancelledOrders = cancelledOrders.length
     const cancelledOrdersValue = cancelledOrders.reduce((sum, o) => sum + (o.total || 0), 0)
-    const totalOrdersCount = filteredOrders.length
+    const totalOrdersCount = filteredOrdersForKPIs.length
     const cancellationRate = totalOrdersCount > 0 ? (totalCancelledOrders / totalOrdersCount) * 100 : 0
 
     // Cancellation reasons (if available in notes)

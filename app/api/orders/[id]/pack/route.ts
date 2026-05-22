@@ -126,6 +126,7 @@ export async function POST(
         status: 'Packed',
         packed_by: packedBy,
         packed_at: packedAt,
+        date: packedAt, // Update date field to packed_at for accurate revenue recognition
         updated_at: packedAt
       })
       .eq('id', id)

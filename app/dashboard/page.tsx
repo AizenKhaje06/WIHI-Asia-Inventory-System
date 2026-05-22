@@ -60,8 +60,12 @@ export default function DashboardPage() {
       setRefreshing(true)
       console.log('[Dashboard] Fetching data for period:', timePeriod)
       
-      // Build API URL with date filters if provided
+      // Build API URL
+      // - Tabs (Day/Week/Month) control chart data with their own date ranges
+      // - Date picker controls KPI cards and other metrics
       let apiUrl = `/api/dashboard?period=${timePeriod}`
+      
+      // Add date filter for KPI cards (if set)
       if (startDate) {
         apiUrl += `&startDate=${startDate.toISOString()}`
       }
@@ -95,7 +99,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData()
-  }, [timePeriod, startDate, endDate])
+  }, [timePeriod, startDate, endDate]) // Refetch when tab OR date filter changes
 
   // Show loading state
   if (loading) {
@@ -139,6 +143,9 @@ export default function DashboardPage() {
           <p className="text-sm text-slate-600 dark:text-slate-400">Welcome back! Here's what's happening with your inventory.</p>
         </div>
         <div className="flex-shrink-0">
+          <div className="text-right mb-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400">Date Range (affects KPI cards only)</p>
+          </div>
           <EnterpriseDateRangePicker
             startDate={startDate}
             endDate={endDate}
