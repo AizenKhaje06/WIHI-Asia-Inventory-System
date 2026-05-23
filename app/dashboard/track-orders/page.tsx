@@ -1743,6 +1743,7 @@ export default function TrackOrdersPage() {
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
                     <th className="py-3 px-4 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[150px]">Date & Time</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[140px]">Customer</th>
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[110px]">Channel</th>
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[180px]">Store</th>
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 min-w-[250px]">Product</th>
@@ -1771,6 +1772,11 @@ export default function TrackOrdersPage() {
                               {format(parseAsPhilippineTime(order.orderDate), 'hh:mm a')}
                             </span>
                           </div>
+                        </div>
+                      </td>
+                      <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
+                        <div className="text-[11px] text-slate-900 dark:text-white font-semibold whitespace-normal break-words" title={order.customerName}>
+                          {order.customerName || 'N/A'}
                         </div>
                       </td>
                       <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
