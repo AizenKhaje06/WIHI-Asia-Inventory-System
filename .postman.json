@@ -219,6 +219,192 @@
               }
             },
             {
+              "name": "Get Packed Orders - Date Filtered (packed_at)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/orders?status=Packed&startDate=2026-05-01&endDate=2026-05-31",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "orders"],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "Packed",
+                      "description": "Filter by Packed status"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "2026-05-01",
+                      "description": "Start date - filters by packed_at for Packed orders"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "2026-05-31",
+                      "description": "End date - filters by packed_at for Packed orders"
+                    }
+                  ]
+                },
+                "description": "Get Packed orders filtered by date range. CRITICAL: Uses packed_at timestamp (not created_at) for accurate revenue recognition timing. Only includes orders that were packed within the date range."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON array",
+                      "pm.test('Response is JSON array', function () {",
+                      "    pm.response.to.be.json;",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an('array');",
+                      "});",
+                      "",
+                      "// Test 3: All orders have Packed status",
+                      "pm.test('All orders have Packed status', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.length > 0) {",
+                      "        jsonData.forEach(order => {",
+                      "            pm.expect(order.status).to.equal('Packed');",
+                      "        });",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 4: All orders have packed_at within date range",
+                      "pm.test('All orders packed within date range', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const startDate = new Date('2026-05-01');",
+                      "    const endDate = new Date('2026-05-31T23:59:59');",
+                      "    ",
+                      "    if (jsonData.length > 0) {",
+                      "        jsonData.forEach(order => {",
+                      "            pm.expect(order).to.have.property('packed_at');",
+                      "            const packedDate = new Date(order.packed_at);",
+                      "            pm.expect(packedDate.getTime()).to.be.at.least(startDate.getTime());",
+                      "            pm.expect(packedDate.getTime()).to.be.at.most(endDate.getTime());",
+                      "        });",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 5: Orders have required fields",
+                      "pm.test('Orders have required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.length > 0) {",
+                      "        const order = jsonData[0];",
+                      "        pm.expect(order).to.have.property('id');",
+                      "        pm.expect(order).to.have.property('status');",
+                      "        pm.expect(order).to.have.property('packed_at');",
+                      "        pm.expect(order).to.have.property('packed_by');",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 6: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Pending Orders - Date Filtered (created_at)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/orders?status=Pending&startDate=2026-05-01&endDate=2026-05-31",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "orders"],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "Pending",
+                      "description": "Filter by Pending status"
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "2026-05-01",
+                      "description": "Start date - filters by created_at for Pending orders"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "2026-05-31",
+                      "description": "End date - filters by created_at for Pending orders"
+                    }
+                  ]
+                },
+                "description": "Get Pending orders filtered by date range. Uses created_at timestamp (when order was dispatched) for Pending orders."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON array",
+                      "pm.test('Response is JSON array', function () {",
+                      "    pm.response.to.be.json;",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an('array');",
+                      "});",
+                      "",
+                      "// Test 3: All orders have Pending status",
+                      "pm.test('All orders have Pending status', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.length > 0) {",
+                      "        jsonData.forEach(order => {",
+                      "            pm.expect(order.status).to.equal('Pending');",
+                      "        });",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 4: All orders created within date range",
+                      "pm.test('All orders created within date range', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const startDate = new Date('2026-05-01');",
+                      "    const endDate = new Date('2026-05-31T23:59:59');",
+                      "    ",
+                      "    if (jsonData.length > 0) {",
+                      "        jsonData.forEach(order => {",
+                      "            pm.expect(order).to.have.property('created_at');",
+                      "            const createdDate = new Date(order.created_at);",
+                      "            pm.expect(createdDate.getTime()).to.be.at.least(startDate.getTime());",
+                      "            pm.expect(createdDate.getTime()).to.be.at.most(endDate.getTime());",
+                      "        });",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 5: Pending orders should NOT have packed_at",
+                      "pm.test('Pending orders do not have packed_at', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.length > 0) {",
+                      "        jsonData.forEach(order => {",
+                      "            pm.expect(order.packed_at).to.be.null;",
+                      "        });",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 6: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
               "name": "Create Order",
               "request": {
                 "method": "POST",

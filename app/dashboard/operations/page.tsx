@@ -52,8 +52,9 @@ export default function OperationsDashboardPage() {
       setItems(Array.isArray(itemsData) ? itemsData : [])
       
       // Build API URL with date filters if provided
-      let ordersUrl = "/api/orders"
+      let ordersUrl = "/api/orders?status=Packed" // Only fetch packed orders (same as Admin Dashboard)
       const ordersParams = new URLSearchParams()
+      ordersParams.append('status', 'Packed')
       
       if (startDate) {
         ordersParams.append('startDate', startDate.toISOString())
@@ -62,11 +63,9 @@ export default function OperationsDashboardPage() {
         ordersParams.append('endDate', endDate.toISOString())
       }
       
-      if (ordersParams.toString()) {
-        ordersUrl += `?${ordersParams.toString()}`
-      }
+      ordersUrl = `/api/orders?${ordersParams.toString()}`
       
-      // Fetch all orders (department filtering is handled by API)
+      // Fetch packed orders only (department filtering is handled by API)
       const ordersData = await apiGet<Order[]>(ordersUrl)
       setOrders(Array.isArray(ordersData) ? ordersData : [])
       

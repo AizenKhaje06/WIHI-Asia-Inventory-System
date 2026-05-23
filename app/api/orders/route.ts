@@ -41,13 +41,25 @@ export async function GET(request: NextRequest) {
     // Admin sees all orders
     
     // Filter by date range if provided
+    // For Packed orders: filter by packed_at (when order was packed)
+    // For Pending orders: filter by created_at (when order was dispatched)
     if (startDate) {
-      query = query.gte('created_at', startDate)
-      console.log('[Orders API] 📅 Filtering from:', startDate)
+      if (status === 'Packed') {
+        query = query.gte('packed_at', startDate)
+        console.log('[Orders API] 📅 Filtering packed orders from (packed_at):', startDate)
+      } else {
+        query = query.gte('created_at', startDate)
+        console.log('[Orders API] 📅 Filtering from (created_at):', startDate)
+      }
     }
     if (endDate) {
-      query = query.lte('created_at', endDate)
-      console.log('[Orders API] 📅 Filtering to:', endDate)
+      if (status === 'Packed') {
+        query = query.lte('packed_at', endDate)
+        console.log('[Orders API] 📅 Filtering packed orders to (packed_at):', endDate)
+      } else {
+        query = query.lte('created_at', endDate)
+        console.log('[Orders API] 📅 Filtering to (created_at):', endDate)
+      }
     }
     
     // Filter by status if provided
