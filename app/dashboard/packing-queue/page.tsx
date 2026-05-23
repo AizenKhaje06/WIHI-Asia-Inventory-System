@@ -680,8 +680,8 @@ export default function PackingQueuePage() {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0 flex flex-col">
           {/* Modal Header with Gradient */}
           <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600 flex-shrink-0">
-            <div className="flex items-start justify-between gap-4">
-              <DialogHeader>
+            <div className="flex items-start justify-between gap-4 pr-8">
+              <DialogHeader className="flex-1">
                 <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
                   <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
                     <Package className="h-6 w-6 text-white" />
@@ -696,7 +696,7 @@ export default function PackingQueuePage() {
                 <Button
                   variant="outline"
                   onClick={handleEditMode}
-                  className="h-10 px-4 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 transition-all"
+                  className="h-10 px-4 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 transition-all flex-shrink-0"
                 >
                   <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
