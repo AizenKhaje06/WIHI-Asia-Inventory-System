@@ -54,7 +54,6 @@ export default function PackerDashboard() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showOrderDetails, setShowOrderDetails] = useState(false)
   const [packing, setPacking] = useState(false)
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
   
   // Date filter states - using same format as Admin/Operations dashboard (Date objects, not strings)
   // Default to current month
@@ -117,14 +116,13 @@ export default function PackerDashboard() {
     setCurrentUser(user)
     fetchData()
 
-    // Auto-refresh every 2 minutes (less aggressive)
-    if (autoRefreshEnabled) {
-      const interval = setInterval(() => {
-        fetchData(true) // Silent refresh
-      }, 120000) // 2 minutes
-      return () => clearInterval(interval)
-    }
-  }, [autoRefreshEnabled])
+    // Auto-refresh every 1 second for fast dashboard updates
+    const interval = setInterval(() => {
+      fetchData(true) // Silent refresh
+    }, 1000) // 1 second
+    
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     filterOrders()
@@ -200,7 +198,7 @@ export default function PackerDashboard() {
       return
     }
 
-    // Auto-pack immediately after scan
+    // Auto-pack immediately after scan and WAIT for it to complete
     await handleAutoPackOrder(order)
   }
 
@@ -215,6 +213,10 @@ export default function PackerDashboard() {
     try {
       setPacking(true)
 
+      // OPTIMISTIC UPDATE: Remove from pending immediately
+      setPendingOrders(prev => prev.filter(o => o.id !== order.id))
+      setFilteredPending(prev => prev.filter(o => o.id !== order.id))
+
       const response = await fetch(`/api/packer/pack/${order.id}`, {
         method: 'PUT',
         headers: {
@@ -228,6 +230,9 @@ export default function PackerDashboard() {
       const data = await response.json()
 
       if (!response.ok) {
+        // ROLLBACK: Add back to pending if failed
+        setPendingOrders(prev => [...prev, order])
+        setFilteredPending(prev => [...prev, order])
         throw new Error(data.error || 'Failed to pack order')
       }
 
@@ -247,7 +252,7 @@ export default function PackerDashboard() {
         }
       )
       
-      // Refresh data immediately (silent)
+      // Refresh data in background (to sync with server)
       await fetchData(true)
 
       // Scanner stays open for next scan - no need to reopen
@@ -279,11 +284,16 @@ export default function PackerDashboard() {
   }
 
   return (
-    <div className="space-y-6 pb-8 px-6">
-      {/* Date Filter & Scanner - Enterprise Style */}
-      <div className="flex items-center justify-between pt-6">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Filter by Date Range</h2>
-        <div className="flex items-center gap-3">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8 px-3 sm:px-6">
+      {/* Page Header - Mobile Responsive */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 pt-4 sm:pt-6 mb-4 sm:mb-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold gradient-text mb-1 sm:mb-2">Packer Dashboard</h1>
+          <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
+            Scan and pack orders for dispatch
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
           <EnterpriseDateRangePicker
             startDate={startDate}
             endDate={endDate}
@@ -295,35 +305,35 @@ export default function PackerDashboard() {
           <Button 
             onClick={() => setScannerOpen(true)} 
             variant="outline"
-            className="h-10 px-4 gap-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium"
+            className="h-10 px-4 gap-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium w-full sm:w-auto"
           >
             <Camera className="h-4 w-4" />
-            Scan Barcode
+            <span>Scan Barcode</span>
           </Button>
         </div>
       </div>
 
-      {/* Enhanced Stats Cards - Professional 4-Card Layout */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Enhanced Stats Cards - Mobile Optimized */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
         {/* Pending Orders */}
         <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-full -mr-16 -mt-16" />
-          <CardHeader className="pb-2 sm:pb-3 relative">
-            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                <Package className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+          <CardHeader className="pb-1.5 sm:pb-2 md:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
+            <CardTitle className="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+                <Package className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600 dark:text-orange-400" />
               </div>
-              <span>Pending Queue</span>
+              <span className="leading-tight">Pending Queue</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pb-4 relative">
-            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-orange-600 to-orange-700 bg-clip-text text-transparent">
+          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-br from-orange-600 to-orange-700 bg-clip-text text-transparent">
               <AnimatedNumber value={pendingCount} />
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium leading-tight">
               {pendingCount === 0 ? '✨ All caught up!' : `${pendingCount} ${pendingCount === 1 ? 'order' : 'orders'} ready`}
             </p>
-            <div className="mt-3 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div className="mt-2 sm:mt-3 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-500"
                 style={{ width: `${Math.min((pendingCount / 50) * 100, 100)}%` }}
@@ -334,25 +344,25 @@ export default function PackerDashboard() {
 
         {/* Today's Packed */}
         <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
-          <CardHeader className="pb-2 sm:pb-3 relative">
-            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+          <CardHeader className="pb-1.5 sm:pb-2 md:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
+            <CardTitle className="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 dark:text-green-400" />
               </div>
-              <span>Today's Progress</span>
+              <span className="leading-tight">Today's Progress</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pb-4 relative">
-            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent">
+          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent">
               <AnimatedNumber value={todayPacked.length} />
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium leading-tight">
               {todayPacked.length > 0 ? `🎯 ${todayPacked.length} packed today` : 'Start packing'}
             </p>
-            <div className="mt-3 flex items-center gap-2">
-              <TrendingUp className="h-3 w-3 text-green-600" />
-              <span className="text-xs font-semibold text-green-600">
+            <div className="mt-2 sm:mt-3 flex items-center gap-1.5 sm:gap-2">
+              <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600" />
+              <span className="text-[10px] sm:text-xs font-semibold text-green-600">
                 {todayPacked.length > 0 ? '+' : ''}{todayPacked.length} today
               </span>
             </div>
@@ -361,29 +371,29 @@ export default function PackerDashboard() {
 
         {/* Avg Packing Time */}
         <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-          <CardHeader className="pb-2 sm:pb-3 relative">
-            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <Timer className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+          <CardHeader className="pb-1.5 sm:pb-2 md:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
+            <CardTitle className="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <Timer className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400" />
               </div>
-              <span>Avg Time</span>
+              <span className="leading-tight">Avg Time</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pb-4 relative">
-            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent">
+          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent">
               {avgPackingTime > 0 ? (
                 <><AnimatedNumber value={avgPackingTime} />s</>
               ) : (
                 '--'
               )}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium leading-tight">
               {avgPackingTime > 0 ? 'Per order' : 'No data yet'}
             </p>
-            <div className="mt-3 flex items-center gap-2">
-              <Zap className="h-3 w-3 text-blue-600" />
-              <span className="text-xs font-semibold text-blue-600">
+            <div className="mt-2 sm:mt-3 flex items-center gap-1.5 sm:gap-2">
+              <Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-600" />
+              <span className="text-[10px] sm:text-xs font-semibold text-blue-600">
                 {avgPackingTime > 0 && avgPackingTime < 60 ? 'Fast!' : avgPackingTime >= 60 ? 'Good pace' : 'Start packing'}
               </span>
             </div>
@@ -392,29 +402,29 @@ export default function PackerDashboard() {
 
         {/* Packs Per Hour */}
         <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
-          <CardHeader className="pb-2 sm:pb-3 relative">
-            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                <Target className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+          <CardHeader className="pb-1.5 sm:pb-2 md:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
+            <CardTitle className="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <Target className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600 dark:text-purple-400" />
               </div>
-              <span>Productivity</span>
+              <span className="leading-tight">Productivity</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pb-4 relative">
-            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent">
+          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent">
               {packsPerHour > 0 ? (
                 <><AnimatedNumber value={packsPerHour} />/h</>
               ) : (
                 '--'
               )}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium leading-tight">
               {packsPerHour > 0 ? 'Orders per hour' : 'No data yet'}
             </p>
-            <div className="mt-3 flex items-center gap-2">
-              <Award className="h-3 w-3 text-purple-600" />
-              <span className="text-xs font-semibold text-purple-600">
+            <div className="mt-2 sm:mt-3 flex items-center gap-1.5 sm:gap-2">
+              <Award className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-purple-600" />
+              <span className="text-[10px] sm:text-xs font-semibold text-purple-600">
                 {packsPerHour >= 30 ? 'Excellent!' : packsPerHour >= 20 ? 'Great!' : packsPerHour > 0 ? 'Good!' : 'Start packing'}
               </span>
             </div>

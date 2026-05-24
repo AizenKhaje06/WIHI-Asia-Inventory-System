@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { 
   Search, Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, 
-  User, Phone, MapPin, AlertCircle, PackageCheck, AlertTriangle, RotateCcw, Eye, LogOut
+  User, Phone, MapPin, AlertCircle, PackageCheck, AlertTriangle, RotateCcw, Eye
 } from 'lucide-react'
 import { formatCurrency, cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -53,7 +53,6 @@ export default function TrackerDashboardPage() {
   const [endDate, setEndDate] = useState<Date | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
 
   useEffect(() => {
     fetchOrders()
@@ -275,21 +274,6 @@ export default function TrackerDashboardPage() {
     setShowDetailsModal(true)
   }
 
-  const handleLogout = () => {
-    // Clear auth data
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('currentUser')
-    localStorage.removeItem('isLoggedIn')
-    localStorage.removeItem('username')
-    localStorage.removeItem('userRole')
-    localStorage.removeItem('displayName')
-    
-    // Redirect to login (main page)
-    window.location.href = '/'
-    
-    toast.success('Logged out successfully')
-  }
-
   const totalOrders = filteredOrders.length
   const deliveredCount = filteredOrders.filter(o => o.parcelStatus === 'DELIVERED').length
   const returnedCount = filteredOrders.filter(o => o.parcelStatus === 'RETURNED').length
@@ -306,55 +290,44 @@ export default function TrackerDashboardPage() {
   }
 
   return (
-    <div className="space-y-6 pt-2 px-4 sm:px-6 lg:px-8 pb-8">
-      {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 px-3 sm:px-4 lg:px-8 pb-6 sm:pb-8">
+      {/* Page Header - Mobile Responsive */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">Tracker Dashboard</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm">
+          <h1 className="text-2xl sm:text-3xl font-bold gradient-text mb-1 sm:mb-2">Tracker Dashboard</h1>
+          <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
             Update parcel status and manage order tracking
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <EnterpriseDateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onDateChange={(start, end) => {
-              setStartDate(start)
-              setEndDate(end)
-            }}
-            className="h-11 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all shadow-sm"
-          />
-          <Button
-            variant="outline"
-            size="default"
-            onClick={() => setShowLogoutDialog(true)}
-            className="h-11 px-4 border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 transition-all shadow-sm"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
-        </div>
+        <EnterpriseDateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onDateChange={(start, end) => {
+            setStartDate(start)
+            setEndDate(end)
+          }}
+          className="h-10 sm:h-11 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all shadow-sm"
+        />
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* KPI Cards - Mobile Optimized */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
         {/* Total Orders */}
         <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-          <CardHeader className="pb-3 relative">
-            <CardTitle className="text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+          <CardHeader className="pb-2 sm:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
+            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400" />
               </div>
               <span>Total Orders</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pb-4 relative">
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">
+          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
+            <div className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
               {totalOrders}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium">
               All tracked orders
             </p>
           </CardContent>
@@ -362,20 +335,20 @@ export default function TrackerDashboardPage() {
 
         {/* Delivered */}
         <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
-          <CardHeader className="pb-3 relative">
-            <CardTitle className="text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+          <CardHeader className="pb-2 sm:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
+            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 dark:text-green-400" />
               </div>
               <span>Delivered</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pb-4 relative">
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">
+          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
+            <div className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
               {deliveredCount}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium">
               {totalOrders > 0 ? `${Math.round((deliveredCount / totalOrders) * 100)}% delivery rate` : 'No orders yet'}
             </p>
           </CardContent>
@@ -383,20 +356,20 @@ export default function TrackerDashboardPage() {
 
         {/* Returned */}
         <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-red-600/5 rounded-full -mr-16 -mt-16" />
-          <CardHeader className="pb-3 relative">
-            <CardTitle className="text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                <RotateCcw className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-orange-500/10 to-red-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+          <CardHeader className="pb-2 sm:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
+            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+                <RotateCcw className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-600 dark:text-orange-400" />
               </div>
               <span>Returned</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pb-4 relative">
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">
+          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
+            <div className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
               {returnedCount}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium">
               {totalOrders > 0 ? `${Math.round((returnedCount / totalOrders) * 100)}% return rate` : 'No returns yet'}
             </p>
           </CardContent>
@@ -997,30 +970,6 @@ export default function TrackerDashboardPage() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Logout Confirmation Dialog */}
-      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <LogOut className="h-5 w-5 text-red-600" />
-              Sign Out
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to sign out? You will need to log in again to access the tracker dashboard.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
-            >
-              Yes, Sign Out
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

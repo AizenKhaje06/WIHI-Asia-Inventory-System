@@ -11,10 +11,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from 'sonner'
 
 const NAV_ITEMS = [
-  { href: '/packer/dashboard', label: 'Dashboard' },
+  { href: '/tracker/dashboard', label: 'Dashboard' },
 ]
 
-export default function PackerLayout({
+export default function TrackerLayout({
   children
 }: {
   children: React.ReactNode
@@ -23,7 +23,7 @@ export default function PackerLayout({
   const router = useRouter()
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   const [currentTime, setCurrentTime] = useState('')
-  const [displayName, setDisplayName] = useState('Packer')
+  const [displayName, setDisplayName] = useState('Tracker')
 
   useEffect(() => {
     // Update time every second
@@ -61,7 +61,7 @@ export default function PackerLayout({
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Enterprise Header - Single Line, Minimal */}
+      {/* Enterprise Header - Single Line, Minimal, Mobile Responsive */}
       <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-[1920px] mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between h-12 sm:h-14">
@@ -70,7 +70,7 @@ export default function PackerLayout({
               {/* Brand */}
               <div className="flex items-center gap-2 sm:gap-3 pr-3 sm:pr-8 border-r border-slate-200 dark:border-slate-800">
                 <div className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">
-                  Packer
+                  Tracker
                 </div>
                 <div className="hidden sm:block h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
                 <div className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -146,7 +146,7 @@ export default function PackerLayout({
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-semibold">Sign Out</AlertDialogTitle>
             <AlertDialogDescription className="text-sm">
-              Are you sure you want to sign out from Packer Dashboard?
+              Are you sure you want to sign out from Tracker Dashboard?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

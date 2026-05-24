@@ -27,6 +27,7 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
   const [cameraActive, setCameraActive] = useState(true)
   const [cameraError, setCameraError] = useState<string | null>(null)
   const [scanning, setScanning] = useState(false)
+  const [processing, setProcessing] = useState(false)
   
   const inputRef = useRef<HTMLInputElement>(null)
   const scannerRef = useRef<Html5Qrcode | null>(null)
@@ -57,24 +58,34 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
   const startCamera = async () => {
     try {
       setCameraError(null)
+      console.log('[Scanner] Starting camera initialization...')
       
       const element = document.getElementById(readerId)
-      if (!element) return
+      if (!element) {
+        console.error('[Scanner] Element not found:', readerId)
+        return
+      }
 
+      console.log('[Scanner] Requesting camera permission...')
       // Request camera permission
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: 'environment' } 
       })
+      console.log('[Scanner] Camera permission granted')
       stream.getTracks().forEach(track => track.stop())
 
       setScanning(true)
 
       // Initialize scanner
       if (!scannerRef.current) {
+        console.log('[Scanner] Creating new Html5Qrcode instance')
         scannerRef.current = new Html5Qrcode(readerId)
       }
 
+      console.log('[Scanner] Getting available cameras...')
       const cameras = await Html5Qrcode.getCameras()
+      console.log('[Scanner] Cameras found:', cameras.length, cameras)
+      
       if (!cameras || cameras.length === 0) {
         throw new Error('No camera found')
       }
@@ -84,6 +95,9 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
         cam.label.toLowerCase().includes('rear')
       )?.id || cameras[0].id
 
+      console.log('[Scanner] Using camera ID:', cameraId)
+      console.log('[Scanner] Starting Html5Qrcode.start()...')
+
       await scannerRef.current.start(
         cameraId,
         {
@@ -92,14 +106,18 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
           aspectRatio: 1.0
         },
         (decodedText) => {
+          console.log('[Scanner] SUCCESS CALLBACK - Barcode detected:', decodedText)
           handleScanResult(decodedText)
         },
-        () => {
-          // Ignore scan errors
+        (errorMessage) => {
+          // Ignore scan errors (happens frequently during scanning)
+          // console.log('[Scanner] Scan error (normal):', errorMessage)
         }
       )
+      
+      console.log('[Scanner] Scanner started successfully')
     } catch (err: any) {
-      console.error('Camera error:', err)
+      console.error('[Scanner] Camera error:', err)
       setCameraError(err.message || 'Camera unavailable')
       setCameraActive(false)
       setScanning(false)
@@ -120,54 +138,80 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
   }
 
   const handleScanResult = async (code: string) => {
+    // Prevent multiple scans while processing
+    if (processing) {
+      console.log('[Scanner] Already processing, ignoring scan')
+      return
+    }
+    
+    console.log('[Scanner] Barcode detected:', code)
+    setProcessing(true)
+    
+    // Haptic feedback (vibration)
+    if (navigator.vibrate) {
+      navigator.vibrate(200)
+    }
+    
+    // Play success sound
+    playBeep(1000, 0.1)
+    
+    // Show processing feedback
+    const processingResult: ScanResult = {
+      code,
+      status: 'success',
+      message: 'Processing order...',
+      timestamp: Date.now()
+    }
+    setLastResult(processingResult)
+    
     try {
-      // Call the onScan callback and wait for it
-      const result = await onScan(code)
+      // Call the onScan callback and wait for it to complete
+      await onScan(code)
       
-      // If we get here without error, it's a success
-      const scanResult: ScanResult = {
+      // Update to success after processing
+      const successResult: ScanResult = {
         code,
         status: 'success',
-        message: 'Order packed successfully',
+        message: 'Order packed successfully!',
         timestamp: Date.now()
       }
-      
-      setLastResult(scanResult)
-      playBeep(1000, 0.1)
-      
-      // Vibrate on success
-      if (navigator.vibrate) {
-        navigator.vibrate(200)
-      }
+      setLastResult(successResult)
       
     } catch (error: any) {
-      // Error feedback
-      const scanResult: ScanResult = {
+      // Show error feedback
+      const errorResult: ScanResult = {
         code,
         status: 'error',
-        message: error.message || 'Order not found',
+        message: error.message || 'Failed to process order',
         timestamp: Date.now()
       }
-      
-      setLastResult(scanResult)
+      setLastResult(errorResult)
       playBeep(400, 0.2)
       
       // Vibrate on error (different pattern)
       if (navigator.vibrate) {
         navigator.vibrate([100, 50, 100])
       }
+    } finally {
+      setProcessing(false)
+      
+      // Clear input and refocus for next scan
+      setInputValue('')
+      if (!cameraActive && inputRef.current) {
+        setTimeout(() => {
+          inputRef.current?.focus()
+        }, 100)
+      }
     }
   }
 
-  const handleInputSubmit = (e: React.FormEvent) => {
+  const handleInputSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     const code = inputValue.trim()
     if (!code) return
 
-    handleScanResult(code)
-    setInputValue('')
-    inputRef.current?.focus()
+    await handleScanResult(code)
   }
 
   const playBeep = (frequency: number, duration: number) => {
@@ -313,6 +357,7 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
                   className="h-14 text-xl font-mono border-2 border-slate-300 dark:border-slate-700 focus:border-slate-900 dark:focus:border-white focus:ring-0 rounded-md bg-white dark:bg-slate-900"
                   autoComplete="off"
                   autoFocus={!cameraActive}
+                  disabled={processing}
                 />
               </div>
             </form>
