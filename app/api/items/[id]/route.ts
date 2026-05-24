@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { updateInventoryItem, deleteInventoryItem, getInventoryItems, addLog } from "@/lib/supabase-db"
 import { invalidateCachePattern } from "@/lib/cache"
-import { requireAuth, requireAdmin } from "@/lib/api-auth"
+import { requireAuth, requireRole } from "@/lib/api-auth"
 
 export async function GET(
   request: NextRequest,
@@ -31,7 +31,7 @@ export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  const authResult = requireAdmin(request)
+  const authResult = requireRole(request, ['admin', 'operations', 'logistics-admin'])
   if (authResult instanceof NextResponse) return authResult
   const { user } = authResult
 
@@ -67,7 +67,7 @@ export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  const authResult = requireAdmin(request)
+  const authResult = requireRole(request, ['admin', 'operations', 'logistics-admin'])
   if (authResult instanceof NextResponse) return authResult
   const { user } = authResult
 

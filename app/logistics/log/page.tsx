@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DateRangePicker } from "@/components/ui/date-range-picker"
+import { EnterpriseDateRangePicker } from "@/components/ui/enterprise-date-range-picker"
 import { 
   Database, 
   Search, 
@@ -23,18 +23,14 @@ import {
   RefreshCw,
   Trash2,
   Plus,
-  Edit,
-  Truck
+  Edit
 } from "lucide-react"
 import type { Log } from "@/lib/types"
 import { toast } from "sonner"
 import { apiGet } from "@/lib/api-client"
-import { getCurrentUserRole } from "@/lib/role-utils"
-import { getCurrentUser } from "@/lib/auth"
 
 const ITEMS_PER_PAGE = 50
 
-// Operation type configuration
 const OPERATION_CONFIG = {
   create: { label: "Create", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800", icon: Plus },
   update: { label: "Update", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800", icon: Edit },
@@ -49,17 +45,10 @@ const OPERATION_CONFIG = {
   other: { label: "Sale", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800", icon: ShoppingCart }
 }
 
-export default function LogPage() {
+export default function LogisticsLogPage() {
   const [logs, setLogs] = useState<Log[]>([])
   const [loading, setLoading] = useState(true)
   
-  // Role detection
-  const userRole = getCurrentUserRole()
-  const currentUser = getCurrentUser()
-  const isDepartment = userRole === 'operations'
-  const userChannel = currentUser?.assignedChannel || null
-  
-  // Filter states
   const [searchQuery, setSearchQuery] = useState("")
   const [operationFilter, setOperationFilter] = useState("all")
   const [salesChannelFilter, setSalesChannelFilter] = useState("all")
@@ -68,13 +57,11 @@ export default function LogPage() {
   const [startDate, setStartDate] = useState<Date | null>(null)
   const [endDate, setEndDate] = useState<Date | null>(null)
 
-  // Fetch logs
   useEffect(() => {
     let isInitialLoad = true
     
     const fetchLogs = async () => {
       try {
-        // Only show loading spinner on initial load, not on auto-refresh
         if (isInitialLoad) {
           setLoading(true)
         }
@@ -93,34 +80,19 @@ export default function LogPage() {
       }
     }
     
-    // Initial fetch
     fetchLogs()
-    
-    // Auto-refresh every 5 seconds
     const interval = setInterval(() => {
       fetchLogs()
     }, 5000)
     
-    // Cleanup interval on unmount
     return () => clearInterval(interval)
   }, [])
 
-  // Filter and sort logs
   const filteredLogs = useMemo(() => {
     if (!Array.isArray(logs)) return []
     
     let filtered = [...logs]
 
-    // Department auto-filter: Only show logs for their assigned channel
-    if (isDepartment && userChannel) {
-      filtered = filtered.filter(log => {
-        const detailsLower = log.details?.toLowerCase() || ''
-        const channelLower = userChannel.toLowerCase()
-        return detailsLower.includes(channelLower)
-      })
-    }
-
-    // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(log => 
@@ -130,23 +102,18 @@ export default function LogPage() {
       )
     }
 
-    // Operation filter
     if (operationFilter !== "all") {
       filtered = filtered.filter(log => {
-        // Use the same logic as getOperationBadge to determine actual operation
         let actualOperation = log.operation?.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-') || 'other'
         
-        // Check if it's a cancellation operation
         if (actualOperation.includes('cancelled') || (log.details?.toLowerCase().includes('transaction') && log.details?.toLowerCase().includes('cancelled'))) {
           actualOperation = 'transaction-cancelled'
         }
         
-        // Only override based on details if operation is still unclear
         const explicitOperations = ['create', 'update', 'delete', 'restock', 'transaction-cancelled', 'to-be-packed', 'sale']
         const isExplicitOperation = explicitOperations.includes(actualOperation)
         
         if (!isExplicitOperation) {
-          // Override based on details content for backward compatibility
           const detailsLower = log.details?.toLowerCase() || ''
           if (detailsLower.includes('demo/display') || detailsLower.includes('demo / display')) {
             actualOperation = 'demo-display'
@@ -155,15 +122,13 @@ export default function LogPage() {
           } else if (detailsLower.includes('warehouse') || detailsLower.includes('transferred')) {
             actualOperation = 'warehouse'
           }
-          // REMOVED: else if (detailsLower.includes('dispatched')...) - no longer needed
         }
         
         return actualOperation === operationFilter
       })
     }
 
-    // Sales Channel filter - Admin only (departments are auto-filtered above)
-    if (!isDepartment && salesChannelFilter !== "all") {
+    if (salesChannelFilter !== "all") {
       filtered = filtered.filter(log => {
         const detailsLower = log.details?.toLowerCase() || ''
         const channelLower = salesChannelFilter.toLowerCase()
@@ -171,7 +136,6 @@ export default function LogPage() {
       })
     }
 
-    // Date filter
     if (startDate || endDate) {
       filtered = filtered.filter(log => {
         const logDate = new Date(log.timestamp)
@@ -181,7 +145,6 @@ export default function LogPage() {
       })
     }
 
-    // Sort
     filtered.sort((a, b) => {
       const dateA = new Date(a.timestamp).getTime()
       const dateB = new Date(b.timestamp).getTime()
@@ -191,19 +154,16 @@ export default function LogPage() {
     return filtered
   }, [logs, searchQuery, operationFilter, salesChannelFilter, sortBy, startDate, endDate])
 
-  // Pagination
   const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE)
   const paginatedLogs = filteredLogs.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   )
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
   }, [searchQuery, operationFilter, salesChannelFilter, sortBy, startDate, endDate])
 
-  // Statistics
   const stats = useMemo(() => {
     if (!Array.isArray(logs)) return { total: 0, today: 0, creates: 0, updates: 0, deletes: 0, cancelled: 0 }
     
@@ -220,7 +180,6 @@ export default function LogPage() {
     }
   }, [logs])
 
-  // Clear all filters
   const clearFilters = () => {
     setSearchQuery("")
     setOperationFilter("all")
@@ -231,22 +190,17 @@ export default function LogPage() {
     setCurrentPage(1)
   }
 
-  // Get operation badge
   const getOperationBadge = (operation: string, details: string) => {
-    // Normalize operation: convert to lowercase, replace spaces and underscores with dashes
     let actualOperation = operation?.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-') || 'other'
     
-    // Check if it's a cancellation operation
     if (actualOperation.includes('cancelled') || details?.toLowerCase().includes('transaction') && details?.toLowerCase().includes('cancelled')) {
       actualOperation = 'transaction-cancelled'
     }
     
-    // Only override based on details if operation is still unclear
     const explicitOperations = ['create', 'update', 'delete', 'restock', 'transaction-cancelled', 'to-be-packed', 'sale']
     const isExplicitOperation = explicitOperations.includes(actualOperation)
     
     if (!isExplicitOperation) {
-      // Override based on details content for backward compatibility
       const detailsLower = details?.toLowerCase() || ''
       if (detailsLower.includes('demo/display') || detailsLower.includes('demo / display')) {
         actualOperation = 'demo-display'
@@ -255,7 +209,6 @@ export default function LogPage() {
       } else if (detailsLower.includes('warehouse') || detailsLower.includes('transferred')) {
         actualOperation = 'warehouse'
       }
-      // REMOVED: else if (detailsLower.includes('dispatched')...) - no longer needed
     }
     
     const config = OPERATION_CONFIG[actualOperation as keyof typeof OPERATION_CONFIG] || OPERATION_CONFIG.other
@@ -269,12 +222,10 @@ export default function LogPage() {
     )
   }
 
-  // Extract sales channel from details
   const getSalesChannel = (details: string) => {
     if (!details) return null
     const detailsLower = details.toLowerCase()
     
-    // Check for specific sales channels
     if (detailsLower.includes('shopee')) return 'Shopee'
     if (detailsLower.includes('lazada')) return 'Lazada'
     if (detailsLower.includes('facebook')) return 'Facebook'
@@ -286,7 +237,6 @@ export default function LogPage() {
     return null
   }
 
-  // Get sales channel badge
   const getSalesChannelBadge = (channel: string | null) => {
     if (!channel) return null
     
@@ -314,15 +264,11 @@ export default function LogPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen w-full max-w-full overflow-x-hidden">
-        <div className="mb-6">
-          <h1 className="text-4xl font-bold gradient-text mb-2">Operation History</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-base">View all system operations and changes</p>
-        </div>
-        <div className="flex items-center justify-center py-12">
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <BrandLoader size="lg" />
-            <p className="text-slate-600 dark:text-slate-400 mt-6 text-sm font-medium">Loading logs...</p>
+            <p className="text-slate-600 dark:text-slate-400 mt-6 text-sm font-medium">Loading activity logs...</p>
           </div>
         </div>
       </div>
@@ -330,137 +276,121 @@ export default function LogPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
-      {/* Page Header */}
-      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold gradient-text mb-2">
-          Operation History
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
-          View all system operations and changes
-        </p>
+    <div className="max-w-[1600px] mx-auto px-6 lg:px-8 py-8">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+            <Activity className="h-5 w-5 text-white" strokeWidth={2.5} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Activity Logs</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">View all system operations and changes</p>
+          </div>
+        </div>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
-        {/* Total Logs - Blue */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-              <Database className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
+              <Database className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Total Logs</p>
-              <p className="text-xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">{stats.total}</p>
+              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Total Logs</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">{stats.total}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Today - Green */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-              <Activity className="h-4 w-4 text-green-600 dark:text-green-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30">
+              <Activity className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Today</p>
-              <p className="text-xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent tabular-nums">{stats.today}</p>
+              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Today</p>
+              <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">{stats.today}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Creates - Purple */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-              <Plus className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
+              <Plus className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Creates</p>
-              <p className="text-xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent tabular-nums">{stats.creates}</p>
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Creates</p>
+              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">{stats.creates}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Updates - Orange */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-              <Edit className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-orange-600 shadow-lg shadow-orange-500/30">
+              <Edit className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Updates</p>
-              <p className="text-xl font-bold bg-gradient-to-br from-orange-600 to-orange-700 bg-clip-text text-transparent tabular-nums">{stats.updates}</p>
+              <p className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">Updates</p>
+              <p className="text-2xl font-bold text-orange-900 dark:text-orange-100 tabular-nums">{stats.updates}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Deletes - Red */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-red-600 shadow-lg shadow-red-500/30">
+              <Trash2 className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Deletes</p>
-              <p className="text-xl font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent tabular-nums">{stats.deletes}</p>
+              <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Deletes</p>
+              <p className="text-2xl font-bold text-red-900 dark:text-red-100 tabular-nums">{stats.deletes}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Cancelled - Amber */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-              <X className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-600 shadow-lg shadow-amber-500/30">
+              <X className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Cancelled</p>
-              <p className="text-xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums">{stats.cancelled}</p>
+              <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Cancelled</p>
+              <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">{stats.cancelled}</p>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Filters Card */}
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 mb-4 p-4">
-        <div className="flex items-center gap-2 mb-4">
+      <Card className="mb-6 p-5 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+        <div className="flex items-center gap-2 mb-5">
           <Filter className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-          <h3 className="font-semibold text-slate-900 dark:text-white">Filters</h3>
+          <h3 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">Search & Filters</h3>
           {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearFilters}
-              className="ml-auto text-xs"
-            >
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="ml-auto text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400">
               <X className="h-3 w-3 mr-1" />
               Clear All
             </Button>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          {/* Search */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Search logs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-9 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-purple-500/20"
             />
           </div>
 
-          {/* Operation Filter */}
           <Select value={operationFilter} onValueChange={setOperationFilter}>
-            <SelectTrigger>
+            <SelectTrigger className="h-10 border-slate-200 dark:border-slate-700">
               <SelectValue placeholder="All Operations" />
             </SelectTrigger>
             <SelectContent>
@@ -478,38 +408,32 @@ export default function LogPage() {
             </SelectContent>
           </Select>
 
-          {/* Sales Channel Filter - Admin Only */}
-          {!isDepartment && (
-            <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Channels" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Channels</SelectItem>
-                <SelectItem value="Shopee">Shopee</SelectItem>
-                <SelectItem value="Lazada">Lazada</SelectItem>
-                <SelectItem value="Facebook">Facebook</SelectItem>
-                <SelectItem value="TikTok">TikTok</SelectItem>
-                <SelectItem value="Office Store">Office Store</SelectItem>
-                <SelectItem value="Physical Store">Physical Store</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
+          <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
+            <SelectTrigger className="h-10 border-slate-200 dark:border-slate-700">
+              <SelectValue placeholder="All Channels" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Channels</SelectItem>
+              <SelectItem value="Shopee">Shopee</SelectItem>
+              <SelectItem value="Lazada">Lazada</SelectItem>
+              <SelectItem value="Facebook">Facebook</SelectItem>
+              <SelectItem value="TikTok">TikTok</SelectItem>
+              <SelectItem value="Office Store">Office Store</SelectItem>
+              <SelectItem value="Physical Store">Physical Store</SelectItem>
+            </SelectContent>
+          </Select>
 
-          {/* Date Range Filter */}
-          <DateRangePicker
+          <EnterpriseDateRangePicker
             startDate={startDate}
             endDate={endDate}
             onDateChange={(start, end) => {
               setStartDate(start)
               setEndDate(end)
             }}
-            className="h-10"
           />
 
-          {/* Sort */}
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger>
+            <SelectTrigger className="h-10 border-slate-200 dark:border-slate-700">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -519,98 +443,85 @@ export default function LogPage() {
           </Select>
         </div>
 
-        {/* Results Summary */}
-        <div className="mt-3 text-sm text-slate-600 dark:text-slate-400">
-          Showing {paginatedLogs.length} of {filteredLogs.length} logs
-          {hasActiveFilters && ` (filtered from ${logs.length} total)`}
+        <div className="mt-4 flex items-center justify-between">
+          <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+            Showing <span className="font-bold text-slate-900 dark:text-white">{paginatedLogs.length}</span> of <span className="font-bold text-slate-900 dark:text-white">{filteredLogs.length}</span> logs
+            {hasActiveFilters && <span className="text-slate-500"> (filtered from {logs.length} total)</span>}
+          </div>
         </div>
       </Card>
 
       {/* Logs Table */}
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-            <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
-              <Database className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+      <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+        <CardHeader className="border-b border-slate-200 dark:border-slate-800 pb-4">
+          <CardTitle className="flex items-center gap-3 text-lg font-bold text-slate-900 dark:text-white">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-700 flex items-center justify-center shadow-md shadow-indigo-500/30">
+              <Database className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             Activity Log
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {filteredLogs.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
                 <FileText className="h-8 w-8 text-slate-400" />
               </div>
               <p className="text-slate-600 dark:text-slate-400 font-medium mb-1">
                 {logs.length === 0 ? 'No operations logged yet' : 'No logs match your filters'}
               </p>
               {hasActiveFilters && (
-                <Button
-                  variant="link"
-                  onClick={clearFilters}
-                  className="text-blue-600 dark:text-blue-400"
-                >
+                <Button variant="link" onClick={clearFilters} className="text-purple-600 dark:text-purple-400 font-semibold">
                   Clear filters to see all logs
                 </Button>
               )}
             </div>
           ) : (
             <>
-              {/* Mobile Scroll Hint */}
-              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
-                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
-                  <span className="text-blue-500">←</span>
-                  <span>Swipe to see all columns • Tap row to highlight</span>
-                  <span className="text-blue-500">→</span>
-                </p>
-              </div>
-
-              <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+              <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="sticky top-0 z-10">
-                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[180px]">Date & Time</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[140px]">Operation</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[140px]">Sales Channel</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[220px]">Item</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[auto]">Details</th>
+                  <thead>
+                    <tr className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                      <th className="py-4 px-6 text-left font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider">Date & Time</th>
+                      <th className="py-4 px-6 text-left font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider">Operation</th>
+                      <th className="py-4 px-6 text-left font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider">Sales Channel</th>
+                      <th className="py-4 px-6 text-left font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider">Item</th>
+                      <th className="py-4 px-6 text-left font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider">Details</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {paginatedLogs.map((log) => (
-                      <tr 
-                        key={log.id} 
-                        className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
-                      >
-                        <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                          <div className="flex items-center gap-1.5">
+                      <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors duration-150">
+                        <td className="py-4 px-6 text-xs font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
                             <Clock className="h-3.5 w-3.5 text-slate-400" />
-                            {new Date(log.timestamp).toLocaleDateString('en-US', { 
-                              month: '2-digit', 
-                              day: '2-digit', 
-                              year: '2-digit'
-                            })}
-                            {' '}
-                            {new Date(log.timestamp).toLocaleTimeString('en-US', { 
-                              hour: '2-digit', 
-                              minute: '2-digit', 
-                              hour12: false
-                            })}
+                            <span>
+                              {new Date(log.timestamp).toLocaleDateString('en-US', { 
+                                month: '2-digit', 
+                                day: '2-digit', 
+                                year: '2-digit'
+                              })}
+                              {' '}
+                              {new Date(log.timestamp).toLocaleTimeString('en-US', { 
+                                hour: '2-digit', 
+                                minute: '2-digit', 
+                                hour12: false
+                              })}
+                            </span>
                           </div>
                         </td>
-                        <td className="py-2.5 px-3 whitespace-nowrap">
+                        <td className="py-4 px-6 whitespace-nowrap">
                           {getOperationBadge(log.operation, log.details)}
                         </td>
-                        <td className="py-2.5 px-3 whitespace-nowrap">
+                        <td className="py-4 px-6 whitespace-nowrap">
                           {getSalesChannelBadge(getSalesChannel(log.details))}
                         </td>
-                        <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                        <td className="py-4 px-6 text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
                           <div className="max-w-[220px] truncate" title={(log.itemName || '-').replace(/\s*\(\d+\)\s*$/, '')}>
                             {(log.itemName || '-').replace(/\s*\(\d+\)\s*$/, '')}
                           </div>
                         </td>
-                        <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
+                        <td className="py-4 px-6 text-xs text-slate-600 dark:text-slate-400">
                           <div className="max-w-[600px] leading-relaxed">
                             {log.details}
                           </div>
@@ -623,16 +534,17 @@ export default function LogPage() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <div className="text-sm text-slate-600 dark:text-slate-400">
-                    Page {currentPage} of {totalPages}
+                <div className="flex items-center justify-between p-6 border-t border-slate-200 dark:border-slate-800">
+                  <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    Page <span className="font-bold text-slate-900 dark:text-white">{currentPage}</span> of <span className="font-bold text-slate-900 dark:text-white">{totalPages}</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
+                      className="h-9 font-semibold border-slate-200 dark:border-slate-700"
                     >
                       <ChevronLeft className="h-4 w-4 mr-1" />
                       Previous
@@ -642,6 +554,7 @@ export default function LogPage() {
                       size="sm"
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
+                      className="h-9 font-semibold border-slate-200 dark:border-slate-700"
                     >
                       Next
                       <ChevronRight className="h-4 w-4 ml-1" />

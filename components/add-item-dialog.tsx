@@ -89,18 +89,23 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
         {/* Professional Header with Dark Gradient */}
-        <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600 flex-shrink-0">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
-              <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
-                <Package className="h-6 w-6 text-white" />
+        <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-6 py-5 relative overflow-hidden flex-shrink-0">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
+          <div className="relative">
+            <DialogHeader>
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/30">
+                  <Package className="h-6 w-6 text-white" strokeWidth={2.5} />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-bold text-white tracking-tight !text-white">Add New Product</DialogTitle>
+                  <DialogDescription className="text-slate-200 text-sm mt-0.5 font-medium !text-slate-200">
+                    Create a new product in your inventory
+                  </DialogDescription>
+                </div>
               </div>
-              <span className="text-white">Add New Product</span>
-            </DialogTitle>
-            <DialogDescription className="text-slate-200 text-sm mt-2 font-medium">
-              Create a new product in your inventory
-            </DialogDescription>
-          </DialogHeader>
+            </DialogHeader>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-6 space-y-4">

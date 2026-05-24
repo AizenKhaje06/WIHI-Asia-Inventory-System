@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Camera, X, AlertCircle, Keyboard, Search } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { CheckCircle, XCircle, Camera, Keyboard } from 'lucide-react'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 
 interface BarcodeScannerProps {
   open: boolean
@@ -14,87 +14,58 @@ interface BarcodeScannerProps {
   onScan: (waybill: string) => void
 }
 
+interface ScanResult {
+  code: string
+  status: 'success' | 'error'
+  message: string
+  timestamp: number
+}
+
 export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
+  const [inputValue, setInputValue] = useState('')
+  const [lastResult, setLastResult] = useState<ScanResult | null>(null)
+  const [cameraActive, setCameraActive] = useState(true)
+  const [cameraError, setCameraError] = useState<string | null>(null)
   const [scanning, setScanning] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [manualMode, setManualMode] = useState(false)
-  const [manualInput, setManualInput] = useState('')
+  
+  const inputRef = useRef<HTMLInputElement>(null)
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const readerId = 'barcode-reader'
 
-  // Success sound function
-  const playSuccessSound = () => {
-    try {
-      // Create audio context for beep sound
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-      const oscillator = audioContext.createOscillator()
-      const gainNode = audioContext.createGain()
-      
-      oscillator.connect(gainNode)
-      gainNode.connect(audioContext.destination)
-      
-      // Configure beep sound
-      oscillator.frequency.value = 1000 // 1000 Hz frequency
-      oscillator.type = 'sine'
-      
-      // Volume control
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2)
-      
-      // Play beep
-      oscillator.start(audioContext.currentTime)
-      oscillator.stop(audioContext.currentTime + 0.2)
-    } catch (error) {
-      console.log('[Scanner] Could not play sound:', error)
-    }
-  }
-
+  // Initialize camera on modal open
   useEffect(() => {
-    if (open && !scanning) {
-      // Small delay to ensure DOM is ready
+    if (open && cameraActive) {
       setTimeout(() => {
-        startScanning()
+        startCamera()
       }, 100)
     }
 
     return () => {
-      stopScanning()
+      stopCamera()
     }
-  }, [open])
+  }, [open, cameraActive])
 
-  const startScanning = async () => {
+  // Auto-focus input when camera is disabled
+  useEffect(() => {
+    if (open && !cameraActive && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
+    }
+  }, [open, cameraActive])
+
+  const startCamera = async () => {
     try {
-      setError(null)
-
-      // Check if element exists
+      setCameraError(null)
+      
       const element = document.getElementById(readerId)
-      if (!element) {
-        throw new Error('Scanner element not found. Please try again.')
-      }
+      if (!element) return
 
-      console.log('[Scanner] Requesting camera permission...')
-
-      // Request camera permission FIRST using getUserMedia
-      // This will trigger the browser's permission prompt
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: 'environment' } 
-        })
-        console.log('[Scanner] Camera permission granted')
-        // Stop the stream immediately - we just needed permission
-        stream.getTracks().forEach(track => track.stop())
-      } catch (permError: any) {
-        console.error('[Scanner] Permission error:', permError)
-        if (permError.name === 'NotAllowedError') {
-          throw new Error('Camera permission denied. Please allow camera access and try again.')
-        } else if (permError.name === 'NotFoundError') {
-          throw new Error('No camera found on this device.')
-        } else if (permError.name === 'NotReadableError') {
-          throw new Error('Camera is already in use by another application.')
-        } else {
-          throw new Error('Failed to access camera: ' + permError.message)
-        }
-      }
+      // Request camera permission
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      })
+      stream.getTracks().forEach(track => track.stop())
 
       setScanning(true)
 
@@ -103,253 +74,286 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
         scannerRef.current = new Html5Qrcode(readerId)
       }
 
-      // Get cameras
-      console.log('[Scanner] Getting available cameras...')
       const cameras = await Html5Qrcode.getCameras()
-      console.log('[Scanner] Cameras found:', cameras.length)
-      
       if (!cameras || cameras.length === 0) {
-        throw new Error('No cameras found on this device.')
+        throw new Error('No camera found')
       }
 
-      // Use back camera if available, otherwise use first camera
       const cameraId = cameras.find(cam => 
         cam.label.toLowerCase().includes('back') || 
         cam.label.toLowerCase().includes('rear')
       )?.id || cameras[0].id
 
-      console.log('[Scanner] Using camera:', cameraId)
-      console.log('[Scanner] Starting scanner...')
-
-      // Start scanning
       await scannerRef.current.start(
         cameraId,
         {
-          fps: 20, // Increased from 10 to 20 for faster scanning
+          fps: 20,
           qrbox: { width: 250, height: 250 },
           aspectRatio: 1.0
         },
         (decodedText) => {
-          // Successfully scanned
-          console.log('[Scanner] Barcode scanned:', decodedText)
-          
-          // Haptic feedback (vibration)
-          if (navigator.vibrate) {
-            navigator.vibrate(200) // Vibrate for 200ms
-          }
-          
-          // Play success sound
-          playSuccessSound()
-          
-          onScan(decodedText)
-          stopScanning()
+          handleScanResult(decodedText)
         },
         () => {
-          // Scanning error (ignore, happens frequently)
+          // Ignore scan errors
         }
       )
-      
-      console.log('[Scanner] Scanner started successfully')
     } catch (err: any) {
-      console.error('[Scanner] Error:', err)
-      setError(err.message || 'Failed to start camera')
+      console.error('Camera error:', err)
+      setCameraError(err.message || 'Camera unavailable')
+      setCameraActive(false)
       setScanning(false)
     }
   }
 
-  const stopScanning = async () => {
+  const stopCamera = async () => {
     try {
       if (scannerRef.current && scanning) {
         await scannerRef.current.stop()
         scannerRef.current.clear()
       }
     } catch (err) {
-      console.error('Error stopping scanner:', err)
+      console.error('Error stopping camera:', err)
     } finally {
       setScanning(false)
     }
   }
 
-  const handleClose = () => {
-    stopScanning()
-    setManualMode(false)
-    setManualInput('')
-    setError(null)
-    onClose()
-  }
-
-  const handleManualSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (manualInput.trim()) {
-      onScan(manualInput.trim())
-      setManualInput('')
-      handleClose()
+  const handleScanResult = async (code: string) => {
+    try {
+      // Call the onScan callback and wait for it
+      const result = await onScan(code)
+      
+      // If we get here without error, it's a success
+      const scanResult: ScanResult = {
+        code,
+        status: 'success',
+        message: 'Order packed successfully',
+        timestamp: Date.now()
+      }
+      
+      setLastResult(scanResult)
+      playBeep(1000, 0.1)
+      
+      // Vibrate on success
+      if (navigator.vibrate) {
+        navigator.vibrate(200)
+      }
+      
+    } catch (error: any) {
+      // Error feedback
+      const scanResult: ScanResult = {
+        code,
+        status: 'error',
+        message: error.message || 'Order not found',
+        timestamp: Date.now()
+      }
+      
+      setLastResult(scanResult)
+      playBeep(400, 0.2)
+      
+      // Vibrate on error (different pattern)
+      if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100])
+      }
     }
   }
 
-  const switchToManualMode = () => {
-    stopScanning()
-    setManualMode(true)
-    setError(null)
+  const handleInputSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const code = inputValue.trim()
+    if (!code) return
+
+    handleScanResult(code)
+    setInputValue('')
+    inputRef.current?.focus()
   }
 
+  const playBeep = (frequency: number, duration: number) => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+      
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      
+      oscillator.frequency.value = frequency
+      oscillator.type = 'sine'
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration)
+      
+      oscillator.start(audioContext.currentTime)
+      oscillator.stop(audioContext.currentTime + duration)
+    } catch (error) {
+      // Ignore audio errors
+    }
+  }
+
+  const switchMode = () => {
+    if (cameraActive) {
+      stopCamera()
+      setCameraActive(false)
+    } else {
+      setCameraActive(true)
+      startCamera()
+    }
+  }
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && open) {
+        onClose()
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [open, onClose])
+
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] border-t-4 border-t-blue-600 p-0 gap-0 overflow-hidden">
-        {/* Professional Header */}
-        <DialogHeader className="px-6 pt-6 pb-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-b">
-          <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/30">
-              {manualMode ? (
-                <Keyboard className="h-6 w-6 text-white" strokeWidth={2.5} />
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-3xl p-0 gap-0 border-2 border-slate-300 dark:border-slate-700">
+        <VisuallyHidden>
+          <DialogTitle>Barcode Scanner</DialogTitle>
+        </VisuallyHidden>
+        
+        {/* Industrial Scanner Interface */}
+        <div className="bg-white dark:bg-slate-950">
+          {/* Header */}
+          <div className="border-b-2 border-slate-900 dark:border-white bg-slate-900 dark:bg-white px-6 py-3 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-white dark:text-slate-900 uppercase tracking-wide">
+              SCAN ITEM
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={switchMode}
+              className="h-8 text-white dark:text-slate-900 hover:bg-white/20 dark:hover:bg-slate-900/20"
+            >
+              {cameraActive ? (
+                <>
+                  <Keyboard className="h-4 w-4 mr-2" />
+                  Input Mode
+                </>
               ) : (
-                <Camera className="h-6 w-6 text-white" strokeWidth={2.5} />
+                <>
+                  <Camera className="h-4 w-4 mr-2" />
+                  Camera Mode
+                </>
               )}
-            </div>
-            <div>
-              <div className="bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                {manualMode ? 'Manual Input' : 'Barcode Scanner'}
-              </div>
-              <p className="text-xs font-normal text-slate-600 dark:text-slate-400 mt-1">
-                {manualMode ? 'Type or scan waybill number' : 'Scan order waybill barcode'}
-              </p>
-            </div>
-          </DialogTitle>
-        </DialogHeader>
+            </Button>
+          </div>
 
-        <div className="p-6 space-y-5">
-          {error && (
-            <Alert variant="destructive" className="border-2 border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
-              <AlertCircle className="h-5 w-5" />
-              <AlertDescription className="flex items-center justify-between">
-                <span className="font-medium">{error}</span>
-                <Button
-                  variant="link"
-                  size="sm"
-                  className="ml-2 h-auto p-0 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold"
-                  onClick={switchToManualMode}
-                >
-                  Switch to manual →
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {manualMode ? (
-            // Professional Manual Input Mode
-            <div className="space-y-5">
-              <div className="text-center py-12 bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-50 dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-slate-900/30 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-700">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 shadow-lg shadow-blue-500/30 mb-4">
-                  <Keyboard className="h-10 w-10 text-white" strokeWidth={2.5} />
+          {/* Main Content */}
+          <div className="p-6 space-y-6">
+            {/* Camera Scanner Section */}
+            {cameraActive && (
+              <div className="space-y-3">
+                <div className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                  CAMERA SCANNER
                 </div>
-                <p className="text-base text-slate-800 dark:text-slate-200 font-bold mb-2">
-                  Enter Waybill Number
-                </p>
-                <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
-                  Type manually or use USB barcode scanner for instant input
-                </p>
-              </div>
-
-              <form onSubmit={handleManualSubmit} className="space-y-4">
-                <div className="relative">
-                  <Input
-                    placeholder="Type or scan waybill number..."
-                    value={manualInput}
-                    onChange={(e) => setManualInput(e.target.value)}
-                    autoFocus
-                    className="text-center font-mono text-xl h-14 border-2 border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 rounded-xl shadow-sm"
-                  />
-                  {manualInput && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <div className="relative bg-slate-900 rounded-md overflow-hidden border-2 border-slate-700">
+                  <div id={readerId} className="w-full min-h-[300px]" />
+                  {!scanning && !cameraError && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
+                      <div className="text-center text-white">
+                        <Camera className="h-12 w-12 mx-auto mb-2 animate-pulse" />
+                        <p className="text-sm">Initializing camera...</p>
+                      </div>
+                    </div>
+                  )}
+                  {cameraError && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
+                      <div className="text-center text-white p-4">
+                        <XCircle className="h-12 w-12 mx-auto mb-2 text-red-500" />
+                        <p className="text-sm mb-2">{cameraError}</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={switchMode}
+                          className="text-white border-white hover:bg-white/20"
+                        >
+                          Switch to Input Mode
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
+              </div>
+            )}
 
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-12 border-2 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold"
-                    onClick={() => {
-                      setManualMode(false)
-                      setManualInput('')
-                      startScanning()
-                    }}
-                  >
-                    <Camera className="h-5 w-5 mr-2" />
-                    Use Camera
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="h-12 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 shadow-lg shadow-blue-500/30 font-semibold"
-                    disabled={!manualInput.trim()}
-                  >
-                    <Search className="h-5 w-5 mr-2" />
-                    Search Order
-                  </Button>
+            {/* Divider */}
+            {cameraActive && (
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-300 dark:border-slate-700"></div>
                 </div>
-              </form>
-            </div>
-          ) : (
-            // Professional Camera Scanning Mode
-            <>
-              <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl overflow-hidden border-2 border-slate-700 shadow-2xl">
-                <div id={readerId} className="w-full min-h-[350px]" />
-                {!scanning && !error && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-                    <div className="text-center text-white">
-                      <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 shadow-lg shadow-blue-500/50 mb-4 animate-pulse">
-                        <Camera className="h-10 w-10 text-white" strokeWidth={2.5} />
-                      </div>
-                      <p className="text-base font-bold mb-2">Initializing Camera</p>
-                      <p className="text-sm text-slate-400">Please wait a moment...</p>
-                      <div className="flex items-center justify-center gap-1 mt-4">
-                        <div className="h-2 w-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <div className="h-2 w-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <div className="h-2 w-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '300ms' }} />
-                      </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white dark:bg-slate-950 px-2 text-slate-500 dark:text-slate-400 font-bold">
+                    OR SCAN MANUALLY
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Input Field */}
+            <form onSubmit={handleInputSubmit}>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                  WAYBILL NUMBER
+                </label>
+                <Input
+                  ref={inputRef}
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Scan or type waybill..."
+                  className="h-14 text-xl font-mono border-2 border-slate-300 dark:border-slate-700 focus:border-slate-900 dark:focus:border-white focus:ring-0 rounded-md bg-white dark:bg-slate-900"
+                  autoComplete="off"
+                  autoFocus={!cameraActive}
+                />
+              </div>
+            </form>
+
+            {/* Last Scanned Item Display */}
+            {lastResult && (
+              <div className={`border-2 rounded-md p-4 ${
+                lastResult.status === 'success' 
+                  ? 'border-green-600 bg-green-50 dark:bg-green-950/20' 
+                  : 'border-red-600 bg-red-50 dark:bg-red-950/20'
+              }`}>
+                <div className="flex items-start gap-3">
+                  {lastResult.status === 'success' ? (
+                    <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+                  ) : (
+                    <XCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
+                      LAST SCAN
+                    </div>
+                    <div className="font-mono text-lg font-bold text-slate-900 dark:text-white mb-1">
+                      {lastResult.code}
+                    </div>
+                    <div className={`text-sm font-semibold ${
+                      lastResult.status === 'success' ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+                    }`}>
+                      {lastResult.message}
                     </div>
                   </div>
-                )}
-              </div>
-
-              <div className="text-center p-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border-2 border-blue-200 dark:border-blue-800">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                    <span className="text-white text-lg">📦</span>
-                  </div>
-                  <p className="text-base text-blue-900 dark:text-blue-100 font-bold">
-                    Position Barcode Within Frame
-                  </p>
                 </div>
-                <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
-                  Scanner will detect and process automatically
-                </p>
               </div>
+            )}
 
-              <Button
-                variant="outline"
-                className="w-full h-12 border-2 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold"
-                onClick={switchToManualMode}
-              >
-                <Keyboard className="h-5 w-5 mr-2" />
-                Switch to Manual Input
-              </Button>
-            </>
-          )}
-        </div>
-
-        {/* Professional Footer */}
-        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900 border-t">
-          <Button
-            variant="ghost"
-            className="w-full h-12 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-slate-700 dark:text-slate-300"
-            onClick={handleClose}
-          >
-            <X className="h-5 w-5 mr-2" />
-            Cancel
-          </Button>
+            {/* Instructions */}
+            <div className="text-center pt-2 border-t border-slate-200 dark:border-slate-800">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                Press ESC to close • Scanner auto-submits on Enter
+              </p>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

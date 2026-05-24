@@ -8,13 +8,11 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { BarcodeScanner } from '@/components/barcode-scanner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
-import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Activity, LogOut, User, Truck } from 'lucide-react'
+import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Truck, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { getCurrentUser } from '@/lib/auth'
 import { AnimatedNumber } from '@/components/ui/animated-number'
-import { ThemeToggle } from '@/components/theme-toggle'
 
 interface Order {
   id: string
@@ -57,7 +55,6 @@ export default function PackerDashboard() {
   const [showOrderDetails, setShowOrderDetails] = useState(false)
   const [packing, setPacking] = useState(false)
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   
   // Date filter states - using same format as Admin/Operations dashboard (Date objects, not strings)
   // Default to current month
@@ -268,21 +265,6 @@ export default function PackerDashboard() {
     await handleAutoPackOrder(selectedOrder)
   }
 
-  const handleLogout = () => {
-    // Clear auth data
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('currentUser')
-    localStorage.removeItem('isLoggedIn')
-    localStorage.removeItem('username')
-    localStorage.removeItem('userRole')
-    localStorage.removeItem('displayName')
-    
-    // Redirect to login (main page)
-    window.location.href = '/'
-    
-    toast.success('Logged out successfully')
-  }
-
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center min-h-[600px]">
@@ -297,110 +279,28 @@ export default function PackerDashboard() {
   }
 
   return (
-    <div className="space-y-6 pb-8 px-4 sm:px-6 lg:px-8">
-      {/* Professional Corporate Header */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          {/* Title Section with Branding */}
-          <div className="flex items-start gap-4">
-            <div className="hidden sm:flex h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 items-center justify-center shadow-xl shadow-blue-500/30 flex-shrink-0">
-              <Package className="h-8 w-8 text-white" strokeWidth={2.5} />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-2">
-                Packer Dashboard
-              </h1>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Real-time Order Fulfillment System</span>
-                </div>
-                {currentUser && (
-                  <>
-                    <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                      <div className="h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
-                      <span className="text-sm font-semibold text-blue-700 dark:text-blue-400">
-                        {currentUser.displayName || currentUser.username}
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons - Professional Layout */}
-          <div className="flex flex-wrap gap-3">
-            <Button 
-              onClick={() => setScannerOpen(true)} 
-              size="lg" 
-              className="flex-1 sm:flex-none gap-2.5 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 h-12 px-6 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 font-semibold"
-            >
-              <Camera className="h-5 w-5" strokeWidth={2.5} />
-              <span>Scan Barcode</span>
-            </Button>
-            <Button 
-              onClick={() => fetchData()} 
-              variant="outline" 
-              size="lg"
-              disabled={refreshing}
-              className="h-12 px-4 border-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300"
-            >
-              <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} strokeWidth={2.5} />
-            </Button>
-            <div className="h-12 flex items-center">
-              <ThemeToggle />
-            </div>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => setShowLogoutDialog(true)}
-              className="h-12 px-4 border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 transition-all"
-            >
-              <LogOut className="h-5 w-5" strokeWidth={2.5} />
-              <span className="hidden lg:inline ml-2">Sign Out</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Quick Stats Bar - Integrated */}
-        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">System Active</span>
-            </div>
-            <div className="h-4 w-px bg-slate-300 dark:bg-slate-600" />
-            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <Clock className="h-4 w-4" />
-              <span className="font-medium">
-                {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
-            {selectedChannel !== 'All' && (
-              <>
-                <div className="h-4 w-px bg-slate-300 dark:bg-slate-600" />
-                <Badge variant="secondary" className="font-semibold">
-                  {selectedChannel}
-                </Badge>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Date Filter - Enterprise Style (Same as Admin/Operations) */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 pb-8 px-6">
+      {/* Date Filter & Scanner - Enterprise Style */}
+      <div className="flex items-center justify-between pt-6">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Filter by Date Range</h2>
-        <EnterpriseDateRangePicker
-          startDate={startDate}
-          endDate={endDate}
-          onDateChange={(start, end) => {
-            setStartDate(start)
-            setEndDate(end)
-          }}
-        />
+        <div className="flex items-center gap-3">
+          <EnterpriseDateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onDateChange={(start, end) => {
+              setStartDate(start)
+              setEndDate(end)
+            }}
+          />
+          <Button 
+            onClick={() => setScannerOpen(true)} 
+            variant="outline"
+            className="h-10 px-4 gap-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium"
+          >
+            <Camera className="h-4 w-4" />
+            Scan Barcode
+          </Button>
+        </div>
       </div>
 
       {/* Enhanced Stats Cards - Professional 4-Card Layout */}
@@ -614,28 +514,28 @@ export default function PackerDashboard() {
                 <table className="w-full">
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '8%' }}>
+                      <th className="text-left py-4 px-3 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>
                         Date
                       </th>
-                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>
+                      <th className="text-left py-4 px-3 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '12%' }}>
                         Name
                       </th>
-                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '20%' }}>
+                      <th className="text-left py-4 px-3 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '18%' }}>
                         Address
                       </th>
-                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>
+                      <th className="text-left py-4 px-3 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '11%' }}>
                         Contact No.
                       </th>
-                      <th className="text-right py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '8%' }}>
-                        Price
-                      </th>
-                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '18%' }}>
+                      <th className="text-left py-4 px-3 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '16%' }}>
                         Items
                       </th>
-                      <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '12%' }}>
+                      <th className="text-left py-4 px-3 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>
+                        Price
+                      </th>
+                      <th className="text-left py-4 px-3 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '11%' }}>
                         Tracking
                       </th>
-                      <th className="text-center py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider" style={{ width: '14%' }}>
+                      <th className="text-center py-4 px-3 text-[11px] font-bold text-white uppercase tracking-wider" style={{ width: '12%' }}>
                         Action
                       </th>
                     </tr>
@@ -646,7 +546,7 @@ export default function PackerDashboard() {
                         key={order.id}
                         className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
                       >
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-3">
                           <div className="flex flex-col">
                             <span className="text-[11px] font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                               {new Date(order.orderDate).toLocaleDateString('en-US', { 
@@ -664,27 +564,22 @@ export default function PackerDashboard() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-3">
                           <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
                             {order.customerName}
                           </span>
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-3">
                           <span className="text-[11px] text-slate-700 dark:text-slate-300 block break-words leading-relaxed">
                             {order.customerAddress}
                           </span>
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-3">
                           <span className="text-[11px] font-mono text-slate-900 dark:text-white font-medium block break-words">
                             {order.customerPhone}
                           </span>
                         </td>
-                        <td className="py-3 px-2 text-right">
-                          <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
-                            ₱{order.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </span>
-                        </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-3">
                           <div className="flex flex-col gap-0.5">
                             <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
                               {order.itemName}
@@ -694,7 +589,12 @@ export default function PackerDashboard() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-3">
+                          <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
+                            ₱{order.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3">
                           <div className="flex flex-col gap-0.5">
                             <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 block break-all">
                               {order.waybill}
@@ -704,7 +604,7 @@ export default function PackerDashboard() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-3">
                           <div className="flex items-center justify-center">
                             <Button
                               variant="outline"
@@ -759,13 +659,25 @@ export default function PackerDashboard() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 text-white">
-                    <th className="text-left py-3 px-3 text-[10px] sm:text-xs font-bold tracking-wider border-r border-slate-700/50">
-                      WAYBILL NO.
+                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider border-r border-slate-700/50" style={{ width: '12%' }}>
+                      DATE
                     </th>
-                    <th className="text-left py-3 px-3 text-[10px] sm:text-xs font-bold tracking-wider border-r border-slate-700/50">
-                      PACKED AT
+                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider border-r border-slate-700/50" style={{ width: '15%' }}>
+                      CUSTOMER
                     </th>
-                    <th className="text-left py-3 px-3 text-[10px] sm:text-xs font-bold tracking-wider">
+                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider border-r border-slate-700/50" style={{ width: '20%' }}>
+                      ITEM
+                    </th>
+                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider border-r border-slate-700/50" style={{ width: '8%' }}>
+                      QTY
+                    </th>
+                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>
+                      PRICE
+                    </th>
+                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider border-r border-slate-700/50" style={{ width: '15%' }}>
+                      WAYBILL
+                    </th>
+                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider" style={{ width: '20%' }}>
                       PACKED BY
                     </th>
                   </tr>
@@ -778,24 +690,51 @@ export default function PackerDashboard() {
                         index % 2 === 0 ? 'bg-white dark:bg-slate-950' : 'bg-slate-50/50 dark:bg-slate-900/50'
                       }`}
                     >
-                      <td className="py-3 px-3">
-                        <span className="font-mono text-xs sm:text-sm font-semibold text-green-600 dark:text-green-400 block">
-                          {order.waybill}
+                      <td className="py-2.5 px-3">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                            {new Date(order.packedAt).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: '2-digit'
+                            })}
+                          </span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                            {new Date(order.packedAt).toLocaleTimeString('en-US', { 
+                              hour: '2-digit', 
+                              minute: '2-digit',
+                              hour12: true
+                            })}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="text-[11px] text-slate-900 dark:text-white font-medium block truncate">
+                          {order.customerName || 'N/A'}
                         </span>
                       </td>
-                      <td className="py-3 px-3">
-                        <span className="text-xs text-slate-600 dark:text-slate-400">
-                          {new Date(order.packedAt).toLocaleString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                      <td className="py-2.5 px-3">
+                        <span className="text-[11px] text-slate-700 dark:text-slate-300 block truncate">
+                          {order.itemName || 'N/A'}
                         </span>
                       </td>
-                      <td className="py-3 px-3">
-                        <Badge variant="outline" className="text-[10px]">
-                          {order.packedBy}
+                      <td className="py-2.5 px-3">
+                        <span className="text-[11px] font-semibold text-slate-900 dark:text-white">
+                          {order.quantity || 0}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="text-[11px] font-bold text-slate-900 dark:text-white tabular-nums">
+                          ₱{(order.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="font-mono text-[11px] font-semibold text-green-600 dark:text-green-400 block truncate">
+                          {order.waybill || 'N/A'}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <Badge variant="outline" className="text-[10px] font-medium">
+                          {order.packedBy || 'Unknown'}
                         </Badge>
                       </td>
                     </tr>
@@ -1020,30 +959,6 @@ export default function PackerDashboard() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Logout Confirmation Dialog */}
-      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <LogOut className="h-5 w-5 text-red-600" />
-              Sign Out
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to sign out? You will need to log in again to access the packer dashboard.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
-            >
-              Yes, Sign Out
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 // Role-based access control system
 
-export type UserRole = 'admin' | 'operations' | 'packer' | 'tracker'
+export type UserRole = 'admin' | 'operations' | 'packer' | 'tracker' | 'logistics-admin'
 
 export interface User {
   username: string
@@ -36,6 +36,12 @@ export const ROLES = {
     name: 'Tracker',
     description: 'Track orders and update parcel status',
     icon: '🚚'
+  },
+  'logistics-admin': {
+    id: 'logistics-admin' as const,
+    name: 'Logistics Admin',
+    description: 'Logistics overview and monitoring',
+    icon: '📊'
   }
 } as const
 
@@ -77,6 +83,11 @@ export const ROLE_PERMISSIONS = {
   ],
   tracker: [
     '/tracker/dashboard'
+  ],
+  'logistics-admin': [
+    '/logistics/dashboard',
+    '/dashboard/log',
+    '/dashboard/track-orders'
   ]
 } as const
 
@@ -85,7 +96,8 @@ export const DEFAULT_PASSWORDS: Record<UserRole, string> = {
   admin: 'admin123',
   operations: 'ops456',
   packer: 'pack789',
-  tracker: 'tracker123'
+  tracker: 'tracker123',
+  'logistics-admin': 'logistics123'
 }
 
 // Auth helpers
@@ -135,6 +147,9 @@ export function getDefaultRoute(role: UserRole): string {
   if (role === 'tracker') {
     return '/tracker/dashboard'
   }
+  if (role === 'logistics-admin') {
+    return '/logistics/dashboard'
+  }
   return '/dashboard'
 }
 
@@ -165,7 +180,7 @@ export function getCurrentUser(): User | null {
     
     if (isLoggedIn === 'true' && username && role) {
       // Validate role is valid
-      if (!['admin', 'operations', 'packer', 'tracker'].includes(role)) {
+      if (!['admin', 'operations', 'packer', 'tracker', 'logistics-admin'].includes(role)) {
         console.warn('[Auth] Invalid role in session, clearing...')
         clearCurrentUser()
         return null

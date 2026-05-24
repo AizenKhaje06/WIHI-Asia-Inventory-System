@@ -60,6 +60,19 @@ export async function PUT(
       )
     }
 
+    // Log the sale action (order is now complete)
+    try {
+      const { addLog } = await import('@/lib/supabase-db')
+      await addLog({
+        operation: 'sale',
+        itemName: order.product,
+        details: `Sale completed via ${order.sales_channel}. Packed by ${packedBy}. Waybill: ${order.waybill}, Qty: ${order.qty}, Total: ₱${order.total.toLocaleString()}`
+      })
+    } catch (logError) {
+      console.error('[Pack Order] Error logging sale action:', logError)
+      // Don't fail the request if logging fails
+    }
+
     return NextResponse.json({
       success: true,
       order

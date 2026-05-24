@@ -1742,17 +1742,18 @@ export default function TrackOrdersPage() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                    <th className="py-3 px-4 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[150px]">Date & Time</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[140px]">Customer</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[110px]">Channel</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[180px]">Store</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 min-w-[250px]">Product</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[130px]">Date & Time</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[120px]">Customer</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[100px]">Channel</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[140px]">Store</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[200px]">Product</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[60px]">Qty</th>
                     <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[90px]">Courier</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[120px]">Waybill</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[95px]">Payment</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[85px]">Status</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[120px]">Parcel Status</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider w-[95px]">Action</th>
+                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[110px]">Waybill</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[85px]">Payment</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[80px]">Status</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[110px]">Parcel Status</th>
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider w-[90px]">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1761,7 +1762,7 @@ export default function TrackOrdersPage() {
                       key={order.id} 
                       className="group hover:bg-blue-50 dark:hover:bg-slate-800/50 transition-all duration-200"
                     >
-                      <td className="py-3 px-4 border-r border-slate-100 dark:border-slate-800">
+                      <td className="py-3 px-3 border-r border-slate-100 dark:border-slate-800">
                         <div className="flex items-center gap-3">
                           <Calendar className="h-4 w-4 text-slate-400 flex-shrink-0" />
                           <div>
@@ -1792,6 +1793,13 @@ export default function TrackOrdersPage() {
                       <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
                         <div className="text-[11px] text-slate-900 dark:text-white font-medium whitespace-normal break-words leading-relaxed" title={order.itemName}>
                           {order.itemName}
+                        </div>
+                      </td>
+                      <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-center">
+                          <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-xs font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 rounded-md">
+                            {order.quantity}
+                          </span>
                         </div>
                       </td>
                       <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">

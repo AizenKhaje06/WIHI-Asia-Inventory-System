@@ -165,6 +165,7 @@ export function LoginForm({
       case "operations":
         return "warehouse operations"
       case "logistics":
+        if (logisticsSubRole === "logistics-admin") return "logistics admin dashboard"
         return logisticsSubRole === "tracker" ? "tracker dashboard" : "packer dashboard"
       default:
         return "dashboard"
@@ -199,6 +200,12 @@ export function LoginForm({
                 <SelectValue placeholder="Select logistics role" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="logistics-admin">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    <span>Admin</span>
+                  </div>
+                </SelectItem>
                 <SelectItem value="packer">
                   <div className="flex items-center gap-2">
                     <Package className="h-4 w-4" />

@@ -34,9 +34,14 @@ export default function InsightsPage() {
   const isTeamLeader = false // Team leader role removed
   const currentUser = getCurrentUser()
   const teamLeaderChannel = null
+  const isDepartment = userRole === 'operations'
+  const userChannel = currentUser?.assignedChannel || null
   
   // Global Sales Channel Filter
-  const [salesChannelFilter, setSalesChannelFilter] = useState("all")
+  // Department accounts: auto-set to their assigned channel
+  const [salesChannelFilter, setSalesChannelFilter] = useState(
+    isDepartment && userChannel ? userChannel : "all"
+  )
   
   // Filter states
   const [abcSearch, setAbcSearch] = useState("")
@@ -317,13 +322,13 @@ export default function InsightsPage() {
           <Select 
             value={salesChannelFilter} 
             onValueChange={setSalesChannelFilter}
-            disabled={isTeamLeader} // Disable for team leaders
+            disabled={isDepartment} // Disable for department accounts
           >
             <SelectTrigger className="h-9 w-full sm:w-[180px] border-slate-300 dark:border-slate-700">
-              <SelectValue placeholder={isTeamLeader ? teamLeaderChannel : "All Channels"} />
+              <SelectValue placeholder={isDepartment ? userChannel : "All Channels"} />
             </SelectTrigger>
             <SelectContent>
-              {!isTeamLeader && <SelectItem value="all">All Channels</SelectItem>}
+              {!isDepartment && <SelectItem value="all">All Channels</SelectItem>}
               <SelectItem value="Shopee">Shopee</SelectItem>
               <SelectItem value="Lazada">Lazada</SelectItem>
               <SelectItem value="Facebook">Facebook</SelectItem>

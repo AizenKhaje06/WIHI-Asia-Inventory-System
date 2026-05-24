@@ -138,6 +138,19 @@ export async function POST(
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
     
+    // Log the sale action (order is now complete)
+    try {
+      const { addLog } = await import('@/lib/supabase-db')
+      await addLog({
+        operation: 'sale',
+        itemName: cleanProductName,
+        details: `Sale completed via ${data.sales_channel}. Packed by ${packedBy}. Waybill: ${data.waybill}, Qty: ${data.qty}, Total: ₱${data.total.toLocaleString()}`
+      })
+    } catch (logError) {
+      console.error('[API] Error logging sale action:', logError)
+      // Don't fail the request if logging fails
+    }
+    
     return NextResponse.json(data)
   } catch (error: any) {
     console.error('[API] Error in POST /api/orders/[id]/pack:', error)

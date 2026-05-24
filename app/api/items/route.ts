@@ -43,8 +43,8 @@ export const GET = withAuth(async (request, { user }) => {
   }
 })
 
-// POST - Requires admin or operations role
-export const POST = withRoles(['admin', 'operations'], async (request, { user }) => {
+// POST - Requires admin, operations, or logistics-admin role
+export const POST = withRoles(['admin', 'operations', 'logistics-admin'], async (request, { user }) => {
   try {
     const body = await request.json()
     

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/tooltip"
 
 export type UserRole = "admin" | "operations" | "logistics"
-export type LogisticsSubRole = "packer" | "tracker"
+export type LogisticsSubRole = "logistics-admin" | "packer" | "tracker"
 
 interface RoleSelectorProps {
   selectedRole: UserRole

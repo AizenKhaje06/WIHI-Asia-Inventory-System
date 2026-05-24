@@ -254,6 +254,9 @@ export async function getOrders(salesChannel?: string): Promise<Order[]> {
     .from('orders')
     .select('*')
     .is('deleted_at', null)
+    // CRITICAL: Only include Packed orders (completed sales)
+    // Pending orders are not yet sales (still in Packing Queue)
+    .in('status', ['Packed', 'Shipped', 'Delivered'])
     .order('date', { ascending: false })
   
   // Filter by sales channel if provided

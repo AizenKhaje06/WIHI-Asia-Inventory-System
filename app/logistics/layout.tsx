@@ -11,19 +11,18 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from 'sonner'
 
 const NAV_ITEMS = [
-  { href: '/packer/dashboard', label: 'Dashboard' },
+  { href: '/logistics/dashboard', label: 'Dashboard' },
+  { href: '/logistics/products', label: 'Products' },
+  { href: '/logistics/track-orders', label: 'Track Orders' },
+  { href: '/logistics/log', label: 'Activity Logs' },
 ]
 
-export default function PackerLayout({
-  children
-}: {
-  children: React.ReactNode
-}) {
+export default function LogisticsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   const [currentTime, setCurrentTime] = useState('')
-  const [displayName, setDisplayName] = useState('Packer')
+  const [displayName, setDisplayName] = useState('Logistics Admin')
 
   useEffect(() => {
     // Update time every second
@@ -70,7 +69,7 @@ export default function PackerLayout({
               {/* Brand */}
               <div className="flex items-center gap-3 pr-8 border-r border-slate-200 dark:border-slate-800">
                 <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                  Packer
+                  Logistics
                 </div>
                 <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
                 <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -146,7 +145,7 @@ export default function PackerLayout({
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-semibold">Sign Out</AlertDialogTitle>
             <AlertDialogDescription className="text-sm">
-              Are you sure you want to sign out from Packer Dashboard?
+              Are you sure you want to sign out from Logistics Admin?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

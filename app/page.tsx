@@ -23,7 +23,7 @@ interface Channel {
 
 export default function EnterpriseLoginPage() {
   const [selectedRole, setSelectedRole] = useState<UserRole>("admin")
-  const [logisticsSubRole, setLogisticsSubRole] = useState<LogisticsSubRole>("packer")
+  const [logisticsSubRole, setLogisticsSubRole] = useState<LogisticsSubRole>("logistics-admin")
   const [mounted, setMounted] = useState(false)
   const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false)
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("")
@@ -206,9 +206,9 @@ export default function EnterpriseLoginPage() {
     setError("")
 
     try {
-      // Logistics login (Packer or Tracker)
+      // Logistics login (Admin, Packer or Tracker)
       if (formData.role === 'logistics') {
-        const actualRole = formData.logisticsSubRole || 'packer'
+        const actualRole = formData.logisticsSubRole || 'logistics-admin'
         
         const data = await apiPost("/api/accounts", {
           action: "validate",
@@ -235,7 +235,9 @@ export default function EnterpriseLoginPage() {
           }
           
           // Route based on sub-role
-          if (actualRole === 'tracker') {
+          if (actualRole === 'logistics-admin') {
+            router.push('/logistics/dashboard')
+          } else if (actualRole === 'tracker') {
             router.push('/tracker/dashboard')
           } else {
             router.push('/packer/dashboard')

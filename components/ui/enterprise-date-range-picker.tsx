@@ -259,13 +259,13 @@ export function EnterpriseDateRangePicker({
         <Button
           variant="outline"
           className={cn(
-            "justify-start text-left font-normal h-9 px-3 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs",
+            "justify-start text-left font-normal h-10 px-3 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm rounded-md",
             !tempStart && !tempEnd && "text-slate-500",
             className
           )}
         >
-          <Calendar className="mr-2 h-3.5 w-3.5 text-slate-500" />
-          <span className="text-xs font-medium">{formatDateRange()}</span>
+          <Calendar className="mr-2 h-4 w-4 text-slate-500" />
+          <span className="text-sm font-normal">{formatDateRange()}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent 

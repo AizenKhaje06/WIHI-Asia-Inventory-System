@@ -763,7 +763,6 @@ export default function InternalUsagePage() {
                     <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="demo">Demo/Display</SelectItem>
                     <SelectItem value="internal">Internal Use</SelectItem>
-                    <SelectItem value="transfer">Warehouse Transfer</SelectItem>
                   </SelectContent>
                 </Select>
                 {getCurrentUser()?.role === 'admin' && (
@@ -992,12 +991,6 @@ export default function InternalUsagePage() {
                           <div className="flex items-center gap-2">
                             <Users className="h-4 w-4 text-blue-600" />
                             <span>Internal Use</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="Warehouse Transfer">
-                          <div className="flex items-center gap-2">
-                            <Package className="h-4 w-4 text-indigo-600" />
-                            <span>Warehouse Transfer</span>
                           </div>
                         </SelectItem>
                       </SelectContent>

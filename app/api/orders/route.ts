@@ -192,6 +192,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: orderError.message }, { status: 500 })
     }
     
+    // Log the dispatch action as "to-be-packed"
+    try {
+      const { addLog } = await import('@/lib/supabase-db')
+      await addLog({
+        operation: 'to-be-packed',
+        itemName: product,
+        details: `Order dispatched to ${salesChannel} by ${dispatchedBy}. Waybill: ${waybill}, Qty: ${qty}, Total: ₱${total.toLocaleString()}. Awaiting packing.`
+      })
+    } catch (logError) {
+      console.error('[API] Error logging to-be-packed:', logError)
+      // Don't fail the request if logging fails
+    }
+    
     // Insert order items if provided
     if (orderItems.length > 0) {
       const orderItemsData = orderItems.map((item: any) => ({
