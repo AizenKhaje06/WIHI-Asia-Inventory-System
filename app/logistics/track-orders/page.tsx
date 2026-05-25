@@ -257,7 +257,7 @@ export default function LogisticsTrackOrdersPage() {
             <Truck className="h-5 w-5 text-white" strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Track Orders</h1>
+            <h1 className="text-3xl font-bold gradient-text tracking-tight">Track Orders</h1>
             <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Monitor all packed orders and their delivery status</p>
           </div>
         </div>

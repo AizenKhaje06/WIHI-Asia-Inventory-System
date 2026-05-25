@@ -284,7 +284,7 @@ export default function LogisticsLogPage() {
             <Activity className="h-5 w-5 text-white" strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Activity Logs</h1>
+            <h1 className="text-3xl font-bold gradient-text tracking-tight">Activity Logs</h1>
             <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">View all system operations and changes</p>
           </div>
         </div>
