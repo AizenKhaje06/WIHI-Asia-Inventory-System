@@ -37,6 +37,8 @@ interface PackedOrder {
   waybill: string
   itemName: string
   quantity: number
+  totalAmount: number
+  customerName: string
   packedAt: string
   packedBy: string
 }
@@ -304,8 +306,7 @@ export default function PackerDashboard() {
           />
           <Button 
             onClick={() => setScannerOpen(true)} 
-            variant="outline"
-            className="h-10 px-4 gap-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium w-full sm:w-auto"
+            className="h-10 px-4 gap-2 text-sm font-semibold w-full sm:w-auto border-0 text-white shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-orange-500 via-orange-600 to-black hover:from-orange-600 hover:via-orange-700 hover:to-gray-900"
           >
             <Camera className="h-4 w-4" />
             <span>Scan Barcode</span>

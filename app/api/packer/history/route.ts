@@ -30,6 +30,8 @@ export async function GET(request: NextRequest) {
       waybill: order.waybill || order.id,
       itemName: order.product || 'N/A',
       quantity: order.qty || 0,
+      totalAmount: order.total || 0,
+      customerName: order.customer_name || 'N/A',
       packedAt: order.packed_at,
       packedBy: order.packed_by || 'Unknown'
     })) || []
