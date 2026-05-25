@@ -134,6 +134,15 @@ export default function LogisticsAdminDashboard() {
     return counts
   }, [filteredTracked])
 
+  const statusAmounts = useMemo(() => {
+    const amounts: Record<string, number> = {}
+    PARCEL_STATUSES.forEach(s => { amounts[s.key] = 0 })
+    filteredTracked.forEach(o => {
+      amounts[o.parcelStatus] = (amounts[o.parcelStatus] || 0) + (o.totalAmount || 0)
+    })
+    return amounts
+  }, [filteredTracked])
+
   const inTransitCount = useMemo(() =>
     (statusCounts['ON DELIVERY'] || 0) + (statusCounts['IN TRANSIT'] || 0) + (statusCounts['PICKUP'] || 0)
   , [statusCounts])
@@ -404,6 +413,7 @@ export default function LogisticsAdminDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {PARCEL_STATUSES.map(status => {
                   const count = statusCounts[status.key] || 0
+                  const amount = statusAmounts[status.key] || 0
                   const pct = totalOrders > 0 ? Math.round((count / totalOrders) * 100) : 0
                   return (
                     <div key={status.key} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -416,7 +426,12 @@ export default function LogisticsAdminDashboard() {
                         <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                           <div className={cn('h-full rounded-full transition-all duration-500', status.color)} style={{ width: `${pct}%` }} />
                         </div>
-                        <span className="text-[10px] text-slate-400 mt-0.5 block">{pct}%</span>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <span className="text-[10px] text-slate-400">{pct}%</span>
+                          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                            ₱{amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   )
