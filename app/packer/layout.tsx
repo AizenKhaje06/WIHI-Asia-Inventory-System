@@ -62,7 +62,7 @@ export default function PackerLayout({
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Enterprise Header - Single Line, Minimal */}
-      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+      <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-[1920px] mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between h-12 sm:h-14">
             {/* Left: Brand + Navigation */}
