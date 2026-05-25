@@ -349,7 +349,7 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
       >
         {/* Logo & Brand - Professional Layout with Dark Mode Support */}
         <div 
-          className="h-14 xl:h-16 flex items-center justify-center px-1.5 xl:px-2 flex-shrink-0 relative"
+          className="h-14 flex items-center justify-center px-1.5 xl:px-2 flex-shrink-0 relative"
         >
           {/* Bottom border line - matching separator style */}
           <div className="absolute bottom-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-white to-transparent dark:from-transparent dark:via-white dark:to-transparent" />
@@ -360,17 +360,17 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
               <img 
                 src="/Vertex-icon.png" 
                 alt="Vertex" 
-                className="h-11 xl:h-[52px] w-auto object-contain dark:hidden"
+                className="h-9 w-auto object-contain dark:hidden"
               />
               {/* Dark mode logo */}
               <img 
                 src="/Vertex-icon-2.png" 
                 alt="Vertex" 
-                className="h-11 xl:h-[52px] w-auto object-contain hidden dark:block"
+                className="h-9 w-auto object-contain hidden dark:block"
               />
             </div>
           ) : (
-            <div className="w-9 h-9 xl:w-10 xl:h-10 relative" aria-hidden="true">
+            <div className="w-8 h-8 relative" aria-hidden="true">
               <img 
                 src="/Vertex-icon-3.png" 
                 alt="Vertex" 

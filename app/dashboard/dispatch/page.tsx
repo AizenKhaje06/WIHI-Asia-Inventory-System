@@ -234,65 +234,75 @@ export default function DispatchPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold gradient-text">Warehouse Dispatch</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            {isTeamLeader 
-              ? 'Dispatch packed orders for your channel'
-              : 'Dispatch packed orders to customers'
-            }
-          </p>
-        </div>
-        <Button onClick={fetchQueue} variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Header - Professional Style */}
+      <div className="mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Warehouse Dispatch Overview</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          {isTeamLeader 
+            ? 'Dispatch packed orders for your channel'
+            : 'Dispatch packed orders to customers'
+          }
+        </p>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Professional Corporate Design */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-              Ready to Dispatch
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredOrders.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-              Total Items
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {filteredOrders.reduce((sum, order) => sum + (order.qty || order.quantity || 0), 0)}
+        {/* Ready to Dispatch - Blue */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
+              <Truck className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-              Total Value
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(filteredOrders.reduce((sum, order) => sum + (order.total || order.totalAmount || 0), 0))}
+            <div>
+              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Ready to Dispatch</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">{filteredOrders.length}</p>
             </div>
-          </CardContent>
+          </div>
+        </Card>
+
+        {/* Total Items - Purple */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
+              <Package className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Total Items</p>
+              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
+                {filteredOrders.reduce((sum, order) => sum + (order.qty || order.quantity || 0), 0)}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Total Value - Green */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30">
+              <Send className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Total Value</p>
+              <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
+                {formatCurrency(filteredOrders.reduce((sum, order) => sum + (order.total || order.totalAmount || 0), 0))}
+              </p>
+            </div>
+          </div>
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card>
+      {/* Filters - Professional Design */}
+      <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
         <CardContent className="pt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Search className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">Search & Filter Orders</h3>
+            <Button onClick={fetchQueue} variant="ghost" size="sm" className="ml-auto h-8 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+              <RefreshCw className="h-3 w-3" />
+              Refresh
+            </Button>
+          </div>
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -301,13 +311,13 @@ export default function DispatchPage() {
                   placeholder="Search orders..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
             {!isTeamLeader && (
               <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-                <SelectTrigger className="w-full sm:w-[200px] h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
+                <SelectTrigger className="w-full sm:w-[200px] h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                   <SelectValue placeholder="All Channels" />
                 </SelectTrigger>
                 <SelectContent>
@@ -324,113 +334,89 @@ export default function DispatchPage() {
         </CardContent>
       </Card>
 
-      {/* Orders Table */}
-      <Card>
-        <CardContent className="pt-6">
-          {filteredOrders.length === 0 ? (
-            <div className="text-center py-12">
-              <Truck className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-600 dark:text-slate-400 font-medium">No orders ready for dispatch</p>
-              <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">
+      {/* Orders Grid - 5 Columns */}
+      {filteredOrders.length === 0 ? (
+        <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+          <CardContent className="pt-6">
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
+                <Truck className="h-8 w-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No orders ready for dispatch</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-500">
                 Packed orders will appear here
               </p>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Order #
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Date
-                    </th>
-                    {!isTeamLeader && (
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Channel
-                      </th>
-                    )}
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Customer
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Product
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Qty
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Total
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Status
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOrders.map((order) => (
-                    <tr
-                      key={order.id}
-                      className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                    >
-                      <td className="py-3 px-4 text-sm">
-                        <span className="font-mono text-slate-900 dark:text-white">
-                          #{(order.orderNumber || order.id).slice(-6)}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400">
-                        {new Date(order.date || order.orderDate || '').toLocaleDateString()}
-                      </td>
-                      {!isTeamLeader && (
-                        <td className="py-3 px-4 text-sm">
-                          <Badge variant="outline">
-                            {order.sales_channel || order.channel || 'N/A'}
-                          </Badge>
-                        </td>
-                      )}
-                      <td className="py-3 px-4 text-sm">
-                        <div className="text-slate-900 dark:text-white font-medium">
-                          {order.customerName}
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          {order.customerPhone}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-slate-900 dark:text-white">
-                        {order.product || order.itemName}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400">
-                        {order.qty || order.quantity}
-                      </td>
-                      <td className="py-3 px-4 text-sm font-semibold text-slate-900 dark:text-white">
-                        {formatCurrency(order.total || order.totalAmount || 0)}
-                      </td>
-                      <td className="py-3 px-4 text-sm">
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                          {order.parcel_status || order.parcelStatus || 'Packed'}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <Button
-                          size="sm"
-                          onClick={() => openDispatchForm(order)}
-                        >
-                          <Send className="h-4 w-4 mr-2" />
-                          Dispatch
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {filteredOrders.map((order) => (
+            <Card key={order.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-slate-900">
+              <CardContent className="pt-6">
+                <div className="space-y-3">
+                  {/* Order Number */}
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                      #{(order.orderNumber || order.id).slice(-6)}
+                    </span>
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-xs font-semibold">
+                      {order.parcel_status || order.parcelStatus || 'Packed'}
+                    </Badge>
+                  </div>
+
+                  {/* Date */}
+                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    {new Date(order.date || order.orderDate || '').toLocaleDateString()}
+                  </div>
+
+                  {/* Channel Badge */}
+                  {!isTeamLeader && (
+                    <Badge variant="outline" className="text-xs font-semibold">
+                      {order.sales_channel || order.channel || 'N/A'}
+                    </Badge>
+                  )}
+
+                  {/* Product Name */}
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white line-clamp-2 min-h-[40px]">
+                    {order.product || order.itemName}
+                  </div>
+
+                  {/* Customer Info */}
+                  <div className="space-y-1">
+                    <div className="text-xs font-medium text-slate-900 dark:text-white truncate">
+                      {order.customerName}
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                      {order.customerPhone}
+                    </div>
+                  </div>
+
+                  {/* Quantity and Total */}
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <div className="text-xs text-slate-600 dark:text-slate-400">
+                      Qty: <span className="font-semibold text-slate-900 dark:text-white">{order.qty || order.quantity}</span>
+                    </div>
+                    <div className="text-sm font-bold text-slate-900 dark:text-white">
+                      {formatCurrency(order.total || order.totalAmount || 0)}
+                    </div>
+                  </div>
+
+                  {/* Dispatch Button */}
+                  <Button
+                    size="sm"
+                    onClick={() => openDispatchForm(order)}
+                    className="w-full mt-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30 font-semibold"
+                  >
+                    <Send className="h-3 w-3 mr-2" />
+                    Dispatch
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Dispatch Form Dialog - Professional Design */}
       <Dialog open={showDispatchForm} onOpenChange={setShowDispatchForm}>

@@ -314,12 +314,12 @@ export default function LogPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen w-full max-w-full overflow-x-hidden">
-        <div className="mb-6">
-          <h1 className="text-4xl font-bold gradient-text mb-2">Operation History</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-base">View all system operations and changes</p>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Activity Logs Overview</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">View all system operations and changes</p>
         </div>
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <BrandLoader size="lg" />
             <p className="text-slate-600 dark:text-slate-400 mt-6 text-sm font-medium">Loading logs...</p>
@@ -330,226 +330,210 @@ export default function LogPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
-      {/* Page Header */}
-      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold gradient-text mb-2">
-          Operation History
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
-          View all system operations and changes
-        </p>
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Page Header - Professional Style */}
+      <div className="mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Activity Logs Overview</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">View all system operations and changes</p>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
+      {/* Statistics Cards - Professional Corporate Design */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
         {/* Total Logs - Blue */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-              <Database className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
+              <Database className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Total Logs</p>
-              <p className="text-xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">{stats.total}</p>
+              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Total Logs</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">{stats.total}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Today - Green */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-              <Activity className="h-4 w-4 text-green-600 dark:text-green-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30">
+              <Activity className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Today</p>
-              <p className="text-xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent tabular-nums">{stats.today}</p>
+              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Today</p>
+              <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">{stats.today}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Creates - Purple */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-              <Plus className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
+              <Plus className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Creates</p>
-              <p className="text-xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent tabular-nums">{stats.creates}</p>
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Creates</p>
+              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">{stats.creates}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Updates - Orange */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-              <Edit className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-orange-600 shadow-lg shadow-orange-500/30">
+              <Edit className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Updates</p>
-              <p className="text-xl font-bold bg-gradient-to-br from-orange-600 to-orange-700 bg-clip-text text-transparent tabular-nums">{stats.updates}</p>
+              <p className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">Updates</p>
+              <p className="text-2xl font-bold text-orange-900 dark:text-orange-100 tabular-nums">{stats.updates}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Deletes - Red */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-red-600 shadow-lg shadow-red-500/30">
+              <Trash2 className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Deletes</p>
-              <p className="text-xl font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent tabular-nums">{stats.deletes}</p>
+              <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Deletes</p>
+              <p className="text-2xl font-bold text-red-900 dark:text-red-100 tabular-nums">{stats.deletes}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Cancelled - Amber */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-              <X className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-600 shadow-lg shadow-amber-500/30">
+              <X className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Cancelled</p>
-              <p className="text-xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums">{stats.cancelled}</p>
+              <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Cancelled</p>
+              <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">{stats.cancelled}</p>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Filters Card */}
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 mb-4 p-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Filter className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-          <h3 className="font-semibold text-slate-900 dark:text-white">Filters</h3>
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearFilters}
-              className="ml-auto text-xs"
-            >
-              <X className="h-3 w-3 mr-1" />
-              Clear All
-            </Button>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Search logs..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
+      {/* Filters Card - Professional Design */}
+      <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm mb-6">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2 mb-5">
+            <Filter className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">Search & Filter Logs</h3>
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="ml-auto h-8 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+              >
+                <X className="h-3 w-3" />
+                Clear All
+              </Button>
+            )}
           </div>
 
-          {/* Operation Filter */}
-          <Select value={operationFilter} onValueChange={setOperationFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="All Operations" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Operations</SelectItem>
-              <SelectItem value="create">Create</SelectItem>
-              <SelectItem value="update">Update</SelectItem>
-              <SelectItem value="delete">Delete</SelectItem>
-              <SelectItem value="restock">Restock</SelectItem>
-              <SelectItem value="sale">Sale</SelectItem>
-              <SelectItem value="to-be-packed">To Be Packed</SelectItem>
-              <SelectItem value="transaction-cancelled">Cancelled Transactions</SelectItem>
-              <SelectItem value="internal-usage">Internal Usage</SelectItem>
-              <SelectItem value="demo-display">Demo/Display</SelectItem>
-              <SelectItem value="warehouse">Warehouse</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Search logs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
 
-          {/* Sales Channel Filter - Admin Only */}
-          {!isDepartment && (
-            <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Channels" />
+            {/* Operation Filter */}
+            <Select value={operationFilter} onValueChange={setOperationFilter}>
+              <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <SelectValue placeholder="All Operations" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Channels</SelectItem>
-                <SelectItem value="Shopee">Shopee</SelectItem>
-                <SelectItem value="Lazada">Lazada</SelectItem>
-                <SelectItem value="Facebook">Facebook</SelectItem>
-                <SelectItem value="TikTok">TikTok</SelectItem>
-                <SelectItem value="Office Store">Office Store</SelectItem>
-                <SelectItem value="Physical Store">Physical Store</SelectItem>
+                <SelectItem value="all">All Operations</SelectItem>
+                <SelectItem value="create">Create</SelectItem>
+                <SelectItem value="update">Update</SelectItem>
+                <SelectItem value="delete">Delete</SelectItem>
+                <SelectItem value="restock">Restock</SelectItem>
+                <SelectItem value="sale">Sale</SelectItem>
+                <SelectItem value="to-be-packed">To Be Packed</SelectItem>
+                <SelectItem value="transaction-cancelled">Cancelled Transactions</SelectItem>
+                <SelectItem value="internal-usage">Internal Usage</SelectItem>
+                <SelectItem value="demo-display">Demo/Display</SelectItem>
+                <SelectItem value="warehouse">Warehouse</SelectItem>
               </SelectContent>
             </Select>
-          )}
 
-          {/* Date Range Filter */}
-          <DateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onDateChange={(start, end) => {
-              setStartDate(start)
-              setEndDate(end)
-            }}
-            className="h-10"
-          />
+            {/* Sales Channel Filter - Admin Only */}
+            {!isDepartment && (
+              <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
+                <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <SelectValue placeholder="All Channels" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Channels</SelectItem>
+                  <SelectItem value="Shopee">Shopee</SelectItem>
+                  <SelectItem value="Lazada">Lazada</SelectItem>
+                  <SelectItem value="Facebook">Facebook</SelectItem>
+                  <SelectItem value="TikTok">TikTok</SelectItem>
+                  <SelectItem value="Office Store">Office Store</SelectItem>
+                  <SelectItem value="Physical Store">Physical Store</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
 
-          {/* Sort */}
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger>
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Newest First</SelectItem>
-              <SelectItem value="oldest">Oldest First</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            {/* Date Range Filter */}
+            <DateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onDateChange={(start, end) => {
+                setStartDate(start)
+                setEndDate(end)
+              }}
+              className="h-10"
+            />
 
-        {/* Results Summary */}
-        <div className="mt-3 text-sm text-slate-600 dark:text-slate-400">
-          Showing {paginatedLogs.length} of {filteredLogs.length} logs
-          {hasActiveFilters && ` (filtered from ${logs.length} total)`}
-        </div>
+            {/* Sort */}
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Results Summary */}
+          <div className="mt-4 text-sm text-slate-600 dark:text-slate-400 font-medium">
+            Showing <span className="font-bold text-slate-900 dark:text-white">{paginatedLogs.length}</span> of <span className="font-bold text-slate-900 dark:text-white">{filteredLogs.length}</span> logs
+            {hasActiveFilters && ` (filtered from ${logs.length} total)`}
+          </div>
+        </CardContent>
       </Card>
 
-      {/* Logs Table */}
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-            <div className="p-2 rounded-[5px] bg-blue-100 dark:bg-blue-900/30">
-              <Database className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            Activity Log
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* Logs Table - Professional Design */}
+      <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+        <CardContent className="pt-6">
           {filteredLogs.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
                 <FileText className="h-8 w-8 text-slate-400" />
               </div>
-              <p className="text-slate-600 dark:text-slate-400 font-medium mb-1">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                 {logs.length === 0 ? 'No operations logged yet' : 'No logs match your filters'}
-              </p>
+              </h3>
               {hasActiveFilters && (
                 <Button
                   variant="link"
                   onClick={clearFilters}
-                  className="text-blue-600 dark:text-blue-400"
+                  className="text-blue-600 dark:text-blue-400 font-semibold"
                 >
                   Clear filters to see all logs
                 </Button>
@@ -557,33 +541,24 @@ export default function LogPage() {
             </div>
           ) : (
             <>
-              {/* Mobile Scroll Hint */}
-              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
-                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
-                  <span className="text-blue-500">←</span>
-                  <span>Swipe to see all columns • Tap row to highlight</span>
-                  <span className="text-blue-500">→</span>
-                </p>
-              </div>
-
-              <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[800px] lg:min-w-full text-sm table-fixed">
                   <thead className="sticky top-0 z-10">
-                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                    <tr className="bg-black dark:bg-black">
                       <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[180px]">Date & Time</th>
                       <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[140px]">Operation</th>
                       <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[140px]">Sales Channel</th>
                       <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[220px]">Item</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[auto]">Details</th>
+                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider">Details</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     {paginatedLogs.map((log) => (
                       <tr 
                         key={log.id} 
-                        className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                        className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                       >
-                        <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                        <td className="py-3 px-3 text-xs font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
                             <Clock className="h-3.5 w-3.5 text-slate-400" />
                             {new Date(log.timestamp).toLocaleDateString('en-US', { 
@@ -599,19 +574,19 @@ export default function LogPage() {
                             })}
                           </div>
                         </td>
-                        <td className="py-2.5 px-3 whitespace-nowrap">
+                        <td className="py-3 px-3 whitespace-nowrap">
                           {getOperationBadge(log.operation, log.details)}
                         </td>
-                        <td className="py-2.5 px-3 whitespace-nowrap">
+                        <td className="py-3 px-3 whitespace-nowrap">
                           {getSalesChannelBadge(getSalesChannel(log.details))}
                         </td>
-                        <td className="py-2.5 px-3 text-xs font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                          <div className="max-w-[220px] truncate" title={(log.itemName || '-').replace(/\s*\(\d+\)\s*$/, '')}>
+                        <td className="py-3 px-3 text-sm font-semibold text-slate-800 dark:text-slate-200">
+                          <div className="truncate" title={(log.itemName || '-').replace(/\s*\(\d+\)\s*$/, '')}>
                             {(log.itemName || '-').replace(/\s*\(\d+\)\s*$/, '')}
                           </div>
                         </td>
-                        <td className="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-400">
-                          <div className="max-w-[600px] leading-relaxed">
+                        <td className="py-3 px-3 text-xs text-slate-600 dark:text-slate-400">
+                          <div className="line-clamp-2 leading-relaxed">
                             {log.details}
                           </div>
                         </td>
@@ -621,11 +596,11 @@ export default function LogPage() {
                 </table>
               </div>
 
-              {/* Pagination */}
+              {/* Pagination - Professional Design */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <div className="text-sm text-slate-600 dark:text-slate-400">
-                    Page {currentPage} of {totalPages}
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    Page <span className="font-bold text-slate-900 dark:text-white">{currentPage}</span> of <span className="font-bold text-slate-900 dark:text-white">{totalPages}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -633,6 +608,7 @@ export default function LogPage() {
                       size="sm"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
+                      className="h-9 px-4 font-semibold"
                     >
                       <ChevronLeft className="h-4 w-4 mr-1" />
                       Previous
@@ -642,6 +618,7 @@ export default function LogPage() {
                       size="sm"
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
+                      className="h-9 px-4 font-semibold"
                     >
                       Next
                       <ChevronRight className="h-4 w-4 ml-1" />

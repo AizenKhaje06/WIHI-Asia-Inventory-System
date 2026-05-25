@@ -303,55 +303,53 @@ export default function InternalUsagePage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2 pb-12">
-      {/* Page Header - Enterprise Premium */}
-      <div className="mb-8">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold gradient-text mb-2 tracking-tight">
-              Internal Usage Management
-            </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Track demo displays, internal consumption, and warehouse transfers with real-time cost analytics
-            </p>
-          </div>
-          <Button 
-            onClick={openDispatchModal}
-            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0 rounded-full px-6 h-11"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            <span className="text-sm font-semibold">Dispatch Items</span>
-          </Button>
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Page Header - Professional */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text [-webkit-text-fill-color:transparent]">
+            Internal Usage Overview
+          </h2>
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            Track demo displays, internal consumption, and warehouse transfers with real-time cost analytics
+          </p>
         </div>
+        <Button 
+          onClick={openDispatchModal}
+          className="bg-orange-600 hover:bg-orange-700 text-white shadow-sm transition-colors border-0 px-4 h-10 flex-shrink-0"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          <span className="text-sm font-medium">Dispatch Items</span>
+        </Button>
       </div>
 
-      {/* Tabs - Enterprise Design */}
+      {/* Tabs - Professional Design */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-6 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1.5 rounded-xl h-auto">
+        <TabsList className="grid w-full grid-cols-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-lg h-auto">
           <TabsTrigger 
             value="overview" 
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-slate-900 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=inactive]:text-slate-600 dark:data-[state=inactive]:text-slate-400"
+            className="data-[state=active]:bg-slate-900 data-[state=active]:text-white rounded-md py-2 text-sm font-medium transition-colors data-[state=inactive]:text-slate-600 dark:data-[state=inactive]:text-slate-400"
           >
             <PieChart className="h-4 w-4 mr-2" />
             Overview
           </TabsTrigger>
           <TabsTrigger 
             value="sales-channels"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-slate-900 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=inactive]:text-slate-600 dark:data-[state=inactive]:text-slate-400"
+            className="data-[state=active]:bg-slate-900 data-[state=active]:text-white rounded-md py-2 text-sm font-medium transition-colors data-[state=inactive]:text-slate-600 dark:data-[state=inactive]:text-slate-400"
           >
             <BarChart3 className="h-4 w-4 mr-2" />
             Sales Channels
           </TabsTrigger>
           <TabsTrigger 
             value="cost-analysis"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-slate-900 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=inactive]:text-slate-600 dark:data-[state=inactive]:text-slate-400"
+            className="data-[state=active]:bg-slate-900 data-[state=active]:text-white rounded-md py-2 text-sm font-medium transition-colors data-[state=inactive]:text-slate-600 dark:data-[state=inactive]:text-slate-400"
           >
             <TrendingUp className="h-4 w-4 mr-2" />
             Cost Analysis
           </TabsTrigger>
           <TabsTrigger 
             value="transaction-history"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-slate-900 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=inactive]:text-slate-600 dark:data-[state=inactive]:text-slate-400"
+            className="data-[state=active]:bg-slate-900 data-[state=active]:text-white rounded-md py-2 text-sm font-medium transition-colors data-[state=inactive]:text-slate-600 dark:data-[state=inactive]:text-slate-400"
           >
             <Calendar className="h-4 w-4 mr-2" />
             History
@@ -360,87 +358,83 @@ export default function InternalUsagePage() {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          {/* Stats Cards - Professional Corporate Design */}
+          {/* Stats Cards - Professional Design */}
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             {/* Total Cost Card */}
-            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-slate-500/10 to-slate-600/5 rounded-full -mr-16 -mt-16" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800/50">
-                    <TrendingUp className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                  </div>
+            <Card className="p-5 border-0 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-slate-600 shadow-lg shadow-slate-500/30 flex-shrink-0">
+                  <TrendingUp className="h-5 w-5 text-white" />
                 </div>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Cost</p>
-                <p className="text-2xl font-bold bg-gradient-to-br from-slate-600 to-slate-700 bg-clip-text text-transparent tabular-nums mb-2">
-                  {formatCurrency(totalCost)}
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                  <Package className="h-3 w-3" />
-                  {transactions.length} total
-                </p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold text-slate-700 dark:text-slate-400 uppercase tracking-wider">Total Cost</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 tabular-nums">
+                    {formatCurrency(totalCost)}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                    <Package className="h-3 w-3" />
+                    {transactions.length} total
+                  </p>
+                </div>
               </div>
-            </div>
+            </Card>
 
             {/* Demo/Display Card */}
-            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                    <Monitor className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  </div>
+            <Card className="p-5 border-0 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-amber-600 shadow-lg shadow-amber-500/30 flex-shrink-0">
+                  <Monitor className="h-5 w-5 text-white" />
                 </div>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Demo/Display</p>
-                <p className="text-2xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums mb-2">
-                  {formatCurrency(demoCost)}
-                </p>
-                <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1">
-                  <ArrowUpRight className="h-3 w-3" />
-                  {demoTransactions.length} transactions
-                </p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Demo/Display</p>
+                  <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">
+                    {formatCurrency(demoCost)}
+                  </p>
+                  <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1 mt-0.5">
+                    <ArrowUpRight className="h-3 w-3" />
+                    {demoTransactions.length} transactions
+                  </p>
+                </div>
               </div>
-            </div>
+            </Card>
 
             {/* Internal Use Card */}
-            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                    <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  </div>
+            <Card className="p-5 border-0 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30 flex-shrink-0">
+                  <Users className="h-5 w-5 text-white" />
                 </div>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Internal Use</p>
-                <p className="text-2xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums mb-2">
-                  {formatCurrency(internalCost)}
-                </p>
-                <p className="text-xs text-blue-600 dark:text-blue-500 flex items-center gap-1">
-                  <ArrowUpRight className="h-3 w-3" />
-                  {internalTransactions.length} transactions
-                </p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Internal Use</p>
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">
+                    {formatCurrency(internalCost)}
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-500 flex items-center gap-1 mt-0.5">
+                    <ArrowUpRight className="h-3 w-3" />
+                    {internalTransactions.length} transactions
+                  </p>
+                </div>
               </div>
-            </div>
+            </Card>
 
             {/* Warehouse Transfer Card */}
-            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 rounded-full -mr-16 -mt-16" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-                    <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  </div>
+            <Card className="p-5 border-0 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/30 flex-shrink-0">
+                  <Package className="h-5 w-5 text-white" />
                 </div>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Warehouse Transfer</p>
-                <p className="text-2xl font-bold bg-gradient-to-br from-indigo-600 to-indigo-700 bg-clip-text text-transparent tabular-nums mb-2">
-                  {formatCurrency(transferCost)}
-                </p>
-                <p className="text-xs text-indigo-600 dark:text-indigo-500 flex items-center gap-1">
-                  <ArrowUpRight className="h-3 w-3" />
-                  {transferTransactions.length} transactions
-                </p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Warehouse Transfer</p>
+                  <p className="text-2xl font-bold text-indigo-900 dark:text-indigo-100 tabular-nums">
+                    {formatCurrency(transferCost)}
+                  </p>
+                  <p className="text-xs text-indigo-600 dark:text-indigo-500 flex items-center gap-1 mt-0.5">
+                    <ArrowUpRight className="h-3 w-3" />
+                    {transferTransactions.length} transactions
+                  </p>
+                </div>
               </div>
-            </div>
+            </Card>
           </div>
 
           {/* Recent Transactions - Enterprise Design */}
@@ -560,81 +554,78 @@ export default function InternalUsagePage() {
           </Card>
         </TabsContent>
 
-        {/* Cost Analysis Tab - Professional Corporate Design */}
+        {/* Cost Analysis Tab - Professional Design */}
         <TabsContent value="cost-analysis" className="space-y-6">
           {/* Cost Cards Grid */}
           <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
             {/* Demo/Display Cost */}
-            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                    <Monitor className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <Card className="p-5 border-0 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-amber-600 shadow-lg shadow-amber-500/30 flex-shrink-0">
+                  <Monitor className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Demo/Display Cost</p>
+                  <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">
+                    {formatCurrency(demoCost)}
+                  </p>
+                  <div className="flex items-center justify-between text-xs mt-1">
+                    <span className="text-amber-600 dark:text-amber-500">
+                      {((demoCost / totalCost) * 100 || 0).toFixed(1)}% of total
+                    </span>
+                    <span className="text-amber-600 dark:text-amber-500 font-medium">
+                      {demoTransactions.length} txns
+                    </span>
                   </div>
                 </div>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Demo/Display Cost</p>
-                <p className="text-2xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums mb-2">
-                  {formatCurrency(demoCost)}
-                </p>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-amber-600 dark:text-amber-500">
-                    {((demoCost / totalCost) * 100 || 0).toFixed(1)}% of total
-                  </span>
-                  <span className="text-amber-600 dark:text-amber-500 font-medium">
-                    {demoTransactions.length} txns
-                  </span>
-                </div>
               </div>
-            </div>
+            </Card>
 
             {/* Internal Use Cost */}
-            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                    <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <Card className="p-5 border-0 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30 flex-shrink-0">
+                  <Users className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Internal Use Cost</p>
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">
+                    {formatCurrency(internalCost)}
+                  </p>
+                  <div className="flex items-center justify-between text-xs mt-1">
+                    <span className="text-blue-600 dark:text-blue-500">
+                      {((internalCost / totalCost) * 100 || 0).toFixed(1)}% of total
+                    </span>
+                    <span className="text-blue-600 dark:text-blue-500 font-medium">
+                      {internalTransactions.length} txns
+                    </span>
                   </div>
                 </div>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Internal Use Cost</p>
-                <p className="text-2xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums mb-2">
-                  {formatCurrency(internalCost)}
-                </p>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-blue-600 dark:text-blue-500">
-                    {((internalCost / totalCost) * 100 || 0).toFixed(1)}% of total
-                  </span>
-                  <span className="text-blue-600 dark:text-blue-500 font-medium">
-                    {internalTransactions.length} txns
-                  </span>
-                </div>
               </div>
-            </div>
+            </Card>
 
             {/* Transfer Cost */}
-            <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 rounded-full -mr-16 -mt-16" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-                    <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            <Card className="p-5 border-0 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/30 flex-shrink-0">
+                  <Package className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Transfer Cost</p>
+                  <p className="text-2xl font-bold text-indigo-900 dark:text-indigo-100 tabular-nums">
+                    {formatCurrency(transferCost)}
+                  </p>
+                  <div className="flex items-center justify-between text-xs mt-1">
+                    <span className="text-indigo-600 dark:text-indigo-500">
+                      {((transferCost / totalCost) * 100 || 0).toFixed(1)}% of total
+                    </span>
+                    <span className="text-indigo-600 dark:text-indigo-500 font-medium">
+                      {transferTransactions.length} txns
+                    </span>
                   </div>
                 </div>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Transfer Cost</p>
-                <p className="text-2xl font-bold bg-gradient-to-br from-indigo-600 to-indigo-700 bg-clip-text text-transparent tabular-nums mb-2">
-                  {formatCurrency(transferCost)}
-                </p>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-indigo-600 dark:text-indigo-500">
-                    {((transferCost / totalCost) * 100 || 0).toFixed(1)}% of total
-                  </span>
-                  <span className="text-indigo-600 dark:text-indigo-500 font-medium">
-                    {transferTransactions.length} txns
-                  </span>
-                </div>
               </div>
-            </div>
+            </Card>
           </div>
 
           {/* Cost Breakdown Chart */}
@@ -740,10 +731,10 @@ export default function InternalUsagePage() {
           </Card>
         </TabsContent>
 
-        {/* Transaction History Tab - Enterprise Table Design */}
+        {/* Transaction History Tab - Professional Table Design */}
         <TabsContent value="transaction-history" className="space-y-6">
-          {/* Filters and Search */}
-          <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+          {/* Filters and Search - Professional Card */}
+          <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
             <CardContent className="pt-6">
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
@@ -752,11 +743,11 @@ export default function InternalUsagePage() {
                     placeholder="Search by item, department, or staff..."
                     value={searchTable}
                     onChange={(e) => setSearchTable(e.target.value)}
-                    className="pl-10 h-11"
+                    className="pl-10 h-10 focus:ring-2 focus:ring-blue-500/20"
                   />
                 </div>
                 <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="w-full sm:w-[200px] h-11">
+                  <SelectTrigger className="w-full sm:w-[200px] h-10 focus:ring-2 focus:ring-blue-500/20">
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -767,7 +758,7 @@ export default function InternalUsagePage() {
                 </Select>
                 {getCurrentUser()?.role === 'admin' && (
                   <Select value={filterSalesChannel} onValueChange={setFilterSalesChannel}>
-                    <SelectTrigger className="w-full sm:w-[200px] h-11">
+                    <SelectTrigger className="w-full sm:w-[200px] h-10 focus:ring-2 focus:ring-blue-500/20">
                       <SelectValue placeholder="Sales Channel" />
                     </SelectTrigger>
                     <SelectContent>
@@ -784,8 +775,8 @@ export default function InternalUsagePage() {
             </CardContent>
           </Card>
 
-          {/* Transactions Table - Enterprise Grade */}
-          <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+          {/* Transactions Table - Professional Design */}
+          <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
             <CardContent className="p-0">
               {loading ? (
                 <div className="py-16">
@@ -798,7 +789,7 @@ export default function InternalUsagePage() {
                 <div className="overflow-x-hidden border border-slate-200 dark:border-slate-700 rounded-lg">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black border-b border-slate-700 hover:bg-gradient-to-r hover:from-slate-800 hover:to-slate-900">
+                      <TableRow className="bg-black dark:bg-black border-b border-slate-700 hover:bg-black">
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[130px]">Date</TableHead>
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[160px]">Item</TableHead>
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[100px]">Type</TableHead>

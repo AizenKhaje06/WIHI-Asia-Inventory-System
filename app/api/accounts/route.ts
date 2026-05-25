@@ -13,6 +13,7 @@ export const GET = withAdmin(async (request, { user }) => {
       username: acc.username,
       role: acc.role,
       displayName: acc.displayName,
+      assignedChannel: acc.assignedChannel,
       createdAt: acc.createdAt
     }))
     
@@ -68,7 +69,8 @@ export async function POST(request: NextRequest) {
         username,
         password,
         role: role || "operations",
-        displayName: displayName || username
+        displayName: displayName || username,
+        assignedChannel: body.assignedChannel || null
       })
       
       return NextResponse.json({
@@ -78,6 +80,7 @@ export async function POST(request: NextRequest) {
           username: newAccount.username,
           role: newAccount.role,
           displayName: newAccount.displayName,
+          assignedChannel: newAccount.assignedChannel,
           createdAt: newAccount.createdAt
         }
       })
@@ -117,7 +120,11 @@ export async function PUT(request: NextRequest) {
       await updateAccount(targetUsername, { password })
       return NextResponse.json({ success: true, message: "Password updated successfully" })
     } else if (action === 'updateDisplayName') {
-      await updateAccount(targetUsername, { displayName })
+      const updates: any = { displayName }
+      if (body.assignedChannel !== undefined) {
+        updates.assignedChannel = body.assignedChannel
+      }
+      await updateAccount(targetUsername, updates)
       return NextResponse.json({ success: true, message: "Display name updated successfully" })
     } else if (action === 'updateProfile') {
       // Update display name, email, phone, and optionally username

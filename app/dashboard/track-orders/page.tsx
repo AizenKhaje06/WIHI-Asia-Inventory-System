@@ -1205,53 +1205,52 @@ export default function TrackOrdersPage() {
   }
 
   return (
-    <div className="space-y-6 pt-2">
-      {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">Track Orders</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm">
-            Manage customer orders and delivery tracking
-          </p>
-        </div>
-        {/* Date Filter and Export button - Admin only */}
-        {!isTeamLeader && (
-          <div className="flex items-center gap-3">
-            {/* Date Range Picker */}
-            <EnterpriseDateRangePicker
-              startDate={startDate}
-              endDate={endDate}
-              onDateChange={(start, end) => {
-                setStartDate(start)
-                setEndDate(end)
-              }}
-              className="h-11 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all shadow-sm"
-            />
-            
-            {/* Export Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="group relative inline-flex items-center justify-center p-0.5 text-sm font-medium text-gray-900 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 transition-all duration-200">
-                  <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0 flex items-center gap-2">
-                    <FileDown className="h-4 w-4" />
-                    Export Report
-                    <ChevronDown className="h-4 w-4" />
-                  </span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={exportToPDF}>
-                  <FileDown className="h-4 w-4 mr-2" />
-                  <span>Export as PDF</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={exportToExcel}>
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  <span>Export as Excel</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Page Header - Professional Style */}
+      <div className="mb-8">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Track Orders Overview</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Manage customer orders and delivery tracking
+            </p>
           </div>
-        )}
+          {/* Date Filter and Export button - Admin only */}
+          {!isTeamLeader && (
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {/* Date Range Picker */}
+              <EnterpriseDateRangePicker
+                startDate={startDate}
+                endDate={endDate}
+                onDateChange={(start, end) => {
+                  setStartDate(start)
+                  setEndDate(end)
+                }}
+              />
+              
+              {/* Export Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="h-10 gap-2 border-slate-200 dark:border-slate-700">
+                    <FileDown className="h-4 w-4" />
+                    Export
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={exportToPDF}>
+                    <FileDown className="h-4 w-4 mr-2" />
+                    <span>Export as PDF</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={exportToExcel}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    <span>Export as Excel</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Statistics Cards - 2 Rows x 5 Columns Professional Corporate Design */}
@@ -1739,21 +1738,23 @@ export default function TrackOrdersPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full table-fixed">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[130px]">Date & Time</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[120px]">Customer</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[100px]">Channel</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[140px]">Store</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[200px]">Product</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[60px]">Qty</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[90px]">Courier</th>
-                    <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[110px]">Waybill</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[85px]">Payment</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[80px]">Status</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[110px]">Parcel Status</th>
-                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider w-[90px]">Action</th>
+                    <th className="py-3 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[110px]">Date & Time</th>
+                    <th className="py-3 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[100px]">Customer</th>
+                    {userRole !== 'operations' && (
+                      <th className="py-3 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[80px]">Channel</th>
+                    )}
+                    <th className="py-3 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[100px]">Store</th>
+                    <th className="py-3 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[160px]">Product</th>
+                    <th className="py-3 px-2 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[40px]">Qty</th>
+                    <th className="py-3 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[70px]">Courier</th>
+                    <th className="py-3 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[160px]">Waybill</th>
+                    <th className="py-3 px-2 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[75px]">Payment</th>
+                    <th className="py-3 px-2 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[70px]">Status</th>
+                    <th className="py-3 px-2 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[95px]">Parcel Status</th>
+                    <th className="py-3 px-2 text-center text-[10px] font-bold text-white uppercase tracking-wider w-[65px]">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1762,11 +1763,11 @@ export default function TrackOrdersPage() {
                       key={order.id} 
                       className="group hover:bg-blue-50 dark:hover:bg-slate-800/50 transition-all duration-200"
                     >
-                      <td className="py-3 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="flex items-center gap-3">
-                          <Calendar className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                      <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3 w-3 text-slate-400 flex-shrink-0" />
                           <div>
-                            <span className="text-[11px] font-medium text-slate-900 dark:text-white block">
+                            <span className="text-[10px] font-medium text-slate-900 dark:text-white block">
                               {format(parseAsPhilippineTime(order.orderDate), 'MMM dd, yyyy')}
                             </span>
                             <span className="text-[9px] text-slate-500 dark:text-slate-400 block mt-0.5">
@@ -1775,59 +1776,61 @@ export default function TrackOrdersPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
+                      <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
                         <div className="text-[11px] text-slate-900 dark:text-white font-semibold whitespace-normal break-words" title={order.customerName}>
                           {order.customerName || 'N/A'}
                         </div>
                       </td>
-                      <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] font-semibold px-2 py-0.5 shadow-sm whitespace-nowrap">
-                          {order.department || 'FLASH'}
-                        </Badge>
-                      </td>
-                      <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
+                      {userRole !== 'operations' && (
+                        <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
+                          <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] font-semibold px-1.5 py-0.5 shadow-sm whitespace-nowrap">
+                            {order.department || 'FLASH'}
+                          </Badge>
+                        </td>
+                      )}
+                      <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
                         <div className="text-[11px] text-slate-900 dark:text-white font-semibold whitespace-normal break-words" title={order.storeName}>
                           {order.storeName}
                         </div>
                       </td>
-                      <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
+                      <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
                         <div className="text-[11px] text-slate-900 dark:text-white font-medium whitespace-normal break-words leading-relaxed" title={order.itemName}>
                           {order.itemName}
                         </div>
                       </td>
-                      <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
+                      <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
                         <div className="flex items-center justify-center">
-                          <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-xs font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 rounded-md">
+                          <span className="inline-flex items-center justify-center min-w-[1.5rem] px-1.5 py-0.5 text-xs font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 rounded-md">
                             {order.quantity}
                           </span>
                         </div>
                       </td>
-                      <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-[11px] text-slate-700 dark:text-slate-300 truncate">{order.courier || '-'}</div>
+                      <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
+                        <div className="text-[11px] text-slate-700 dark:text-slate-300">{order.courier || '-'}</div>
                       </td>
-                      <td className="py-2 px-3 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-[11px] font-mono text-slate-900 dark:text-white font-semibold truncate">{order.trackingNumber || '-'}</div>
+                      <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
+                        <div className="text-[11px] font-mono text-slate-900 dark:text-white font-semibold whitespace-normal break-all">{order.trackingNumber || '-'}</div>
                       </td>
-                      <td className="py-2 px-3 text-center border-r border-slate-100 dark:border-slate-800">
+                      <td className="py-2 px-2 text-center border-r border-slate-100 dark:border-slate-800">
                         {getPaymentBadge(order.paymentStatus)}
                       </td>
-                      <td className="py-2 px-3 text-center border-r border-slate-100 dark:border-slate-800">
+                      <td className="py-2 px-2 text-center border-r border-slate-100 dark:border-slate-800">
                         <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0 text-[9px] px-1.5 py-0.5 font-semibold">
                           <PackageCheck className="h-2 w-2 mr-0.5 inline" />
                           Packed
                         </Badge>
                       </td>
-                      <td className="py-2 px-3 text-center border-r border-slate-100 dark:border-slate-800">
+                      <td className="py-2 px-2 text-center border-r border-slate-100 dark:border-slate-800">
                         {getParcelStatusBadge(order.parcelStatus)}
                       </td>
-                      <td className="py-2 px-3 text-center">
+                      <td className="py-2 px-2 text-center">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => openDetailsModal(order)}
-                          className="h-6 px-2 text-[9px] font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/30 transition-colors whitespace-nowrap"
+                          className="h-6 px-1.5 text-[9px] font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/30 transition-colors whitespace-nowrap"
                         >
-                          View Details
+                          View
                         </Button>
                       </td>
                     </tr>

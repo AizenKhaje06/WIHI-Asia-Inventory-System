@@ -349,51 +349,48 @@ export default function SalesChannelsPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
-      {/* Page Header */}
-      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <div className="flex items-end justify-between">
-          <div>
-            <h1 className="text-4xl font-bold gradient-text mb-2">
-              Sales Channels
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-base">
-              Performance analytics and insights per sales channel
-            </p>
-          </div>
-          
-          {/* Export Buttons - Admin only */}
-          {!isTeamLeader && (
-            <div className="flex items-center gap-3 mb-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    disabled={loading || !data}
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
-                  >
-                    <FileDown className="h-4 w-4 mr-2" />
-                    <span className="text-sm font-semibold">Export Report</span>
-                    <ChevronDown className="h-4 w-4 ml-2" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => handleExportAllChannels('pdf')}>
-                    <FileDown className="h-4 w-4 mr-2" />
-                    <span>Export as PDF</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleExportAllChannels('excel')}>
-                    <FileSpreadsheet className="h-4 w-4 mr-2" />
-                    <span>Export as Excel</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          )}
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Page Header - Professional */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text [-webkit-text-fill-color:transparent]">
+            Sales Channels Overview
+          </h2>
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            Performance analytics and insights per sales channel
+          </p>
         </div>
+        
+        {/* Export Buttons - Admin only */}
+        {!isTeamLeader && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                disabled={loading || !data}
+                variant="outline"
+                className="h-10 gap-2 border-slate-200 dark:border-slate-700 flex-shrink-0"
+              >
+                <FileDown className="h-4 w-4" />
+                Export
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => handleExportAllChannels('pdf')}>
+                <FileDown className="h-4 w-4 mr-2" />
+                <span>Export as PDF</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExportAllChannels('excel')}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                <span>Export as Excel</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
-      {/* Date Filter - Enterprise Style */}
-      <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900">
+      {/* Date Filter - Professional Style */}
+      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
             <div className="flex-1">
@@ -418,86 +415,82 @@ export default function SalesChannelsPage() {
         </CardContent>
       </Card>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {/* Total Revenue - Green */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
-              </div>
+      {/* Summary Cards - Professional Design */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Revenue */}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30 flex-shrink-0">
+              <DollarSign className="h-5 w-5 text-white" />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Revenue</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent tabular-nums">
-              {formatCurrency(data?.totals.revenue || 0)}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Total Revenue</p>
+              <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
+                {formatCurrency(data?.totals.revenue || 0)}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Net Profit - Purple */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                <TrendingUp className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </div>
+        {/* Net Profit */}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30 flex-shrink-0">
+              <TrendingUp className="h-5 w-5 text-white" />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Net Profit</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent tabular-nums">
-              {formatCurrency(data?.totals.profit || 0)}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Net Profit</p>
+              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
+                {formatCurrency(data?.totals.profit || 0)}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Transactions - Blue */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              </div>
+        {/* Transactions */}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30 flex-shrink-0">
+              <ShoppingCart className="h-5 w-5 text-white" />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Transactions</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">
-              {formatNumber(data?.totals.transactions || 0)}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Transactions</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">
+                {formatNumber(data?.totals.transactions || 0)}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Items Sold - Amber */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                <Package className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              </div>
+        {/* Items Sold */}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-600 shadow-lg shadow-amber-500/30 flex-shrink-0">
+              <Package className="h-5 w-5 text-white" />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Items Sold</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums">
-              {formatNumber(data?.totals.quantity || 0)}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Items Sold</p>
+              <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">
+                {formatNumber(data?.totals.quantity || 0)}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         {/* Revenue by Channel Bar Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-3 px-4 md:px-6">
-            <CardTitle className="flex items-center gap-2 md:gap-3 text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
-              <div className="p-1.5 md:p-2 rounded-[5px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
-                <BarChart3 className="h-4 w-4 md:h-5 md:w-5" />
+        <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+              <div className="p-2 rounded-lg bg-blue-600 shadow-sm">
+                <BarChart3 className="h-5 w-5 text-white" />
               </div>
-              <span className="text-base md:text-xl">Revenue by Channel</span>
+              <span>Revenue by Channel</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-2 md:px-6">
+          <CardContent>
             <div className="w-full overflow-x-auto">
               <div className="min-w-[300px]">
                 <ResponsiveContainer width="100%" height={300}>
@@ -536,16 +529,16 @@ export default function SalesChannelsPage() {
         </Card>
 
         {/* Revenue Distribution Pie Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-3 px-4 md:px-6">
-            <CardTitle className="flex items-center gap-2 md:gap-3 text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
-              <div className="p-1.5 md:p-2 rounded-[5px] bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md">
-                <Store className="h-4 w-4 md:h-5 md:w-5" />
+        <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+              <div className="p-2 rounded-lg bg-emerald-600 shadow-sm">
+                <Store className="h-5 w-5 text-white" />
               </div>
-              <span className="text-base md:text-xl">Revenue Distribution</span>
+              <span>Revenue Distribution</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-2 md:px-6">
+          <CardContent>
             <div className="w-full overflow-x-auto">
               <div className="min-w-[300px]">
                 <ResponsiveContainer width="100%" height={300}>
@@ -587,7 +580,7 @@ export default function SalesChannelsPage() {
       </div>
 
       {/* Channels List */}
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
         <CardHeader className="pb-4">
           <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">
             All Sales Channels ({data?.departments.length || 0})

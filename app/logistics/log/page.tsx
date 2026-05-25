@@ -264,7 +264,7 @@ export default function LogisticsLogPage() {
 
   if (loading) {
     return (
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-8 py-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <BrandLoader size="lg" />
@@ -276,17 +276,12 @@ export default function LogisticsLogPage() {
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto px-6 lg:px-8 py-8">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-            <Activity className="h-5 w-5 text-white" strokeWidth={2.5} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold gradient-text tracking-tight">Activity Logs</h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">View all system operations and changes</p>
-          </div>
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Activity Logs Overview</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">View all system operations and changes</p>
         </div>
       </div>
 

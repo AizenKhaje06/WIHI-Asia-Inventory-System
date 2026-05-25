@@ -237,7 +237,7 @@ export default function LogisticsTrackOrdersPage() {
 
   if (loading) {
     return (
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-8 py-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <BrandLoader size="lg" />
@@ -249,17 +249,12 @@ export default function LogisticsTrackOrdersPage() {
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto px-6 lg:px-8 py-8">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/30">
-            <Truck className="h-5 w-5 text-white" strokeWidth={2.5} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold gradient-text tracking-tight">Track Orders</h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Monitor all packed orders and their delivery status</p>
-          </div>
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Track Orders Overview</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Monitor all packed orders and their delivery status</p>
         </div>
       </div>
 
@@ -395,7 +390,7 @@ export default function LogisticsTrackOrdersPage() {
                       <td className="py-4 px-6 text-center text-sm font-bold text-slate-900 dark:text-slate-100">{order.quantity}</td>
                       <td className="py-4 px-6 text-sm font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">{formatCurrency(order.totalAmount)}</td>
                       <td className="py-4 px-6 text-xs font-medium text-slate-600 dark:text-slate-400">{order.courier}</td>
-                      <td className="py-4 px-6 font-mono text-xs text-slate-600 dark:text-slate-400">{order.trackingNumber}</td>
+                      <td className="py-4 px-6 font-mono text-xs text-slate-600 dark:text-slate-400 whitespace-normal break-all">{order.trackingNumber}</td>
                       <td className="py-4 px-6">{getPaymentBadge(order.paymentStatus)}</td>
                       <td className="py-4 px-6">{getStatusBadge(order.parcelStatus)}</td>
                       <td className="py-4 px-6 text-center">

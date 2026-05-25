@@ -211,130 +211,111 @@ export default function LowStockPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-4 pb-6 px-0 md:pt-6 md:px-0">
-      <div className="mb-5 px-4">
-        <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-1">
-          Low Stock Alert
-        </h1>
-        <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Page Header - Professional */}
+      <div>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text [-webkit-text-fill-color:transparent]">
+          Low Stock Overview
+        </h2>
+        <p className="text-xs text-slate-600 dark:text-slate-400">
           Items that need immediate attention and restocking
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3 mb-4 px-4">
-        {/* Total Low Stock Items - Amber */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              </div>
+      {/* Stats Cards - Professional Design */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {/* Total Low Stock Items */}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-600 shadow-lg shadow-amber-500/30 flex-shrink-0">
+              <AlertTriangle className="h-5 w-5 text-white" />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Low Stock Items</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums">
-              {lowStockItems.length}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Total Low Stock Items</p>
+              <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">
+                {lowStockItems.length}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Critical Items - Red */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-                <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
-              </div>
+        {/* Critical Items */}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-red-600 shadow-lg shadow-red-500/30 flex-shrink-0">
+              <TrendingDown className="h-5 w-5 text-white" />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Critical Items</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent tabular-nums">
-              {criticalItems.length}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Critical Items</p>
+              <p className="text-2xl font-bold text-red-900 dark:text-red-100 tabular-nums">
+                {criticalItems.length}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Value at Risk - Blue */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              </div>
+        {/* Value at Risk */}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30 flex-shrink-0">
+              <DollarSign className="h-5 w-5 text-white" />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Value at Risk</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">
-              {formatCurrency(totalValueAtRisk)}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Value at Risk</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">
+                {formatCurrency(totalValueAtRisk)}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Search Bar */}
-      <div className="px-4 mb-4">
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-          <Input
-            placeholder="Search low stock products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-12 h-14 text-base border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 shadow-sm focus:shadow-md transition-all"
-          />
-          {search && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSearch("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 p-0 text-slate-400 hover:text-slate-600"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <div className="flex items-center justify-between mt-2 px-1">
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Showing <span className="font-bold text-slate-900 dark:text-white">{filteredItems.length}</span> of <span className="font-semibold">{lowStockItems.length}</span> items
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Sorted by urgency (most critical first)
-          </p>
-        </div>
-      </div>
+      {/* Search Bar - Professional */}
+      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
+        <CardContent className="pt-5 pb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              placeholder="Search low stock products..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 h-10 border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
+            />
+            {search && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSearch("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Showing <span className="font-bold text-slate-900 dark:text-white">{filteredItems.length}</span> of <span className="font-semibold">{lowStockItems.length}</span> items
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Sorted by urgency (most critical first)
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Table */}
-      <Card className="border-slate-200 dark:border-slate-800 shadow-lg rounded-none md:rounded-lg md:mx-4 overflow-hidden">
-        <CardHeader className="pb-5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-          <div className="flex flex-col gap-4 px-4 md:px-6">
-            {/* Title Row */}
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-3 text-xl md:text-2xl font-bold text-slate-900 dark:text-white">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-lg">
-                  <AlertTriangle className="h-6 w-6 text-white" />
-                </div>
-                <span>Low Stock Items</span>
-              </CardTitle>
-              <Badge className="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 dark:from-slate-800 dark:to-slate-700 dark:text-slate-300 border-0 text-sm px-3 py-1.5 font-bold shadow-sm">
-                {filteredItems.length} items
-              </Badge>
-            </div>
-            
-            {/* Stats Row */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-100 dark:border-red-800">
-                <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-1 uppercase tracking-wide">Critical Items</p>
-                <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
-                  {criticalItems.length}
-                </p>
+      {/* Table Card - Professional */}
+      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
+        <CardHeader className="pb-4 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-3 text-xl font-bold text-slate-900 dark:text-white">
+              <div className="p-2 rounded-lg bg-amber-600 shadow-sm">
+                <AlertTriangle className="h-5 w-5 text-white" />
               </div>
-              <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-100 dark:border-amber-800">
-                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-1 uppercase tracking-wide">Value at Risk</p>
-                <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
-                  {formatCurrency(totalValueAtRisk)}
-                </p>
-              </div>
-            </div>
+              <span>Low Stock Items</span>
+            </CardTitle>
+            <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-0 text-sm px-3 py-1 font-bold">
+              {filteredItems.length} items
+            </Badge>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -352,35 +333,27 @@ export default function LowStockPage() {
             </div>
           ) : (
             <>
-              {/* Mobile Scroll Hint - Enhanced */}
-              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-b border-amber-100 dark:border-amber-800">
-                <p className="text-xs text-amber-700 dark:text-amber-300 flex items-center justify-center gap-2 font-medium">
-                  <span className="text-amber-500">←</span>
+              {/* Mobile Scroll Hint */}
+              <div className="md:hidden px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2">
+                  <span>←</span>
                   <span>Swipe to see all columns • Tap row to highlight</span>
-                  <span className="text-amber-500">→</span>
+                  <span>→</span>
                 </p>
               </div>
 
               {/* Desktop Resize Hint */}
-              <div className="hidden md:block px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
-                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
+              <div className="hidden md:block px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2">
                   <span>💡</span>
                   <span>Drag column borders to resize • Expand Product column to see full names</span>
-                </p>
-              </div>
-              {/* Mobile Scroll Hint */}
-              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
-                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
-                  <span className="text-blue-500">←</span>
-                  <span>Swipe to see all columns • Tap row to highlight</span>
-                  <span className="text-blue-500">→</span>
                 </p>
               </div>
 
               <div className="overflow-x-auto">
               <table className="w-full text-sm" style={{ minWidth: Object.values(columnWidths).reduce((a, b) => a + b, 0) }}>
                 <thead className="sticky top-0 z-10">
-                  <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                  <tr className="bg-black dark:bg-black">
                     <th className="py-3 px-4 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative" style={{ width: columnWidths.product }}>
                       Product
                       <div 

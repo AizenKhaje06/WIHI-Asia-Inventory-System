@@ -559,10 +559,11 @@ export interface Account {
   id: string
   username: string
   password: string
-  role: 'admin' | 'operations'
+  role: 'admin' | 'operations' | 'packer' | 'logistics-admin' | 'tracker'
   displayName: string
   email?: string
   phone?: string
+  assignedChannel?: string
   createdAt: string
 }
 
@@ -581,8 +582,11 @@ export async function getAccounts(): Promise<Account[]> {
     id: row.id,
     username: row.username,
     password: row.password,
-    role: row.role as 'admin' | 'operations',
+    role: row.role as 'admin' | 'operations' | 'packer' | 'logistics-admin' | 'tracker',
     displayName: row.display_name,
+    email: row.email,
+    phone: row.phone,
+    assignedChannel: row.assigned_channel,
     createdAt: row.created_at,
   }))
 }
@@ -617,8 +621,11 @@ export async function getAccountByUsername(username: string): Promise<Account | 
       id: data.id,
       username: data.username,
       password: data.password,
-      role: data.role as 'admin' | 'operations',
+      role: data.role as 'admin' | 'operations' | 'packer' | 'logistics-admin' | 'tracker',
       displayName: data.display_name,
+      email: data.email,
+      phone: data.phone,
+      assignedChannel: data.assigned_channel,
       createdAt: data.created_at,
     }
   } catch (error: any) {
@@ -655,7 +662,7 @@ export async function validateCredentials(username: string, password: string): P
   }
 }
 
-export async function updateAccount(username: string, updates: { password?: string; displayName?: string; email?: string; phone?: string }): Promise<void> {
+export async function updateAccount(username: string, updates: { password?: string; displayName?: string; email?: string; phone?: string; assignedChannel?: string }): Promise<void> {
   const updateData: any = {}
   
   // Hash password if being updated
@@ -667,6 +674,7 @@ export async function updateAccount(username: string, updates: { password?: stri
   if (updates.displayName !== undefined) updateData.display_name = updates.displayName
   if (updates.email !== undefined) updateData.email = updates.email
   if (updates.phone !== undefined) updateData.phone = updates.phone
+  if (updates.assignedChannel !== undefined) updateData.assigned_channel = updates.assignedChannel || null
 
   const { error } = await supabaseAdmin
     .from('users')
@@ -719,6 +727,7 @@ export async function addAccount(account: Omit<Account, "id" | "createdAt">): Pr
       password: hashedPassword,
       role: account.role,
       display_name: account.displayName,
+      assigned_channel: account.assignedChannel || null, // Add assigned_channel field
       created_at: createdAt,
     })
     .select()
@@ -734,6 +743,7 @@ export async function addAccount(account: Omit<Account, "id" | "createdAt">): Pr
     username: account.username,
     password: hashedPassword,
     role: account.role,
+    assignedChannel: account.assignedChannel,
     displayName: account.displayName,
     createdAt,
   }

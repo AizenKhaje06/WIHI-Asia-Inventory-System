@@ -76,34 +76,6 @@ export function LoginForm({
   const [error, setError] = useState("")
   const [capsLockOn, setCapsLockOn] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState(0)
-  
-  // Operations agents state
-  const [agents, setAgents] = useState<Agent[]>([])
-  const [agentsLoading, setAgentsLoading] = useState(false)
-
-  // Fetch agents when operations role is selected
-  useEffect(() => {
-    if (role === 'operations') {
-      fetchAgents()
-    }
-  }, [role])
-
-  const fetchAgents = async () => {
-    setAgentsLoading(true)
-    try {
-      const response = await fetch('/api/departments/agents')
-      const data = await response.json()
-      
-      if (data.success && data.agents) {
-        setAgents(data.agents)
-        console.log('[LoginForm] Loaded agents:', data.agents.length)
-      }
-    } catch (error) {
-      console.error('[LoginForm] Error fetching agents:', error)
-    } finally {
-      setAgentsLoading(false)
-    }
-  }
 
   // Password strength calculator
   const calculatePasswordStrength = (pwd: string) => {
@@ -184,14 +156,60 @@ export function LoginForm({
         </p>
       </div>
 
-      {/* Operations Channel Selector - REMOVED */}
-      {/* Team leader role has been removed from the system */}
+      {/* Operations Sales Channel Selector */}
+      {role === 'operations' && (
+        <div className="space-y-2">
+          <Label htmlFor="sales-channel" className="text-slate-200 font-medium">
+            Sales Channel
+          </Label>
+          <div className="relative group">
+            <Package className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none" />
+            <Select value={selectedChannel} onValueChange={onChannelChange} disabled={loading || channelsLoading}>
+              <SelectTrigger className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50">
+                <SelectValue placeholder={channelsLoading ? "Loading channels..." : "Select sales channel"} />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900/95 backdrop-blur-xl border-slate-700/50 shadow-2xl">
+                <SelectItem value="Shopee" className="text-white hover:bg-white/10 focus:bg-white/10 data-[state=checked]:bg-white/10 cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <img src="/Shopee.png" alt="Shopee" className="w-5 h-5 object-contain" />
+                    <span>Shopee</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Lazada" className="text-white hover:bg-white/10 focus:bg-white/10 data-[state=checked]:bg-white/10 cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <img src="/Lazada.png" alt="Lazada" className="w-5 h-5 object-contain" />
+                    <span>Lazada</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="TikTok" className="text-white hover:bg-white/10 focus:bg-white/10 data-[state=checked]:bg-white/10 cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <img src="/tiktok.png" alt="TikTok" className="w-5 h-5 object-contain" />
+                    <span>TikTok</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Facebook" className="text-white hover:bg-white/10 focus:bg-white/10 data-[state=checked]:bg-white/10 cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <img src="/facebook.png" alt="Facebook" className="w-5 h-5 object-contain" />
+                    <span>Facebook</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Physical Store" className="text-white hover:bg-white/10 focus:bg-white/10 data-[state=checked]:bg-white/10 cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <img src="/Physical Store.png" alt="Physical Store" className="w-5 h-5 object-contain" />
+                    <span>Physical Store</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
 
       {/* Logistics Sub-Role Selector */}
       {role === 'logistics' && onLogisticsSubRoleChange && (
         <div className="space-y-2">
           <Label htmlFor="logistics-subrole" className="text-slate-200 font-medium">
-            Select Role
+            Logistics Role
           </Label>
           <div className="relative group">
             <Package className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none" />
@@ -199,22 +217,28 @@ export function LoginForm({
               <SelectTrigger className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50">
                 <SelectValue placeholder="Select logistics role" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="logistics-admin">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4" />
-                    <span>Admin</span>
+              <SelectContent className="bg-slate-900/95 backdrop-blur-xl border-slate-700/50 shadow-2xl">
+                <SelectItem value="logistics-admin" className="text-white hover:bg-white/10 focus:bg-white/10 data-[state=checked]:bg-white/10 cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
+                      <Package className="w-3 h-3 text-white" />
+                    </div>
+                    <span>Logistics Admin</span>
                   </div>
                 </SelectItem>
-                <SelectItem value="packer">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4" />
+                <SelectItem value="packer" className="text-white hover:bg-white/10 focus:bg-white/10 data-[state=checked]:bg-white/10 cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                      <Package className="w-3 h-3 text-white" />
+                    </div>
                     <span>Packer</span>
                   </div>
                 </SelectItem>
-                <SelectItem value="tracker">
-                  <div className="flex items-center gap-2">
-                    <Truck className="h-4 w-4" />
+                <SelectItem value="tracker" className="text-white hover:bg-white/10 focus:bg-white/10 data-[state=checked]:bg-white/10 cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                      <Truck className="w-3 h-3 text-white" />
+                    </div>
                     <span>Tracker</span>
                   </div>
                 </SelectItem>
@@ -234,58 +258,26 @@ export function LoginForm({
         </Alert>
       )}
 
-      {/* Username Field - Dropdown for Operations (dynamically loaded agents), Input for Others */}
+      {/* Username Field - Manual Input for All Roles */}
       <div className="space-y-2">
         <Label htmlFor="username" className="text-slate-200 font-medium">
-          {role === 'operations' ? 'Agent Account' : 'Username'}
+          Username
         </Label>
-        {role === 'operations' ? (
-          <div className="relative group">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none" />
-            <Select value={username} onValueChange={setUsername} disabled={loading || agentsLoading}>
-              <SelectTrigger className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50">
-                <SelectValue placeholder={agentsLoading ? "Loading agents..." : "Select Agent Account"} />
-              </SelectTrigger>
-              <SelectContent className="max-h-[300px]">
-                {agentsLoading ? (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-                    <span className="ml-2 text-sm text-slate-400">Loading agents...</span>
-                  </div>
-                ) : agents.length === 0 ? (
-                  <div className="py-4 text-center text-sm text-slate-400">
-                    No agents found
-                  </div>
-                ) : (
-                  agents.map((agent) => (
-                    <SelectItem key={agent.id} value={agent.username}>
-                      <div className="flex items-center gap-2">
-                        <img src={agent.iconPath} alt={agent.assignedChannel} className="h-4 w-4" />
-                        <span>{agent.displayName}</span>
-                      </div>
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-        ) : (
-          <div className="relative group">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200" />
-            <Input
-              id="username"
-              type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              disabled={loading}
-              className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50"
-              required
-              autoComplete="username"
-              aria-label="Username"
-            />
-          </div>
-        )}
+        <div className="relative group">
+          <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200" />
+          <Input
+            id="username"
+            type="text"
+            placeholder="Enter your username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            disabled={loading}
+            className="pl-12 h-12 bg-slate-900/50 border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 text-white hover:border-slate-600 disabled:opacity-50"
+            required
+            autoComplete="username"
+            aria-label="Username"
+          />
+        </div>
       </div>
 
       {/* Password Field - ENHANCED */}

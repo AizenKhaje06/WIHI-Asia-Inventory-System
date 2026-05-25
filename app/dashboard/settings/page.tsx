@@ -55,7 +55,7 @@ interface Account {
   id: string
   username: string
   password: string
-  role: 'admin' | 'operations' | 'packer'
+  role: 'admin' | 'operations' | 'packer' | 'tracker' | 'logistics-admin'
   assignedChannel?: string // Legacy field, no longer used
   displayName: string
   createdAt: string
@@ -103,7 +103,7 @@ export default function SettingsPage() {
     username: '',
     password: '',
     displayName: '',
-    role: 'operations' as 'admin' | 'operations' | 'packer',
+    role: 'operations' as 'admin' | 'operations' | 'packer' | 'tracker' | 'logistics-admin',
     assignedChannel: '' // Legacy field, no longer used
   })
 
@@ -113,7 +113,7 @@ export default function SettingsPage() {
     username: '',
     originalUsername: '', // Store original username for comparison
     displayName: '',
-    role: 'operations' as 'admin' | 'operations' | 'packer',
+    role: 'operations' as 'admin' | 'operations' | 'packer' | 'tracker' | 'logistics-admin',
     assignedChannel: '', // Legacy field, no longer used
     newPassword: '',
     confirmPassword: ''
@@ -368,8 +368,10 @@ export default function SettingsPage() {
       return
     }
 
+    // Validate that Operations Staff has an assigned channel
     if (newUserForm.role === 'operations' && !newUserForm.assignedChannel) {
-      // Legacy check - no longer enforced
+      toast.error('Please select a sales channel for Operations Staff')
+      return
     }
 
     if (newUserForm.password.length < 6) {
@@ -441,11 +443,12 @@ export default function SettingsPage() {
         })
       }
 
-      // Update display name (use new username if changed)
+      // Update display name and assigned channel (use new username if changed)
       await apiPut('/api/accounts', {
         action: 'updateDisplayName',
         username: editUserForm.username,
-        displayName: editUserForm.displayName
+        displayName: editUserForm.displayName,
+        assignedChannel: editUserForm.assignedChannel || null
       })
 
       // Update password if provided
@@ -728,214 +731,169 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
-      {/* Professional Enterprise Header */}
-      <div className="bg-gradient-to-r from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="flex items-start gap-5">
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 shadow-xl shadow-blue-500/20 dark:shadow-blue-500/10">
-                <Settings className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
-                  System Settings
-                </h1>
-                <p className="text-slate-600 dark:text-slate-400 text-base max-w-2xl">
-                  Configure system preferences, manage users, and customize your workspace
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">System Online</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                <span className="text-sm font-medium text-green-700 dark:text-green-400">All Systems Operational</span>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Page Header - Professional */}
+      <div className="space-y-1">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text [-webkit-text-fill-color:transparent]">
+          Settings Overview
+        </h2>
+        <p className="text-xs text-slate-600 dark:text-slate-400">
+          Configure system preferences, manage users, and customize your workspace
+        </p>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 py-8">
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         {/* Professional Tab Navigation */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-2">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 gap-2 h-auto p-0 bg-transparent">
+        <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg p-1">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 gap-1 h-auto p-0 bg-transparent">
             <TabsTrigger 
               value="profile" 
-              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black transition-colors text-sm font-medium"
             >
               <User className="h-4 w-4" />
-              <span className="hidden sm:inline text-sm font-medium">Profile</span>
+              <span className="hidden sm:inline">Profile</span>
             </TabsTrigger>
             <TabsTrigger 
               value="security" 
-              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black transition-colors text-sm font-medium"
             >
               <Lock className="h-4 w-4" />
-              <span className="hidden sm:inline text-sm font-medium">Security</span>
+              <span className="hidden sm:inline">Security</span>
             </TabsTrigger>
             {isAdmin && (
               <TabsTrigger 
                 value="users" 
-                className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black transition-colors text-sm font-medium"
               >
                 <Shield className="h-4 w-4" />
-                <span className="hidden sm:inline text-sm font-medium">Users</span>
+                <span className="hidden sm:inline">Users</span>
               </TabsTrigger>
             )}
             {isAdmin && (
               <TabsTrigger 
                 value="company" 
-                className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black transition-colors text-sm font-medium"
               >
                 <Building2 className="h-4 w-4" />
-                <span className="hidden sm:inline text-sm font-medium">Company</span>
+                <span className="hidden sm:inline">Company</span>
               </TabsTrigger>
             )}
             {isAdmin && (
               <TabsTrigger 
                 value="email-reports" 
-                className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black transition-colors text-sm font-medium"
               >
                 <Mail className="h-4 w-4" />
-                <span className="hidden sm:inline text-sm font-medium">Email Reports</span>
+                <span className="hidden sm:inline">Email Reports</span>
               </TabsTrigger>
             )}
             <TabsTrigger 
               value="appearance" 
-              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black transition-colors text-sm font-medium"
             >
               <Palette className="h-4 w-4" />
-              <span className="hidden sm:inline text-sm font-medium">Appearance</span>
+              <span className="hidden sm:inline">Appearance</span>
             </TabsTrigger>
             <TabsTrigger 
               value="system" 
-              className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-700 data-[state=active]:to-slate-900 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black transition-colors text-sm font-medium"
             >
               <Database className="h-4 w-4" />
-              <span className="hidden sm:inline text-sm font-medium">System</span>
+              <span className="hidden sm:inline">System</span>
             </TabsTrigger>
           </TabsList>
-        </div>
+        </Card>
 
         {/* Profile Tab */}
         <TabsContent value="profile" className="space-y-6 mt-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Profile Card - Enhanced */}
-            <Card className="lg:col-span-2 border-0 shadow-xl bg-white dark:bg-slate-900 rounded-2xl overflow-hidden">
-              <CardHeader className="border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 p-8">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg">
-                    <User className="h-6 w-6 text-white" />
+            {/* Profile Card - Professional */}
+            <Card className="lg:col-span-2 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-800 p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-blue-600 shadow-sm">
+                    <User className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <CardTitle className="text-lg font-bold text-slate-900 dark:text-white">
                       Profile Information
                     </CardTitle>
-                    <CardDescription className="mt-1.5 text-base">
+                    <CardDescription className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                       Manage your personal information and preferences
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-8 space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <Label htmlFor="username" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Username</Label>
+              <CardContent className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-sm font-medium text-slate-700 dark:text-slate-300">Username</Label>
                     <Input
                       id="username"
                       value={profileForm.username}
                       onChange={(e) => setProfileForm({ ...profileForm, username: e.target.value })}
                       placeholder="Enter username"
-                      className="h-11 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500"
+                      className="h-10 border-slate-300 dark:border-slate-700"
                     />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                      <User className="h-3.5 w-3.5" />
-                      Your unique username for login
-                    </p>
                   </div>
 
-                  <div className="space-y-3">
-                    <Label htmlFor="displayName" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Display Name</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="displayName" className="text-sm font-medium text-slate-700 dark:text-slate-300">Display Name</Label>
                     <Input
                       id="displayName"
                       value={profileForm.displayName}
                       onChange={(e) => setProfileForm({ ...profileForm, displayName: e.target.value })}
                       placeholder="Enter your display name"
-                      className="h-11 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500"
+                      className="h-10 border-slate-300 dark:border-slate-700"
                     />
                   </div>
 
-                  <div className="space-y-3">
-                    <Label htmlFor="email" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                      <Input
-                        id="email"
-                        type="email"
-                        value={profileForm.email}
-                        onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                        placeholder="your.email@company.com"
-                        className="h-11 pl-12 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium text-slate-700 dark:text-slate-300">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={profileForm.email}
+                      onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                      placeholder="your.email@company.com"
+                      className="h-10 border-slate-300 dark:border-slate-700"
+                    />
                   </div>
 
-                  <div className="space-y-3">
-                    <Label htmlFor="phone" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Phone Number</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                      <Input
-                        id="phone"
-                        type="tel"
-                        value={profileForm.phone}
-                        onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                        placeholder="+63 XXX XXX XXXX"
-                        className="h-11 pl-12 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={profileForm.phone}
+                      onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                      placeholder="+63 XXX XXX XXXX"
+                      className="h-10 border-slate-300 dark:border-slate-700"
+                    />
                   </div>
                 </div>
 
-                <Separator className="my-8" />
+                <Separator className="my-6" />
 
-                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-xl ${
-                      currentUser?.role === 'admin' 
-                        ? 'bg-gradient-to-br from-purple-600 to-pink-600' 
-                        : 'bg-gradient-to-br from-blue-600 to-cyan-600'
-                    }`}>
-                      {currentUser?.role === 'admin' ? (
-                        <Shield className="h-5 w-5 text-white" />
-                      ) : (
-                        <User className="h-5 w-5 text-white" />
-                      )}
+                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-slate-600">
+                      <Shield className="h-4 w-4 text-white" />
                     </div>
                     <div>
-                      <p className="font-semibold text-base text-slate-900 dark:text-white">Account Role</p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">Your current access level</p>
+                      <p className="font-medium text-sm text-slate-900 dark:text-white">Account Role</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Your current access level</p>
                     </div>
                   </div>
                   <Badge 
-                    variant={currentUser?.role === 'admin' ? 'default' : 'secondary'}
-                    className={`px-5 py-2.5 text-sm font-semibold rounded-xl ${
-                      currentUser?.role === 'admin'
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
-                        : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                    }`}
+                    variant="secondary"
+                    className="px-4 py-1.5 text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
                   >
-                    {currentUser?.role === 'admin' ? '👑 Administrator' : '👤 Operations Staff'}
+                    {currentUser?.role === 'admin' ? 'Administrator' : 'Operations Staff'}
                   </Badge>
                 </div>
 
-                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6">
+                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
                   <Button 
                     variant="outline" 
                     onClick={() => {
@@ -946,14 +904,14 @@ export default function SettingsPage() {
                         phone: currentUser.phone || ''
                       })
                     }} 
-                    className="h-11 px-6 rounded-xl border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    className="h-10 px-5 border-slate-300 dark:border-slate-600"
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Reset Changes
+                    Reset
                   </Button>
                   <Button 
                     onClick={handleProfileUpdate} 
-                    className="h-11 px-8 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/30 dark:shadow-blue-500/20"
+                    className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     <Save className="h-4 w-4 mr-2" />
                     Save Changes
@@ -962,41 +920,26 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Quick Stats - Enhanced */}
-            <div className="space-y-6">
-              <Card className="border-0 shadow-xl bg-white dark:bg-slate-900 rounded-2xl overflow-hidden">
-                <CardHeader className="pb-4 p-6 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 border-b border-slate-200 dark:border-slate-700">
-                  <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">Account Activity</CardTitle>
+            {/* Account Info Sidebar */}
+            <div className="space-y-4">
+              <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+                <CardHeader className="pb-3 p-5 border-b border-slate-200 dark:border-slate-700">
+                  <CardTitle className="text-sm font-semibold text-slate-900 dark:text-white">Account Activity</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 px-6 pb-6 pt-6">
-                  <div className="flex items-center justify-between py-3">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Last Login</span>
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Today, 10:30 AM</span>
+                <CardContent className="space-y-3 px-5 pb-5 pt-4">
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-xs text-slate-600 dark:text-slate-400">Last Login</span>
+                    <span className="text-xs font-medium text-slate-900 dark:text-white">Today</span>
                   </div>
                   <Separator />
-                  <div className="flex items-center justify-between py-3">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Account Created</span>
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Jan 2024</span>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-xs text-slate-600 dark:text-slate-400">Account Created</span>
+                    <span className="text-xs font-medium text-slate-900 dark:text-white">Jan 2024</span>
                   </div>
                   <Separator />
-                  <div className="flex items-center justify-between py-3">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Sessions</span>
-                    <Badge variant="outline" className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">Active</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-2xl overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="text-center space-y-5">
-                    <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-xl">
-                      <Shield className="h-8 w-8 text-white" />
-                    </div>
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white">Security Score</h3>
-                    <div className="text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                      10/10
-                    </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Maximum security achieved</p>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-xs text-slate-600 dark:text-slate-400">Status</span>
+                    <Badge variant="outline" className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800 text-xs">Active</Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -1007,19 +950,23 @@ export default function SettingsPage() {
         {/* Security Tab */}
         <TabsContent value="security" className="space-y-6 mt-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-0 shadow-xl">
-              <CardHeader className="border-b bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 p-6">
-                <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-                  <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-                    <Lock className="h-5 w-5 text-red-600 dark:text-red-400" />
+            <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-800 p-5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-red-600">
+                    <Lock className="h-4 w-4 text-white" />
                   </div>
-                  Change Password
-                </CardTitle>
-                <CardDescription className="mt-2">
-                  Keep your account secure with a strong password
-                </CardDescription>
+                  <div>
+                    <CardTitle className="text-lg font-bold text-slate-900 dark:text-white">
+                      Change Password
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm">
+                      Keep your account secure with a strong password
+                    </CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="p-6 space-y-5">
+              <CardContent className="p-5 space-y-4">
                 <div className="space-y-3">
                   <Label htmlFor="currentPassword" className="text-sm font-semibold">Current Password</Label>
                   <div className="relative">
@@ -1095,65 +1042,58 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <Button onClick={handlePasswordChange} className="w-full mt-6 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700">
+                <Button onClick={handlePasswordChange} className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white">
                   <Lock className="h-4 w-4 mr-2" />
                   Update Password
                 </Button>
               </CardContent>
             </Card>
 
-            <div className="space-y-6">
-              <Card className="border-0 shadow-xl">
-                <CardHeader className="p-6">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <div className="space-y-4">
+              <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+                <CardHeader className="p-5 border-b border-slate-200 dark:border-slate-800">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
                     <Shield className="h-4 w-4" />
                     Security Features
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 px-6 pb-6">
-                  <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium">Password Encryption</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Bcrypt Active</p>
-                      </div>
+                <CardContent className="space-y-3 px-5 pb-5 pt-4">
+                  <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-medium text-slate-900 dark:text-white">Password Encryption</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Bcrypt Active</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium">Row Level Security</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Database Protected</p>
-                      </div>
+                  <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-medium text-slate-900 dark:text-white">Row Level Security</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Database Protected</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium">API Authentication</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Token-Based</p>
-                      </div>
+                  <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-medium text-slate-900 dark:text-white">API Authentication</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Token-Based</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-xl border-l-4 border-l-yellow-500">
-                <CardContent className="p-6">
+              <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-l-4 border-l-yellow-500">
+                <CardContent className="p-5">
                   <div className="flex gap-3">
-                    <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-sm mb-2">Security Recommendations</h4>
-                      <ul className="text-xs text-muted-foreground space-y-1.5">
+                      <h4 className="font-semibold text-xs mb-2 text-slate-900 dark:text-white">Security Recommendations</h4>
+                      <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
                         <li>• Change your password regularly</li>
                         <li>• Use a unique password for this account</li>
                         <li>• Never share your credentials</li>
-                        <li>• Enable two-factor authentication (coming soon)</li>
                       </ul>
                     </div>
                   </div>
@@ -1166,23 +1106,25 @@ export default function SettingsPage() {
         {/* Users Tab (Admin Only) */}
         {isAdmin && (
           <TabsContent value="users" className="space-y-6">
-            <Card className="border-0 shadow-xl">
-              <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
+            <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-800 p-5">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-3 text-xl">
-                      <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                        <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      User Management
-                    </CardTitle>
-                    <CardDescription className="mt-2">
-                      Manage system users, roles, and permissions
-                    </CardDescription>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-slate-900 dark:bg-white">
+                      <Shield className="h-4 w-4 text-white dark:text-slate-900" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-bold text-slate-900 dark:text-white">
+                        User Management
+                      </CardTitle>
+                      <CardDescription className="mt-1 text-sm">
+                        Manage system users, roles, and permissions
+                      </CardDescription>
+                    </div>
                   </div>
                   <Button 
                     onClick={() => setShowNewUserForm(!showNewUserForm)}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900"
                   >
                     {showNewUserForm ? (
                       <><X className="h-4 w-4 mr-2" /> Cancel</>
@@ -1192,71 +1134,90 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="pt-6 space-y-6">
+              <CardContent className="pt-5 space-y-5">
                 {showNewUserForm && (
-                  <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-2 border-dashed border-purple-200 dark:border-purple-800">
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Plus className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                        <h3 className="font-semibold text-lg">Create New User</h3>
+                  <Card className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                    <CardContent className="pt-5 space-y-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Plus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <h3 className="font-semibold text-sm text-slate-900 dark:text-white">Create New User</h3>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="newUsername" className="text-sm font-semibold">Username *</Label>
+                          <Label htmlFor="newUsername" className="text-xs font-medium">Username *</Label>
                           <Input
                             id="newUsername"
                             value={newUserForm.username}
                             onChange={(e) => setNewUserForm({ ...newUserForm, username: e.target.value })}
                             placeholder="Enter username"
-                            className="border-purple-200 dark:border-purple-800"
+                            className="h-9"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="newDisplayName" className="text-sm font-semibold">Display Name *</Label>
+                          <Label htmlFor="newDisplayName" className="text-xs font-medium">Display Name *</Label>
                           <Input
                             id="newDisplayName"
                             value={newUserForm.displayName}
                             onChange={(e) => setNewUserForm({ ...newUserForm, displayName: e.target.value })}
                             placeholder="Enter display name"
-                            className="border-purple-200 dark:border-purple-800"
+                            className="h-9"
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="newPassword" className="text-sm font-semibold">Password *</Label>
+                          <Label htmlFor="newPassword" className="text-xs font-medium">Password *</Label>
                           <Input
                             id="newPassword"
                             type="password"
                             value={newUserForm.password}
                             onChange={(e) => setNewUserForm({ ...newUserForm, password: e.target.value })}
                             placeholder="Enter password (min 6 characters)"
-                            className="border-purple-200 dark:border-purple-800"
+                            className="h-9"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="newRole" className="text-sm font-semibold">Role *</Label>
-                          <select
-                            id="newRole"
-                            value={newUserForm.role}
-                            onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value as any, assignedChannel: '' })}
-                            className="flex h-10 w-full rounded-md border border-purple-200 dark:border-purple-800 bg-background px-3 py-2 text-sm"
-                          >
-                            <option value="operations">👤 Operations Staff</option>
-                            <option value="packer">📦 Packer</option>
-                            <option value="admin">👑 Administrator</option>
-                          </select>
+                          <Label htmlFor="newRole" className="text-xs font-medium">Role *</Label>
+                          <div className="flex gap-2">
+                            <select
+                              id="newRole"
+                              value={newUserForm.role}
+                              onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value as any, assignedChannel: '' })}
+                              className="flex h-9 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background px-3 py-2 text-sm"
+                            >
+                              <option value="admin">Administrator</option>
+                              <option value="operations">Operations Staff</option>
+                              <option value="packer">Packer</option>
+                              <option value="tracker">Tracker</option>
+                              <option value="logistics-admin">Logistics Admin</option>
+                            </select>
+                            
+                            {/* Sales Channel Dropdown - Only show when Operations Staff is selected */}
+                            {newUserForm.role === 'operations' && (
+                              <select
+                                id="newChannel"
+                                value={newUserForm.assignedChannel}
+                                onChange={(e) => setNewUserForm({ ...newUserForm, assignedChannel: e.target.value })}
+                                className="flex h-9 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background px-3 py-2 text-sm"
+                              >
+                                <option value="">Select channel...</option>
+                                <option value="Shopee">Shopee</option>
+                                <option value="Lazada">Lazada</option>
+                                <option value="TikTok">TikTok</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="Physical Store">Physical Store</option>
+                              </select>
+                            )}
+                          </div>
                         </div>
                       </div>
 
-                      {/* Channel Assignment removed - team leader role no longer exists */}
-
-                      <div className="flex gap-3 pt-2">
+                      <div className="flex gap-2 pt-2">
                         <Button 
                           onClick={handleCreateUser} 
-                          className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-9"
                         >
                           <Check className="h-4 w-4 mr-2" />
                           Create User
@@ -1267,6 +1228,7 @@ export default function SettingsPage() {
                             setShowNewUserForm(false)
                             setNewUserForm({ username: '', password: '', displayName: '', role: 'operations', assignedChannel: '' })
                           }}
+                          className="h-9 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                         >
                           <X className="h-4 w-4 mr-2" />
                           Cancel
@@ -1276,215 +1238,241 @@ export default function SettingsPage() {
                   </Card>
                 )}
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-lg">Active Users ({accounts.length})</h3>
-                    <div className="flex gap-2 flex-wrap">
-                      <Badge variant="outline" className="px-3 py-1">
-                        <Activity className="h-3 w-3 mr-1" />
-                        {accounts.filter(a => a.role === 'admin').length} Admins
-                      </Badge>
-                      <Badge variant="outline" className="px-3 py-1">
-                        📦 {accounts.filter(a => a.role === 'packer').length} Packers
-                      </Badge>
-                      <Badge variant="outline" className="px-3 py-1">
-                        👤 {accounts.filter(a => a.role === 'operations').length} Staff
-                      </Badge>
-                    </div>
-                  </div>
-
-                  {accounts.map((account) => (
-                    <Card key={account.id} className="border-0 shadow-md hover:shadow-lg transition-shadow">
-                      <CardContent className="p-4">
-                        {editingUser === account.id ? (
-                          // Edit Mode
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-3">
-                              <Edit className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                              <h3 className="font-semibold text-lg">Edit User</h3>
+                <div className="space-y-5">
+                  {/* 3 Role Group Cards - Horizontal */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Admin Card */}
+                    <Card className="border-0 shadow-sm bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                      <CardHeader className="p-4 pb-3 border-b border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-purple-600">
+                              <Shield className="h-3.5 w-3.5 text-white" />
                             </div>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="editUsername" className="text-sm font-semibold">Username</Label>
-                                <Input
-                                  id="editUsername"
-                                  value={editUserForm.username}
-                                  onChange={(e) => setEditUserForm({ ...editUserForm, username: e.target.value })}
-                                  placeholder="Enter username"
-                                />
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                  Changing username will require the user to login with the new username
-                                </p>
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="editDisplayName" className="text-sm font-semibold">Display Name</Label>
-                                <Input
-                                  id="editDisplayName"
-                                  value={editUserForm.displayName}
-                                  onChange={(e) => setEditUserForm({ ...editUserForm, displayName: e.target.value })}
-                                  placeholder="Enter display name"
-                                />
-                              </div>
-                            </div>
-
-                            <Separator />
-
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2">
-                                <Lock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                                <Label className="text-sm font-semibold">Reset Password (Optional)</Label>
-                              </div>
-                              <p className="text-xs text-muted-foreground">Leave blank to keep current password</p>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                  <Label htmlFor="editNewPassword" className="text-sm">New Password</Label>
-                                  <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                    <Input
-                                      id="editNewPassword"
-                                      type={showPassword.editNew ? "text" : "password"}
-                                      value={editUserForm.newPassword}
-                                      onChange={(e) => setEditUserForm({ ...editUserForm, newPassword: e.target.value })}
-                                      placeholder="Enter new password"
-                                      className="pl-10 pr-10"
-                                    />
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      className="absolute right-0 top-0 h-full px-3"
-                                      onClick={() => setShowPassword({ ...showPassword, editNew: !showPassword.editNew })}
-                                    >
-                                      {showPassword.editNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                    </Button>
-                                  </div>
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor="editConfirmPassword" className="text-sm">Confirm Password</Label>
-                                  <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                    <Input
-                                      id="editConfirmPassword"
-                                      type={showPassword.editConfirm ? "text" : "password"}
-                                      value={editUserForm.confirmPassword}
-                                      onChange={(e) => setEditUserForm({ ...editUserForm, confirmPassword: e.target.value })}
-                                      placeholder="Confirm new password"
-                                      className="pl-10 pr-10"
-                                    />
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      className="absolute right-0 top-0 h-full px-3"
-                                      onClick={() => setShowPassword({ ...showPassword, editConfirm: !showPassword.editConfirm })}
-                                    >
-                                      {showPassword.editConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                              {editUserForm.newPassword && (
-                                <p className="text-xs text-muted-foreground">
-                                  Password must be at least 6 characters
-                                </p>
-                              )}
-                            </div>
-
-                            <div className="flex gap-3 pt-2">
-                              <Button 
-                                onClick={handleUpdateUser} 
-                                className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                              >
-                                <Check className="h-4 w-4 mr-2" />
-                                Save Changes
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                onClick={handleCancelEdit}
-                              >
-                                <X className="h-4 w-4 mr-2" />
-                                Cancel
-                              </Button>
-                            </div>
+                            <span className="text-sm font-semibold text-slate-900 dark:text-white">Admin</span>
                           </div>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                            {accounts.filter(a => a.role === 'admin').length} users
+                          </span>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-3 space-y-2">
+                        {accounts.filter(a => a.role === 'admin').length === 0 ? (
+                          <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-3">No admin users</p>
                         ) : (
-                          // View Mode
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
-                                account.role === 'admin' 
-                                  ? 'bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30' 
-                                  : 'bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30'
-                              }`}>
-                                <User className={`h-6 w-6 ${
-                                  account.role === 'admin' 
-                                    ? 'text-purple-600 dark:text-purple-400' 
-                                    : 'text-blue-600 dark:text-blue-400'
-                                }`} />
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <p className="font-semibold text-lg">{account.displayName}</p>
-                                  {account.username === currentUser?.username && (
-                                    <Badge variant="outline" className="text-xs">You</Badge>
+                          accounts.filter(a => a.role === 'admin').map((account) => (
+                            <div key={account.id}>
+                              {editingUser === account.id ? (
+                                <div className="space-y-3 p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Edit Admin User</p>
+                                  <div className="space-y-2">
+                                    <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Username</Label>
+                                      <Input value={editUserForm.username} onChange={(e) => setEditUserForm({ ...editUserForm, username: e.target.value })} placeholder="Username" className="h-8 text-xs" />
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Display Name</Label>
+                                      <Input value={editUserForm.displayName} onChange={(e) => setEditUserForm({ ...editUserForm, displayName: e.target.value })} placeholder="Display name" className="h-8 text-xs" />
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">New Password (optional)</Label>
+                                      <Input type={showPassword.editNew ? "text" : "password"} value={editUserForm.newPassword} onChange={(e) => setEditUserForm({ ...editUserForm, newPassword: e.target.value })} placeholder="New password (optional)" className="h-8 text-xs" />
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Confirm Password</Label>
+                                      <Input type={showPassword.editConfirm ? "text" : "password"} value={editUserForm.confirmPassword} onChange={(e) => setEditUserForm({ ...editUserForm, confirmPassword: e.target.value })} placeholder="Confirm password" className="h-8 text-xs" />
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button onClick={handleUpdateUser} className="flex-1 h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white"><Check className="h-3 w-3 mr-1" />Save</Button>
+                                    <Button variant="outline" onClick={handleCancelEdit} className="flex-1 h-7 text-xs"><X className="h-3 w-3 mr-1" />Cancel</Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{account.displayName}</p>
+                                      {account.username === currentUser?.username && (
+                                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium flex-shrink-0">(You)</span>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
+                                  </div>
+                                  {account.username !== currentUser?.username && (
+                                    <div className="flex gap-1 flex-shrink-0">
+                                      <Button variant="ghost" size="sm" onClick={() => handleEditUser(account)} className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                        <Edit className="h-3 w-3" />
+                                      </Button>
+                                      <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(account.username)} className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </div>
                                   )}
                                 </div>
-                                <p className="text-sm text-muted-foreground">@{account.username}</p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  <Clock className="h-3 w-3 inline mr-1" />
-                                  Created {new Date(account.createdAt).toLocaleDateString()}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Badge 
-                                variant={account.role === 'admin' ? 'default' : 'secondary'}
-                                className={`px-4 py-2 ${
-                                  account.role === 'admin'
-                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600'
-                                    : account.role === 'packer'
-                                    ? 'bg-gradient-to-r from-green-600 to-emerald-600'
-                                    : 'bg-gradient-to-r from-blue-600 to-cyan-600'
-                                }`}
-                              >
-                                {account.role === 'admin' ? '👑 Admin' : 
-                                 account.role === 'packer' ? '📦 Packer' : '👤 Staff'}
-                              </Badge>
-                              {account.assignedChannel && (
-                                <Badge variant="outline" className="px-3 py-1.5">
-                                  <Building2 className="h-3 w-3 mr-1" />
-                                  {account.assignedChannel}
-                                </Badge>
-                              )}
-                              {account.username !== currentUser?.username && (
-                                <div className="flex gap-2">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    onClick={() => handleEditUser(account)}
-                                    title="Edit user"
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    onClick={() => handleDeleteUser(account.username)}
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                    title="Delete user"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
                               )}
                             </div>
-                          </div>
+                          ))
                         )}
                       </CardContent>
                     </Card>
-                  ))}
+
+                    {/* Departments (Operations) Card */}
+                    <Card className="border-0 shadow-sm bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                      <CardHeader className="p-4 pb-3 border-b border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-blue-600">
+                              <Building2 className="h-3.5 w-3.5 text-white" />
+                            </div>
+                            <span className="text-sm font-semibold text-slate-900 dark:text-white">Departments</span>
+                          </div>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                            {accounts.filter(a => a.role === 'operations').length} users
+                          </span>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-3 space-y-2">
+                        {accounts.filter(a => a.role === 'operations').length === 0 ? (
+                          <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-3">No department users</p>
+                        ) : (
+                          accounts.filter(a => a.role === 'operations').map((account) => (
+                            <div key={account.id}>
+                              {editingUser === account.id ? (
+                                <div className="space-y-3 p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Edit Department User</p>
+                                  <div className="space-y-2">
+                                    <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Username</Label>
+                                      <Input value={editUserForm.username} onChange={(e) => setEditUserForm({ ...editUserForm, username: e.target.value })} placeholder="Username" className="h-8 text-xs" />
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Display Name</Label>
+                                      <Input value={editUserForm.displayName} onChange={(e) => setEditUserForm({ ...editUserForm, displayName: e.target.value })} placeholder="Display name" className="h-8 text-xs" />
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">New Password (optional)</Label>
+                                      <Input type={showPassword.editNew ? "text" : "password"} value={editUserForm.newPassword} onChange={(e) => setEditUserForm({ ...editUserForm, newPassword: e.target.value })} placeholder="New password (optional)" className="h-8 text-xs" />
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Confirm Password</Label>
+                                      <Input type={showPassword.editConfirm ? "text" : "password"} value={editUserForm.confirmPassword} onChange={(e) => setEditUserForm({ ...editUserForm, confirmPassword: e.target.value })} placeholder="Confirm password" className="h-8 text-xs" />
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button onClick={handleUpdateUser} className="flex-1 h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white"><Check className="h-3 w-3 mr-1" />Save</Button>
+                                    <Button variant="outline" onClick={handleCancelEdit} className="flex-1 h-7 text-xs"><X className="h-3 w-3 mr-1" />Cancel</Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{account.displayName}</p>
+                                      {account.assignedChannel && (
+                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 flex-shrink-0">
+                                          {account.assignedChannel}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
+                                  </div>
+                                  {account.username !== currentUser?.username && (
+                                    <div className="flex gap-1 flex-shrink-0">
+                                      <Button variant="ghost" size="sm" onClick={() => handleEditUser(account)} className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                        <Edit className="h-3 w-3" />
+                                      </Button>
+                                      <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(account.username)} className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    {/* Logistics (Packer + Tracker + Logistics-Admin) Card */}
+                    <Card className="border-0 shadow-sm bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                      <CardHeader className="p-4 pb-3 border-b border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-orange-600">
+                              <Server className="h-3.5 w-3.5 text-white" />
+                            </div>
+                            <span className="text-sm font-semibold text-slate-900 dark:text-white">Logistics</span>
+                          </div>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                            {accounts.filter(a => ['packer', 'tracker', 'logistics-admin'].includes(a.role)).length} users
+                          </span>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-3 space-y-2">
+                        {accounts.filter(a => ['packer', 'tracker', 'logistics-admin'].includes(a.role)).length === 0 ? (
+                          <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-3">No logistics users</p>
+                        ) : (
+                          accounts.filter(a => ['packer', 'tracker', 'logistics-admin'].includes(a.role)).map((account) => (
+                            <div key={account.id}>
+                              {editingUser === account.id ? (
+                                <div className="space-y-3 p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Edit Logistics User</p>
+                                  <div className="space-y-2">
+                                    <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Username</Label>
+                                      <Input value={editUserForm.username} onChange={(e) => setEditUserForm({ ...editUserForm, username: e.target.value })} placeholder="Username" className="h-8 text-xs" />
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Display Name</Label>
+                                      <Input value={editUserForm.displayName} onChange={(e) => setEditUserForm({ ...editUserForm, displayName: e.target.value })} placeholder="Display name" className="h-8 text-xs" />
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">New Password (optional)</Label>
+                                      <Input type={showPassword.editNew ? "text" : "password"} value={editUserForm.newPassword} onChange={(e) => setEditUserForm({ ...editUserForm, newPassword: e.target.value })} placeholder="New password (optional)" className="h-8 text-xs" />
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Confirm Password</Label>
+                                      <Input type={showPassword.editConfirm ? "text" : "password"} value={editUserForm.confirmPassword} onChange={(e) => setEditUserForm({ ...editUserForm, confirmPassword: e.target.value })} placeholder="Confirm password" className="h-8 text-xs" />
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button onClick={handleUpdateUser} className="flex-1 h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white"><Check className="h-3 w-3 mr-1" />Save</Button>
+                                    <Button variant="outline" onClick={handleCancelEdit} className="flex-1 h-7 text-xs"><X className="h-3 w-3 mr-1" />Cancel</Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{account.displayName}</p>
+                                      {account.assignedChannel && (
+                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-400 flex-shrink-0">
+                                          {account.assignedChannel}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
+                                  </div>
+                                  {account.username !== currentUser?.username && (
+                                    <div className="flex gap-1 flex-shrink-0">
+                                      <Button variant="ghost" size="sm" onClick={() => handleEditUser(account)} className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                        <Edit className="h-3 w-3" />
+                                      </Button>
+                                      <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(account.username)} className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1494,66 +1482,61 @@ export default function SettingsPage() {
         {/* Company Tab (Admin Only) */}
         {isAdmin && (
           <TabsContent value="company" className="space-y-6">
-            <Card className="border-0 shadow-xl">
-              <CardHeader className="border-b bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-                <CardTitle className="flex items-center gap-3 text-xl">
-                  <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                    <Building2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-800 p-5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-green-600">
+                    <Building2 className="h-4 w-4 text-white" />
                   </div>
-                  Company Information
-                </CardTitle>
-                <CardDescription>
-                  Configure your company details and business settings
-                </CardDescription>
+                  <div>
+                    <CardTitle className="text-lg font-bold text-slate-900 dark:text-white">
+                      Company Information
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm">
+                      Configure your company details and business settings
+                    </CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="pt-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="pt-5 space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <Label htmlFor="companyName" className="text-sm font-semibold">Company Name</Label>
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="companyName"
-                        value={systemSettings.companyName}
-                        onChange={(e) => setSystemSettings({ ...systemSettings, companyName: e.target.value })}
-                        placeholder="Your Company Name"
-                        className="pl-10"
-                      />
-                    </div>
+                    <Label htmlFor="companyName" className="text-sm font-medium">Company Name</Label>
+                    <Input
+                      id="companyName"
+                      value={systemSettings.companyName}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, companyName: e.target.value })}
+                      placeholder="Your Company Name"
+                      className="h-10"
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="companyEmail" className="text-sm font-semibold">Company Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="companyEmail"
-                        type="email"
-                        value={systemSettings.companyEmail}
-                        onChange={(e) => setSystemSettings({ ...systemSettings, companyEmail: e.target.value })}
-                        placeholder="info@company.com"
-                        className="pl-10"
-                      />
-                    </div>
+                    <Label htmlFor="companyEmail" className="text-sm font-medium">Company Email</Label>
+                    <Input
+                      id="companyEmail"
+                      type="email"
+                      value={systemSettings.companyEmail}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, companyEmail: e.target.value })}
+                      placeholder="info@company.com"
+                      className="h-10"
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="companyPhone" className="text-sm font-semibold">Company Phone</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="companyPhone"
-                        type="tel"
-                        value={systemSettings.companyPhone}
-                        onChange={(e) => setSystemSettings({ ...systemSettings, companyPhone: e.target.value })}
-                        placeholder="+63 XXX XXX XXXX"
-                        className="pl-10"
-                      />
-                    </div>
+                    <Label htmlFor="companyPhone" className="text-sm font-medium">Company Phone</Label>
+                    <Input
+                      id="companyPhone"
+                      type="tel"
+                      value={systemSettings.companyPhone}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, companyPhone: e.target.value })}
+                      placeholder="+63 XXX XXX XXXX"
+                      className="h-10"
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="currency" className="text-sm font-semibold">Currency</Label>
+                    <Label htmlFor="currency" className="text-sm font-medium">Currency</Label>
                     <select
                       id="currency"
                       value={systemSettings.currency}
@@ -1568,26 +1551,23 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="companyAddress" className="text-sm font-semibold">Company Address</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                      <textarea
-                        id="companyAddress"
-                        value={systemSettings.companyAddress}
-                        onChange={(e) => setSystemSettings({ ...systemSettings, companyAddress: e.target.value })}
-                        placeholder="Enter complete address"
-                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm"
-                        rows={3}
-                      />
-                    </div>
+                    <Label htmlFor="companyAddress" className="text-sm font-medium">Company Address</Label>
+                    <textarea
+                      id="companyAddress"
+                      value={systemSettings.companyAddress}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, companyAddress: e.target.value })}
+                      placeholder="Enter complete address"
+                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      rows={3}
+                    />
                   </div>
                 </div>
 
                 <Separator />
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div className="space-y-2">
-                    <Label htmlFor="timezone" className="text-sm font-semibold">Timezone</Label>
+                    <Label htmlFor="timezone" className="text-sm font-medium">Timezone</Label>
                     <select
                       id="timezone"
                       value={systemSettings.timezone}
@@ -1602,7 +1582,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="dateFormat" className="text-sm font-semibold">Date Format</Label>
+                    <Label htmlFor="dateFormat" className="text-sm font-medium">Date Format</Label>
                     <select
                       id="dateFormat"
                       value={systemSettings.dateFormat}
@@ -1616,7 +1596,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="lowStockThreshold" className="text-sm font-semibold">Low Stock Alert</Label>
+                    <Label htmlFor="lowStockThreshold" className="text-sm font-medium">Low Stock Alert</Label>
                     <Input
                       id="lowStockThreshold"
                       type="number"
@@ -1624,16 +1604,17 @@ export default function SettingsPage() {
                       onChange={(e) => setSystemSettings({ ...systemSettings, lowStockThreshold: parseInt(e.target.value) })}
                       placeholder="10"
                       min="1"
+                      className="h-10"
                     />
                   </div>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="outline">
+                  <Button variant="outline" className="h-10">
                     <X className="h-4 w-4 mr-2" />
                     Reset
                   </Button>
-                  <Button onClick={handleSystemSettingsUpdate} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
+                  <Button onClick={handleSystemSettingsUpdate} className="bg-green-600 hover:bg-green-700 text-white h-10">
                     <Save className="h-4 w-4 mr-2" />
                     Save Settings
                   </Button>
@@ -1652,119 +1633,104 @@ export default function SettingsPage() {
 
         {/* Appearance Tab */}
         <TabsContent value="appearance" className="space-y-6">
-          <Card className="border-0 shadow-xl">
-            <CardHeader className="border-b bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20">
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-                  <Palette className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-800 p-5">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-indigo-600">
+                  <Palette className="h-4 w-4 text-white" />
                 </div>
-                Appearance & Display
-              </CardTitle>
-              <CardDescription>
-                Customize the look and feel of your interface
-              </CardDescription>
+                <div>
+                  <CardTitle className="text-lg font-bold text-slate-900 dark:text-white">
+                    Appearance & Display
+                  </CardTitle>
+                  <CardDescription className="mt-1 text-sm">
+                    Customize the look and feel of your interface
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="pt-5 space-y-6">
               <div>
-                <h3 className="font-semibold mb-4 flex items-center gap-2">
-                  <Palette className="h-4 w-4" />
-                  Theme Preference
-                </h3>
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Theme Preference</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card 
-                    className={`cursor-pointer transition-all ${
-                      theme === 'light' 
-                        ? 'ring-2 ring-blue-600 shadow-lg' 
-                        : 'hover:shadow-md'
+                  <button
+                    className={`flex items-center gap-3 p-4 rounded-lg border text-left transition-all ${
+                      theme === 'light'
+                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                     onClick={() => handleThemeChange('light')}
                   >
-                    <CardContent className="pt-6 text-center space-y-3">
-                      <div className="inline-flex p-4 rounded-full bg-yellow-100 dark:bg-yellow-900/30">
-                        <Sun className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">Light Mode</h4>
-                        <p className="text-xs text-muted-foreground">Bright and clear</p>
-                      </div>
-                      {theme === 'light' && (
-                        <Badge className="bg-blue-600">Active</Badge>
-                      )}
-                    </CardContent>
-                  </Card>
+                    <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 flex-shrink-0">
+                      <Sun className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">Light Mode</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Bright and clear</p>
+                    </div>
+                    {theme === 'light' && <Check className="h-4 w-4 text-blue-600 ml-auto" />}
+                  </button>
 
-                  <Card 
-                    className={`cursor-pointer transition-all ${
-                      theme === 'dark' 
-                        ? 'ring-2 ring-blue-600 shadow-lg' 
-                        : 'hover:shadow-md'
+                  <button
+                    className={`flex items-center gap-3 p-4 rounded-lg border text-left transition-all ${
+                      theme === 'dark'
+                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                     onClick={() => handleThemeChange('dark')}
                   >
-                    <CardContent className="pt-6 text-center space-y-3">
-                      <div className="inline-flex p-4 rounded-full bg-slate-800 dark:bg-slate-700">
-                        <Moon className="h-8 w-8 text-slate-100" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">Dark Mode</h4>
-                        <p className="text-xs text-muted-foreground">Easy on the eyes</p>
-                      </div>
-                      {theme === 'dark' && (
-                        <Badge className="bg-blue-600">Active</Badge>
-                      )}
-                    </CardContent>
-                  </Card>
+                    <div className="p-2 rounded-lg bg-slate-800 flex-shrink-0">
+                      <Moon className="h-5 w-5 text-slate-100" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">Dark Mode</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Easy on the eyes</p>
+                    </div>
+                    {theme === 'dark' && <Check className="h-4 w-4 text-blue-600 ml-auto" />}
+                  </button>
 
-                  <Card 
-                    className={`cursor-pointer transition-all ${
-                      theme === 'system' 
-                        ? 'ring-2 ring-blue-600 shadow-lg' 
-                        : 'hover:shadow-md'
+                  <button
+                    className={`flex items-center gap-3 p-4 rounded-lg border text-left transition-all ${
+                      theme === 'system'
+                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                     onClick={() => handleThemeChange('system')}
                   >
-                    <CardContent className="pt-6 text-center space-y-3">
-                      <div className="inline-flex p-4 rounded-full bg-gradient-to-br from-yellow-100 to-slate-800">
-                        <Monitor className="h-8 w-8 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">System</h4>
-                        <p className="text-xs text-muted-foreground">Match device</p>
-                      </div>
-                      {theme === 'system' && (
-                        <Badge className="bg-blue-600">Active</Badge>
-                      )}
-                    </CardContent>
-                  </Card>
+                    <div className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 flex-shrink-0">
+                      <Monitor className="h-5 w-5 text-slate-600 dark:text-slate-300" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">System</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Match device</p>
+                    </div>
+                    {theme === 'system' && <Check className="h-4 w-4 text-blue-600 ml-auto" />}
+                  </button>
                 </div>
               </div>
 
               <Separator />
 
-              <div className="space-y-4">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <Bell className="h-4 w-4" />
-                  Notification Preferences
-                </h3>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Notification Preferences</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                     <div>
-                      <p className="font-medium text-sm">Desktop Notifications</p>
-                      <p className="text-xs text-muted-foreground">Show notifications on your desktop</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">Desktop Notifications</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Show notifications on your desktop</p>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={systemSettings.enableNotifications}
                       onCheckedChange={(checked) => setSystemSettings({ ...systemSettings, enableNotifications: checked })}
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                     <div>
-                      <p className="font-medium text-sm">Email Alerts</p>
-                      <p className="text-xs text-muted-foreground">Receive important updates via email</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">Email Alerts</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Receive important updates via email</p>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={systemSettings.enableEmailAlerts}
                       onCheckedChange={(checked) => setSystemSettings({ ...systemSettings, enableEmailAlerts: checked })}
                     />
@@ -1772,8 +1738,8 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end pt-4">
-                <Button onClick={handleSystemSettingsUpdate} className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700">
+              <div className="flex justify-end pt-2">
+                <Button onClick={handleSystemSettingsUpdate} className="bg-indigo-600 hover:bg-indigo-700 text-white h-10 px-6">
                   <Save className="h-4 w-4 mr-2" />
                   Save Preferences
                 </Button>
@@ -1785,47 +1751,52 @@ export default function SettingsPage() {
         {/* System Tab */}
         <TabsContent value="system" className="space-y-6 mt-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-0 shadow-xl">
-              <CardHeader className="border-b bg-gradient-to-r from-cyan-50 to-teal-50 dark:from-cyan-950/20 dark:to-teal-950/20 p-6">
-                <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-                  <div className="p-2 rounded-lg bg-cyan-100 dark:bg-cyan-900/30">
-                    <Database className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+            {/* System Information */}
+            <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-800 p-5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-cyan-600">
+                    <Database className="h-4 w-4 text-white" />
                   </div>
-                  System Information
-                </CardTitle>
-                <CardDescription className="mt-2">
-                  View system status and configuration
-                </CardDescription>
+                  <div>
+                    <CardTitle className="text-lg font-bold text-slate-900 dark:text-white">
+                      System Information
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm">
+                      View system status and configuration
+                    </CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="p-6 space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Database</Label>
-                    <Badge variant="outline" className="w-fit bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
-                      <div className="h-2 w-2 rounded-full bg-green-500 mr-2 animate-pulse"></div>
+              <CardContent className="p-5 space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Database</Label>
+                    <Badge variant="outline" className="w-fit bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800 text-xs">
+                      <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
                       Supabase
                     </Badge>
                   </div>
 
-                  <div className="space-y-3">
-                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Security</Label>
-                    <Badge variant="outline" className="w-fit bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Security</Label>
+                    <Badge variant="outline" className="w-fit bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-xs">
                       <Shield className="h-3 w-3 mr-2" />
                       RLS Enabled
                     </Badge>
                   </div>
 
-                  <div className="space-y-3">
-                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Authentication</Label>
-                    <Badge variant="outline" className="w-fit bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Authentication</Label>
+                    <Badge variant="outline" className="w-fit bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800 text-xs">
                       <Lock className="h-3 w-3 mr-2" />
                       Token-Based
                     </Badge>
                   </div>
 
-                  <div className="space-y-3">
-                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Encryption</Label>
-                    <Badge variant="outline" className="w-fit bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Encryption</Label>
+                    <Badge variant="outline" className="w-fit bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800 text-xs">
                       <Check className="h-3 w-3 mr-2" />
                       Bcrypt
                     </Badge>
@@ -1834,53 +1805,58 @@ export default function SettingsPage() {
 
                 <Separator />
 
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-muted-foreground">System Version</span>
-                    <span className="text-sm font-semibold">1.0.0</span>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">System Version</span>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">1.0.0</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">Security Score</span>
+                    <Badge className="bg-green-600 text-white text-xs font-medium">10/10</Badge>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">Status</span>
+                    <Badge className="bg-blue-600 text-white text-xs font-medium">Production Ready</Badge>
                   </div>
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-muted-foreground">Security Score</span>
-                    <Badge className="bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold">10/10</Badge>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-muted-foreground">Status</span>
-                    <Badge className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold">Production Ready</Badge>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-muted-foreground">Uptime</span>
-                    <span className="text-sm font-semibold">99.9%</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-400">Uptime</span>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">99.9%</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-xl">
-              <CardHeader className="border-b bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 p-6">
-                <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-                  <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                    <Server className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+            {/* Backup & Data */}
+            <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-800 p-5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-orange-600">
+                    <Server className="h-4 w-4 text-white" />
                   </div>
-                  Backup & Data
-                </CardTitle>
-                <CardDescription className="mt-2">
-                  Manage backups and data exports
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-6 space-y-5">
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
                   <div>
-                    <p className="font-medium text-sm">Automatic Backups</p>
-                    <p className="text-xs text-muted-foreground">Daily at 2:00 AM</p>
+                    <CardTitle className="text-lg font-bold text-slate-900 dark:text-white">
+                      Backup & Data
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm">
+                      Manage backups and data exports
+                    </CardDescription>
                   </div>
-                  <Switch 
+                </div>
+              </CardHeader>
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <div>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">Automatic Backups</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Daily at 2:00 AM</p>
+                  </div>
+                  <Switch
                     checked={systemSettings.autoBackup}
                     onCheckedChange={(checked) => setSystemSettings({ ...systemSettings, autoBackup: checked })}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Backup Frequency</Label>
+                  <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Backup Frequency</Label>
                   <select
                     value={systemSettings.backupFrequency}
                     onChange={(e) => setSystemSettings({ ...systemSettings, backupFrequency: e.target.value })}
@@ -1895,103 +1871,90 @@ export default function SettingsPage() {
 
                 <Separator />
 
-                <div className="space-y-3">
-                  <Button 
-                    onClick={handleBackupNow} 
-                    variant="outline" 
-                    className="w-full justify-start"
-                  >
+                <div className="space-y-2">
+                  <Button onClick={handleBackupNow} variant="outline" className="w-full justify-start h-10 text-sm">
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Create Backup Now
                   </Button>
-
-                  <Button 
-                    onClick={handleExportData} 
-                    variant="outline" 
-                    className="w-full justify-start"
-                  >
+                  <Button onClick={handleExportData} variant="outline" className="w-full justify-start h-10 text-sm">
                     <Download className="h-4 w-4 mr-2" />
                     Export System Data
                   </Button>
-
-                  <Button 
-                    onClick={handleImportData}
-                    variant="outline" 
-                    className="w-full justify-start"
-                  >
+                  <Button onClick={handleImportData} variant="outline" className="w-full justify-start h-10 text-sm">
                     <Upload className="h-4 w-4 mr-2" />
                     Import Data
                   </Button>
                 </div>
 
-                <div className="pt-2">
-                  <p className="text-xs text-muted-foreground">
-                    {lastBackup 
-                      ? `Last backup: ${new Date(lastBackup).toLocaleString()}`
-                      : 'No backup created yet'
-                    }
-                  </p>
-                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">
+                  {lastBackup
+                    ? `Last backup: ${new Date(lastBackup).toLocaleString()}`
+                    : 'No backup created yet'
+                  }
+                </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* System Stats */}
-          <Card className="border-0 shadow-xl">
-            <CardHeader className="p-6">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <BarChart3 className="h-5 w-5" />
-                System Performance
-              </CardTitle>
-              <CardDescription className="mt-2">Real-time system metrics and statistics</CardDescription>
+          {/* System Performance */}
+          <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-800 p-5">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-slate-700">
+                  <BarChart3 className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-bold text-slate-900 dark:text-white">System Performance</CardTitle>
+                  <CardDescription className="mt-1 text-sm">Real-time system metrics and statistics</CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="px-6 pb-6">
+            <CardContent className="p-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg border border-blue-100 dark:border-blue-900/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">API Response</span>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">API Response</span>
                     <Zap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {systemMetrics.apiResponseTime > 0 ? `${systemMetrics.apiResponseTime}ms` : '—'}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">Average response time</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Average response time</p>
                 </div>
 
-                <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg border border-green-100 dark:border-green-900/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Database</span>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Database</span>
                     <Database className="h-4 w-4 text-green-600 dark:text-green-400" />
                   </div>
-                  <p className="text-3xl font-bold text-green-600 dark:text-green-400">{systemMetrics.databaseHealth}%</p>
-                  <p className="text-xs text-muted-foreground mt-1">System health</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{systemMetrics.databaseHealth}%</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">System health</p>
                 </div>
 
-                <div className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg border border-purple-100 dark:border-purple-900/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Storage</span>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Storage</span>
                     <Server className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{systemMetrics.storageUsed}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Data stored</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{systemMetrics.storageUsed}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Data stored</p>
                 </div>
 
-                <div className="p-5 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 rounded-lg border border-orange-100 dark:border-orange-900/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Total Records</span>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">User Accounts</span>
                     <Activity className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                   </div>
-                  <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {accounts.length > 0 ? accounts.length : '—'}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">User accounts</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Total accounts</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-      </div>
     </div>
   )
 }

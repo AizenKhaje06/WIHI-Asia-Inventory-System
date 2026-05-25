@@ -48,7 +48,6 @@ export default function PackerDashboard() {
   const [packedHistory, setPackedHistory] = useState<PackedOrder[]>([])
   const [filteredPending, setFilteredPending] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedChannel, setSelectedChannel] = useState<string>('All')
   const [currentUser, setCurrentUser] = useState<any>(null)
@@ -118,10 +117,10 @@ export default function PackerDashboard() {
     setCurrentUser(user)
     fetchData()
 
-    // Auto-refresh every 1 second for fast dashboard updates
+    // Auto-refresh every 30 seconds silently in the background
     const interval = setInterval(() => {
       fetchData(true) // Silent refresh
-    }, 1000) // 1 second
+    }, 30000) // 30 seconds
     
     return () => clearInterval(interval)
   }, [])
@@ -133,7 +132,6 @@ export default function PackerDashboard() {
   const fetchData = async (silent = false) => {
     try {
       if (!silent) setLoading(true)
-      if (!silent) setRefreshing(true)
 
       // Fetch pending orders
       const queueResponse = await fetch('/api/packer/queue')
@@ -143,8 +141,18 @@ export default function PackerDashboard() {
         throw new Error(queueData.error || 'Failed to fetch queue')
       }
 
-      setPendingOrders(queueData.queue || [])
-      setFilteredPending(queueData.queue || [])
+      // Only update state if data actually changed (prevents flickering)
+      const newQueue = queueData.queue || []
+      setPendingOrders(prev => {
+        const prevIds = prev.map(o => o.id).join(',')
+        const newIds = newQueue.map((o: Order) => o.id).join(',')
+        return prevIds === newIds ? prev : newQueue
+      })
+      setFilteredPending(prev => {
+        const prevIds = prev.map(o => o.id).join(',')
+        const newIds = newQueue.map((o: Order) => o.id).join(',')
+        return prevIds === newIds ? prev : newQueue
+      })
 
       // Fetch packed history
       const historyResponse = await fetch('/api/packer/history')
@@ -154,9 +162,13 @@ export default function PackerDashboard() {
         throw new Error(historyData.error || 'Failed to fetch history')
       }
 
-      setPackedHistory(historyData.history || [])
-      
-      // Completely silent - no toast notification
+      const newHistory = historyData.history || []
+      setPackedHistory(prev => {
+        const prevIds = prev.map((o: PackedOrder) => o.id).join(',')
+        const newIds = newHistory.map((o: PackedOrder) => o.id).join(',')
+        return prevIds === newIds ? prev : newHistory
+      })
+
     } catch (error) {
       console.error('Error fetching data:', error)
       if (!silent) {
@@ -164,7 +176,6 @@ export default function PackerDashboard() {
       }
     } finally {
       setLoading(false)
-      if (!silent) setRefreshing(false)
     }
   }
 
@@ -286,7 +297,7 @@ export default function PackerDashboard() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8 px-3 sm:px-6">
+    <div className="max-w-[1400px] mx-auto space-y-4 sm:space-y-6 pb-6 sm:pb-8 px-4 sm:px-6 lg:px-8">
       {/* Page Header - Mobile Responsive */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 pt-4 sm:pt-6 mb-4 sm:mb-6">
         <div>
@@ -593,7 +604,7 @@ export default function PackerDashboard() {
                         <td className="py-3 px-3">
                           <div className="flex flex-col gap-0.5">
                             <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
-                              {order.itemName}
+                              {order.itemName.replace(/\s*\(\d+\)\s*$/, '')}
                             </span>
                             <span className="text-[10px] text-slate-500 dark:text-slate-400">
                               Qty: {order.quantity}
@@ -725,7 +736,7 @@ export default function PackerDashboard() {
                       </td>
                       <td className="py-2.5 px-3">
                         <span className="text-[11px] text-slate-700 dark:text-slate-300 block truncate">
-                          {order.itemName || 'N/A'}
+                          {(order.itemName || 'N/A').replace(/\s*\(\d+\)\s*$/, '')}
                         </span>
                       </td>
                       <td className="py-2.5 px-3">
@@ -861,7 +872,7 @@ export default function PackerDashboard() {
                           Product Items
                         </p>
                         <p className="text-base font-semibold text-slate-900 dark:text-white">
-                          {selectedOrder.itemName}
+                          {selectedOrder.itemName.replace(/\s*\(\d+\)\s*$/, '')}
                         </p>
                         <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                           Qty: {selectedOrder.quantity}

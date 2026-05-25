@@ -2652,3 +2652,45 @@ pre code {
   justify-content: center !important;
   text-align: center !important;
 }
+
+
+/* ============================================
+   CUSTOM SELECT DROPDOWN GLASS EFFECT
+   ============================================ */
+
+/* Override default blue background for select items */
+[data-radix-select-item][data-state="checked"],
+[data-radix-select-item][data-highlighted] {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+/* Force white text on all select items and their children */
+[data-radix-select-item],
+[data-radix-select-item] *,
+[data-radix-select-item] span,
+[data-radix-select-item] div {
+  color: white !important;
+}
+
+/* Force white text on hover */
+[data-radix-select-item]:hover,
+[data-radix-select-item]:hover *,
+[data-radix-select-item]:hover span,
+[data-radix-select-item]:hover div {
+  color: white !important;
+}
+
+/* Remove default focus ring */
+[data-radix-select-item]:focus {
+  outline: none !important;
+}
+
+/* Glass effect for select content */
+[data-radix-select-content] {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}

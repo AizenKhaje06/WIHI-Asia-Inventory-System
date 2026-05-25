@@ -250,12 +250,18 @@ export default function EnterpriseLoginPage() {
 
       // Operations login - Use department authentication
       if (formData.role === 'operations') {
+        // Validate that a channel is selected
+        if (!selectedChannel) {
+          throw new Error("Please select a sales channel")
+        }
+
         const authResponse = await fetch('/api/departments/authenticate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             department: formData.username,
-            password: formData.password
+            password: formData.password,
+            selectedChannel: selectedChannel // Pass selected channel for validation
           })
         })
 
@@ -265,10 +271,16 @@ export default function EnterpriseLoginPage() {
         console.log('[Operations Login] Auth data:', authData)
         console.log('[Operations Login] Department:', authData.department)
         console.log('[Operations Login] Assigned channel:', authData.department?.assigned_channel)
+        console.log('[Operations Login] Selected channel:', selectedChannel)
         console.log('[Operations Login] ===== END DEBUG =====')
 
         if (!authResponse.ok || !authData.success) {
           throw new Error(authData.error || "Invalid department credentials")
+        }
+
+        // Validate that the user's assigned channel matches the selected channel
+        if (authData.department.assigned_channel !== selectedChannel) {
+          throw new Error(`This account is not assigned to ${selectedChannel}`)
         }
 
         // Authentication successful - Store department channel for filtering

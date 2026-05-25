@@ -991,136 +991,104 @@ export default function InventoryPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-4 pb-6 px-0 md:pt-6 md:px-0">
-      {/* Page Header - Mobile Optimized */}
-      <div className="mb-5 px-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-1">
-              Inventory Management
-            </h1>
-            <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400">
-              Comprehensive product inventory control and management
-            </p>
-          </div>
-          
-          {/* Export Button - Admin only - Professional SaaS Style */}
-          {!isTeamLeader && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  className="relative h-11 px-6 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0 font-semibold group overflow-hidden"
-                >
-                  {/* Animated shine effect */}
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                  
-                  {/* Button content */}
-                  <div className="relative flex items-center gap-2.5">
-                    <div className="p-1 rounded-md bg-white/20 backdrop-blur-sm">
-                      <FileDown className="h-4 w-4" />
-                    </div>
-                    <span className="text-sm">Export Report</span>
-                    <ChevronDown className="h-4 w-4 ml-1 group-hover:translate-y-0.5 transition-transform" />
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="end" 
-                className="w-56 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl rounded-xl"
-              >
-                <DropdownMenuItem 
-                  onClick={exportToPDF}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
-                >
-                  <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform">
-                    <FileDown className="h-4 w-4" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Export as PDF</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Print-ready format</span>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={exportToExcel}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group mt-1"
-                >
-                  <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform">
-                    <FileSpreadsheet className="h-4 w-4" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Export as Excel</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Editable spreadsheet</span>
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Page Header - Professional */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text [-webkit-text-fill-color:transparent]">
+            Inventory Overview
+          </h2>
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            Comprehensive product inventory control and management
+          </p>
         </div>
+        
+        {/* Export Button - Admin only - Professional Style */}
+        {!isTeamLeader && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="h-10 gap-2 border-slate-200 dark:border-slate-700 flex-shrink-0">
+                <FileDown className="h-4 w-4" />
+                Export
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={exportToPDF}>
+                <FileDown className="h-4 w-4 mr-2" />
+                <span>Export as PDF</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportToExcel}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                <span>Export as Excel</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
-      <div className="px-4">
       {/* Professional Search & Actions Bar */}
-      <div className="mb-6">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-          <div className="p-5">
-            <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
-              {/* Enhanced Search Bar - Left */}
-              <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
-                <Input
-                  placeholder="Search products by name, category, or SKU..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-12 pr-4 h-12 text-[15px] border-slate-300 dark:border-slate-700 rounded-lg w-full bg-slate-50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-800 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                />
-                {search && (
-                  <button
-                    onClick={() => setSearch("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
-                  >
-                    <X className="h-4 w-4 text-slate-400" />
-                  </button>
-                )}
-              </div>
-
-              {/* Professional Action Buttons - Right */}
-              <div className="flex gap-2.5 flex-wrap lg:flex-nowrap">
-                <Button
-                  onClick={() => setCategoryDialogOpen(true)}
-                  className="flex-1 lg:flex-none h-12 px-5 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white shadow-md hover:shadow-lg text-[14px] font-semibold whitespace-nowrap transition-all duration-200 rounded-lg"
+      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
+        <CardContent className="pt-6">
+          <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
+            {/* Search Bar */}
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                placeholder="Search products by name, category, or SKU..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 pr-4 h-10 border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
                 >
-                  <Plus className="h-[18px] w-[18px] mr-2" />
-                  Categories
-                </Button>
+                  <X className="h-4 w-4 text-slate-400" />
+                </button>
+              )}
+            </div>
 
-                <Button
-                  onClick={() => setStoreDialogOpen(true)}
-                  className="flex-1 lg:flex-none h-12 px-5 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white shadow-md hover:shadow-lg text-[14px] font-semibold whitespace-nowrap transition-all duration-200 rounded-lg"
-                >
-                  <Plus className="h-[18px] w-[18px] mr-2" />
-                  Stores
-                </Button>
+            {/* Action Buttons */}
+            <div className="flex gap-2 flex-wrap lg:flex-nowrap">
+              <Button
+                onClick={() => setCategoryDialogOpen(true)}
+                variant="outline"
+                className="flex-1 lg:flex-none h-10 px-4 border-slate-200 dark:border-slate-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Categories
+              </Button>
 
-                <Button
-                  onClick={() => setCreateBundleOpen(true)}
-                  className="flex-1 lg:flex-none h-12 px-5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md hover:shadow-lg text-[14px] font-semibold whitespace-nowrap transition-all duration-200 rounded-lg"
-                >
-                  <Plus className="h-[18px] w-[18px] mr-2" />
-                  Bundle
-                </Button>
+              <Button
+                onClick={() => setStoreDialogOpen(true)}
+                variant="outline"
+                className="flex-1 lg:flex-none h-10 px-4 border-slate-200 dark:border-slate-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Stores
+              </Button>
 
-                <Button
-                  onClick={() => setAddDialogOpen(true)}
-                  className="flex-1 lg:flex-none h-12 px-5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg text-[14px] font-semibold whitespace-nowrap transition-all duration-200 rounded-lg"
-                >
-                  <Plus className="h-[18px] w-[18px] mr-2" />
-                  Product
-                </Button>
-              </div>
+              <Button
+                onClick={() => setCreateBundleOpen(true)}
+                className="flex-1 lg:flex-none h-10 px-4 bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Bundle
+              </Button>
+
+              <Button
+                onClick={() => setAddDialogOpen(true)}
+                className="flex-1 lg:flex-none h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Product
+              </Button>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Active Filters + Results */}
       <div className="mb-4">
@@ -1152,16 +1120,15 @@ export default function InventoryPage() {
           </div>
         </div>
       </div>
-      </div>
 
-      <Card className="border-slate-200 dark:border-slate-800 shadow-lg rounded-none md:rounded-lg overflow-hidden">
-        <CardHeader className="pb-5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-          <div className="flex flex-col gap-4 px-4 md:px-6">
+      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader className="pb-5 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex flex-col gap-4">
             {/* Title Row */}
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-3 text-xl md:text-2xl font-bold text-slate-900 dark:text-white">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
-                  <Package className="h-6 w-6 text-white" />
+              <CardTitle className="flex items-center gap-3 text-xl font-bold text-slate-900 dark:text-white">
+                <div className="p-2 rounded-lg bg-blue-600 shadow-sm">
+                  <Package className="h-5 w-5 text-white" />
                 </div>
                 <span>Product Inventory</span>
               </CardTitle>
@@ -1173,7 +1140,7 @@ export default function InventoryPage() {
                     size="sm"
                     onClick={() => setViewMode('grid')}
                     className={cn(
-                      "h-8 px-3 rounded-md transition-all",
+                      "h-8 px-3 rounded-md transition-colors",
                       viewMode === 'grid'
                         ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1186,7 +1153,7 @@ export default function InventoryPage() {
                     size="sm"
                     onClick={() => setViewMode('table')}
                     className={cn(
-                      "h-8 px-3 rounded-md transition-all",
+                      "h-8 px-3 rounded-md transition-colors",
                       viewMode === 'table'
                         ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1195,7 +1162,7 @@ export default function InventoryPage() {
                     <LayoutList className="h-4 w-4" />
                   </Button>
                 </div>
-                <Badge className="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 dark:from-slate-800 dark:to-slate-700 dark:text-slate-300 border-0 text-sm px-3 py-1.5 font-bold shadow-sm">
+                <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-0 text-sm px-3 py-1 font-bold">
                   {filteredItems.length} items
                 </Badge>
               </div>
@@ -1442,52 +1409,52 @@ export default function InventoryPage() {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[800px] text-sm table-fixed">
+                <table className="w-full min-w-[800px] lg:min-w-full text-sm table-fixed">
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                      <th className="py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[25%]">
+                      <th className={`py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[25%]' : 'w-[30%]'}`}>
                         Product
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'product')}
                         />
                       </th>
-                      <th className="py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[15%]">
+                      <th className={`py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[15%]' : 'w-[18%]'}`}>
                         Category
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'category')}
                         />
                       </th>
-                      <th className="py-2.5 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[10%]">
+                      <th className={`py-2.5 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[10%]' : 'w-[12%]'}`}>
                         Status
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'status')}
                         />
                       </th>
-                      <th className="py-2.5 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[10%]">
+                      <th className={`py-2.5 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[10%]' : 'w-[10%]'}`}>
                         Stock
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'stock')}
                         />
                       </th>
-                      <th className="py-2.5 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[10%]">
+                      <th className={`py-2.5 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[10%]' : 'w-[10%]'}`}>
                         Cost
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'cost')}
                         />
                       </th>
-                      <th className="py-2.5 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[10%]">
+                      <th className={`py-2.5 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[10%]' : 'w-[10%]'}`}>
                         Price
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
                           onMouseDown={(e) => handleMouseDown(e, 'price')}
                         />
                       </th>
-                      <th className="py-2.5 px-3 pr-6 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative w-[10%]">
+                      <th className={`py-2.5 px-3 pr-6 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[10%]' : 'w-[10%]'}`}>
                         Margin
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"

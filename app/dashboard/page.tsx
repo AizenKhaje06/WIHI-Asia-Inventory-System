@@ -135,17 +135,14 @@ export default function DashboardPage() {
   })) || []
 
   return (
-    <div className="space-y-6 pt-2 pb-8">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Page Header - Professional with Date Picker */}
-      <div className="flex items-start justify-between gap-4 mb-6">
+      <div className="flex items-start justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">Dashboard</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">Welcome back! Here's what's happening with your inventory.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Dashboard Overview</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Welcome back! Here's what's happening with your inventory.</p>
         </div>
         <div className="flex-shrink-0">
-          <div className="text-right mb-1">
-            <p className="text-xs text-slate-500 dark:text-slate-400">Date Range (affects KPI cards only)</p>
-          </div>
           <EnterpriseDateRangePicker
             startDate={startDate}
             endDate={endDate}
@@ -158,20 +155,20 @@ export default function DashboardPage() {
       </div>
 
       {/* Key Metrics - 5 Primary KPIs - Professional Corporate Design */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {/* Total Revenue */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
-          <CardContent className="p-3 sm:p-4 relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30">
+              <TrendingUp className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Total Revenue</p>
+              <div className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
+                ₱<AnimatedNumber value={stats?.totalRevenue || 0} duration={1500} />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent mb-2">
-              ₱<AnimatedNumber value={stats?.totalRevenue || 0} duration={1500} />
-            </div>
-            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Total Revenue</div>
+          </div>
             {startDate || endDate ? (
               // When date filter is active, show filtered period info
               stats?.totalRevenue && stats.totalRevenue > 0 ? (
@@ -201,22 +198,21 @@ export default function DashboardPage() {
                 </div>
               )
             )}
-          </CardContent>
-        </Card>
+          </Card>
 
         {/* Net Profit (after returns) */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
-          <CardContent className="p-3 sm:p-4 relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                <DollarSign className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
+              <DollarSign className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Net Profit</p>
+              <div className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
+                ₱<AnimatedNumber value={netProfit} duration={1500} />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent mb-2">
-              ₱<AnimatedNumber value={netProfit} duration={1500} />
-            </div>
-            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Net Profit</div>
+          </div>
             {startDate || endDate ? (
               // When date filter is active
               stats?.returnValue !== undefined && stats.returnValue > 0 ? (
@@ -246,157 +242,145 @@ export default function DashboardPage() {
                 </div>
               )
             )}
-          </CardContent>
-        </Card>
+          </Card>
 
         {/* Total Sold */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-          <CardContent className="p-3 sm:p-4 relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
+              <ShoppingCart className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Total Sold</p>
+              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">
+                <AnimatedNumber value={stats?.totalSales || 0} duration={1500} />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
-              <AnimatedNumber value={stats?.totalSales || 0} duration={1500} />
-            </div>
-            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Total Sold</div>
-            <div className="flex items-center gap-1">
-              <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                All-time quantity
-              </span>
-            </div>
-          </CardContent>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+              All-time quantity
+            </span>
+          </div>
         </Card>
 
         {/* Profit Margin */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
-          <CardContent className="p-3 sm:p-4 relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                <Percent className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-900/10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 rounded-xl bg-amber-600 shadow-lg shadow-amber-500/30">
+              <Percent className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Profit Margin</p>
+              <div className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">
+                <AnimatedNumber value={stats?.profitMargin || 0} decimals={1} duration={1500} />%
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent mb-2">
-              <AnimatedNumber value={stats?.profitMargin || 0} decimals={1} duration={1500} />%
-            </div>
-            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Profit Margin</div>
-            <div className="flex items-center gap-1">
-              {(stats?.profitMargin || 0) >= 30 ? (
-                <span className="text-xs font-semibold text-green-600 dark:text-green-400">🏆 Excellent!</span>
-              ) : (stats?.profitMargin || 0) >= 15 ? (
-                <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">✓ Good</span>
-              ) : (
-                <span className="text-xs font-semibold text-red-600 dark:text-red-400">⚠ Improve</span>
-              )}
-            </div>
-          </CardContent>
+          </div>
+          <div className="flex items-center gap-1">
+            {(stats?.profitMargin || 0) >= 30 ? (
+              <span className="text-xs font-semibold text-green-600 dark:text-green-400">🏆 Excellent!</span>
+            ) : (stats?.profitMargin || 0) >= 15 ? (
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">✓ Good</span>
+            ) : (
+              <span className="text-xs font-semibold text-red-600 dark:text-red-400">⚠ Improve</span>
+            )}
+          </div>
         </Card>
 
         {/* Inventory Value */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 rounded-full -mr-16 -mt-16" />
-          <CardContent className="p-3 sm:p-4 relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-                <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-900/20 dark:to-indigo-900/10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/30">
+              <Package className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Inventory Value</p>
+              <div className="text-2xl font-bold text-indigo-900 dark:text-indigo-100 tabular-nums">
+                ₱<AnimatedNumber value={stats?.totalValue || 0} duration={1500} />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-indigo-600 to-indigo-700 bg-clip-text text-transparent mb-2">
-              ₱<AnimatedNumber value={stats?.totalValue || 0} duration={1500} />
-            </div>
-            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Inventory Value</div>
-            <div className="flex items-center gap-1">
-              <Package className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
-              <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
-                {stats?.totalItems || 0} items
-              </span>
-            </div>
-          </CardContent>
+          </div>
+          <div className="flex items-center gap-1">
+            <Package className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+            <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
+              {stats?.totalItems || 0} items
+            </span>
+          </div>
         </Card>
       </div>
 
-      {/* Secondary Metrics - 4 Cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-125">
-        <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 hover:shadow-lg transition-shadow">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  <AnimatedNumber value={stats?.totalItems || 0} duration={1000} />
-                </div>
-                <div className="text-xs font-medium text-blue-700 dark:text-blue-300 mt-0.5">Total Products</div>
-              </div>
-              <Package className="h-8 w-8 text-blue-400 dark:text-blue-500 opacity-50" />
+      {/* Secondary Metrics - 4 Cards - Professional Design */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        {/* Total Products */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
+              <Package className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
-          </CardContent>
+            <div>
+              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Total Products</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">
+                <AnimatedNumber value={stats?.totalItems || 0} duration={1000} />
+              </p>
+            </div>
+          </div>
         </Card>
 
-        <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 hover:shadow-lg transition-shadow">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                  <AnimatedNumber value={lowStockCount} duration={1000} />
-                </div>
-                <div className="text-xs font-medium text-amber-700 dark:text-amber-300 mt-1">Low Stock</div>
-              </div>
-              <AlertTriangle className="h-8 w-8 text-amber-400 dark:text-amber-500 opacity-50" />
+        {/* Low Stock */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-600 shadow-lg shadow-amber-500/30">
+              <AlertTriangle className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
-          </CardContent>
+            <div>
+              <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Low Stock</p>
+              <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">
+                <AnimatedNumber value={lowStockCount} duration={1000} />
+              </p>
+            </div>
+          </div>
         </Card>
 
-        <Card className="border-0 shadow-md bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 hover:shadow-lg transition-shadow">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  <AnimatedNumber value={outOfStockCount} duration={1000} />
-                </div>
-                <div className="text-xs font-medium text-red-700 dark:text-red-300 mt-1">Out of Stock</div>
-              </div>
-              <PackageX className="h-8 w-8 text-red-400 dark:text-red-500 opacity-50" />
+        {/* Out of Stock */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-red-600 shadow-lg shadow-red-500/30">
+              <PackageX className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
-          </CardContent>
+            <div>
+              <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Out of Stock</p>
+              <p className="text-2xl font-bold text-red-900 dark:text-red-100 tabular-nums">
+                <AnimatedNumber value={outOfStockCount} duration={1000} />
+              </p>
+            </div>
+          </div>
         </Card>
 
-        <Card className="border-0 shadow-md bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 hover:shadow-lg transition-shadow">
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">
-                  <AnimatedNumber value={stats?.totalReturns || 0} duration={1000} />
-                </div>
-                <div className="text-xs font-medium text-orange-700 dark:text-orange-300 mb-1">Total Returns</div>
-                {stats?.returnValue !== undefined && stats.returnValue > 0 && (
-                  <div className="text-xs text-orange-600 dark:text-orange-400">
-                    ₱{formatNumber(stats.returnValue)} returned
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <RotateCcw className="h-6 w-6 text-orange-400 dark:text-orange-500 opacity-50" />
-                {stats?.returnRate !== undefined && stats.returnRate > 0 && (
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-orange-600 dark:text-orange-400 leading-none">
-                      {stats.returnRate.toFixed(1)}%
-                    </div>
-                    <div className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">
-                      Return Rate
-                    </div>
-                  </div>
-                )}
-              </div>
+        {/* Total Returns */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-900/10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2.5 rounded-xl bg-orange-600 shadow-lg shadow-orange-500/30">
+              <RotateCcw className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
-          </CardContent>
+            <div>
+              <p className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">Total Returns</p>
+              <p className="text-2xl font-bold text-orange-900 dark:text-orange-100 tabular-nums">
+                <AnimatedNumber value={stats?.totalReturns || 0} duration={1000} />
+              </p>
+            </div>
+          </div>
+          {stats?.returnValue !== undefined && stats.returnValue > 0 && (
+            <div className="text-xs text-orange-600 dark:text-orange-400 font-semibold">
+              ₱{formatNumber(stats.returnValue)} • {stats.returnRate.toFixed(1)}% rate
+            </div>
+          )}
         </Card>
       </div>
 
       {/* Quick Actions & Alerts */}
       <div className={cn(
-        "grid gap-5 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150",
+        "grid gap-5",
         currentUser?.role === 'admin' ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"
       )}>
         {/* Quick Actions - Admin Only */}
@@ -536,7 +520,7 @@ export default function DashboardPage() {
       />
 
       {/* Performance Analytics */}
-      <div className="grid gap-5 grid-cols-1 lg:grid-cols-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-300">
+      <div className="grid gap-5 grid-cols-1 lg:grid-cols-3">
         {/* Top Products Chart */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-4">
@@ -707,7 +691,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stock Distribution */}
-      <div className="grid gap-5 grid-cols-1 lg:grid-cols-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-350">
+      <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
         {/* Department Performance Chart */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-4">
@@ -796,7 +780,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="grid gap-5 grid-cols-1 lg:grid-cols-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-400">
+      <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
         {/* Recent Sales */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-3">
@@ -871,7 +855,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Insights & Health */}
-      <div className="grid gap-5 grid-cols-1 lg:grid-cols-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-450">
+      <div className="grid gap-5 grid-cols-1 lg:grid-cols-3">
         {/* Business Insights */}
         <Card className="lg:col-span-2 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <CardHeader className="pb-3">

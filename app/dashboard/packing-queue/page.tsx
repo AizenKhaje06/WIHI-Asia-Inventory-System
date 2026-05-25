@@ -432,124 +432,127 @@ export default function PackingQueuePage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold gradient-text">Packing Queue</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            {isTeamLeader 
-              ? 'Orders waiting to be packed for your channel'
-              : 'Orders waiting to be packed and dispatched'
-            }
-          </p>
-        </div>
-        <Button onClick={fetchOrders} variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Header - Professional Style */}
+      <div className="mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Packing Queue Overview</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          {isTeamLeader 
+            ? 'Orders waiting to be packed for your channel'
+            : 'Orders waiting to be packed and dispatched'
+          }
+        </p>
       </div>
 
       {/* Stats Cards - Professional Corporate Design */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
-        {/* Total Orders - Blue Gradient */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              </div>
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+        {/* Total Orders - Blue */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
+              <Package className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Orders</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">
-              {filteredOrders.length}
-            </p>
+            <div>
+              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Total Orders</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">{filteredOrders.length}</p>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Total Items - Purple Gradient */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                <ShoppingCart className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </div>
+        {/* Total Items - Purple */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
+              <ShoppingCart className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Items</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent tabular-nums">
-              {filteredOrders.reduce((sum, order) => sum + (order.qty || order.quantity || 0), 0)}
-            </p>
+            <div>
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Total Items</p>
+              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
+                {filteredOrders.reduce((sum, order) => sum + (order.qty || order.quantity || 0), 0)}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Total Value - Green Gradient */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-              </div>
+        {/* Total Value - Green */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30">
+              <TrendingUp className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Value</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent tabular-nums">
-              {formatCurrency(filteredOrders.reduce((sum, order) => sum + (order.total || order.totalAmount || 0), 0))}
-            </p>
+            <div>
+              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Total Value</p>
+              <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
+                {formatCurrency(filteredOrders.reduce((sum, order) => sum + (order.total || order.totalAmount || 0), 0))}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 sm:max-w-md">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Search orders..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+      {/* Filters - Professional Design */}
+      <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Search className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">Search & Filter Orders</h3>
+            <Button onClick={fetchOrders} variant="ghost" size="sm" className="ml-auto h-8 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+              <RefreshCw className="h-3 w-3" />
+              Refresh
+            </Button>
           </div>
-        </div>
-        
-        {/* Sales Channel Filter - Admin Only */}
-        {userRole === 'admin' && (
-          <div className="w-full sm:w-[200px]">
-            <Select value={salesChannelFilter} onValueChange={setChannelFilter}>
-              <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
-                <SelectValue placeholder="All Channels" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Channels</SelectItem>
-                <SelectItem value="Shopee">Shopee</SelectItem>
-                <SelectItem value="Lazada">Lazada</SelectItem>
-                <SelectItem value="TikTok">TikTok</SelectItem>
-                <SelectItem value="Facebook">Facebook</SelectItem>
-                <SelectItem value="Physical Store">Physical Store</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Search orders..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+            </div>
+            
+            {/* Sales Channel Filter - Admin Only */}
+            {userRole === 'admin' && (
+              <div className="w-full sm:w-[200px]">
+                <Select value={salesChannelFilter} onValueChange={setChannelFilter}>
+                  <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20 rounded-md">
+                    <SelectValue placeholder="All Channels" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Channels</SelectItem>
+                    <SelectItem value="Shopee">Shopee</SelectItem>
+                    <SelectItem value="Lazada">Lazada</SelectItem>
+                    <SelectItem value="TikTok">TikTok</SelectItem>
+                    <SelectItem value="Facebook">Facebook</SelectItem>
+                    <SelectItem value="Physical Store">Physical Store</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Orders Table */}
-      <Card>
+      <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
         <CardContent className="pt-6">
           {filteredOrders.length === 0 ? (
-            <div className="text-center py-12">
-              <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-600 dark:text-slate-400 font-medium">No orders in queue</p>
-              <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
+                <Package className="h-8 w-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No orders in queue</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-500">
                 All orders have been packed
               </p>
             </div>
           ) : (
             <>
               {/* Mobile Scroll Hint */}
-              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
+              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800 mb-4 rounded-lg">
                 <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
                   <span className="text-blue-500">←</span>
                   <span>Swipe to see all columns • Tap row to highlight</span>
@@ -560,7 +563,7 @@ export default function PackingQueuePage() {
               <div className="overflow-x-auto">
                 <table className="w-full table-fixed min-w-[1200px]">
                   <thead className="sticky top-0 z-10">
-                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                    <tr className="bg-black dark:bg-black">
                       <th className="text-left py-4 px-4 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[140px]">
                         Waybill No.
                       </th>

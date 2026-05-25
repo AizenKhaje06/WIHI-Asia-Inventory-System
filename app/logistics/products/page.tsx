@@ -120,7 +120,7 @@ export default function LogisticsProductsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-[1920px] mx-auto px-6 lg:px-8 py-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <BrandLoader size="lg" />
@@ -132,18 +132,13 @@ export default function LogisticsProductsPage() {
   }
 
   return (
-    <div className="max-w-[1920px] mx-auto px-6 lg:px-8 py-8">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-              <Package className="h-5 w-5 text-white" strokeWidth={2.5} />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold gradient-text tracking-tight">Products</h1>
-              <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Manage inventory and product catalog</p>
-            </div>
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Products Overview</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage inventory and product catalog</p>
           </div>
           <Button onClick={() => setAddDialogOpen(true)} className="gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/30">
             <Plus className="h-4 w-4" strokeWidth={2.5} />
@@ -236,7 +231,7 @@ export default function LogisticsProductsPage() {
       </Card>
 
       {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {filteredItems.map((item) => {
           const status = getStockStatus(item)
           const profitMargin = item.sellingPrice > 0 

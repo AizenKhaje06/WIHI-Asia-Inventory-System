@@ -309,22 +309,22 @@ export default function InsightsPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
-      {/* Header with Actions */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Page Header - Professional */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">Business Insights</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text [-webkit-text-fill-color:transparent]">Business Insights Overview</h2>
+          <p className="text-xs text-slate-600 dark:text-slate-400">
             AI-powered analytics and strategic recommendations for data-driven decisions
           </p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 w-full sm:w-auto flex-shrink-0">
           <Select 
             value={salesChannelFilter} 
             onValueChange={setSalesChannelFilter}
-            disabled={isDepartment} // Disable for department accounts
+            disabled={isDepartment}
           >
-            <SelectTrigger className="h-9 w-full sm:w-[180px] border-slate-300 dark:border-slate-700">
+            <SelectTrigger className="h-10 w-full sm:w-[180px] border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20">
               <SelectValue placeholder={isDepartment ? userChannel : "All Channels"} />
             </SelectTrigger>
             <SelectContent>
@@ -340,7 +340,7 @@ export default function InsightsPage() {
             onClick={fetchAnalytics}
             variant="outline"
             size="sm"
-            className="gap-2 flex-shrink-0"
+            className="h-10 gap-2 flex-shrink-0 border-slate-200 dark:border-slate-700"
           >
             <RefreshCw className="h-4 w-4" />
             Refresh
@@ -348,74 +348,70 @@ export default function InsightsPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
-        {/* Analyzed Items - Blue */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              </div>
+      {/* Stats Cards - Professional Design */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Analyzed Items */}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30 flex-shrink-0">
+              <Package className="h-5 w-5 text-white" />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Analyzed Items</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">
-              {formatNumber(totalItems)}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Analyzed Items</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">
+                {formatNumber(totalItems)}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* High Value Items - Emerald */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                <Target className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              </div>
+        {/* High Value Items */}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-600 shadow-lg shadow-emerald-500/30 flex-shrink-0">
+              <Target className="h-5 w-5 text-white" />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">High Value Items</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-emerald-600 to-emerald-700 bg-clip-text text-transparent tabular-nums">
-              {formatNumber(categoryAItems)}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">High Value Items</p>
+              <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100 tabular-nums">
+                {formatNumber(categoryAItems)}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Turnover Ratio - Purple */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                <TrendingUpIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </div>
+        {/* Turnover Ratio */}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30 flex-shrink-0">
+              <TrendingUpIcon className="h-5 w-5 text-white" />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Turnover Ratio</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent tabular-nums">
-              {avgTurnoverRatio.toFixed(2)}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Turnover Ratio</p>
+              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
+                {avgTurnoverRatio.toFixed(2)}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Dead Stock Value - Red */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
-              </div>
+        {/* Dead Stock Value */}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-red-600 shadow-lg shadow-red-500/30 flex-shrink-0">
+              <AlertTriangle className="h-5 w-5 text-white" />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Value at Risk</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent tabular-nums">
-              {formatCurrency(totalDeadStockValue)}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Value at Risk</p>
+              <p className="text-2xl font-bold text-red-900 dark:text-red-100 tabular-nums">
+                {formatCurrency(totalDeadStockValue)}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <div className="relative enterprise-tab-container">
           {/* Left Gradient Fade Indicator */}
           <div 
@@ -530,11 +526,11 @@ export default function InsightsPage() {
         {/* ABC Analysis */}
         <TabsContent value="abc" id="abc-panel" role="tabpanel" aria-labelledby="abc-tab" className="space-y-4 mt-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                  <div className="p-2 rounded-[5px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
-                    <Target className="h-5 w-5" />
+                  <div className="p-2 rounded-lg bg-blue-600 shadow-sm">
+                    <Target className="h-5 w-5 text-white" />
                   </div>
                   ABC Distribution
                 </CardTitle>
@@ -562,7 +558,7 @@ export default function InsightsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
               <CardHeader className="pb-4">
                 <CardTitle className="text-slate-900 dark:text-white">ABC Analysis Summary</CardTitle>
               </CardHeader>
@@ -666,7 +662,7 @@ export default function InsightsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+          <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-slate-900 dark:text-white">Detailed ABC Analysis</CardTitle>
             </CardHeader>
@@ -708,7 +704,7 @@ export default function InsightsPage() {
         {/* Inventory Turnover */}
         <TabsContent value="turnover" className="space-y-4 mt-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
               <CardHeader className="pb-4">
                 <CardTitle className="text-slate-900 dark:text-white">Turnover Status Distribution</CardTitle>
               </CardHeader>
@@ -725,7 +721,7 @@ export default function InsightsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
               <CardHeader className="pb-4">
                 <CardTitle className="text-slate-900 dark:text-white">Key Metrics</CardTitle>
               </CardHeader>
@@ -828,7 +824,7 @@ export default function InsightsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+          <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-slate-900 dark:text-white">Inventory Turnover Details</CardTitle>
             </CardHeader>
@@ -937,11 +933,11 @@ export default function InsightsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+          <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-[5px] bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md">
-                  <BarChart3 className="h-5 w-5" />
+                <div className="p-2 rounded-lg bg-purple-600 shadow-sm">
+                  <BarChart3 className="h-5 w-5 text-white" />
                 </div>
                 Predictive Sales Forecast
               </CardTitle>
@@ -1039,7 +1035,7 @@ export default function InsightsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+          <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-slate-900 dark:text-white">Profit Margin by Category</CardTitle>
             </CardHeader>
@@ -1068,7 +1064,7 @@ export default function InsightsPage() {
           </Card>
 
           {filteredProfitMargin.length > 0 && (
-            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
               <CardHeader className="pb-4">
                 <CardTitle className="text-slate-900 dark:text-white">Category Performance</CardTitle>
               </CardHeader>
@@ -1157,7 +1153,7 @@ export default function InsightsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+          <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-slate-900 dark:text-white">Fast Moving Products</CardTitle>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
@@ -1271,7 +1267,7 @@ export default function InsightsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+          <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-slate-900 dark:text-white">Slow Moving Products</CardTitle>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
@@ -1400,11 +1396,11 @@ export default function InsightsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+          <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
-                <div className="p-2 rounded-[5px] bg-gradient-to-br from-red-500 to-red-600 text-white shadow-md">
-                  <AlertTriangle className="h-5 w-5" />
+                <div className="p-2 rounded-lg bg-red-600 shadow-sm">
+                  <AlertTriangle className="h-5 w-5 text-white" />
                 </div>
                 Dead Stock Alert ({filteredDeadStock.length} items)
               </CardTitle>

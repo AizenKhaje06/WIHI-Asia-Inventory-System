@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { Bell, Settings, User, Menu } from "lucide-react"
+import { Bell, Settings, User, Menu, RefreshCw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/hooks/use-accessibility"
 import { CommandPaletteSearch } from "@/components/command-palette-search"
@@ -27,6 +27,8 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
   const [userRole, setUserRole] = useState("Administrator")
   const [currentUser, setCurrentUser] = useState<ReturnType<typeof getCurrentUser>>(null)
   const reducedMotion = useReducedMotion()
+  const [currentTime, setCurrentTime] = useState('')
+  const [currentDate, setCurrentDate] = useState('')
 
   // Get current user only on client side to avoid hydration errors
   React.useEffect(() => {
@@ -55,24 +57,47 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
     }
   }, [])
 
+  // Update time and date every second
+  React.useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date()
+      const timeString = now.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      })
+      const dateString = now.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric'
+      })
+      setCurrentTime(timeString)
+      setCurrentDate(dateString)
+    }
+    
+    updateDateTime()
+    const interval = setInterval(updateDateTime, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <header
       className={cn(
         "fixed z-40",
         reducedMotion ? "" : "transition-all duration-300",
-        // Desktop: clean minimal header - adjust based on sidebar
-        sidebarCollapsed ? "lg:left-20" : "lg:left-64",
+        // Desktop: full width header starting from sidebar edge
+        sidebarCollapsed ? "lg:left-14 xl:lg:left-16" : "lg:left-48 xl:lg:left-52",
         "lg:right-0 lg:top-0 lg:h-14",
         // Mobile: full width at top
         "left-0 right-0 top-0 h-14",
-        // Fully transparent - invisible background
-        "bg-transparent"
+        // White background with border like packer
+        "bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800"
       )}
       role="banner"
     >
       <div className="h-full px-6 lg:px-8 flex items-center justify-between gap-4 min-w-0">
         {/* Left: Mobile Menu + Supabase Link */}
-        <div className="flex items-center gap-4 min-w-0 lg:flex-1">
+        <div className="flex items-center gap-4 min-w-0 flex-1">
           <button
             onClick={onMobileMenuToggle}
             className="lg:hidden p-2 rounded-lg transition-colors flex-shrink-0 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -96,13 +121,13 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
               <img
                 src="/supabase-logo-wordmark--light.png"
                 alt="Supabase"
-                className="h-5 xl:h-6 w-auto object-contain dark:hidden"
+                className="h-4 w-auto object-contain dark:hidden"
               />
               {/* Dark Mode */}
               <img
                 src="/supabase-logo-wordmark--dark.png"
                 alt="Supabase"
-                className="h-5 xl:h-6 w-auto object-contain hidden dark:block"
+                className="h-4 w-auto object-contain hidden dark:block"
               />
             </a>
           )}
@@ -121,22 +146,31 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
               <img
                 src="/resend-wordmark-black.png"
                 alt="Resend"
-                className="h-4 xl:h-5 w-auto object-contain dark:hidden"
+                className="h-3.5 w-auto object-contain dark:hidden"
               />
               {/* Dark Mode - use white */}
               <img
                 src="/resend-wordmark-white.png"
                 alt="Resend"
-                className="h-4 xl:h-5 w-auto object-contain hidden dark:block"
+                className="h-3.5 w-auto object-contain hidden dark:block"
               />
             </a>
           )}
         </div>
 
-        {/* Center: Command Palette Search - REMOVED */}
+        {/* Center: Date and Time - Horizontal Layout */}
+        <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 absolute left-1/2 -translate-x-1/2">
+          <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">
+            {currentDate}
+          </span>
+          <span className="text-slate-400 dark:text-slate-500">•</span>
+          <span className="text-sm text-slate-900 dark:text-white font-semibold tabular-nums">
+            {currentTime}
+          </span>
+        </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1.5 flex-shrink-0 lg:flex-1 lg:justify-end">
+        <div className="flex items-center gap-3 flex-shrink-0 flex-1 justify-end">
 
           {/* Theme Toggle */}
           <ToggleTheme 
@@ -154,9 +188,11 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
               >
                 <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
                 <span 
-                  className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full ring-2 ring-white dark:ring-[#0a0a0a]" 
-                  aria-hidden="true" 
-                />
+                  className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-white bg-blue-600 rounded-full ring-2 ring-white dark:ring-slate-900" 
+                  aria-hidden="true"
+                >
+                  2
+                </span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
@@ -177,18 +213,8 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Settings */}
-          <button
-            onClick={() => window.location.href = '/dashboard/settings'}
-            className="hidden md:block p-2 rounded-lg transition-colors flex-shrink-0 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-            title="Settings"
-            aria-label="Open settings"
-          >
-            <Settings className="h-[18px] w-[18px]" aria-hidden="true" />
-          </button>
-
           {/* Divider */}
-          <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden md:block mx-2" aria-hidden="true" />
+          <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" aria-hidden="true" />
 
           {/* User Profile */}
           <DropdownMenu>
@@ -210,7 +236,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => window.location.href = '/dashboard/settings'}>
-                Profile Settings
+                Settings
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => window.location.href = '/dashboard/settings'}>
                 Preferences

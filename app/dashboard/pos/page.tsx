@@ -308,13 +308,11 @@ export default function POSPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
-      {/* Page Header */}
-      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-4xl font-bold gradient-text mb-2">
-          Warehouse Dispatch
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-base">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Page Header - Professional Style */}
+      <div className="mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Warehouse Dispatch Overview</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Stock release and distribution management
         </p>
       </div>
@@ -322,9 +320,9 @@ export default function POSPage() {
       {/* Top Section: Dispatch Form + Cart Summary */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mb-6">
         {/* Dispatch Form - Left */}
-        <Card className="border-slate-200 dark:border-slate-800">
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
               Dispatch Information
             </CardTitle>
           </CardHeader>
@@ -371,11 +369,11 @@ export default function POSPage() {
         </Card>
 
         {/* Cart Summary - Right */}
-        <Card className="border-slate-200 dark:border-slate-800">
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center justify-between">
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center justify-between">
               <span>Cart Summary</span>
-              <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">₱{total.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">₱{total.toFixed(2)}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -446,10 +444,10 @@ export default function POSPage() {
       </div>
 
       {/* Products Section */}
-      <Card className="border-slate-200 dark:border-slate-800">
+      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between gap-4">
-            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
               Products ({filteredItems.length})
             </CardTitle>
             <div className="relative flex-1 max-w-md">

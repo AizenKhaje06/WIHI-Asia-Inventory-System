@@ -268,146 +268,126 @@ export default function BusinessContactsPage() {
 
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
-      {/* Page Header */}
-      <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
-        <h1 className="text-3xl font-bold gradient-text mb-2">
-          Business Contacts
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-sm">
-          Manage suppliers, distributors, and resellers
-        </p>
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Page Header - Professional Style */}
+      <div className="mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Business Contacts Overview</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage suppliers, distributors, and resellers</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
-        {/* Total Contacts */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              </div>
+      {/* Stats Cards - Professional Corporate Design */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Total Contacts - Blue */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
+              <Users className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Total Contacts</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent tabular-nums">
-              {stats.total}
-            </p>
-          </div>
-        </div>
-
-        {/* Suppliers */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                <Building2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              </div>
-            </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Suppliers</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-emerald-600 to-emerald-700 bg-clip-text text-transparent tabular-nums">
-              {stats.suppliers}
-            </p>
-          </div>
-        </div>
-
-        {/* Distributors */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Distributors</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent tabular-nums">
-              {stats.distributors}
-            </p>
-          </div>
-        </div>
-
-        {/* Resellers */}
-        <div className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                <Briefcase className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </div>
-            </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Resellers</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent tabular-nums">
-              {stats.resellers}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <Card className="mb-4 border-0 shadow-md bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
-        <CardContent className="p-3">
-          <div className="space-y-4">
             <div>
-              <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Search</Label>
+              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Total Contacts</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">{stats.total}</p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Suppliers - Emerald */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-600 shadow-lg shadow-emerald-500/30">
+              <Building2 className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Suppliers</p>
+              <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100 tabular-nums">{stats.suppliers}</p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Distributors - Green */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30">
+              <TrendingUp className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Distributors</p>
+              <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">{stats.distributors}</p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Resellers - Purple */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
+              <Briefcase className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Resellers</p>
+              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">{stats.resellers}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Search & Filters - Professional Design */}
+      <Card className="mb-6 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2 mb-5">
+            <Search className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">Search & Filter Contacts</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Search */}
+            <div className="md:col-span-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   placeholder="Search contacts..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10 h-9"
+                  className="pl-9 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Contact Type</Label>
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="supplier">Suppliers</SelectItem>
-                    <SelectItem value="distributor">Distributors</SelectItem>
-                    <SelectItem value="reseller">Resellers</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block">Sort By</Label>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                    <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                    <SelectItem value="company-asc">Company (A-Z)</SelectItem>
-                    <SelectItem value="type-asc">Type</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+
+            {/* Contact Type Filter */}
             <div>
-              <Button
-                onClick={() => setAddDialogOpen(true)}
-                size="sm"
-                className="h-9 gap-2 w-full"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add Contact</span>
-              </Button>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="supplier">Suppliers</SelectItem>
+                  <SelectItem value="distributor">Distributors</SelectItem>
+                  <SelectItem value="reseller">Resellers</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Sort By */}
+            <div>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <SelectValue placeholder="Sort By" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                  <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                  <SelectItem value="company-asc">Company (A-Z)</SelectItem>
+                  <SelectItem value="type-asc">Type</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          {(search || typeFilter !== "all") && (
-            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
-              <span className="text-sm text-slate-600 dark:text-slate-400">
-                Showing {filteredContacts.length} of {contacts.length} contacts
-              </span>
+
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+              Showing <span className="font-bold text-slate-900 dark:text-white">{filteredContacts.length}</span> of <span className="font-bold text-slate-900 dark:text-white">{contacts.length}</span> contacts
+            </div>
+            {(search || typeFilter !== "all") && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -415,34 +395,44 @@ export default function BusinessContactsPage() {
                   setSearch("")
                   setTypeFilter("all")
                 }}
-                className="h-7 text-xs gap-1"
+                className="h-8 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
               >
                 <X className="h-3 w-3" />
-                Clear
+                Clear Filters
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </CardContent>
       </Card>
 
+      {/* Add Contact Button */}
+      <div className="flex justify-end mb-4">
+        <Button
+          onClick={() => setAddDialogOpen(true)}
+          className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30 font-semibold"
+        >
+          <Plus className="h-4 w-4" strokeWidth={2.5} />
+          Add Contact
+        </Button>
+      </div>
 
-      {/* Contacts Table */}
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-slate-900 dark:text-white">Contact List</CardTitle>
-        </CardHeader>
-        <CardContent>
+
+      {/* Contacts Table - Professional Design */}
+      <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+        <CardContent className="pt-6">
           {filteredContacts.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="h-16 w-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
+                <Users className="h-8 w-8 text-slate-400" />
+              </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No Contacts Found</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+              <p className="text-sm text-slate-500 dark:text-slate-500 mb-6">
                 {search || typeFilter !== "all" 
                   ? "Try adjusting your filters" 
                   : "Get started by adding your first business contact"}
               </p>
               {!search && typeFilter === "all" && (
-                <Button onClick={() => setAddDialogOpen(true)} className="gap-2">
+                <Button onClick={() => setAddDialogOpen(true)} className="gap-2 bg-blue-600 hover:bg-blue-700">
                   <Plus className="h-4 w-4" />
                   Add Contact
                 </Button>
@@ -450,16 +440,16 @@ export default function BusinessContactsPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[800px] lg:min-w-full text-sm table-fixed">
                   <thead className="sticky top-0 z-10">
-                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Name/Company</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Contact Person</th>
-                      <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Type</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Contact Info</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Address</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">Notes</th>
+                    <tr className="bg-black dark:bg-black">
+                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[20%]">Name/Company</th>
+                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[15%]">Contact Person</th>
+                      <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[10%]">Type</th>
+                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[20%]">Contact Info</th>
+                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[20%]">Address</th>
+                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[15%]">Notes</th>
                       {isAdmin && (
                         <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider">Actions</th>
                       )}
@@ -467,54 +457,55 @@ export default function BusinessContactsPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     {paginatedContacts.map((contact) => (
-                      <tr key={contact.id} className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30">
-                        <td className="py-2.5 px-3">
-                          <div className="text-xs font-medium text-slate-800 dark:text-slate-200">{contact.name}</div>
+                      <tr key={contact.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="py-3 px-3">
+                          <div className="text-sm font-semibold text-slate-900 dark:text-white">{contact.name}</div>
                           {contact.companyName && (
-                            <div className="text-xs text-slate-500 dark:text-slate-400">{contact.companyName}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{contact.companyName}</div>
                           )}
                         </td>
-                        <td className="py-2.5 px-3">
-                          <div className="text-xs text-slate-600 dark:text-slate-400">
+                        <td className="py-3 px-3">
+                          <div className="text-sm text-slate-700 dark:text-slate-300">
                             {contact.contactPerson || "-"}
                           </div>
                           {contact.position && (
-                            <div className="text-xs text-slate-500 dark:text-slate-500">{contact.position}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{contact.position}</div>
                           )}
                         </td>
-                        <td className="py-2.5 px-3 text-center">
-                          <Badge className={`${getTypeColor(contact.contactType)} border text-xs px-1.5 py-0.5`}>
+                        <td className="py-3 px-3 text-center">
+                          <Badge className={`${getTypeColor(contact.contactType)} border text-xs font-semibold px-2 py-0.5`}>
                             {contact.contactType.toUpperCase()}
                           </Badge>
                         </td>
-                        <td className="py-2.5 px-3">
-                          <div className="flex flex-col gap-1 text-xs text-slate-600 dark:text-slate-400">
+                        <td className="py-3 px-3">
+                          <div className="space-y-1">
                             {contact.email && (
-                              <div className="flex items-center gap-1">
-                                <Mail className="h-3 w-3" />
-                                <span className="truncate max-w-[200px]">{contact.email}</span>
+                              <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+                                <Mail className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">{contact.email}</span>
                               </div>
                             )}
                             {contact.phone && (
-                              <div className="flex items-center gap-1">
-                                <Phone className="h-3 w-3" />
-                                {contact.phone}
+                              <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+                                <Phone className="h-3 w-3 flex-shrink-0" />
+                                <span>{contact.phone}</span>
                               </div>
                             )}
+                            {!contact.email && !contact.phone && <span className="text-xs text-slate-400">-</span>}
                           </div>
                         </td>
-                        <td className="py-2.5 px-3">
-                          <div className="text-xs text-slate-600 dark:text-slate-400 max-w-[200px] truncate">
+                        <td className="py-3 px-3">
+                          <div className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
                             {contact.address || "-"}
                           </div>
                         </td>
-                        <td className="py-2.5 px-3">
-                          <div className="text-xs text-slate-600 dark:text-slate-400 max-w-[200px] truncate">
+                        <td className="py-3 px-3">
+                          <div className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
                             {contact.notes || "-"}
                           </div>
                         </td>
                         {isAdmin && (
-                          <td className="py-2.5 px-3">
+                          <td className="py-3 px-3">
                             <div className="flex items-center justify-center gap-1">
                               <TooltipProvider>
                                 <Tooltip>
@@ -523,9 +514,9 @@ export default function BusinessContactsPage() {
                                       variant="ghost"
                                       size="sm"
                                       onClick={() => openDetailsDialog(contact)}
-                                      className="h-7 w-7 p-0"
+                                      className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                                     >
-                                      <Eye className="h-3.5 w-3.5" />
+                                      <Eye className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>View Details</TooltipContent>
@@ -538,9 +529,9 @@ export default function BusinessContactsPage() {
                                       variant="ghost"
                                       size="sm"
                                       onClick={() => openEditDialog(contact)}
-                                      className="h-7 w-7 p-0"
+                                      className="h-8 w-8 p-0 hover:bg-slate-50 dark:hover:bg-slate-800"
                                     >
-                                      <Edit className="h-3.5 w-3.5" />
+                                      <Edit className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>Edit Contact</TooltipContent>
@@ -553,9 +544,9 @@ export default function BusinessContactsPage() {
                                       variant="ghost"
                                       size="sm"
                                       onClick={() => openDeleteDialog(contact)}
-                                      className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                      className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
                                     >
-                                      <Trash2 className="h-3.5 w-3.5" />
+                                      <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>Delete Contact</TooltipContent>
@@ -570,11 +561,11 @@ export default function BusinessContactsPage() {
                 </table>
               </div>
 
-              {/* Pagination */}
+              {/* Pagination - Professional Design */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <div className="text-sm text-slate-600 dark:text-slate-400">
-                    Showing {startIndex + 1} to {Math.min(endIndex, filteredContacts.length)} of {filteredContacts.length} contacts
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    Showing <span className="font-bold text-slate-900 dark:text-white">{startIndex + 1}</span> to <span className="font-bold text-slate-900 dark:text-white">{Math.min(endIndex, filteredContacts.length)}</span> of <span className="font-bold text-slate-900 dark:text-white">{filteredContacts.length}</span> contacts
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -582,6 +573,7 @@ export default function BusinessContactsPage() {
                       size="sm"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
+                      className="h-9 px-4 font-semibold"
                     >
                       Previous
                     </Button>
@@ -603,7 +595,7 @@ export default function BusinessContactsPage() {
                             variant={currentPage === pageNum ? "default" : "outline"}
                             size="sm"
                             onClick={() => setCurrentPage(pageNum)}
-                            className="w-8 h-8 p-0"
+                            className={`w-9 h-9 p-0 font-semibold ${currentPage === pageNum ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
                           >
                             {pageNum}
                           </Button>
@@ -615,6 +607,7 @@ export default function BusinessContactsPage() {
                       size="sm"
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
+                      className="h-9 px-4 font-semibold"
                     >
                       Next
                     </Button>

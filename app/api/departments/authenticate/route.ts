@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
+import { verifyPassword } from "@/lib/password-hash"
 
 export async function POST(request: Request) {
   try {
@@ -14,10 +15,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // NEW: Search for any agent in the department with matching password
-    // This allows multiple agents per department with their own passwords
-    
-    // First, try exact username match (for main accounts like "Facebook", "TikTok")
+    // First, try exact username match
     const { data: exactUser, error: exactError } = await supabase
       .from('users')
       .select('*')
@@ -31,22 +29,24 @@ export async function POST(request: Request) {
       username: exactUser?.username
     })
 
-    // If exact match found and password matches, use it
-    if (exactUser && exactUser.password === password) {
-      console.log('[Department Auth] Exact match successful')
-      return NextResponse.json({
-        success: true,
-        department: {
-          id: exactUser.id,
-          name: exactUser.username,
-          display_name: exactUser.display_name,
-          assigned_channel: exactUser.assigned_channel
-        }
-      })
+    // If exact match found, verify password with bcrypt
+    if (exactUser) {
+      const passwordMatch = await verifyPassword(password, exactUser.password)
+      if (passwordMatch) {
+        console.log('[Department Auth] Exact match successful')
+        return NextResponse.json({
+          success: true,
+          department: {
+            id: exactUser.id,
+            name: exactUser.username,
+            display_name: exactUser.display_name,
+            assigned_channel: exactUser.assigned_channel
+          }
+        })
+      }
     }
 
-    // If no exact match or password doesn't match, search for agents in that department
-    // Format: "Department-AgentName" where assigned_channel = Department
+    // Search for agents in that department by assigned_channel
     console.log('[Department Auth] Searching for agents in department:', department)
     
     const { data: agents, error: agentsError } = await supabase
@@ -69,8 +69,15 @@ export async function POST(request: Request) {
       )
     }
 
-    // Find agent with matching password
-    const matchingAgent = agents.find(agent => agent.password === password)
+    // Find agent with matching password using bcrypt
+    let matchingAgent = null
+    for (const agent of agents) {
+      const passwordMatch = await verifyPassword(password, agent.password)
+      if (passwordMatch) {
+        matchingAgent = agent
+        break
+      }
+    }
 
     console.log('[Department Auth] Password match search:', {
       foundMatch: !!matchingAgent,
@@ -87,12 +94,6 @@ export async function POST(request: Request) {
 
     // Authentication successful
     console.log('[Department Auth] Authentication successful:', matchingAgent.username)
-    console.log('[Department Auth] Returning data:', {
-      id: matchingAgent.id,
-      name: matchingAgent.username,
-      display_name: matchingAgent.display_name,
-      assigned_channel: matchingAgent.assigned_channel
-    })
     
     return NextResponse.json({
       success: true,

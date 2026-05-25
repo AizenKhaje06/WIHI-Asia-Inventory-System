@@ -109,23 +109,31 @@ export default function SettingsCodePage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Key className="h-6 w-6 text-orange-500" />
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-          Settings Code Management
-        </h1>
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Header */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-orange-600 shadow-lg shadow-orange-500/30">
+            <Key className="h-5 w-5 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text [-webkit-text-fill-color:transparent]">
+            Settings Code Overview
+          </h2>
+        </div>
+        <p className="text-xs text-slate-600 dark:text-slate-400 ml-[52px]">
+          Manage access codes and security settings for the admin panel
+        </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Current Code Display */}
-        <Card>
+        <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-green-500" />
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <Shield className="h-5 w-5 text-green-600" />
               Current Settings Code
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-slate-600 dark:text-slate-400">
               The code currently required to access admin settings
             </CardDescription>
           </CardHeader>
@@ -166,13 +174,13 @@ export default function SettingsCodePage() {
         </Card>
 
         {/* Update Code */}
-        <Card>
+        <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5 text-orange-500" />
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <Key className="h-5 w-5 text-orange-600" />
               Update Settings Code
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-slate-600 dark:text-slate-400">
               Change the access code for admin settings
             </CardDescription>
           </CardHeader>
@@ -240,7 +248,7 @@ export default function SettingsCodePage() {
             <Button 
               onClick={handleSaveSettingsCode}
               disabled={isLoading || !settingsCode.newCode}
-              className="w-full bg-orange-500 hover:bg-orange-600"
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white"
             >
               {isLoading ? (
                 <>
@@ -259,18 +267,18 @@ export default function SettingsCodePage() {
       </div>
 
       {/* Security Guidelines */}
-      <Card>
+      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-yellow-500" />
+          <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <AlertCircle className="h-5 w-5 text-yellow-600" />
             Security Guidelines
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <h4 className="font-semibold text-green-600">✓ Recommended</h4>
-              <ul className="space-y-1 text-sm text-gray-600">
+              <h4 className="font-semibold text-green-600 dark:text-green-500">✓ Recommended</h4>
+              <ul className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
                 <li>• Use at least 8 characters</li>
                 <li>• Include numbers and special characters</li>
                 <li>• Avoid common words or patterns</li>
@@ -280,8 +288,8 @@ export default function SettingsCodePage() {
             </div>
             
             <div className="space-y-2">
-              <h4 className="font-semibold text-red-600">✗ Avoid</h4>
-              <ul className="space-y-1 text-sm text-gray-600">
+              <h4 className="font-semibold text-red-600 dark:text-red-500">✗ Avoid</h4>
+              <ul className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
                 <li>• Simple passwords like "1234"</li>
                 <li>• Personal information</li>
                 <li>• Dictionary words</li>
