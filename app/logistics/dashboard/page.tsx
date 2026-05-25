@@ -17,6 +17,7 @@ import { AnimatedNumber } from '@/components/ui/animated-number'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { cn } from '@/lib/utils'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface PackingQueueOrder {
   id: string
@@ -212,7 +213,7 @@ export default function LogisticsAdminDashboard() {
         {/* DATE + CHANNEL FILTER */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h2 className="text-base font-semibold text-slate-900 dark:text-white">Operations Overview</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Operations Overview</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Real-time logistics monitoring</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -260,6 +261,72 @@ export default function LogisticsAdminDashboard() {
             </Card>
           ))}
         </div>
+
+        {/* PARCEL STATUS AREA CHART */}
+        {(() => {
+          const chartData = PARCEL_STATUSES.map(s => ({
+            status: s.label,
+            count: statusCounts[s.key] || 0,
+          }))
+          return (
+            <Card className="border border-slate-200 dark:border-slate-800 shadow-sm">
+              <CardHeader className="pb-2 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20">
+                    <Activity className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-sm font-semibold">Parcel Status Overview</CardTitle>
+                    <CardDescription className="text-xs mt-0.5">Order count per parcel status</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4 pb-2 px-2">
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="statusGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0.02} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} vertical={false} />
+                    <XAxis
+                      dataKey="status"
+                      tick={{ fontSize: 10, fill: '#94a3b8' }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: '#94a3b8' }}
+                      tickLine={false}
+                      axisLine={false}
+                      allowDecimals={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgba(255,255,255,0.95)',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                      }}
+                      formatter={(value: number) => [value, 'Orders']}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#6366f1"
+                      strokeWidth={2.5}
+                      fill="url(#statusGradient)"
+                      dot={{ fill: '#6366f1', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, fill: '#6366f1' }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )
+        })()}
 
         {/* MIDDLE ROW */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

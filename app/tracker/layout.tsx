@@ -61,21 +61,22 @@ export default function TrackerLayout({
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Enterprise Header - Single Line, Minimal, Mobile Responsive */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+      {/* Enterprise Header - Fixed, always visible */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-[1920px] mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between h-12 sm:h-14">
             {/* Left: Brand + Navigation */}
             <div className="flex items-center gap-3 sm:gap-8">
               {/* Brand */}
               <div className="flex items-center gap-2 sm:gap-3 pr-3 sm:pr-8 border-r border-slate-200 dark:border-slate-800">
-                <div className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">
-                  Tracker
+                {/* Logo */}
+                <img src="/Vertex-icon.png" alt="Vertex" className="h-6 w-auto object-contain dark:hidden" />
+                <img src="/Vertex-icon-2.png" alt="Vertex" className="h-6 w-auto object-contain hidden dark:block" />
+                <div className="hidden sm:flex flex-col">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium leading-none">Welcome back</span>
+                  <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white leading-tight">{displayName}</span>
                 </div>
-                <div className="hidden sm:block h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
-                <div className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  {displayName}
-                </div>
+                <div className="sm:hidden text-xs font-semibold text-slate-900 dark:text-white">{displayName}</div>
               </div>
               
               {/* Navigation Tabs */}
@@ -136,7 +137,7 @@ export default function TrackerLayout({
       </header>
 
       {/* Main Content */}
-      <main className="w-full">
+      <main className="w-full pt-12 sm:pt-14">
         {children}
       </main>
 

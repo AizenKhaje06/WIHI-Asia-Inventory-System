@@ -2178,6 +2178,115 @@
               }
             }
           ]
+        },
+        {
+          "name": "Packer History",
+          "item": [
+            {
+              "name": "Get Packer History",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/packer/history",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "packer", "history"]
+                },
+                "description": "Get packed orders history. Returns the last 100 packed orders ordered by packed_at descending. Each record includes waybill, itemName, quantity, totalAmount, customerName, packedAt, and packedBy."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: Response has required top-level fields",
+                      "pm.test('Response has required top-level fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('success');",
+                      "    pm.expect(jsonData).to.have.property('history');",
+                      "    pm.expect(jsonData).to.have.property('count');",
+                      "    pm.expect(jsonData.success).to.be.true;",
+                      "    pm.expect(jsonData.history).to.be.an('array');",
+                      "    pm.expect(jsonData.count).to.be.a('number');",
+                      "});",
+                      "",
+                      "// Test 4: count matches history array length",
+                      "pm.test('count matches history array length', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.count).to.equal(jsonData.history.length);",
+                      "});",
+                      "",
+                      "// Test 5: Each history record has required fields (including new totalAmount and customerName)",
+                      "pm.test('History records have required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.history.length > 0) {",
+                      "        const record = jsonData.history[0];",
+                      "        pm.expect(record).to.have.property('id');",
+                      "        pm.expect(record).to.have.property('waybill');",
+                      "        pm.expect(record).to.have.property('itemName');",
+                      "        pm.expect(record).to.have.property('quantity');",
+                      "        pm.expect(record).to.have.property('totalAmount');",
+                      "        pm.expect(record).to.have.property('customerName');",
+                      "        pm.expect(record).to.have.property('packedAt');",
+                      "        pm.expect(record).to.have.property('packedBy');",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 6: totalAmount is a number",
+                      "pm.test('totalAmount is a number', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.history.length > 0) {",
+                      "        pm.expect(jsonData.history[0].totalAmount).to.be.a('number');",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 7: customerName is a string",
+                      "pm.test('customerName is a string', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.history.length > 0) {",
+                      "        pm.expect(jsonData.history[0].customerName).to.be.a('string');",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 8: quantity is a non-negative number",
+                      "pm.test('quantity is a non-negative number', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    jsonData.history.forEach(record => {",
+                      "        pm.expect(record.quantity).to.be.a('number');",
+                      "        pm.expect(record.quantity).to.be.at.least(0);",
+                      "    });",
+                      "});",
+                      "",
+                      "// Test 9: packedAt is present on all records",
+                      "pm.test('packedAt is present on all records', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    jsonData.history.forEach(record => {",
+                      "        pm.expect(record.packedAt).to.not.be.null;",
+                      "        pm.expect(record.packedAt).to.not.be.undefined;",
+                      "    });",
+                      "});",
+                      "",
+                      "// Test 10: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            }
+          ]
         }
       ]
     }
