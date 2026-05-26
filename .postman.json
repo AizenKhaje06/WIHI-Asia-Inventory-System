@@ -2180,6 +2180,327 @@
           ]
         },
         {
+          "name": "Image Upload",
+          "item": [
+            {
+              "name": "Upload Product Image",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": "",
+                      "description": "Image file (JPG, PNG, or WebP, max 2MB)"
+                    },
+                    {
+                      "key": "itemId",
+                      "value": "{{itemId}}",
+                      "type": "text",
+                      "description": "Optional: inventory item ID to associate with the image"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/upload",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "upload"]
+                },
+                "description": "Upload a product image to Supabase Storage (product-images bucket). Allowed roles: admin, operations, logistics-admin. Allowed types: JPG, PNG, WebP. Max size: 2MB. Returns the public URL and storage path."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: Response has url and path fields",
+                      "pm.test('Response has url and path fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('url');",
+                      "    pm.expect(jsonData).to.have.property('path');",
+                      "});",
+                      "",
+                      "// Test 4: url is a valid https URL",
+                      "pm.test('url is a valid https URL', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.url).to.match(/^https:\\/\\//);",
+                      "});",
+                      "",
+                      "// Test 5: path starts with products/",
+                      "pm.test('path starts with products/', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.path).to.match(/^products\\//);",
+                      "});",
+                      "",
+                      "// Test 6: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Upload Product Image - No File",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": []
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/upload",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "upload"]
+                },
+                "description": "Test validation - should return 400 when no file is provided"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 400",
+                      "pm.test('Status code is 400', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error message",
+                      "pm.test('Response has error message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include('no file');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Upload Product Image - Invalid File Type",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": "",
+                      "description": "Upload a .pdf or .gif to trigger the type validation error"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/upload",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "upload"]
+                },
+                "description": "Test validation - should return 400 for disallowed file types (e.g. PDF, GIF, SVG)"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 400",
+                      "pm.test('Status code is 400', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error about invalid file type",
+                      "pm.test('Response has invalid file type error', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include('invalid file type');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Upload Product Image - Unauthorized (packer role)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{packerAuthToken}}",
+                    "type": "text",
+                    "description": "Token for a packer-role user - should be rejected"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": ""
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/upload",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "upload"]
+                },
+                "description": "Test role-based access control - packer role should be denied (only admin, operations, logistics-admin are allowed)"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 401 or 403",
+                      "pm.test('Status code is 401 or 403 (unauthorized)', function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete Product Image",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"path\": \"products/{{itemId}}-1234567890.jpg\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/upload",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "upload"]
+                },
+                "description": "Delete a product image from Supabase Storage by its storage path. Allowed roles: admin, operations, logistics-admin."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response has success: true",
+                      "pm.test('Response has success: true', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('success');",
+                      "    pm.expect(jsonData.success).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete Product Image - No Path",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/upload",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "upload"]
+                },
+                "description": "Test validation - should return 400 when no path is provided"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 400",
+                      "pm.test('Status code is 400', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error message",
+                      "pm.test('Response has error message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include('no path');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "Packer History",
           "item": [
             {

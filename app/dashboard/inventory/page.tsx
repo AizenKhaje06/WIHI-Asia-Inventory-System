@@ -90,7 +90,6 @@ export default function InventoryPage() {
   const [deleteWarehouseId, setDeleteWarehouseId] = useState<string | null>(null)
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
-  const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid') // Add view mode toggle
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set()) // Bulk selection
   
   // Calculate initial column widths based on viewport
@@ -289,7 +288,26 @@ export default function InventoryPage() {
       // Fetch from inventory table only (NOT bundles)
       // Bundles are virtual products - their items are already in inventory
       const data = await apiGet<InventoryItem[]>("/api/items")
-      const itemsArray = Array.isArray(data) ? data : []
+      let itemsArray = Array.isArray(data) ? data : []
+      
+      // Filter by user's assigned channel if they are a department user
+      const user = getCurrentUser()
+      const role = getCurrentUserRole()
+      if (role === 'operations' && user?.assignedChannel) {
+        // Filter items to show only those from the user's assigned channel
+        itemsArray = itemsArray.filter(item => item.salesChannel === user.assignedChannel)
+        console.log(`[Inventory] Filtered to ${user.assignedChannel} channel: ${itemsArray.length} items`)
+      }
+      
+      // Debug: Log items with images
+      const itemsWithImages = itemsArray.filter(item => item.imageUrl)
+      if (itemsWithImages.length > 0) {
+        console.log('[Inventory] Items with images:', itemsWithImages.map(item => ({
+          name: item.name,
+          imageUrl: item.imageUrl
+        })))
+      }
+      
       setItems(itemsArray)
       setFilteredItems(itemsArray)
     } catch (error) {
@@ -1002,123 +1020,6 @@ export default function InventoryPage() {
             Comprehensive product inventory control and management
           </p>
         </div>
-        
-        {/* Export Button - Admin only - Professional Style */}
-        {!isTeamLeader && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-10 gap-2 border-slate-200 dark:border-slate-700 flex-shrink-0">
-                <FileDown className="h-4 w-4" />
-                Export
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={exportToPDF}>
-                <FileDown className="h-4 w-4 mr-2" />
-                <span>Export as PDF</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={exportToExcel}>
-                <FileSpreadsheet className="h-4 w-4 mr-2" />
-                <span>Export as Excel</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
-
-      {/* Professional Search & Actions Bar */}
-      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
-        <CardContent className="pt-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
-            {/* Search Bar */}
-            <div className="relative flex-1 min-w-0">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder="Search products by name, category, or SKU..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 pr-4 h-10 border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
-                >
-                  <X className="h-4 w-4 text-slate-400" />
-                </button>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-2 flex-wrap lg:flex-nowrap">
-              <Button
-                onClick={() => setCategoryDialogOpen(true)}
-                variant="outline"
-                className="flex-1 lg:flex-none h-10 px-4 border-slate-200 dark:border-slate-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Categories
-              </Button>
-
-              <Button
-                onClick={() => setStoreDialogOpen(true)}
-                variant="outline"
-                className="flex-1 lg:flex-none h-10 px-4 border-slate-200 dark:border-slate-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Stores
-              </Button>
-
-              <Button
-                onClick={() => setCreateBundleOpen(true)}
-                className="flex-1 lg:flex-none h-10 px-4 bg-purple-600 hover:bg-purple-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Bundle
-              </Button>
-
-              <Button
-                onClick={() => setAddDialogOpen(true)}
-                className="flex-1 lg:flex-none h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Product
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Active Filters + Results */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {activeFiltersCount > 0 ? (
-              <>
-                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-xs px-2.5 py-1 font-medium">
-                  {activeFiltersCount} active
-                </Badge>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearAllFilters}
-                  className="h-8 px-3 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg font-medium"
-                >
-                  <X className="h-3.5 w-3.5 mr-1" />
-                  Clear all
-                </Button>
-              </>
-            ) : (
-              <span className="text-xs text-slate-500 dark:text-slate-500 font-medium">No filters</span>
-            )}
-          </div>
-          <div className="text-xs text-slate-600 dark:text-slate-400">
-            <span className="font-bold text-slate-900 dark:text-white">{filteredItems.length}</span>
-            <span className="mx-1 text-slate-400">of</span>
-            <span className="font-semibold">{items.length}</span>
-          </div>
-        </div>
       </div>
 
       <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
@@ -1133,35 +1034,6 @@ export default function InventoryPage() {
                 <span>Product Inventory</span>
               </CardTitle>
               <div className="flex items-center gap-3">
-                {/* View Toggle */}
-                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className={cn(
-                      "h-8 px-3 rounded-md transition-colors",
-                      viewMode === 'grid'
-                        ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                    )}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setViewMode('table')}
-                    className={cn(
-                      "h-8 px-3 rounded-md transition-colors",
-                      viewMode === 'table'
-                        ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                    )}
-                  >
-                    <LayoutList className="h-4 w-4" />
-                  </Button>
-                </div>
                 <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-0 text-sm px-3 py-1 font-bold">
                   {filteredItems.length} items
                 </Badge>
@@ -1235,6 +1107,69 @@ export default function InventoryPage() {
             </div>
           </div>
         </CardHeader>
+
+        {/* Search & Actions Bar - No Card Container */}
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+            {/* Search Bar - Half Width with Clear Button */}
+            <div className="flex items-center gap-3 lg:w-1/2">
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <Input
+                  placeholder="Search products by name, category, or SKU..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 pr-3 h-7 text-xs border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <button
+                onClick={() => setSearch("")}
+                disabled={!search}
+                className="text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Clear
+              </button>
+            </div>
+
+            {/* Action Buttons - Right Side */}
+            <div className="flex gap-2 flex-wrap lg:flex-nowrap lg:ml-auto">
+              <Button
+                onClick={() => setCategoryDialogOpen(true)}
+                variant="outline"
+                className="flex-1 lg:flex-none h-7 px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Categories
+              </Button>
+
+              <Button
+                onClick={() => setStoreDialogOpen(true)}
+                variant="outline"
+                className="flex-1 lg:flex-none h-7 px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Stores
+              </Button>
+
+              <Button
+                onClick={() => setCreateBundleOpen(true)}
+                className="flex-1 lg:flex-none h-7 px-2.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-md"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Bundle
+              </Button>
+
+              <Button
+                onClick={() => setAddDialogOpen(true)}
+                className="flex-1 lg:flex-none h-7 px-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Product
+              </Button>
+            </div>
+          </div>
+        </div>
+
         <CardContent className="p-0">
           {!Array.isArray(filteredItems) || filteredItems.length === 0 ? (
             <div className="text-center py-16 px-4">
@@ -1256,213 +1191,69 @@ export default function InventoryPage() {
               </Button>
             </div>
           ) : (
+            /* Table View */
             <>
-              {viewMode === 'grid' ? (
-                /* Grid View - Professional Layout */
-                <div className="p-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
-                    {filteredItems.map((item) => {
-                      const profitMargin = item.sellingPrice > 0 ? ((item.sellingPrice - item.costPrice) / item.sellingPrice * 100) : 0
-                      const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
-                      const isOutOfStock = item.quantity === 0
-                      const isSelected = selectedItems.has(item.id)
-                      const isBundle = (item as any).product_type === 'bundle'
-                      
-                      return (
-                        <Card
-                          key={item.id}
-                          className={cn(
-                            "group relative overflow-hidden transition-all duration-300 cursor-pointer border",
-                            isSelected
-                              ? "ring-2 ring-blue-500 dark:ring-blue-400 border-blue-500 dark:border-blue-400 shadow-lg"
-                              : "border-slate-200 dark:border-slate-700 hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-600 hover:-translate-y-1"
-                          )}
-                          onClick={() => {
-                            const newSelected = new Set(selectedItems)
-                            if (isSelected) {
-                              newSelected.delete(item.id)
-                            } else {
-                              newSelected.add(item.id)
-                            }
-                            setSelectedItems(newSelected)
-                          }}
-                        >
-                          {/* Stock Badge - Fixed Position */}
-                          <div className="absolute top-3 right-3 z-10">
-                            <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-xs font-bold px-2.5 py-1 border border-slate-200 dark:border-slate-700 shadow-sm">
-                              {item.quantity}
-                            </Badge>
-                          </div>
-
-                          {/* Bundle Badge - NEW */}
-                          {isBundle && (
-                            <div className="absolute top-3 left-3 z-10">
-                              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[10px] font-bold px-2 py-0.5 shadow-sm border border-purple-200 dark:border-purple-800">
-                                BUNDLE
-                              </Badge>
-                            </div>
-                          )}
-
-                          {/* Status Badge - Fixed Position */}
-                          {(isOutOfStock || isLowStock) && !isBundle && (
-                            <div className="absolute top-3 left-3 z-10">
-                              <Badge className={cn(
-                                "text-[10px] font-bold px-2 py-0.5 shadow-sm",
-                                isOutOfStock
-                                  ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
-                                  : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
-                              )}>
-                                {isOutOfStock ? "OUT" : "LOW"}
-                              </Badge>
-                            </div>
-                          )}
-
-                          <CardContent className="p-5 pt-12">
-                            {/* Product Name - Fixed Height */}
-                            <div className="mb-4 h-16">
-                              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 line-clamp-2">
-                                {item.name}
-                              </h3>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
-                                {item.category}
-                              </p>
-                            </div>
-
-                            {/* Price */}
-                            <div className="mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
-                              <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
-                                  {formatCurrency(item.sellingPrice)}
-                                </span>
-                                <span className="text-xs text-slate-500 dark:text-slate-400 line-through">
-                                  {formatCurrency(item.costPrice)}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold px-2 py-0.5 border border-green-200 dark:border-green-800">
-                                  {profitMargin.toFixed(0)}% margin
-                                </Badge>
-                              </div>
-                            </div>
-
-                            {/* Stock Info */}
-                            <div className="mb-4">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-slate-600 dark:text-slate-400 font-medium">Stock Level</span>
-                                <span className="font-bold text-slate-900 dark:text-white text-lg">{item.quantity} units</span>
-                              </div>
-                            </div>
-
-                            {/* Quick Actions */}
-                            {getCurrentUser()?.role === 'admin' && (
-                              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="flex-1 h-9 text-xs border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleEdit(item)
-                                  }}
-                                >
-                                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                                  Edit
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="flex-1 h-9 text-xs border-green-200 dark:border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-300"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleRestock(item)
-                                  }}
-                                >
-                                  <PackagePlus className="h-3.5 w-3.5 mr-1.5" />
-                                  Restock
-                                </Button>
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      )
-                    })}
-                  </div>
-                </div>
-              ) : (
-                /* Table View */
-                <>
               {/* Mobile Scroll Hint - Enhanced */}
               <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
                 <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
-                  <span className="text-blue-500">ΓåÉ</span>
-                  <span>Swipe to see all columns ΓÇó Tap row to highlight</span>
-                  <span className="text-blue-500">ΓåÆ</span>
-                </p>
-              </div>
-
-              {/* Desktop Resize Hint */}
-              <div className="hidden md:block px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
-                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
-                  <span>≡ƒÆí</span>
-                  <span>Drag column borders to resize ΓÇó Expand Product column to see full names</span>
+                  <span className="text-blue-500">←</span>
+                  <span>Swipe to see all columns • Tap row to highlight</span>
+                  <span className="text-blue-500">→</span>
                 </p>
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[800px] lg:min-w-full text-sm table-fixed">
+                <table className="w-full text-sm">
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                      <th className={`py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[25%]' : 'w-[30%]'}`}>
+                      {/* Image Column */}
+                      <th className="py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[90px]">
+                        Image
+                      </th>
+                      <th className={cn(
+                        "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
+                        getCurrentUser()?.role === 'admin' ? "w-[20%]" : "w-[25%]"
+                      )}>
                         Product
-                        <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
-                          onMouseDown={(e) => handleMouseDown(e, 'product')}
-                        />
                       </th>
-                      <th className={`py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[15%]' : 'w-[18%]'}`}>
+                      <th className={cn(
+                        "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
+                        getCurrentUser()?.role === 'admin' ? "w-[16%]" : "w-[15%]"
+                      )}>
                         Category
-                        <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
-                          onMouseDown={(e) => handleMouseDown(e, 'category')}
-                        />
                       </th>
-                      <th className={`py-2.5 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[10%]' : 'w-[12%]'}`}>
+                      <th className={cn(
+                        "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
+                        getCurrentUser()?.role === 'admin' ? "w-[9%]" : "w-[10%]"
+                      )}>
                         Status
-                        <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
-                          onMouseDown={(e) => handleMouseDown(e, 'status')}
-                        />
                       </th>
-                      <th className={`py-2.5 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[10%]' : 'w-[10%]'}`}>
+                      <th className={cn(
+                        "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
+                        getCurrentUser()?.role === 'admin' ? "w-[11%]" : "w-[13%]"
+                      )}>
                         Stock
-                        <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
-                          onMouseDown={(e) => handleMouseDown(e, 'stock')}
-                        />
                       </th>
-                      <th className={`py-2.5 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[10%]' : 'w-[10%]'}`}>
+                      <th className={cn(
+                        "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
+                        getCurrentUser()?.role === 'admin' ? "w-[10%]" : "w-[12%]"
+                      )}>
                         Cost
-                        <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
-                          onMouseDown={(e) => handleMouseDown(e, 'cost')}
-                        />
                       </th>
-                      <th className={`py-2.5 px-3 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[10%]' : 'w-[10%]'}`}>
+                      <th className={cn(
+                        "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
+                        getCurrentUser()?.role === 'admin' ? "w-[10%]" : "w-[12%]"
+                      )}>
                         Price
-                        <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
-                          onMouseDown={(e) => handleMouseDown(e, 'price')}
-                        />
                       </th>
-                      <th className={`py-2.5 px-3 pr-6 text-right text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 relative ${getCurrentUser()?.role === 'admin' ? 'w-[10%]' : 'w-[10%]'}`}>
+                      <th className={cn(
+                        "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider",
+                        getCurrentUser()?.role === 'admin' ? "w-[8%] border-r border-slate-700/50" : "w-[13%]"
+                      )}>
                         Margin
-                        <div 
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors"
-                          onMouseDown={(e) => handleMouseDown(e, 'margin')}
-                        />
                       </th>
                       {getCurrentUser()?.role === 'admin' && (
-                        <th className="py-2.5 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider w-[10%]">
+                        <th className="py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[16%]">
                           Actions
                         </th>
                       )}
@@ -1487,12 +1278,28 @@ export default function InventoryPage() {
                               : "transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
                           }
                         >
+                          {/* Image Column */}
+                          <td className="py-2 px-3">
+                            <div className="flex items-center justify-center">
+                              {item.imageUrl ? (
+                                <div className="w-10 h-10 rounded overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
+                                  <img
+                                    src={`/api/image-proxy?url=${encodeURIComponent(item.imageUrl)}`}
+                                    alt={item.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-10 h-10 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
+                                  <Package className="h-5 w-5 text-slate-400" />
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          
                           {/* Product Name */}
-                          <td className="py-2 px-3 w-[25%]">
+                          <td className="py-2 px-3">
                             <div className="flex items-center gap-2">
-                              <div className="w-7 h-7 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                <Package className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                              </div>
                               <div className="min-w-0 flex-1">
                                 <p 
                                   className={cn(
@@ -1510,7 +1317,7 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Category */}
-                          <td className="py-2 px-3 w-[15%]">
+                          <td className="py-2 px-3">
                             <span 
                               className={cn(
                                 "text-xs block break-words",
@@ -1525,8 +1332,8 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Stock Status */}
-                          <td className="py-2 px-3 text-center w-[10%]">
-                            <div className="flex justify-center">
+                          <td className="py-2 px-3">
+                            <div className="flex justify-start">
                               {isOutOfStock ? (
                                 <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 text-xs px-1.5 py-0.5">
                                   Out
@@ -1544,8 +1351,8 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Stock with Progress */}
-                          <td className="py-2 px-3 w-[10%]">
-                            <div className="flex flex-col items-end gap-1">
+                          <td className="py-2 px-3">
+                            <div className="flex flex-col items-start gap-1">
                               <span className={
                                 isSelected 
                                   ? "text-xs font-bold tabular-nums text-blue-900 dark:text-blue-100" 
@@ -1553,7 +1360,7 @@ export default function InventoryPage() {
                               }>
                                 {formatNumber(item.quantity)}
                               </span>
-                              <div className="w-full max-w-[60px] h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div className="w-full max-w-[80px] h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                 <div 
                                   className={`h-full transition-all ${
                                     isOutOfStock ? 'bg-red-500' :
@@ -1567,14 +1374,14 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Cost */}
-                          <td className="py-2 px-3 text-right w-[10%]">
+                          <td className="py-2 px-3">
                             <span className="text-xs font-medium text-slate-800 dark:text-slate-200 tabular-nums">
                               {formatCurrency(item.costPrice)}
                             </span>
                           </td>
 
                           {/* Price */}
-                          <td className="py-2 px-3 text-right w-[10%]">
+                          <td className="py-2 px-3">
                             <span className={
                               isSelected 
                                 ? "text-xs font-semibold tabular-nums text-blue-900 dark:text-blue-100" 
@@ -1585,8 +1392,8 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Profit Margin */}
-                          <td className="py-2 px-3 pr-6 w-[10%]">
-                            <div className="flex items-center justify-end gap-1">
+                          <td className="py-2 px-3">
+                            <div className="flex items-center justify-start gap-1">
                               <span className={`text-xs font-bold tabular-nums ${profitMargin >= 30 ? 'text-green-600' : profitMargin >= 15 ? 'text-amber-600' : 'text-red-600'}`}>
                                 {profitMargin.toFixed(1)}%
                               </span>
@@ -1594,10 +1401,10 @@ export default function InventoryPage() {
                           </td>
 
                           {/* Actions - Admin only */}
-                          <td className="py-2 px-3 w-[10%]">
+                          <td className="py-2 px-3">
                             {getCurrentUser()?.role === 'admin' && (
                               <TooltipProvider>
-                                <div className="flex justify-center gap-0.5">
+                                <div className="flex justify-start gap-0.5">
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
@@ -1664,8 +1471,6 @@ export default function InventoryPage() {
                   </tbody>
                 </table>
               </div>
-                </>
-              )}
             </>
           )}
         </CardContent>

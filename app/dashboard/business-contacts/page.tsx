@@ -4,17 +4,17 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { 
   Search, Plus, Users, Building2, TrendingUp, Mail, Phone, 
-  Download, Eye, Edit, Trash2, X, Briefcase, MapPin
+  Download, Edit, Trash2, X, Briefcase, MapPin
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import type { BusinessContact } from "@/lib/types"
 import { PremiumTableLoading } from "@/components/premium-loading"
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api-client"
@@ -22,7 +22,6 @@ import { getCurrentUser } from "@/lib/auth"
 import { BrandLoader } from '@/components/ui/brand-loader'
 
 export default function BusinessContactsPage() {
-  const { toast } = useToast()
   const [contacts, setContacts] = useState<BusinessContact[]>([])
   const [filteredContacts, setFilteredContacts] = useState<BusinessContact[]>([])
   const [loading, setLoading] = useState(true)
@@ -37,7 +36,6 @@ export default function BusinessContactsPage() {
   // Dialog states
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState<BusinessContact | null>(null)
   
@@ -71,11 +69,7 @@ export default function BusinessContactsPage() {
       setContacts(data)
     } catch (error) {
       console.error("Error fetching contacts:", error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to fetch contacts",
-        variant: "destructive"
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to fetch contacts")
     } finally {
       setLoading(false)
     }
@@ -129,17 +123,10 @@ export default function BusinessContactsPage() {
       setAddDialogOpen(false)
       resetForm()
       fetchContacts()
-      toast({
-        title: "Success",
-        description: "Business contact added successfully"
-      })
+      toast.success("Business contact added successfully")
     } catch (error) {
       console.error("Error adding contact:", error)
-      toast({
-        title: "Error",
-        description: "Failed to add contact",
-        variant: "destructive"
-      })
+      toast.error("Failed to add contact")
     }
   }
 
@@ -152,17 +139,10 @@ export default function BusinessContactsPage() {
       setSelectedContact(null)
       resetForm()
       fetchContacts()
-      toast({
-        title: "Success",
-        description: "Contact updated successfully"
-      })
+      toast.success("Contact updated successfully")
     } catch (error) {
       console.error("Error updating contact:", error)
-      toast({
-        title: "Error",
-        description: "Failed to update contact",
-        variant: "destructive"
-      })
+      toast.error("Failed to update contact")
     }
   }
 
@@ -173,17 +153,10 @@ export default function BusinessContactsPage() {
       setDeleteDialogOpen(false)
       setSelectedContact(null)
       fetchContacts()
-      toast({
-        title: "Success",
-        description: "Contact deleted successfully"
-      })
+      toast.success("Contact deleted successfully")
     } catch (error) {
       console.error("Error deleting contact:", error)
-      toast({
-        title: "Error",
-        description: "Failed to delete contact",
-        variant: "destructive"
-      })
+      toast.error("Failed to delete contact")
     }
   }
 
@@ -215,11 +188,6 @@ export default function BusinessContactsPage() {
       notes: contact.notes || ""
     })
     setEditDialogOpen(true)
-  }
-
-  function openDetailsDialog(contact: BusinessContact) {
-    setSelectedContact(contact)
-    setDetailsDialogOpen(true)
   }
 
   function openDeleteDialog(contact: BusinessContact) {
@@ -331,302 +299,278 @@ export default function BusinessContactsPage() {
       </div>
 
       {/* Search & Filters - Professional Design */}
-      <Card className="mb-6 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 mb-5">
-            <Search className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">Search & Filter Contacts</h3>
+      <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between mb-6">
+        {/* Search Bar and Type Filter */}
+        <div className="flex items-center gap-3 lg:w-1/2">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Input
+              placeholder="Search contacts..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 pr-3 h-7 text-xs border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
-            <div className="md:col-span-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder="Search contacts..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
-                />
-              </div>
-            </div>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="h-7 w-[140px] text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="supplier">Suppliers</SelectItem>
+              <SelectItem value="distributor">Distributors</SelectItem>
+              <SelectItem value="reseller">Resellers</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-            {/* Contact Type Filter */}
-            <div>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="supplier">Suppliers</SelectItem>
-                  <SelectItem value="distributor">Distributors</SelectItem>
-                  <SelectItem value="reseller">Resellers</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Sort By */}
-            <div>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  <SelectValue placeholder="Sort By" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                  <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                  <SelectItem value="company-asc">Company (A-Z)</SelectItem>
-                  <SelectItem value="type-asc">Type</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="mt-4 flex items-center justify-between">
-            <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-              Showing <span className="font-bold text-slate-900 dark:text-white">{filteredContacts.length}</span> of <span className="font-bold text-slate-900 dark:text-white">{contacts.length}</span> contacts
-            </div>
-            {(search || typeFilter !== "all") && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearch("")
-                  setTypeFilter("all")
-                }}
-                className="h-8 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-              >
-                <X className="h-3 w-3" />
-                Clear Filters
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Add Contact Button */}
-      <div className="flex justify-end mb-4">
+        {/* Add Contact Button - Square Style */}
         <Button
           onClick={() => setAddDialogOpen(true)}
-          className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30 font-semibold"
+          className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium"
         >
-          <Plus className="h-4 w-4" strokeWidth={2.5} />
+          <Plus className="h-3 w-3 mr-1" />
           Add Contact
         </Button>
       </div>
 
+      {/* Results Count */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+          Showing <span className="font-bold text-slate-900 dark:text-white">{filteredContacts.length}</span> of <span className="font-bold text-slate-900 dark:text-white">{contacts.length}</span> contacts
+        </div>
+        {(search || typeFilter !== "all") && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearch("")
+              setTypeFilter("all")
+            }}
+            className="h-7 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+          >
+            <X className="h-3 w-3" />
+            Clear Filters
+          </Button>
+        )}
+      </div>
 
-      {/* Contacts Table - Professional Design */}
-      <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-        <CardContent className="pt-6">
-          {filteredContacts.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
-                <Users className="h-8 w-8 text-slate-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No Contacts Found</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-500 mb-6">
-                {search || typeFilter !== "all" 
-                  ? "Try adjusting your filters" 
-                  : "Get started by adding your first business contact"}
-              </p>
-              {!search && typeFilter === "all" && (
-                <Button onClick={() => setAddDialogOpen(true)} className="gap-2 bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-4 w-4" />
-                  Add Contact
-                </Button>
-              )}
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[800px] lg:min-w-full text-sm table-fixed">
-                  <thead className="sticky top-0 z-10">
-                    <tr className="bg-black dark:bg-black">
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[20%]">Name/Company</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[15%]">Contact Person</th>
-                      <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[10%]">Type</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[20%]">Contact Info</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[20%]">Address</th>
-                      <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[15%]">Notes</th>
-                      {isAdmin && (
-                        <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider">Actions</th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                    {paginatedContacts.map((contact) => (
-                      <tr key={contact.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <td className="py-3 px-3">
-                          <div className="text-sm font-semibold text-slate-900 dark:text-white">{contact.name}</div>
-                          {contact.companyName && (
-                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{contact.companyName}</div>
-                          )}
-                        </td>
-                        <td className="py-3 px-3">
-                          <div className="text-sm text-slate-700 dark:text-slate-300">
-                            {contact.contactPerson || "-"}
-                          </div>
-                          {contact.position && (
-                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{contact.position}</div>
-                          )}
-                        </td>
-                        <td className="py-3 px-3 text-center">
-                          <Badge className={`${getTypeColor(contact.contactType)} border text-xs font-semibold px-2 py-0.5`}>
-                            {contact.contactType.toUpperCase()}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-3">
-                          <div className="space-y-1">
-                            {contact.email && (
-                              <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
-                                <Mail className="h-3 w-3 flex-shrink-0" />
-                                <span className="truncate">{contact.email}</span>
-                              </div>
-                            )}
-                            {contact.phone && (
-                              <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
-                                <Phone className="h-3 w-3 flex-shrink-0" />
-                                <span>{contact.phone}</span>
-                              </div>
-                            )}
-                            {!contact.email && !contact.phone && <span className="text-xs text-slate-400">-</span>}
-                          </div>
-                        </td>
-                        <td className="py-3 px-3">
-                          <div className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
-                            {contact.address || "-"}
-                          </div>
-                        </td>
-                        <td className="py-3 px-3">
-                          <div className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
-                            {contact.notes || "-"}
-                          </div>
-                        </td>
-                        {isAdmin && (
-                          <td className="py-3 px-3">
-                            <div className="flex items-center justify-center gap-1">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => openDetailsDialog(contact)}
-                                      className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                                    >
-                                      <Eye className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>View Details</TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => openEditDialog(contact)}
-                                      className="h-8 w-8 p-0 hover:bg-slate-50 dark:hover:bg-slate-800"
-                                    >
-                                      <Edit className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Edit Contact</TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => openDeleteDialog(contact)}
-                                      className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                    >
-                                      <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Delete Contact</TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </div>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
 
-              {/* Pagination - Professional Design */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                    Showing <span className="font-bold text-slate-900 dark:text-white">{startIndex + 1}</span> to <span className="font-bold text-slate-900 dark:text-white">{Math.min(endIndex, filteredContacts.length)}</span> of <span className="font-bold text-slate-900 dark:text-white">{filteredContacts.length}</span> contacts
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      className="h-9 px-4 font-semibold"
-                    >
-                      Previous
-                    </Button>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        let pageNum
-                        if (totalPages <= 5) {
-                          pageNum = i + 1
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i
-                        } else {
-                          pageNum = currentPage - 2 + i
-                        }
-                        return (
-                          <Button
-                            key={pageNum}
-                            variant={currentPage === pageNum ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(pageNum)}
-                            className={`w-9 h-9 p-0 font-semibold ${currentPage === pageNum ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
-                          >
-                            {pageNum}
-                          </Button>
-                        )
-                      })}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                      className="h-9 px-4 font-semibold"
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </>
+      {/* Contacts Table - No Card Container */}
+      {filteredContacts.length === 0 ? (
+        <div className="text-center py-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
+            <Users className="h-8 w-8 text-slate-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No Contacts Found</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-500 mb-6">
+            {search || typeFilter !== "all" 
+              ? "Try adjusting your filters" 
+              : "Get started by adding your first business contact"}
+          </p>
+          {!search && typeFilter === "all" && (
+            <Button onClick={() => setAddDialogOpen(true)} className="gap-2 bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4" />
+              Add Contact
+            </Button>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-black dark:bg-black">
+                  <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '18%' }}>Name/Company</th>
+                  <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '16%' }}>Contact Person</th>
+                  <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>Type</th>
+                  <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '18%' }}>Contact Info</th>
+                  <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '16%' }}>Address</th>
+                  <th className="py-3 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '14%' }}>Notes</th>
+                  {isAdmin && (
+                    <th className="py-3 px-3 text-center text-[10px] font-bold text-white uppercase tracking-wider" style={{ width: '8%' }}>Actions</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                {paginatedContacts.map((contact) => (
+                  <tr key={contact.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="py-3 px-3">
+                      <div className="text-sm font-semibold text-slate-900 dark:text-white mb-1">{contact.name}</div>
+                      {contact.companyName && (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+                          <Building2 className="h-3 w-3 flex-shrink-0" />
+                          <span>{contact.companyName}</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="text-sm font-semibold text-slate-900 dark:text-white mb-1">
+                        {contact.contactPerson || "-"}
+                      </div>
+                      {contact.position && (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+                          <Briefcase className="h-3 w-3 flex-shrink-0" />
+                          <span>{contact.position}</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <Badge className={`${getTypeColor(contact.contactType)} border text-xs font-semibold px-2 py-0.5`}>
+                        {contact.contactType.toUpperCase()}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="space-y-1">
+                        {contact.email && (
+                          <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+                            <Mail className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{contact.email}</span>
+                          </div>
+                        )}
+                        {contact.phone && (
+                          <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+                            <Phone className="h-3 w-3 flex-shrink-0" />
+                            <span>{contact.phone}</span>
+                          </div>
+                        )}
+                        {!contact.email && !contact.phone && <span className="text-xs text-slate-400">-</span>}
+                      </div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
+                        {contact.address || "-"}
+                      </div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
+                        {contact.notes || "-"}
+                      </div>
+                    </td>
+                    {isAdmin && (
+                      <td className="py-3 px-3">
+                        <div className="flex items-center justify-center gap-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => openEditDialog(contact)}
+                                  className="h-8 w-8 p-0 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                >
+                                  <Edit className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit Contact</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => openDeleteDialog(contact)}
+                                  className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Delete Contact</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination - Professional Design */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-6 py-4 shadow-lg">
+              <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                Showing <span className="font-bold text-slate-900 dark:text-white">{startIndex + 1}</span> to <span className="font-bold text-slate-900 dark:text-white">{Math.min(endIndex, filteredContacts.length)}</span> of <span className="font-bold text-slate-900 dark:text-white">{filteredContacts.length}</span> contacts
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="h-9 px-4 font-semibold"
+                >
+                  Previous
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum
+                    if (totalPages <= 5) {
+                      pageNum = i + 1
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i
+                    } else {
+                      pageNum = currentPage - 2 + i
+                    }
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`w-9 h-9 p-0 font-semibold ${currentPage === pageNum ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+                      >
+                        {pageNum}
+                      </Button>
+                    )
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="h-9 px-4 font-semibold"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
 
       {/* Add Contact Dialog */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add New Business Contact</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+          {/* Professional Header with Dark Gradient */}
+          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-6 py-5 relative overflow-hidden flex-shrink-0">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
+            <div className="relative">
+              <DialogHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/30">
+                    <Users className="h-6 w-6 text-white" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-2xl font-bold text-white tracking-tight !text-white">Add New Business Contact</DialogTitle>
+                    <DialogDescription className="text-slate-200 text-sm mt-0.5 font-medium !text-slate-200">
+                      Create a new supplier, distributor, or reseller contact
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-6 space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name">Name/Company Name *</Label>
@@ -729,11 +673,28 @@ export default function BusinessContactsPage() {
 
       {/* Edit Contact Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Business Contact</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleEdit} className="space-y-4">
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+          {/* Professional Header with Dark Gradient */}
+          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-6 py-5 relative overflow-hidden flex-shrink-0">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
+            <div className="relative">
+              <DialogHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/30">
+                    <Edit className="h-6 w-6 text-white" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-2xl font-bold text-white tracking-tight !text-white">Edit Business Contact</DialogTitle>
+                    <DialogDescription className="text-slate-200 text-sm mt-0.5 font-medium !text-slate-200">
+                      Update contact information
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+            </div>
+          </div>
+
+          <form onSubmit={handleEdit} className="flex-1 overflow-y-auto px-8 py-6 space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="edit-name">Name/Company Name *</Label>
@@ -824,98 +785,6 @@ export default function BusinessContactsPage() {
               <Button type="submit">Save Changes</Button>
             </DialogFooter>
           </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Contact Details Dialog */}
-      <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Contact Details</DialogTitle>
-          </DialogHeader>
-          {selectedContact && (
-            <div className="space-y-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                    {selectedContact.name}
-                  </h3>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    <Badge className={`${getTypeColor(selectedContact.contactType)} border`}>
-                      {selectedContact.contactType.toUpperCase()}
-                    </Badge>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setDetailsDialogOpen(false)
-                    openEditDialog(selectedContact)
-                  }}
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="font-semibold text-slate-900 dark:text-white">Business Information</h4>
-                {selectedContact.companyName && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Building2 className="h-4 w-4 text-slate-400" />
-                    <span className="text-slate-600 dark:text-slate-400">{selectedContact.companyName}</span>
-                  </div>
-                )}
-                {selectedContact.contactPerson && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Users className="h-4 w-4 text-slate-400" />
-                    <span className="text-slate-600 dark:text-slate-400">
-                      {selectedContact.contactPerson}
-                      {selectedContact.position && ` - ${selectedContact.position}`}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="font-semibold text-slate-900 dark:text-white">Contact Information</h4>
-                {selectedContact.email && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-slate-400" />
-                    <span className="text-slate-600 dark:text-slate-400">{selectedContact.email}</span>
-                  </div>
-                )}
-                {selectedContact.phone && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="h-4 w-4 text-slate-400" />
-                    <span className="text-slate-600 dark:text-slate-400">{selectedContact.phone}</span>
-                  </div>
-                )}
-                {selectedContact.address && (
-                  <div className="flex items-start gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-slate-400 mt-0.5" />
-                    <span className="text-slate-600 dark:text-slate-400">{selectedContact.address}</span>
-                  </div>
-                )}
-              </div>
-
-              {selectedContact.notes && (
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-slate-900 dark:text-white">Notes</h4>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap">
-                    {selectedContact.notes}
-                  </p>
-                </div>
-              )}
-
-              <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Added on {new Date(selectedContact.createdAt || Date.now()).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
 

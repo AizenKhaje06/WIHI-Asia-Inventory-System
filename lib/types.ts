@@ -16,6 +16,7 @@ export interface InventoryItem {
   discountEndDate?: string
   minPrice?: number // Minimum selling price (for profit protection)
   images?: string[]
+  imageUrl?: string | null // Product image URL from Supabase Storage
   productType?: 'regular' | 'bundle' // NEW: Identify if product is a bundle
 }
 

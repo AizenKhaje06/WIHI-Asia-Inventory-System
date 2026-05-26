@@ -49,6 +49,7 @@
     "@vercel/analytics": "latest",
     "autoprefixer": "^10.4.20",
     "bcryptjs": "^3.0.3",
+    "browser-image-compression": "2.0.2",
     "browserslist": "^4.28.2",
     "caniuse-lite": "^1.0.30001793",
     "class-variance-authority": "^0.7.1",

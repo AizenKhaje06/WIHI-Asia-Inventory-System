@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Package, Loader2 } from "lucide-react"
-import { apiGet, apiPost } from "@/lib/api-client"
+import { apiGet, apiPost, apiPut } from "@/lib/api-client"
 import { toast } from "sonner"
+import { ImageUpload } from "@/components/ui/image-upload"
 
 interface AddItemDialogProps {
   open: boolean
@@ -22,6 +23,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<Array<{id: string, name: string}>>([])
   const [loadingCategories, setLoadingCategories] = useState(true)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: "",
     category: "",
@@ -29,13 +31,14 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
     costPrice: 0,
     sellingPrice: 0,
     reorderLevel: 0,
-    salesChannel: "Physical Store", // Default value for universal products
-    store: "Main Store", // Default value for universal products
+    salesChannel: "Physical Store",
+    store: "Main Store",
   })
 
   useEffect(() => {
     if (open) {
       fetchCategories()
+      setImageUrl(null)
     }
   }, [open])
 
@@ -56,8 +59,13 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
     setLoading(true)
 
     try {
-      // Products are now universal - no sales channel or store needed
-      await apiPost("/api/items", formData)
+      const item = await apiPost("/api/items", formData) as any
+      
+      // If image was uploaded, save the URL to the item
+      if (imageUrl && item?.id) {
+        await apiPut(`/api/items/${item.id}`, { imageUrl })
+      }
+
       toast.success("Product added successfully!")
       onSuccess()
       onOpenChange(false)
@@ -71,10 +79,9 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
         salesChannel: "Physical Store",
         store: "Main Store",
       })
+      setImageUrl(null)
     } catch (error: any) {
       console.error("[Add Item] Error adding item:", error)
-      
-      // Show user-friendly error message
       if (error.message) {
         toast.error(error.message)
       } else {
@@ -108,7 +115,19 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-6 space-y-5">
+          {/* Product Image Upload */}
+          <div className="space-y-2">
+            <Label className="text-slate-700 dark:text-slate-300 font-medium text-sm">
+              Product Image <span className="text-slate-400 font-normal">(optional)</span>
+            </Label>
+            <ImageUpload
+              currentImageUrl={imageUrl}
+              onUploadComplete={(url) => setImageUrl(url)}
+              onRemove={() => setImageUrl(null)}
+            />
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-slate-700 dark:text-slate-300 font-medium text-sm">

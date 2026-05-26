@@ -55,6 +55,7 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
     sellingPrice: item.sellingPrice,
     reorderLevel: item.reorderLevel,
     lastUpdated: item.lastUpdated,
+    imageUrl: item.image_url || null,
   }))
 }
 
@@ -105,6 +106,7 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
   if (updates.costPrice !== undefined) updateData.cost_price = updates.costPrice
   if (updates.sellingPrice !== undefined) updateData.selling_price = updates.sellingPrice
   if (updates.reorderLevel !== undefined) updateData.reorder_level = updates.reorderLevel
+  if (updates.imageUrl !== undefined) updateData.image_url = updates.imageUrl || null
 
   // Recalculate totalCOGS if quantity or costPrice changed
   if (updates.quantity !== undefined || updates.costPrice !== undefined) {

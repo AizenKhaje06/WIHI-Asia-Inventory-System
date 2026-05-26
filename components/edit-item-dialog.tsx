@@ -14,6 +14,7 @@ import type { InventoryItem } from "@/lib/types"
 import { apiGet, apiPut } from "@/lib/api-client"
 import { getCurrentUser } from "@/lib/auth"
 import { formatCurrency, cn } from "@/lib/utils"
+import { ImageUpload } from "@/components/ui/image-upload"
 
 // Helper functions for bundle calculations
 function calculateBundleCost(components: Array<{ quantity: number; costPrice: number }>): number {
@@ -53,6 +54,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
     sellingPrice: item.sellingPrice,
     reorderLevel: item.reorderLevel,
   })
+  const [imageUrl, setImageUrl] = useState<string | null>(item.imageUrl || null)
 
   useEffect(() => {
     setFormData({
@@ -63,6 +65,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
       sellingPrice: item.sellingPrice,
       reorderLevel: item.reorderLevel,
     })
+    setImageUrl(item.imageUrl || null)
   }, [item])
 
   useEffect(() => {
@@ -109,7 +112,7 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
       if (isBundle) {
         await apiPut(`/api/bundles/${item.id}`, formData)
       } else {
-        await apiPut(`/api/items/${item.id}`, formData)
+        await apiPut(`/api/items/${item.id}`, { ...formData, imageUrl })
       }
       onSuccess()
       onOpenChange(false)
@@ -145,7 +148,22 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
           </DialogHeader>
         </div>
         
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-6 space-y-4 min-h-0">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-6 space-y-5 min-h-0">
+          {/* Product Image Upload */}
+          {!isBundle && (
+            <div className="space-y-2">
+              <Label className="text-slate-700 dark:text-slate-300 font-medium text-sm">
+                Product Image <span className="text-slate-400 font-normal">(optional)</span>
+              </Label>
+              <ImageUpload
+                currentImageUrl={imageUrl}
+                itemId={item.id}
+                onUploadComplete={(url) => setImageUrl(url)}
+                onRemove={() => setImageUrl(null)}
+              />
+            </div>
+          )}
+
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="edit-name" className="text-slate-700 dark:text-slate-300 font-medium">
