@@ -40,7 +40,7 @@ export const GET = withAuth(async (request, { user }) => {
     console.log('[Analytics API] Orders fetched:', orders.length)
     
     // NEW: Transform orders to transaction format for backward compatibility
-    const transactions = transformOrdersToTransactions(orders)
+    const transactions = transformOrdersToTransactions(orders, items)
     
     console.log('[Analytics API] Transactions after transformation:', transactions.length)
     

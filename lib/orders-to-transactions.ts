@@ -9,20 +9,22 @@ import type { Transaction } from './types'
 import type { Order } from './supabase-db'
 
 /**
- * Transform orders to transaction format for analytics
- * 
- * Key transformations:
- * - Filters out CANCELLED and RETURNED orders
- * - Maps sales_channel to department
- * - Maps qty to quantity
- * - Maps cogs to totalCost
- * - Maps total to totalRevenue
- * - Calculates profit (total - cogs)
- * - Maps date to timestamp
- * - Sets type to 'sale' and transactionType to 'sale'
- * - Sets status to 'completed'
+ * Normalize product name to match inventory item names
+ * Strips quantity suffixes like "(1)", "(2)" etc.
  */
-export function transformOrdersToTransactions(orders: Order[]): Transaction[] {
+function normalizeProductName(product: string): string {
+  if (!product) return ''
+  return product
+    .replace(/\s*\(\d+\)\s*$/, '') // remove "(qty)" suffix
+    .replace(/\s*x\d+\s*$/i, '')   // remove "x2" suffix
+    .trim()
+}
+
+/**
+ * Transform orders to transaction format for analytics
+ * Uses product name matching to link orders to inventory items.
+ */
+export function transformOrdersToTransactions(orders: Order[], items?: any[]): Transaction[] {
   return orders
     .filter(order => {
       // Exclude cancelled and returned orders from analytics
@@ -30,28 +32,39 @@ export function transformOrdersToTransactions(orders: Order[]): Transaction[] {
       return !excludedStatuses.includes(order.parcel_status?.toUpperCase())
     })
     .map(order => {
-      // Calculate per-item averages
       const quantity = order.qty || 1
       const costPrice = order.cogs / quantity
       const sellingPrice = order.total / quantity
       const profit = order.total - order.cogs
 
+      // Try to match to an inventory item by product name
+      const normalizedProduct = normalizeProductName(order.product || '')
+      let matchedItemId = order.id // fallback to order ID
+      
+      if (items && items.length > 0) {
+        const matched = items.find(item => 
+          item.name && normalizeProductName(item.name).toLowerCase() === normalizedProduct.toLowerCase()
+        )
+        if (matched) {
+          matchedItemId = matched.id
+        }
+      }
+
       return {
         id: order.id,
-        itemId: order.id, // Use order ID as item ID (orders can have multiple items)
-        itemName: order.product,
+        itemId: matchedItemId,
+        itemName: normalizedProduct || order.product,
         quantity: quantity,
         costPrice: costPrice,
         sellingPrice: sellingPrice,
         totalCost: order.cogs,
         totalRevenue: order.total,
         profit: profit,
-        timestamp: order.date, // Use order date as timestamp
+        timestamp: order.date,
         type: 'sale' as const,
         transactionType: 'sale' as const,
-        department: order.sales_channel, // Map sales_channel to department
+        department: order.sales_channel,
         status: 'completed' as const,
-        // Additional fields from orders
         staffName: order.dispatched_by,
         notes: `Order ${order.id} - ${order.product}`
       }
