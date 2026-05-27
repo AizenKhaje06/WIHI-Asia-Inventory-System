@@ -78,7 +78,7 @@ export const POST = async (request: NextRequest) => {
     }
 
     const body = await request.json()
-    const { staffName, assignedChannel, password } = body
+    const { staffName, assignedChannel, password, profileImage } = body
 
     // Validate required fields
     if (!staffName || typeof staffName !== 'string' || staffName.trim().length === 0) {
@@ -124,7 +124,8 @@ export const POST = async (request: NextRequest) => {
         role: 'team_leader',
         assigned_channel: assignedChannel,
         email: null,
-        phone: null
+        phone: null,
+        profile_image: profileImage || null
       })
       .select()
       .single()

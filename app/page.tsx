@@ -223,10 +223,16 @@ export default function EnterpriseLoginPage() {
             localStorage.setItem("userRole", actualRole)
             localStorage.setItem("displayName", data.account.displayName)
             
+            // Store profile image if available
+            if (data.account.profileImage) {
+              localStorage.setItem("profileImage", data.account.profileImage)
+            }
+            
             localStorage.setItem("currentUser", JSON.stringify({
               username: data.account.username,
               role: actualRole,
-              displayName: data.account.displayName
+              displayName: data.account.displayName,
+              profileImage: data.account.profileImage || null
             }))
 
             if (formData.rememberDevice) {
@@ -304,6 +310,11 @@ export default function EnterpriseLoginPage() {
           localStorage.setItem("displayName", authData.department.display_name)
           localStorage.setItem("assignedChannel", assignedChannel || '') // Store even if null/undefined
           
+          // Store profile image if available
+          if (authData.department.profileImage) {
+            localStorage.setItem("profileImage", authData.department.profileImage)
+          }
+          
           console.log('[Operations Login] Saved assignedChannel:', localStorage.getItem('assignedChannel'))
           
           localStorage.setItem("currentUser", JSON.stringify({
@@ -311,6 +322,7 @@ export default function EnterpriseLoginPage() {
             role: "operations",
             displayName: authData.department.display_name,
             assignedChannel: assignedChannel,
+            profileImage: authData.department.profile_image || null,
             email: '',
             phone: ''
           }))
@@ -340,10 +352,16 @@ export default function EnterpriseLoginPage() {
           localStorage.setItem("userRole", "admin")
           localStorage.setItem("displayName", data.account.displayName)
           
+          // Store profile image if available
+          if (data.account.profileImage) {
+            localStorage.setItem("profileImage", data.account.profileImage)
+          }
+          
           localStorage.setItem("currentUser", JSON.stringify({
             username: data.account.username,
             role: "admin",
             displayName: data.account.displayName,
+            profileImage: data.account.profileImage || null,
             email: data.account.email || '',
             phone: data.account.phone || ''
           }))

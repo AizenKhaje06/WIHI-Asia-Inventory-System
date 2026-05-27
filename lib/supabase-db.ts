@@ -589,6 +589,7 @@ export async function getAccounts(): Promise<Account[]> {
     email: row.email,
     phone: row.phone,
     assignedChannel: row.assigned_channel,
+    profileImage: row.profile_image || null,
     createdAt: row.created_at,
   }))
 }
@@ -628,6 +629,7 @@ export async function getAccountByUsername(username: string): Promise<Account | 
       email: data.email,
       phone: data.phone,
       assignedChannel: data.assigned_channel,
+      profileImage: data.profile_image || null,
       createdAt: data.created_at,
     }
   } catch (error: any) {
@@ -664,7 +666,7 @@ export async function validateCredentials(username: string, password: string): P
   }
 }
 
-export async function updateAccount(username: string, updates: { password?: string; displayName?: string; email?: string; phone?: string; assignedChannel?: string }): Promise<void> {
+export async function updateAccount(username: string, updates: { password?: string; displayName?: string; email?: string; phone?: string; assignedChannel?: string; profileImage?: string }): Promise<void> {
   const updateData: any = {}
   
   // Hash password if being updated
@@ -677,6 +679,13 @@ export async function updateAccount(username: string, updates: { password?: stri
   if (updates.email !== undefined) updateData.email = updates.email
   if (updates.phone !== undefined) updateData.phone = updates.phone
   if (updates.assignedChannel !== undefined) updateData.assigned_channel = updates.assignedChannel || null
+  if (updates.profileImage !== undefined) updateData.profile_image = updates.profileImage || null
+
+  console.log('[updateAccount] Updating user:', {
+    username,
+    updateData,
+    hasProfileImage: !!updates.profileImage
+  })
 
   const { error } = await supabaseAdmin
     .from('users')
@@ -687,6 +696,8 @@ export async function updateAccount(username: string, updates: { password?: stri
     console.error('Error updating account:', error)
     throw new Error(`Failed to update account: ${error.message}`)
   }
+  
+  console.log('[updateAccount] Update successful for:', username)
 }
 
 export async function updateUsername(oldUsername: string, newUsername: string): Promise<void> {

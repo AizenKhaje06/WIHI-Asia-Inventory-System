@@ -26,6 +26,7 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
   const [username, setUsername] = useState("Admin User")
   const [userRole, setUserRole] = useState("Administrator")
   const [currentUser, setCurrentUser] = useState<ReturnType<typeof getCurrentUser>>(null)
+  const [profileImage, setProfileImage] = useState<string | null>(null)
   const reducedMotion = useReducedMotion()
   const [currentTime, setCurrentTime] = useState('')
   const [currentDate, setCurrentDate] = useState('')
@@ -37,24 +38,66 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
 
   // Get user info from localStorage
   React.useEffect(() => {
-    setCurrentUser(getCurrentUser())
-    
-    if (typeof window !== 'undefined') {
-      try {
-        const storedUsername = localStorage.getItem("username")
-        const storedRole = localStorage.getItem("userRole")
-        const displayName = localStorage.getItem("displayName")
-        const assignedChannel = localStorage.getItem("assignedChannel")
-        
-        if (storedUsername) {
-          setUsername(displayName || storedUsername)
+    const loadUserData = () => {
+      setCurrentUser(getCurrentUser())
+      
+      if (typeof window !== 'undefined') {
+        try {
+          const storedUsername = localStorage.getItem("username")
+          const storedRole = localStorage.getItem("userRole")
+          const displayName = localStorage.getItem("displayName")
+          const assignedChannel = localStorage.getItem("assignedChannel")
+          const storedProfileImage = localStorage.getItem("profileImage")
+          
+          console.log('[Header] Loading user data from localStorage:', {
+            storedUsername,
+            displayName,
+            storedProfileImage,
+            hasImage: !!storedProfileImage
+          })
+          
+          if (storedUsername) {
+            setUsername(displayName || storedUsername)
+          }
+          if (storedRole) {
+            setUserRole(storedRole === "admin" ? "Administrator" : storedRole === "operations" ? assignedChannel || "Staff" : "Staff")
+          }
+          if (storedProfileImage && storedProfileImage !== 'null' && storedProfileImage !== 'undefined') {
+            console.log('[Header] Setting profile image:', storedProfileImage)
+            setProfileImage(storedProfileImage)
+          } else {
+            console.log('[Header] No valid profile image, using fallback')
+            setProfileImage(null)
+          }
+        } catch (error) {
+          console.error('Error reading from localStorage:', error)
         }
-        if (storedRole) {
-          setUserRole(storedRole === "admin" ? "Administrator" : storedRole === "operations" ? assignedChannel || "Staff" : "Staff")
-        }
-      } catch (error) {
-        console.error('Error reading from localStorage:', error)
       }
+    }
+
+    // Load on mount
+    loadUserData()
+
+    // Listen for storage events (from other tabs/windows)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'displayName' || e.key === 'profileImage' || e.key === 'currentUser') {
+        console.log('[Header] Storage event detected:', e.key, e.newValue)
+        loadUserData()
+      }
+    }
+
+    // Listen for custom event (from same tab)
+    const handleProfileUpdate = () => {
+      console.log('[Header] Profile update event detected')
+      loadUserData()
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('profileUpdated', handleProfileUpdate)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('profileUpdated', handleProfileUpdate)
     }
   }, [])
 
@@ -170,27 +213,65 @@ export function PremiumNavbar({ sidebarCollapsed, onMenuClick, onMobileMenuToggl
               className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
             />
             
-            <button 
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  try {
-                    localStorage.removeItem("isLoggedIn")
-                    localStorage.removeItem("username")
-                    localStorage.removeItem("userRole")
-                    localStorage.removeItem("displayName")
-                    localStorage.removeItem("assignedChannel")
-                    localStorage.removeItem("currentUser")
-                  } catch (error) {
-                    console.error('Error clearing localStorage:', error)
-                  }
-                }
-                window.location.href = "/"
-              }}
-              className="h-6 w-6 sm:h-7 sm:w-7 p-0 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              aria-label="Logout"
-            >
-              <LogOut className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-            </button>
+            {/* Profile Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button 
+                  className="h-7 w-7 sm:h-8 sm:w-8 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600"
+                  aria-label="User menu"
+                >
+                  {profileImage ? (
+                    <img 
+                      src={`/api/image-proxy?url=${encodeURIComponent(profileImage)}`}
+                      alt={username}
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        console.error('[Header] Image load error:', profileImage)
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  ) : (
+                    <User className="h-4 w-4 text-white" strokeWidth={2} />
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span className="font-semibold">{username}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">{userRole}</span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => window.location.href = '/dashboard/settings'}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600 dark:text-red-400"
+                  onSelect={() => {
+                    if (typeof window !== 'undefined') {
+                      try {
+                        localStorage.removeItem("isLoggedIn")
+                        localStorage.removeItem("username")
+                        localStorage.removeItem("userRole")
+                        localStorage.removeItem("displayName")
+                        localStorage.removeItem("assignedChannel")
+                        localStorage.removeItem("currentUser")
+                        localStorage.removeItem("profileImage")
+                      } catch (error) {
+                        console.error('Error clearing localStorage:', error)
+                      }
+                    }
+                    window.location.href = "/"
+                  }}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

@@ -31,7 +31,7 @@ export const POST = async (request: NextRequest) => {
     // Query users table for team leader with assigned channel
     const { data: user, error: queryError } = await supabaseAdmin
       .from('users')
-      .select('id, username, display_name, email, role, assigned_channel, password')
+      .select('id, username, display_name, email, role, assigned_channel, password, profile_image')
       .eq('assigned_channel', channel)
       .eq('role', 'team_leader')
       .single()
@@ -70,6 +70,7 @@ export const POST = async (request: NextRequest) => {
       email: user.email,
       role: user.role,
       assignedChannel: user.assigned_channel,
+      profileImage: user.profile_image || null,
       timestamp: Date.now()
     }
 
@@ -82,7 +83,8 @@ export const POST = async (request: NextRequest) => {
         displayName: user.display_name,
         email: user.email,
         role: user.role,
-        assignedChannel: user.assigned_channel
+        assignedChannel: user.assigned_channel,
+        profileImage: user.profile_image || null
       },
       sessionData: sessionData
     }, { status: 200 })

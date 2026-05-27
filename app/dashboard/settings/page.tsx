@@ -50,6 +50,7 @@ import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api-client"
 import { getCurrentUser } from "@/lib/auth"
 import { BrandLoader } from "@/components/ui/brand-loader"
 import { EmailReportsManager } from "@/components/email-reports-manager"
+import { ImageUpload } from "@/components/ui/image-upload"
 
 interface Account {
   id: string
@@ -58,6 +59,7 @@ interface Account {
   role: 'admin' | 'operations' | 'packer' | 'tracker' | 'logistics-admin'
   assignedChannel?: string // Legacy field, no longer used
   displayName: string
+  profileImage?: string // Profile image URL
   createdAt: string
 }
 
@@ -95,7 +97,8 @@ export default function SettingsPage() {
     displayName: '',
     username: '',
     email: '',
-    phone: ''
+    phone: '',
+    profileImage: ''
   })
 
   // New user form
@@ -104,7 +107,8 @@ export default function SettingsPage() {
     password: '',
     displayName: '',
     role: 'operations' as 'admin' | 'operations' | 'packer' | 'tracker' | 'logistics-admin',
-    assignedChannel: '' // Legacy field, no longer used
+    assignedChannel: '', // Legacy field, no longer used
+    profileImage: '' // Profile image URL
   })
 
   // Edit user form
@@ -116,7 +120,8 @@ export default function SettingsPage() {
     role: 'operations' as 'admin' | 'operations' | 'packer' | 'tracker' | 'logistics-admin',
     assignedChannel: '', // Legacy field, no longer used
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    profileImage: '' // Profile image URL
   })
 
   // System settings
@@ -169,7 +174,8 @@ export default function SettingsPage() {
             displayName: profile.displayName || '',
             username: profile.username || '',
             email: profile.email || '',
-            phone: profile.phone || ''
+            phone: profile.phone || '',
+            profileImage: profile.profileImage || ''
           })
           
           // Update localStorage with fresh data
@@ -189,7 +195,8 @@ export default function SettingsPage() {
           displayName: user.displayName || '',
           username: user.username || '',
           email: user.email || '',
-          phone: user.phone || ''
+          phone: user.phone || '',
+          profileImage: user.profileImage || ''
         })
       }
     }
@@ -222,16 +229,16 @@ export default function SettingsPage() {
     try {
       // Measure API response time
       const startTime = performance.now()
-      await apiGet<Account[]>('/api/accounts')
+      await apiGet<Account[]>('/api/accounts').catch(() => [])
       const endTime = performance.now()
       const responseTime = Math.round(endTime - startTime)
 
-      // Get data counts for storage estimation
+      // Get data counts for storage estimation (with silent error handling)
       const [items, categories, customers, logs] = await Promise.all([
-        apiGet<any[]>('/api/items').catch(() => []),
-        apiGet<any[]>('/api/categories').catch(() => []),
-        apiGet<any[]>('/api/customers').catch(() => []),
-        apiGet<any[]>('/api/logs').catch(() => [])
+        apiGet<any[]>('/api/items').catch((err) => { console.warn('Items API unavailable'); return [] }),
+        apiGet<any[]>('/api/categories').catch((err) => { console.warn('Categories API unavailable'); return [] }),
+        apiGet<any[]>('/api/customers').catch((err) => { console.warn('Customers API unavailable'); return [] }),
+        apiGet<any[]>('/api/logs').catch((err) => { console.warn('Logs API unavailable'); return [] })
       ])
 
       // Calculate approximate storage (rough estimate)
@@ -265,6 +272,8 @@ export default function SettingsPage() {
     try {
       setLoading(true)
       const data = await apiGet<Account[]>('/api/accounts')
+      console.log('[Settings] Fetched accounts:', data)
+      console.log('[Settings] First account profileImage:', data[0]?.profileImage)
       setAccounts(data)
     } catch (error) {
       console.error('Error fetching accounts:', error)
@@ -328,13 +337,14 @@ export default function SettingsPage() {
         })
       }
 
-      // Update profile (display name, email, phone)
+      // Update profile (display name, email, phone, profileImage)
       await apiPut('/api/accounts', {
         action: 'updateProfile',
         username: usernameChanged ? profileForm.username : currentUser.username,
         displayName: profileForm.displayName,
         email: profileForm.email,
-        phone: profileForm.phone
+        phone: profileForm.phone,
+        profileImage: profileForm.profileImage
       })
 
       const updatedUser = { 
@@ -342,10 +352,29 @@ export default function SettingsPage() {
         username: profileForm.username,
         displayName: profileForm.displayName,
         email: profileForm.email,
-        phone: profileForm.phone
+        phone: profileForm.phone,
+        profileImage: profileForm.profileImage
       }
+      
+      console.log('[Settings] Updating localStorage with:', {
+        displayName: profileForm.displayName,
+        profileImage: profileForm.profileImage
+      })
+      
       localStorage.setItem('currentUser', JSON.stringify(updatedUser))
+      // Also update individual localStorage items for header
+      localStorage.setItem('displayName', profileForm.displayName)
+      if (profileForm.profileImage) {
+        localStorage.setItem('profileImage', profileForm.profileImage)
+      } else {
+        localStorage.removeItem('profileImage')
+      }
       setCurrentUser(updatedUser)
+
+      // Dispatch custom event to notify header component
+      window.dispatchEvent(new Event('profileUpdated'))
+      
+      console.log('[Settings] Dispatched profileUpdated event')
 
       if (usernameChanged) {
         toast.success('Profile and username updated successfully! Please login again with your new username.')
@@ -356,6 +385,10 @@ export default function SettingsPage() {
         }, 2000)
       } else {
         toast.success('Profile updated successfully')
+        // Reload page to refresh header
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
       }
     } catch (error) {
       toast.error('Failed to update profile')
@@ -385,7 +418,7 @@ export default function SettingsPage() {
         ...newUserForm
       })
       toast.success('User created successfully')
-      setNewUserForm({ username: '', password: '', displayName: '', role: 'operations', assignedChannel: '' })
+      setNewUserForm({ username: '', password: '', displayName: '', role: 'operations', assignedChannel: '', profileImage: '' })
       setShowNewUserForm(false)
       fetchAccounts()
     } catch (error: any) {
@@ -402,7 +435,8 @@ export default function SettingsPage() {
       role: account.role,
       assignedChannel: account.assignedChannel || '',
       newPassword: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      profileImage: account.profileImage || ''
     })
     setEditingUser(account.id)
   }
@@ -443,12 +477,13 @@ export default function SettingsPage() {
         })
       }
 
-      // Update display name and assigned channel (use new username if changed)
+      // Update display name, assigned channel, and profile image (use new username if changed)
       await apiPut('/api/accounts', {
         action: 'updateDisplayName',
         username: editUserForm.username,
         displayName: editUserForm.displayName,
-        assignedChannel: editUserForm.assignedChannel || null
+        assignedChannel: editUserForm.assignedChannel || null,
+        profileImage: editUserForm.profileImage || null
       })
 
       // Update password if provided
@@ -487,7 +522,8 @@ export default function SettingsPage() {
       role: 'operations',
       assignedChannel: '',
       newPassword: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      profileImage: ''
     })
   }
 
@@ -873,6 +909,19 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Profile Image (Optional)</Label>
+                  <ImageUpload
+                    uploadType="profile"
+                    value={profileForm.profileImage}
+                    onChange={(url) => setProfileForm({ ...profileForm, profileImage: url })}
+                    onRemove={() => setProfileForm({ ...profileForm, profileImage: '' })}
+                  />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Upload a profile picture (max 300KB, auto-compressed to WebP)
+                  </p>
+                </div>
+
                 <Separator className="my-6" />
 
                 <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
@@ -901,7 +950,8 @@ export default function SettingsPage() {
                         displayName: currentUser.displayName || '',
                         username: currentUser.username || '',
                         email: currentUser.email || '',
-                        phone: currentUser.phone || ''
+                        phone: currentUser.phone || '',
+                        profileImage: currentUser.profileImage || ''
                       })
                     }} 
                     className="h-10 px-5 border-slate-300 dark:border-slate-600"
@@ -1214,6 +1264,20 @@ export default function SettingsPage() {
                         </div>
                       </div>
 
+                      {/* Profile Image Upload */}
+                      <div className="space-y-2">
+                        <Label className="text-xs font-medium">Profile Image (Optional)</Label>
+                        <ImageUpload
+                          uploadType="profile"
+                          value={newUserForm.profileImage}
+                          onChange={(url) => setNewUserForm({ ...newUserForm, profileImage: url })}
+                          onRemove={() => setNewUserForm({ ...newUserForm, profileImage: '' })}
+                        />
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Upload a profile picture (max 300KB, auto-compressed to WebP)
+                        </p>
+                      </div>
+
                       <div className="flex gap-2 pt-2">
                         <Button 
                           onClick={handleCreateUser} 
@@ -1226,7 +1290,7 @@ export default function SettingsPage() {
                           variant="outline" 
                           onClick={() => {
                             setShowNewUserForm(false)
-                            setNewUserForm({ username: '', password: '', displayName: '', role: 'operations', assignedChannel: '' })
+                            setNewUserForm({ username: '', password: '', displayName: '', role: 'operations', assignedChannel: '', profileImage: '' })
                           }}
                           className="h-9 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                         >
@@ -1275,6 +1339,15 @@ export default function SettingsPage() {
                                       <Input value={editUserForm.displayName} onChange={(e) => setEditUserForm({ ...editUserForm, displayName: e.target.value })} placeholder="Display name" className="h-8 text-xs" />
                                     </div>
                                     <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Profile Image (Optional)</Label>
+                                      <ImageUpload
+                                        uploadType="profile"
+                                        value={editUserForm.profileImage}
+                                        onChange={(url) => setEditUserForm({ ...editUserForm, profileImage: url })}
+                                        onRemove={() => setEditUserForm({ ...editUserForm, profileImage: '' })}
+                                      />
+                                    </div>
+                                    <div>
                                       <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">New Password (optional)</Label>
                                       <Input type={showPassword.editNew ? "text" : "password"} value={editUserForm.newPassword} onChange={(e) => setEditUserForm({ ...editUserForm, newPassword: e.target.value })} placeholder="New password (optional)" className="h-8 text-xs" />
                                     </div>
@@ -1290,14 +1363,30 @@ export default function SettingsPage() {
                                 </div>
                               ) : (
                                 <div className="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-1.5">
-                                      <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{account.displayName}</p>
-                                      {account.username === currentUser?.username && (
-                                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium flex-shrink-0">(You)</span>
+                                  <div className="min-w-0 flex-1 flex items-center gap-2">
+                                    {/* Profile Image */}
+                                    <div className="flex-shrink-0">
+                                      {account.profileImage ? (
+                                        <img 
+                                          src={account.profileImage} 
+                                          alt={account.displayName}
+                                          className="h-8 w-8 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700"
+                                        />
+                                      ) : (
+                                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                                          <User className="h-4 w-4 text-white" />
+                                        </div>
                                       )}
                                     </div>
-                                    <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-1.5">
+                                        <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{account.displayName}</p>
+                                        {account.username === currentUser?.username && (
+                                          <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium flex-shrink-0">(You)</span>
+                                        )}
+                                      </div>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
+                                    </div>
                                   </div>
                                   {account.username !== currentUser?.username && (
                                     <div className="flex gap-1 flex-shrink-0">
@@ -1351,6 +1440,15 @@ export default function SettingsPage() {
                                       <Input value={editUserForm.displayName} onChange={(e) => setEditUserForm({ ...editUserForm, displayName: e.target.value })} placeholder="Display name" className="h-8 text-xs" />
                                     </div>
                                     <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Profile Image (Optional)</Label>
+                                      <ImageUpload
+                                        uploadType="profile"
+                                        value={editUserForm.profileImage}
+                                        onChange={(url) => setEditUserForm({ ...editUserForm, profileImage: url })}
+                                        onRemove={() => setEditUserForm({ ...editUserForm, profileImage: '' })}
+                                      />
+                                    </div>
+                                    <div>
                                       <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">New Password (optional)</Label>
                                       <Input type={showPassword.editNew ? "text" : "password"} value={editUserForm.newPassword} onChange={(e) => setEditUserForm({ ...editUserForm, newPassword: e.target.value })} placeholder="New password (optional)" className="h-8 text-xs" />
                                     </div>
@@ -1366,16 +1464,32 @@ export default function SettingsPage() {
                                 </div>
                               ) : (
                                 <div className="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{account.displayName}</p>
-                                      {account.assignedChannel && (
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 flex-shrink-0">
-                                          {account.assignedChannel}
-                                        </Badge>
+                                  <div className="min-w-0 flex-1 flex items-center gap-2">
+                                    {/* Profile Image */}
+                                    <div className="flex-shrink-0">
+                                      {account.profileImage ? (
+                                        <img 
+                                          src={account.profileImage} 
+                                          alt={account.displayName}
+                                          className="h-8 w-8 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700"
+                                        />
+                                      ) : (
+                                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                                          <User className="h-4 w-4 text-white" />
+                                        </div>
                                       )}
                                     </div>
-                                    <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{account.displayName}</p>
+                                        {account.assignedChannel && (
+                                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 flex-shrink-0">
+                                            {account.assignedChannel}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
+                                    </div>
                                   </div>
                                   {account.username !== currentUser?.username && (
                                     <div className="flex gap-1 flex-shrink-0">
@@ -1429,6 +1543,15 @@ export default function SettingsPage() {
                                       <Input value={editUserForm.displayName} onChange={(e) => setEditUserForm({ ...editUserForm, displayName: e.target.value })} placeholder="Display name" className="h-8 text-xs" />
                                     </div>
                                     <div>
+                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Profile Image (Optional)</Label>
+                                      <ImageUpload
+                                        uploadType="profile"
+                                        value={editUserForm.profileImage}
+                                        onChange={(url) => setEditUserForm({ ...editUserForm, profileImage: url })}
+                                        onRemove={() => setEditUserForm({ ...editUserForm, profileImage: '' })}
+                                      />
+                                    </div>
+                                    <div>
                                       <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">New Password (optional)</Label>
                                       <Input type={showPassword.editNew ? "text" : "password"} value={editUserForm.newPassword} onChange={(e) => setEditUserForm({ ...editUserForm, newPassword: e.target.value })} placeholder="New password (optional)" className="h-8 text-xs" />
                                     </div>
@@ -1444,16 +1567,32 @@ export default function SettingsPage() {
                                 </div>
                               ) : (
                                 <div className="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{account.displayName}</p>
-                                      {account.assignedChannel && (
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-400 flex-shrink-0">
-                                          {account.assignedChannel}
-                                        </Badge>
+                                  <div className="min-w-0 flex-1 flex items-center gap-2">
+                                    {/* Profile Image */}
+                                    <div className="flex-shrink-0">
+                                      {account.profileImage ? (
+                                        <img 
+                                          src={account.profileImage} 
+                                          alt={account.displayName}
+                                          className="h-8 w-8 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700"
+                                        />
+                                      ) : (
+                                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                                          <User className="h-4 w-4 text-white" />
+                                        </div>
                                       )}
                                     </div>
-                                    <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{account.displayName}</p>
+                                        {account.assignedChannel && (
+                                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-400 flex-shrink-0">
+                                            {account.assignedChannel}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
+                                    </div>
                                   </div>
                                   {account.username !== currentUser?.username && (
                                     <div className="flex gap-1 flex-shrink-0">

@@ -8,25 +8,37 @@ import { cn } from "@/lib/utils"
 
 interface ImageUploadProps {
   currentImageUrl?: string | null
+  value?: string | null  // Alternative to currentImageUrl
   itemId?: string
-  onUploadComplete: (url: string) => void
+  onUploadComplete?: (url: string) => void
+  onChange?: (url: string) => void  // Alternative to onUploadComplete
   onRemove?: () => void
   className?: string
   disabled?: boolean
+  uploadType?: 'product' | 'profile'  // NEW: Specify upload type
 }
 
 export function ImageUpload({
   currentImageUrl,
+  value,
   itemId,
   onUploadComplete,
+  onChange,
   onRemove,
   className,
   disabled = false,
+  uploadType = 'product',  // Default to product for backward compatibility
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
-  const [preview, setPreview] = useState<string | null>(currentImageUrl || null)
+  const [preview, setPreview] = useState<string | null>(value || currentImageUrl || null)
   const [dragOver, setDragOver] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Support both onUploadComplete and onChange
+  const handleUploadSuccess = useCallback((url: string) => {
+    if (onUploadComplete) onUploadComplete(url)
+    if (onChange) onChange(url)
+  }, [onUploadComplete, onChange])
 
   const processAndUpload = useCallback(async (file: File) => {
     // Validate type
@@ -51,12 +63,14 @@ export function ImageUpload({
       const previewUrl = URL.createObjectURL(compressed)
       setPreview(previewUrl)
 
-      // Upload to API
+      // Upload to API (use different endpoint based on uploadType)
+      const uploadEndpoint = uploadType === 'profile' ? '/api/upload-profile' : '/api/upload'
+      
       const formData = new FormData()
-      formData.append("file", compressed, `product.webp`)
+      formData.append("file", compressed, `${uploadType}.webp`)
       if (itemId) formData.append("itemId", itemId)
 
-      const response = await fetch("/api/upload", {
+      const response = await fetch(uploadEndpoint, {
         method: "POST",
         headers: {
           "x-user-username": localStorage.getItem("username") || "",
@@ -71,16 +85,16 @@ export function ImageUpload({
         throw new Error(data.error || "Upload failed")
       }
 
-      onUploadComplete(data.url)
+      handleUploadSuccess(data.url)
       toast.success("Image uploaded successfully")
     } catch (error: any) {
       console.error("[ImageUpload] Error:", error)
       toast.error(error.message || "Failed to upload image")
-      setPreview(currentImageUrl || null)
+      setPreview(value || currentImageUrl || null)
     } finally {
       setUploading(false)
     }
-  }, [itemId, currentImageUrl, onUploadComplete])
+  }, [itemId, value, currentImageUrl, handleUploadSuccess])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

@@ -40,7 +40,8 @@ export async function POST(request: Request) {
             id: exactUser.id,
             name: exactUser.username,
             display_name: exactUser.display_name,
-            assigned_channel: exactUser.assigned_channel
+            assigned_channel: exactUser.assigned_channel,
+            profileImage: exactUser.profile_image || null
           }
         })
       }
@@ -101,7 +102,8 @@ export async function POST(request: Request) {
         id: matchingAgent.id,
         name: matchingAgent.username,
         display_name: matchingAgent.display_name,
-        assigned_channel: matchingAgent.assigned_channel
+        assigned_channel: matchingAgent.assigned_channel,
+        profileImage: matchingAgent.profile_image || null
       }
     })
 

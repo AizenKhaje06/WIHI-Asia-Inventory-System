@@ -14,6 +14,7 @@ export const GET = withAdmin(async (request, { user }) => {
       role: acc.role,
       displayName: acc.displayName,
       assignedChannel: acc.assignedChannel,
+      profileImage: acc.profileImage,
       createdAt: acc.createdAt
     }))
     
@@ -49,6 +50,7 @@ export async function POST(request: NextRequest) {
               username: account.username,
               role: account.role,
               displayName: account.displayName,
+              profileImage: account.profileImage || null,
               email: account.email || '',
               phone: account.phone || ''
             }
@@ -124,14 +126,24 @@ export async function PUT(request: NextRequest) {
       if (body.assignedChannel !== undefined) {
         updates.assignedChannel = body.assignedChannel
       }
+      if (body.profileImage !== undefined) {
+        updates.profileImage = body.profileImage
+      }
       await updateAccount(targetUsername, updates)
       return NextResponse.json({ success: true, message: "Display name updated successfully" })
     } else if (action === 'updateProfile') {
-      // Update display name, email, phone, and optionally username
+      // Update display name, email, phone, profileImage, and optionally username
       const updates: any = {}
       if (displayName !== undefined) updates.displayName = displayName
       if (email !== undefined) updates.email = email
       if (phone !== undefined) updates.phone = phone
+      if (body.profileImage !== undefined) updates.profileImage = body.profileImage
+      
+      console.log('[Accounts API] updateProfile called:', {
+        targetUsername,
+        updates,
+        hasProfileImage: !!body.profileImage
+      })
       
       await updateAccount(targetUsername, updates)
       return NextResponse.json({ success: true, message: "Profile updated successfully" })
