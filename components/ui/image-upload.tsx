@@ -5,6 +5,7 @@ import imageCompression from "browser-image-compression"
 import { ImageIcon, Upload, X, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { ImageCropper } from "@/components/ui/image-cropper"
 
 interface ImageUploadProps {
   currentImageUrl?: string | null
@@ -32,6 +33,8 @@ export function ImageUpload({
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(value || currentImageUrl || null)
   const [dragOver, setDragOver] = useState(false)
+  const [showCropper, setShowCropper] = useState(false)
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Support both onUploadComplete and onChange
@@ -40,12 +43,14 @@ export function ImageUpload({
     if (onChange) onChange(url)
   }, [onUploadComplete, onChange])
 
-  const processAndUpload = useCallback(async (file: File) => {
-    // Validate type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
-    if (!allowedTypes.includes(file.type)) {
-      toast.error("Invalid file type. Only JPG, PNG, WebP allowed.")
-      return
+  const processAndUpload = useCallback(async (file: File | Blob) => {
+    // Validate type (skip for Blob from cropper)
+    if (file instanceof File) {
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Invalid file type. Only JPG, PNG, WebP allowed.")
+        return
+      }
     }
 
     try {
@@ -94,11 +99,37 @@ export function ImageUpload({
     } finally {
       setUploading(false)
     }
-  }, [itemId, value, currentImageUrl, handleUploadSuccess])
+  }, [itemId, value, currentImageUrl, handleUploadSuccess, uploadType])
+
+  const handleFileSelect = (file: File) => {
+    // For profile images, show cropper
+    if (uploadType === 'profile') {
+      const reader = new FileReader()
+      reader.onload = () => {
+        setImageToCrop(reader.result as string)
+        setShowCropper(true)
+      }
+      reader.readAsDataURL(file)
+    } else {
+      // For product images, upload directly
+      processAndUpload(file)
+    }
+  }
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    setShowCropper(false)
+    setImageToCrop(null)
+    await processAndUpload(croppedBlob)
+  }
+
+  const handleCropCancel = () => {
+    setShowCropper(false)
+    setImageToCrop(null)
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) processAndUpload(file)
+    if (file) handleFileSelect(file)
     // Reset input so same file can be re-selected
     e.target.value = ""
   }
@@ -107,7 +138,7 @@ export function ImageUpload({
     e.preventDefault()
     setDragOver(false)
     const file = e.dataTransfer.files?.[0]
-    if (file) processAndUpload(file)
+    if (file) handleFileSelect(file)
   }
 
   const handleRemove = (e: React.MouseEvent) => {
@@ -117,15 +148,27 @@ export function ImageUpload({
   }
 
   return (
-    <div className={cn("relative", className)}>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/jpeg,image/jpg,image/png,image/webp"
-        onChange={handleFileChange}
-        className="hidden"
-        disabled={disabled || uploading}
-      />
+    <>
+      {/* Image Cropper Dialog */}
+      {showCropper && imageToCrop && (
+        <ImageCropper
+          image={imageToCrop}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          aspectRatio={1}
+          cropShape="round"
+        />
+      )}
+
+      <div className={cn("relative", className)}>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/jpg,image/png,image/webp"
+          onChange={handleFileChange}
+          className="hidden"
+          disabled={disabled || uploading}
+        />
 
       <div
         onClick={() => !disabled && !uploading && inputRef.current?.click()}
@@ -206,5 +249,6 @@ export function ImageUpload({
         )}
       </div>
     </div>
+    </>
   )
 }
