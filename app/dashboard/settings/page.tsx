@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { 
   Settings, 
   User, 
@@ -142,6 +143,8 @@ export default function SettingsPage() {
 
   const [showNewUserForm, setShowNewUserForm] = useState(false)
   const [editingUser, setEditingUser] = useState<string | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [departmentFilter, setDepartmentFilter] = useState<string>('all')
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system')
   const [lastBackup, setLastBackup] = useState<string | null>(null)
   
@@ -438,7 +441,7 @@ export default function SettingsPage() {
       confirmPassword: '',
       profileImage: account.profileImage || ''
     })
-    setEditingUser(account.id)
+    setShowEditModal(true)
   }
 
   const handleUpdateUser = async () => {
@@ -505,7 +508,7 @@ export default function SettingsPage() {
         toast.success('User updated successfully')
       }
 
-      setEditingUser(null)
+      setShowEditModal(false)
       fetchAccounts()
     } catch (error: any) {
       toast.error(error.message || 'Failed to update user')
@@ -513,7 +516,7 @@ export default function SettingsPage() {
   }
 
   const handleCancelEdit = () => {
-    setEditingUser(null)
+    setShowEditModal(false)
     setEditUserForm({
       id: '',
       username: '',
@@ -1409,7 +1412,7 @@ export default function SettingsPage() {
                     {/* Departments (Operations) Card */}
                     <Card className="border-0 shadow-sm bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                       <CardHeader className="p-4 pb-3 border-b border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="p-1.5 rounded-lg bg-blue-600">
                               <Building2 className="h-3.5 w-3.5 text-white" />
@@ -1417,90 +1420,66 @@ export default function SettingsPage() {
                             <span className="text-sm font-semibold text-slate-900 dark:text-white">Departments</span>
                           </div>
                           <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                            {accounts.filter(a => a.role === 'operations').length} users
+                            {accounts.filter(a => a.role === 'operations' && (departmentFilter === 'all' || a.assignedChannel === departmentFilter)).length} users
                           </span>
                         </div>
+                        {/* Department Filter */}
+                        <select
+                          value={departmentFilter}
+                          onChange={(e) => setDepartmentFilter(e.target.value)}
+                          className="w-full h-8 text-xs rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1 focus:outline-none focus:ring-0 focus:border-slate-400 dark:focus:border-slate-500"
+                        >
+                          <option value="all">All Departments</option>
+                          <option value="Shopee">Shopee</option>
+                          <option value="Lazada">Lazada</option>
+                          <option value="TikTok">TikTok</option>
+                          <option value="Facebook">Facebook</option>
+                          <option value="Physical Store">Physical Store</option>
+                        </select>
                       </CardHeader>
                       <CardContent className="p-3 space-y-2">
-                        {accounts.filter(a => a.role === 'operations').length === 0 ? (
-                          <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-3">No department users</p>
+                        {accounts.filter(a => a.role === 'operations' && (departmentFilter === 'all' || a.assignedChannel === departmentFilter)).length === 0 ? (
+                          <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-3">
+                            {departmentFilter === 'all' ? 'No department users' : `No users in ${departmentFilter}`}
+                          </p>
                         ) : (
-                          accounts.filter(a => a.role === 'operations').map((account) => (
-                            <div key={account.id}>
-                              {editingUser === account.id ? (
-                                <div className="space-y-3 p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Edit Department User</p>
-                                  <div className="space-y-2">
-                                    <div>
-                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Username</Label>
-                                      <Input value={editUserForm.username} onChange={(e) => setEditUserForm({ ...editUserForm, username: e.target.value })} placeholder="Username" className="h-8 text-xs" />
-                                    </div>
-                                    <div>
-                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Display Name</Label>
-                                      <Input value={editUserForm.displayName} onChange={(e) => setEditUserForm({ ...editUserForm, displayName: e.target.value })} placeholder="Display name" className="h-8 text-xs" />
-                                    </div>
-                                    <div>
-                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Profile Image (Optional)</Label>
-                                      <ImageUpload
-                                        uploadType="profile"
-                                        value={editUserForm.profileImage}
-                                        onChange={(url) => setEditUserForm({ ...editUserForm, profileImage: url })}
-                                        onRemove={() => setEditUserForm({ ...editUserForm, profileImage: '' })}
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">New Password (optional)</Label>
-                                      <Input type={showPassword.editNew ? "text" : "password"} value={editUserForm.newPassword} onChange={(e) => setEditUserForm({ ...editUserForm, newPassword: e.target.value })} placeholder="New password (optional)" className="h-8 text-xs" />
-                                    </div>
-                                    <div>
-                                      <Label className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Confirm Password</Label>
-                                      <Input type={showPassword.editConfirm ? "text" : "password"} value={editUserForm.confirmPassword} onChange={(e) => setEditUserForm({ ...editUserForm, confirmPassword: e.target.value })} placeholder="Confirm password" className="h-8 text-xs" />
-                                    </div>
-                                  </div>
-                                  <div className="flex gap-2">
-                                    <Button onClick={handleUpdateUser} className="flex-1 h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white"><Check className="h-3 w-3 mr-1" />Save</Button>
-                                    <Button variant="outline" onClick={handleCancelEdit} className="flex-1 h-7 text-xs"><X className="h-3 w-3 mr-1" />Cancel</Button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                                  <div className="min-w-0 flex-1 flex items-center gap-2">
-                                    {/* Profile Image */}
-                                    <div className="flex-shrink-0">
-                                      {account.profileImage ? (
-                                        <img 
-                                          src={account.profileImage} 
-                                          alt={account.displayName}
-                                          className="h-8 w-8 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700"
-                                        />
-                                      ) : (
-                                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                                          <User className="h-4 w-4 text-white" />
-                                        </div>
-                                      )}
-                                    </div>
-                                    <div className="min-w-0">
-                                      <div className="flex items-center gap-1.5 flex-wrap">
-                                        <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{account.displayName}</p>
-                                        {account.assignedChannel && (
-                                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 flex-shrink-0">
-                                            {account.assignedChannel}
-                                          </Badge>
-                                        )}
-                                      </div>
-                                      <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
-                                    </div>
-                                  </div>
-                                  {account.username !== currentUser?.username && (
-                                    <div className="flex gap-1 flex-shrink-0">
-                                      <Button variant="ghost" size="sm" onClick={() => handleEditUser(account)} className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-800">
-                                        <Edit className="h-3 w-3" />
-                                      </Button>
-                                      <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(account.username)} className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
-                                        <Trash2 className="h-3 w-3" />
-                                      </Button>
+                          accounts.filter(a => a.role === 'operations' && (departmentFilter === 'all' || a.assignedChannel === departmentFilter)).map((account) => (
+                            <div key={account.id} className="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                              <div className="min-w-0 flex-1 flex items-center gap-2">
+                                {/* Profile Image */}
+                                <div className="flex-shrink-0">
+                                  {account.profileImage ? (
+                                    <img 
+                                      src={account.profileImage} 
+                                      alt={account.displayName}
+                                      className="h-8 w-8 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700"
+                                    />
+                                  ) : (
+                                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                                      <User className="h-4 w-4 text-white" />
                                     </div>
                                   )}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{account.displayName}</p>
+                                    {account.assignedChannel && (
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 flex-shrink-0">
+                                        {account.assignedChannel}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
+                                </div>
+                              </div>
+                              {account.username !== currentUser?.username && (
+                                <div className="flex gap-1 flex-shrink-0">
+                                  <Button variant="ghost" size="sm" onClick={() => handleEditUser(account)} className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(account.username)} className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
                                 </div>
                               )}
                             </div>
@@ -1615,6 +1594,97 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Edit User Modal */}
+            <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+              <DialogContent className="max-w-md p-0 gap-0 bg-white dark:bg-slate-900 border-0 shadow-2xl">
+                <DialogHeader className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 rounded-lg bg-blue-600">
+                      <Edit className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <DialogTitle className="text-lg font-bold text-slate-900 dark:text-white">
+                        Edit User Account
+                      </DialogTitle>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Update user information and credentials
+                      </p>
+                    </div>
+                  </div>
+                </DialogHeader>
+                
+                <div className="p-5 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="editUsername" className="text-sm font-medium text-slate-700 dark:text-slate-300">Username</Label>
+                    <Input
+                      id="editUsername"
+                      value={editUserForm.username}
+                      onChange={(e) => setEditUserForm({ ...editUserForm, username: e.target.value })}
+                      placeholder="Username"
+                      className="h-10"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="editDisplayName" className="text-sm font-medium text-slate-700 dark:text-slate-300">Display Name</Label>
+                    <Input
+                      id="editDisplayName"
+                      value={editUserForm.displayName}
+                      onChange={(e) => setEditUserForm({ ...editUserForm, displayName: e.target.value })}
+                      placeholder="Display name"
+                      className="h-10"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Profile Image (Optional)</Label>
+                    <ImageUpload
+                      uploadType="profile"
+                      value={editUserForm.profileImage}
+                      onChange={(url) => setEditUserForm({ ...editUserForm, profileImage: url })}
+                      onRemove={() => setEditUserForm({ ...editUserForm, profileImage: '' })}
+                    />
+                  </div>
+
+                  <Separator className="my-4" />
+
+                  <div className="space-y-2">
+                    <Label htmlFor="editNewPassword" className="text-sm font-medium text-slate-700 dark:text-slate-300">New Password (optional)</Label>
+                    <Input
+                      id="editNewPassword"
+                      type="password"
+                      value={editUserForm.newPassword}
+                      onChange={(e) => setEditUserForm({ ...editUserForm, newPassword: e.target.value })}
+                      placeholder="Leave blank to keep current password"
+                      className="h-10"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="editConfirmPassword" className="text-sm font-medium text-slate-700 dark:text-slate-300">Confirm Password</Label>
+                    <Input
+                      id="editConfirmPassword"
+                      type="password"
+                      value={editUserForm.confirmPassword}
+                      onChange={(e) => setEditUserForm({ ...editUserForm, confirmPassword: e.target.value })}
+                      placeholder="Confirm new password"
+                      className="h-10"
+                    />
+                  </div>
+                </div>
+
+                <DialogFooter className="px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                  <Button variant="outline" onClick={handleCancelEdit} className="h-10 px-5">
+                    Cancel
+                  </Button>
+                  <Button onClick={handleUpdateUser} className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white">
+                    <Check className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
         )}
 

@@ -359,7 +359,7 @@ export default function InternalUsagePage() {
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
           {/* Stats Cards - Professional Design */}
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mt-6">
             {/* Total Cost Card */}
             <Card className="p-5 border-0 shadow-lg">
               <div className="flex items-center gap-3">
@@ -497,7 +497,7 @@ export default function InternalUsagePage() {
 
         {/* Sales Channels Tab - Enterprise Design */}
         <TabsContent value="sales-channels" className="space-y-6">
-          <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+          <Card className="border-slate-200 dark:border-slate-800 shadow-sm mt-6">
             <CardHeader className="border-b border-slate-200 dark:border-slate-800">
               <div>
                 <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">Sales Channel Breakdown</CardTitle>
@@ -557,7 +557,7 @@ export default function InternalUsagePage() {
         {/* Cost Analysis Tab - Professional Design */}
         <TabsContent value="cost-analysis" className="space-y-6">
           {/* Cost Cards Grid */}
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mt-6">
             {/* Demo/Display Cost */}
             <Card className="p-5 border-0 shadow-lg">
               <div className="flex items-center gap-3">
@@ -733,61 +733,61 @@ export default function InternalUsagePage() {
 
         {/* Transaction History Tab - Professional Table Design */}
         <TabsContent value="transaction-history" className="space-y-6">
-          {/* Filters and Search - Professional Card */}
-          <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="pt-6">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <Input
-                    placeholder="Search by item, department, or staff..."
-                    value={searchTable}
-                    onChange={(e) => setSearchTable(e.target.value)}
-                    className="pl-10 h-10 focus:ring-2 focus:ring-blue-500/20"
-                  />
-                </div>
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="w-full sm:w-[200px] h-10 focus:ring-2 focus:ring-blue-500/20">
-                    <SelectValue placeholder="Filter by type" />
+          {/* Filters and Search */}
+          <div className="flex items-center gap-3 mt-6">
+            {/* Search Input - Half Width */}
+            <div className="relative w-1/2">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                placeholder="Search by item, department, or staff..."
+                value={searchTable}
+                onChange={(e) => setSearchTable(e.target.value)}
+                className="pl-10 h-10 focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+            
+            {/* Filters - Right Side */}
+            <div className="flex items-center gap-3 ml-auto">
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-[200px] h-10 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500/20">
+                  <SelectValue placeholder="Filter by type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="demo">Demo/Display</SelectItem>
+                  <SelectItem value="internal">Internal Use</SelectItem>
+                </SelectContent>
+              </Select>
+              {getCurrentUser()?.role === 'admin' && (
+                <Select value={filterSalesChannel} onValueChange={setFilterSalesChannel}>
+                  <SelectTrigger className="w-[200px] h-10 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500/20">
+                    <SelectValue placeholder="Sales Channel" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="demo">Demo/Display</SelectItem>
-                    <SelectItem value="internal">Internal Use</SelectItem>
+                    <SelectItem value="all">All Channels</SelectItem>
+                    <SelectItem value="Shopee">Shopee</SelectItem>
+                    <SelectItem value="Lazada">Lazada</SelectItem>
+                    <SelectItem value="Facebook">Facebook</SelectItem>
+                    <SelectItem value="TikTok">TikTok</SelectItem>
+                    <SelectItem value="Physical Store">Physical Store</SelectItem>
                   </SelectContent>
                 </Select>
-                {getCurrentUser()?.role === 'admin' && (
-                  <Select value={filterSalesChannel} onValueChange={setFilterSalesChannel}>
-                    <SelectTrigger className="w-full sm:w-[200px] h-10 focus:ring-2 focus:ring-blue-500/20">
-                      <SelectValue placeholder="Sales Channel" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Channels</SelectItem>
-                      <SelectItem value="Shopee">Shopee</SelectItem>
-                      <SelectItem value="Lazada">Lazada</SelectItem>
-                      <SelectItem value="Facebook">Facebook</SelectItem>
-                      <SelectItem value="TikTok">TikTok</SelectItem>
-                      <SelectItem value="Physical Store">Physical Store</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              )}
+            </div>
+          </div>
 
-          {/* Transactions Table - Professional Design */}
-          <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-0">
-              {loading ? (
-                <div className="py-16">
-                  <div className="flex flex-col items-center justify-center gap-4">
-                    <BrandLoader size="lg" />
-                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Loading transaction history...</p>
-                  </div>
+          {/* Transactions Table */}
+          <div className="overflow-hidden">
+            {loading ? (
+              <div className="py-16">
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <BrandLoader size="lg" />
+                  <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Loading transaction history...</p>
                 </div>
-              ) : (
-                <div className="overflow-x-hidden border border-slate-200 dark:border-slate-700 rounded-lg">
-                  <Table>
+              </div>
+            ) : (
+              <div className="overflow-x-hidden border border-slate-200 dark:border-slate-700 rounded-lg">
+                <Table>
                     <TableHeader>
                       <TableRow className="bg-black dark:bg-black border-b border-slate-700 hover:bg-black">
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[130px]">Date</TableHead>
@@ -939,8 +939,7 @@ export default function InternalUsagePage() {
                   </p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

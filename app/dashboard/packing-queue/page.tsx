@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Search, Package, RefreshCw, CheckCircle, ShoppingCart, TrendingUp, Eye, User, Phone, MapPin, Clock, Truck } from 'lucide-react'
+import { Search, Package, RefreshCw, CheckCircle, ShoppingCart, TrendingUp, Eye, User, Phone, MapPin, Clock, Truck, Trash2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { toast } from 'sonner'
 import { apiGet, apiPost } from '@/lib/api-client'
@@ -537,8 +537,7 @@ export default function PackingQueuePage() {
       </Card>
 
       {/* Orders Table */}
-      <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-        <CardContent className="pt-6">
+      <div>
           {filteredOrders.length === 0 ? (
             <div className="text-center py-16">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
@@ -661,10 +660,10 @@ export default function PackingQueuePage() {
                             variant="outline"
                             size="sm"
                             onClick={() => openDetailsModal(order)}
-                            className="h-9 px-4 text-xs font-medium border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200 whitespace-nowrap rounded-lg"
+                            className="h-10 px-6 rounded-lg font-semibold border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200 whitespace-nowrap"
                           >
-                            <Eye className="h-3.5 w-3.5 mr-1.5" />
-                            View Details
+                            <Eye className="h-4 w-4 mr-2" />
+                            VIEW DETAILS
                           </Button>
                         </div>
                       </td>
@@ -675,8 +674,7 @@ export default function PackingQueuePage() {
             </div>
             </>
           )}
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Order Details Modal - Professional Design matching Tracker/Packer */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
@@ -699,12 +697,12 @@ export default function PackingQueuePage() {
                 <Button
                   variant="outline"
                   onClick={handleEditMode}
-                  className="h-10 px-4 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 transition-all flex-shrink-0"
+                  className="h-12 px-8 rounded-xl font-semibold bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 transition-all flex-shrink-0"
                 >
-                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
-                  Edit Order
+                  EDIT ORDER
                 </Button>
               )}
             </div>
@@ -1027,16 +1025,16 @@ export default function PackingQueuePage() {
                         <Button
                           variant="outline"
                           onClick={handleCancelEdit}
-                          className="flex-1 h-11 text-sm border-2"
+                          className="flex-1 h-12 px-8 rounded-xl font-semibold border-2"
                         >
-                          Cancel
+                          CANCEL
                         </Button>
                         <Button
                           onClick={handleSaveEdit}
-                          className="flex-1 h-11 text-sm bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 font-semibold shadow-lg"
+                          className="flex-1 h-12 px-8 rounded-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg"
                         >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Save Changes
+                          <CheckCircle className="h-5 w-5 mr-3" />
+                          SAVE CHANGES
                         </Button>
                       </div>
                     </>
@@ -1056,17 +1054,17 @@ export default function PackingQueuePage() {
                             setShowDetailsModal(false)
                             openConfirmDialog(selectedOrder)
                           }}
-                          className="flex-1 h-11 text-sm bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 font-semibold shadow-lg"
+                          className="flex-1 h-12 px-8 rounded-xl font-bold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg"
                         >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Mark as Packed
+                          <CheckCircle className="h-5 w-5 mr-3" />
+                          MARK AS PACKED
                         </Button>
                         <Button
                           variant="destructive"
                           onClick={() => setShowDeleteConfirm(true)}
-                          className="h-11 px-6 text-sm font-semibold"
+                          className="h-12 px-8 rounded-xl font-bold"
                         >
-                          Delete
+                          DELETE
                         </Button>
                       </div>
                     </>
@@ -1102,14 +1100,14 @@ export default function PackingQueuePage() {
           
           {/* Professional Footer */}
           <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-5 flex justify-end gap-3">
-            <AlertDialogCancel className="px-6 border-2 font-semibold">
-              Cancel
+            <AlertDialogCancel className="h-12 px-8 rounded-xl font-semibold border-2">
+              CANCEL
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => selectedOrder && handleMarkAsPacked(selectedOrder.id)}
-              className="px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg"
+              className="h-12 px-8 rounded-xl font-bold bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg"
             >
-              Confirm
+              CONFIRM
             </AlertDialogAction>
           </div>
         </AlertDialogContent>
@@ -1131,19 +1129,24 @@ export default function PackingQueuePage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting} className="h-12 px-8 rounded-xl font-semibold">
+              CANCEL
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteOrder}
               disabled={deleting}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="h-12 px-8 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white"
             >
               {deleting ? (
                 <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
+                  <RefreshCw className="h-5 w-5 mr-3 animate-spin" />
+                  DELETING...
                 </>
               ) : (
-                'Delete Order'
+                <>
+                  <Trash2 className="h-5 w-5 mr-3" />
+                  DELETE ORDER
+                </>
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

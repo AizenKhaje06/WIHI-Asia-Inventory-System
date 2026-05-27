@@ -2084,6 +2084,187 @@
               }
             },
             {
+              "name": "Update Bundle",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Gaming Bundle\",\n  \"bundlePrice\": 5500,\n  \"imageUrl\": \"https://example.com/updated-image.jpg\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/bundles/{{bundleId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bundles", "{{bundleId}}"]
+                },
+                "description": "Update existing bundle (name, price, or image)"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: Response has required fields",
+                      "pm.test('Response has required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('id');",
+                      "    pm.expect(jsonData).to.have.property('name');",
+                      "    pm.expect(jsonData).to.have.property('bundle_price');",
+                      "});",
+                      "",
+                      "// Test 4: Name was updated",
+                      "pm.test('Bundle name was updated', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.name).to.equal('Updated Gaming Bundle');",
+                      "});",
+                      "",
+                      "// Test 5: Price was updated",
+                      "pm.test('Bundle price was updated', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.bundle_price).to.equal(5500);",
+                      "});",
+                      "",
+                      "// Test 6: Image URL was updated",
+                      "pm.test('Image URL was updated', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.image_url).to.equal('https://example.com/updated-image.jpg');",
+                      "});",
+                      "",
+                      "// Test 7: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Update Bundle - Invalid ID",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Bundle\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/bundles/INVALID-BUNDLE-ID",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bundles", "INVALID-BUNDLE-ID"]
+                },
+                "description": "Test with non-existent bundle ID"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 404",
+                      "pm.test('Status code is 404', function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error message",
+                      "pm.test('Response has error message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "    pm.expect(jsonData.error).to.include('not found');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Update Bundle - Empty Body",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/bundles/{{bundleId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bundles", "{{bundleId}}"]
+                },
+                "description": "Test with empty update body - should return existing bundle"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: Response has bundle data",
+                      "pm.test('Response has bundle data', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('id');",
+                      "    pm.expect(jsonData).to.have.property('name');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
               "name": "Validate Bundle",
               "request": {
                 "method": "POST",

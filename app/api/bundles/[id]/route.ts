@@ -52,8 +52,12 @@ export async function PUT(
     const { id } = await context.params
     const body = await request.json()
     
-    console.log('[Bundles API] PUT request for bundle:', id)
-    console.log('[Bundles API] Update data:', body)
+    console.log('[Bundles API PUT] ===== START =====')
+    console.log('[Bundles API PUT] Bundle ID:', id)
+    console.log('[Bundles API PUT] Request body:', JSON.stringify(body, null, 2))
+    console.log('[Bundles API PUT] Body keys:', Object.keys(body))
+    console.log('[Bundles API PUT] imageUrl in body?', 'imageUrl' in body)
+    console.log('[Bundles API PUT] imageUrl value:', body.imageUrl)
     
     // Check if bundle exists
     const { data: existingBundle, error: fetchError } = await supabase
@@ -63,8 +67,12 @@ export async function PUT(
       .single()
     
     if (fetchError || !existingBundle) {
+      console.error('[Bundles API PUT] Bundle not found:', id, fetchError)
       return NextResponse.json({ error: 'Bundle not found' }, { status: 404 })
     }
+    
+    console.log('[Bundles API PUT] Existing bundle found:', existingBundle.name)
+    console.log('[Bundles API PUT] Current image_url:', existingBundle.image_url)
     
     // Prepare update data
     const updateData: any = {}
@@ -76,8 +84,24 @@ export async function PUT(
     if (body.costPrice !== undefined) updateData.bundle_cost = body.costPrice
     if (body.sellingPrice !== undefined) updateData.bundle_price = body.sellingPrice
     if (body.reorderLevel !== undefined) updateData.reorder_level = body.reorderLevel
+    if (body.imageUrl !== undefined) {
+      console.log('[Bundles API PUT] ✅ imageUrl found in body, setting to:', body.imageUrl)
+      updateData.image_url = body.imageUrl
+    } else {
+      console.log('[Bundles API PUT] ❌ imageUrl NOT found in body')
+    }
+    
+    console.log('[Bundles API PUT] Final update data:', JSON.stringify(updateData, null, 2))
+    console.log('[Bundles API PUT] Update data keys:', Object.keys(updateData))
+    
+    // Check if there's anything to update
+    if (Object.keys(updateData).length === 0) {
+      console.log('[Bundles API PUT] No fields to update')
+      return NextResponse.json(existingBundle, { status: 200 })
+    }
     
     // Update bundle
+    console.log('[Bundles API PUT] Executing Supabase update...')
     const { data: updatedBundle, error: updateError } = await supabase
       .from('bundles')
       .update(updateData)
@@ -86,15 +110,19 @@ export async function PUT(
       .single()
     
     if (updateError) {
-      console.error('[Bundles API] Error updating bundle:', updateError)
-      return NextResponse.json({ error: 'Failed to update bundle' }, { status: 500 })
+      console.error('[Bundles API PUT] ❌ Supabase update error:', updateError)
+      console.error('[Bundles API PUT] Error details:', JSON.stringify(updateError, null, 2))
+      return NextResponse.json({ error: 'Failed to update bundle', details: updateError.message }, { status: 500 })
     }
     
-    console.log('[Bundles API] Bundle updated successfully:', id)
+    console.log('[Bundles API PUT] ✅ Bundle updated successfully')
+    console.log('[Bundles API PUT] Updated bundle image_url:', updatedBundle?.image_url)
+    console.log('[Bundles API PUT] ===== END =====')
     return NextResponse.json(updatedBundle, { status: 200 })
   } catch (error: any) {
-    console.error('[Bundles API] PUT exception:', error)
-    return NextResponse.json({ error: 'Failed to update bundle' }, { status: 500 })
+    console.error('[Bundles API PUT] ❌ Exception:', error)
+    console.error('[Bundles API PUT] Exception stack:', error.stack)
+    return NextResponse.json({ error: 'Failed to update bundle', details: error.message }, { status: 500 })
   }
 }
 

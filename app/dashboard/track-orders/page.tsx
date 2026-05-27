@@ -1601,9 +1601,9 @@ export default function TrackOrdersPage() {
       {/* Filters - Professional SaaS Design */}
       <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 rounded-xl overflow-hidden">
         <CardContent className="p-6">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Search Input */}
-            <div className="flex-1 min-w-[280px]">
+          <div className="flex items-center gap-4">
+            {/* Search Input - Half Width */}
+            <div className="w-1/2">
               <div className="relative group">
                 <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 <Input
@@ -1615,110 +1615,102 @@ export default function TrackOrdersPage() {
               </div>
             </div>
             
-            {/* Status Filter */}
-            <div className="w-[200px]">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent className="rounded-lg">
-                  <SelectItem value="all" className="font-semibold">All Status</SelectItem>
-                  <SelectItem value="PENDING">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-3.5 w-3.5 text-yellow-600" />
-                      <span>PENDING</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="DELIVERED">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-3.5 w-3.5 text-green-600" />
-                      <span>DELIVERED</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="ON DELIVERY">
-                    <div className="flex items-center gap-2">
-                      <Truck className="h-3.5 w-3.5 text-blue-600" />
-                      <span>ON DELIVERY</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="PICKUP">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-3.5 w-3.5 text-purple-600" />
-                      <span>PICKUP</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="IN TRANSIT">
-                    <div className="flex items-center gap-2">
-                      <Truck className="h-3.5 w-3.5 text-indigo-600" />
-                      <span>IN TRANSIT</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="CANCELLED">
-                    <div className="flex items-center gap-2">
-                      <XCircle className="h-3.5 w-3.5 text-red-600" />
-                      <span>CANCELLED</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="DETAINED">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="h-3.5 w-3.5 text-orange-600" />
-                      <span>DETAINED</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="PROBLEMATIC">
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-3.5 w-3.5 text-pink-600" />
-                      <span>PROBLEMATIC</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="RETURNED">
-                    <div className="flex items-center gap-2">
-                      <RotateCcw className="h-3.5 w-3.5 text-slate-600" />
-                      <span>RETURNED</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Sales Channel Filter - Admin Only */}
-            {userRole === 'admin' && (
+            {/* Right Side - Filters and Clear */}
+            <div className="flex items-center gap-3 ml-auto">
+              {/* Status Filter */}
               <div className="w-[200px]">
-                <Select value={salesChannelFilter} onValueChange={setChannelFilter}>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
-                    <SelectValue placeholder="All Channels" />
+                    <SelectValue placeholder="All Status" />
                   </SelectTrigger>
                   <SelectContent className="rounded-lg">
-                    <SelectItem value="all" className="font-semibold">All Channels</SelectItem>
-                    <SelectItem value="Shopee">Shopee</SelectItem>
-                    <SelectItem value="Lazada">Lazada</SelectItem>
-                    <SelectItem value="TikTok">TikTok</SelectItem>
-                    <SelectItem value="Facebook">Facebook</SelectItem>
-                    <SelectItem value="Physical Store">Physical Store</SelectItem>
+                    <SelectItem value="all" className="font-semibold">All Status</SelectItem>
+                    <SelectItem value="PENDING">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-3.5 w-3.5 text-yellow-600" />
+                        <span>PENDING</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="DELIVERED">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+                        <span>DELIVERED</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="ON DELIVERY">
+                      <div className="flex items-center gap-2">
+                        <Truck className="h-3.5 w-3.5 text-blue-600" />
+                        <span>ON DELIVERY</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="PICKUP">
+                      <div className="flex items-center gap-2">
+                        <Package className="h-3.5 w-3.5 text-purple-600" />
+                        <span>PICKUP</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="IN TRANSIT">
+                      <div className="flex items-center gap-2">
+                        <Truck className="h-3.5 w-3.5 text-indigo-600" />
+                        <span>IN TRANSIT</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="CANCELLED">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-3.5 w-3.5 text-red-600" />
+                        <span>CANCELLED</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="DETAINED">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-3.5 w-3.5 text-orange-600" />
+                        <span>DETAINED</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="PROBLEMATIC">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-3.5 w-3.5 text-pink-600" />
+                        <span>PROBLEMATIC</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="RETURNED">
+                      <div className="flex items-center gap-2">
+                        <RotateCcw className="h-3.5 w-3.5 text-slate-600" />
+                        <span>RETURNED</span>
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            )}
 
-            {/* Clear Filters Button */}
-            <Button
-              onClick={clearFilters}
-              variant="outline"
-              className="h-12 px-5 bg-white dark:bg-slate-800 border-2 border-red-200 dark:border-red-800 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 rounded-lg font-semibold transition-all group"
-            >
-              <X className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
-              Clear
-            </Button>
+              {/* Sales Channel Filter - Admin Only */}
+              {userRole === 'admin' && (
+                <div className="w-[200px]">
+                  <Select value={salesChannelFilter} onValueChange={setChannelFilter}>
+                    <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-0">
+                      <SelectValue placeholder="All Channels" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-lg">
+                      <SelectItem value="all" className="font-semibold">All Channels</SelectItem>
+                      <SelectItem value="Shopee">Shopee</SelectItem>
+                      <SelectItem value="Lazada">Lazada</SelectItem>
+                      <SelectItem value="TikTok">TikTok</SelectItem>
+                      <SelectItem value="Facebook">Facebook</SelectItem>
+                      <SelectItem value="Physical Store">Physical Store</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-            {/* Refresh Button */}
-            <Button
-              onClick={fetchOrders}
-              variant="outline"
-              className="h-12 px-5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg font-semibold transition-all group"
-            >
-              <RefreshCw className="h-4 w-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
-              Refresh
-            </Button>
+              {/* Clear Filters - Text Only */}
+              <button
+                onClick={clearFilters}
+                className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-semibold text-sm transition-colors flex items-center gap-1.5 group"
+              >
+                <X className="h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
+                Clear
+              </button>
+            </div>
           </div>
         </CardContent>
       </Card>

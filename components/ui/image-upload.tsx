@@ -44,6 +44,10 @@ export function ImageUpload({
   }, [onUploadComplete, onChange])
 
   const processAndUpload = useCallback(async (file: File | Blob) => {
+    console.log('[ImageUpload] processAndUpload started')
+    console.log('[ImageUpload] File type:', file instanceof File ? 'File' : 'Blob')
+    console.log('[ImageUpload] File size:', file.size)
+    
     // Validate type (skip for Blob from cropper)
     if (file instanceof File) {
       const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
@@ -55,6 +59,7 @@ export function ImageUpload({
 
     try {
       setUploading(true)
+      console.log('[ImageUpload] Starting compression...')
 
       // Auto-compress image
       const compressed = await imageCompression(file, {
@@ -64,17 +69,22 @@ export function ImageUpload({
         fileType: "image/webp", // Convert to WebP for best compression
       })
 
+      console.log('[ImageUpload] Compression complete. Size:', compressed.size)
+
       // Show preview immediately
       const previewUrl = URL.createObjectURL(compressed)
       setPreview(previewUrl)
+      console.log('[ImageUpload] Preview set:', previewUrl)
 
       // Upload to API (use different endpoint based on uploadType)
       const uploadEndpoint = uploadType === 'profile' ? '/api/upload-profile' : '/api/upload'
+      console.log('[ImageUpload] Upload endpoint:', uploadEndpoint)
       
       const formData = new FormData()
       formData.append("file", compressed, `${uploadType}.webp`)
       if (itemId) formData.append("itemId", itemId)
 
+      console.log('[ImageUpload] Sending upload request...')
       const response = await fetch(uploadEndpoint, {
         method: "POST",
         headers: {
@@ -84,12 +94,16 @@ export function ImageUpload({
         body: formData,
       })
 
+      console.log('[ImageUpload] Upload response status:', response.status)
       const data = await response.json()
+      console.log('[ImageUpload] Upload response data:', data)
 
       if (!response.ok) {
+        console.error('[ImageUpload] Upload failed:', data)
         throw new Error(data.error || "Upload failed")
       }
 
+      console.log('[ImageUpload] Upload successful, URL:', data.url)
       handleUploadSuccess(data.url)
       toast.success("Image uploaded successfully")
     } catch (error: any) {
@@ -102,8 +116,12 @@ export function ImageUpload({
   }, [itemId, value, currentImageUrl, handleUploadSuccess, uploadType])
 
   const handleFileSelect = (file: File) => {
+    console.log('[ImageUpload] File selected:', file.name, file.type, file.size)
+    console.log('[ImageUpload] Upload type:', uploadType)
+    
     // For profile images, show cropper
     if (uploadType === 'profile') {
+      console.log('[ImageUpload] Showing cropper for profile image')
       const reader = new FileReader()
       reader.onload = () => {
         setImageToCrop(reader.result as string)
@@ -112,6 +130,7 @@ export function ImageUpload({
       reader.readAsDataURL(file)
     } else {
       // For product images, upload directly
+      console.log('[ImageUpload] Uploading product image directly')
       processAndUpload(file)
     }
   }

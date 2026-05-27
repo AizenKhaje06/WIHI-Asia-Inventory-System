@@ -10,9 +10,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Package, X, TrendingDown, Search, Check, ChevronDown, ShoppingCart } from 'lucide-react'
 import { toast } from 'sonner'
-import { apiGet, apiPost } from '@/lib/api-client'
+import { apiGet, apiPost, apiPut } from '@/lib/api-client'
 import type { InventoryItem } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { ImageUpload } from '@/components/ui/image-upload'
 
 interface CreateBundleDialogProps {
   open: boolean
@@ -34,6 +35,7 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
   const [bundleItems, setBundleItems] = useState<BundleItem[]>([])
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
   const searchContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   
@@ -72,6 +74,7 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
     if (open) {
       fetchItems()
       resetForm()
+      setImageUrl(null)
     }
   }, [open])
 
@@ -235,9 +238,27 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
           quantity: bi.quantity
         })),
         badge: formData.badge.trim() || null
-      })
+      }) as any
 
-      console.log('Bundle created successfully:', response)
+      console.log('[Create Bundle] Bundle created successfully:', response)
+
+      // If image was uploaded, save the URL to the bundle
+      if (imageUrl && response?.id) {
+        console.log('[Create Bundle] Updating bundle with image:', imageUrl)
+        console.log('[Create Bundle] Bundle ID:', response.id)
+        try {
+          const updateResult = await apiPut(`/api/bundles/${response.id}`, { imageUrl })
+          console.log('[Create Bundle] Image URL update result:', updateResult)
+          console.log('[Create Bundle] Image URL saved successfully')
+        } catch (imageError: any) {
+          console.error('[Create Bundle] Failed to save image URL:', imageError)
+          console.error('[Create Bundle] Error message:', imageError.message)
+          console.error('[Create Bundle] Error details:', imageError)
+          // Don't fail the whole operation if image save fails
+          toast.warning(`Bundle created but image save failed: ${imageError.message || 'Unknown error'}`)
+        }
+      }
+
       toast.success('Bundle created successfully!')
       resetForm()
       onOpenChange(false)
@@ -267,6 +288,7 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
     })
     setBundleItems([])
     setSearchValue('')
+    setImageUrl(null)
   }
 
   const totals = calculateTotals()
@@ -310,6 +332,19 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   placeholder="e.g., Berry Soap 3-Pack"
                   className="h-11"
+                />
+              </div>
+
+              {/* Bundle Image Upload */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">
+                  Bundle Image <span className="text-slate-400 font-normal">(optional)</span>
+                </Label>
+                <ImageUpload
+                  currentImageUrl={imageUrl}
+                  onUploadComplete={(url) => setImageUrl(url)}
+                  onRemove={() => setImageUrl(null)}
+                  uploadType="product"
                 />
               </div>
 
