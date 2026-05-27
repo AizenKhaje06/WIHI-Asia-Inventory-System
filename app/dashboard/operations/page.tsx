@@ -138,32 +138,21 @@ export default function OperationsDashboardPage() {
   })
 
   return (
-    <div className="space-y-6 pt-2">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <div>
           <h1 className="text-4xl font-bold gradient-text mb-2">Operations Dashboard</h1>
           <p className="text-slate-600 dark:text-slate-400 text-base">Quick overview of inventory and operations</p>
         </div>
-        <div className="flex items-center gap-2">
-          <EnterpriseDateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onDateChange={(start, end) => {
-              setStartDate(start)
-              setEndDate(end)
-            }}
-          />
-          <Button
-            onClick={fetchData}
-            disabled={refreshing}
-            variant="outline"
-            size="sm"
-          >
-            <RefreshCw className={cn("h-4 w-4 mr-2", refreshing && "animate-spin")} />
-            Refresh
-          </Button>
-        </div>
+        <EnterpriseDateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onDateChange={(start, end) => {
+            setStartDate(start)
+            setEndDate(end)
+          }}
+        />
       </div>
 
       {/* Key Metrics - 5 Primary KPIs - Professional Corporate Design */}

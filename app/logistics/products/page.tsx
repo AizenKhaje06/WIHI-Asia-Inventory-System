@@ -48,7 +48,8 @@ export default function LogisticsProductsPage() {
 
   async function fetchItems() {
     try {
-      const data = await apiGet<InventoryItem[]>("/api/items")
+      // Force fresh data - add timestamp to bypass cache
+      const data = await apiGet<InventoryItem[]>("/api/items?t=" + Date.now())
       const itemsArray = Array.isArray(data) ? data : []
       setItems(itemsArray)
       setFilteredItems(itemsArray)

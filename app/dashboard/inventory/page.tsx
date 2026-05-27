@@ -35,6 +35,7 @@ export default function InventoryPage() {
   const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
   const [search, setSearch] = useState("")
   const [salesChannelFilter, setSalesChannelFilter] = useState("all")
+  const [categoryFilter, setCategoryFilter] = useState("all")
   const [sortBy, setSortBy] = useState("name-asc")
   const [loading, setLoading] = useState(true)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
@@ -258,6 +259,11 @@ export default function InventoryPage() {
       )
     }
 
+    // Category filter
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter((item) => item.category === categoryFilter)
+    }
+
     // Stock status filter
     if (salesChannelFilter === "low-stock") {
       filtered = filtered.filter((item) => item.quantity > 0 && item.quantity <= item.reorderLevel)
@@ -281,7 +287,7 @@ export default function InventoryPage() {
     }
 
     setFilteredItems(filtered)
-  }, [search, salesChannelFilter, sortBy, items])
+  }, [search, salesChannelFilter, categoryFilter, sortBy, items])
 
   async function fetchItems() {
     try {
@@ -290,14 +296,8 @@ export default function InventoryPage() {
       const data = await apiGet<InventoryItem[]>("/api/items")
       let itemsArray = Array.isArray(data) ? data : []
       
-      // Filter by user's assigned channel if they are a department user
-      const user = getCurrentUser()
-      const role = getCurrentUserRole()
-      if (role === 'operations' && user?.assignedChannel) {
-        // Filter items to show only those from the user's assigned channel
-        itemsArray = itemsArray.filter(item => item.salesChannel === user.assignedChannel)
-        console.log(`[Inventory] Filtered to ${user.assignedChannel} channel: ${itemsArray.length} items`)
-      }
+      // Department users can now see ALL products (no sales channel filtering)
+      // This matches the behavior of the Warehouse Dispatch page
       
       // Debug: Log items with images
       const itemsWithImages = itemsArray.filter(item => item.imageUrl)
@@ -1011,7 +1011,7 @@ export default function InventoryPage() {
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Page Header - Professional */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text [-webkit-text-fill-color:transparent]">
             Inventory Overview
@@ -1019,6 +1019,43 @@ export default function InventoryPage() {
           <p className="text-xs text-slate-600 dark:text-slate-400">
             Comprehensive product inventory control and management
           </p>
+        </div>
+        
+        {/* Action Buttons - Top Right */}
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setCategoryDialogOpen(true)}
+            variant="outline"
+            className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Categories
+          </Button>
+
+          <Button
+            onClick={() => setStoreDialogOpen(true)}
+            variant="outline"
+            className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Stores
+          </Button>
+
+          <Button
+            onClick={() => setCreateBundleOpen(true)}
+            className="h-7 w-[100px] px-2.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-md"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Bundle
+          </Button>
+
+          <Button
+            onClick={() => setAddDialogOpen(true)}
+            className="h-7 w-[100px] px-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Product
+          </Button>
         </div>
       </div>
 
@@ -1131,41 +1168,21 @@ export default function InventoryPage() {
               </button>
             </div>
 
-            {/* Action Buttons - Right Side */}
+            {/* Action Buttons - Right Side - Replaced with Category Filter */}
             <div className="flex gap-2 flex-wrap lg:flex-nowrap lg:ml-auto">
-              <Button
-                onClick={() => setCategoryDialogOpen(true)}
-                variant="outline"
-                className="flex-1 lg:flex-none h-7 px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Categories
-              </Button>
-
-              <Button
-                onClick={() => setStoreDialogOpen(true)}
-                variant="outline"
-                className="flex-1 lg:flex-none h-7 px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Stores
-              </Button>
-
-              <Button
-                onClick={() => setCreateBundleOpen(true)}
-                className="flex-1 lg:flex-none h-7 px-2.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-md"
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Bundle
-              </Button>
-
-              <Button
-                onClick={() => setAddDialogOpen(true)}
-                className="flex-1 lg:flex-none h-7 px-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Product
-              </Button>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-full lg:w-[200px] h-7 text-xs border-slate-200 dark:border-slate-700">
+                  <SelectValue placeholder="Filter by Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.name}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

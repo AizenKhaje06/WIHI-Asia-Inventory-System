@@ -12,11 +12,12 @@ export const GET = withAuth(async (request, { user }) => {
 
     let items
     try {
+      const hasTimestamp = searchParams.get("t")
       // Fetch from unified view that includes both items and bundles
       items = await getCachedData(
-        'inventory-items-with-bundles',
-        () => getInventoryItems(), // This should query products_unified view
-        2 * 60 * 1000 // 2 minutes
+        hasTimestamp ? `inventory-items-${hasTimestamp}` : 'inventory-items-with-bundles',
+        () => getInventoryItems(),
+        hasTimestamp ? 0 : 2 * 60 * 1000 // No cache if timestamp present
       )
     } catch (dbError) {
       console.error("[API] Database error fetching items (returning empty list):", dbError)

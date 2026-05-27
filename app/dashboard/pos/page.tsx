@@ -311,7 +311,7 @@ export default function POSPage() {
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Page Header - Professional Style */}
       <div className="mb-8">
-        <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Warehouse Dispatch Overview</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Order Dispatch Overview</h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Stock release and distribution management
         </p>
