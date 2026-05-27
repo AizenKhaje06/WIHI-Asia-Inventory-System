@@ -5,7 +5,7 @@ import Cropper from "react-easy-crop"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
-import { ZoomIn, ZoomOut, RotateCw } from "lucide-react"
+import { ZoomIn, ZoomOut, RotateCw, Maximize2 } from "lucide-react"
 
 interface ImageCropperProps {
   image: string
@@ -66,14 +66,28 @@ export function ImageCropper({
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Crop Profile Image</DialogTitle>
+      <DialogContent className="max-w-2xl p-0 gap-0 bg-white dark:bg-slate-900 border-0 shadow-2xl">
+        {/* Header - Compact */}
+        <DialogHeader className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-blue-600">
+              <Maximize2 className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg font-bold text-slate-900 dark:text-white">
+                Crop Profile Image
+              </DialogTitle>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Adjust your profile picture
+              </p>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Cropper Area */}
-          <div className="relative h-[400px] bg-slate-900 rounded-lg overflow-hidden">
+        {/* Content - Compact */}
+        <div className="p-5 space-y-4">
+          {/* Cropper Area - Smaller */}
+          <div className="relative h-[360px] bg-slate-950 rounded-lg overflow-hidden border border-slate-800">
             <Cropper
               image={image}
               crop={crop}
@@ -85,62 +99,120 @@ export function ImageCropper({
               onCropChange={onCropChange}
               onZoomChange={onZoomChange}
               onCropComplete={onCropAreaChange}
+              style={{
+                containerStyle: {
+                  backgroundColor: '#020617',
+                },
+                cropAreaStyle: {
+                  border: '2px solid #3b82f6',
+                  boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
+                },
+              }}
             />
           </div>
 
-          {/* Controls */}
-          <div className="space-y-4">
+          {/* Controls - Compact */}
+          <div className="space-y-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
             {/* Zoom Control */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <ZoomIn className="h-4 w-4" />
-                  Zoom
-                </label>
-                <span className="text-xs text-slate-500">{Math.round(zoom * 100)}%</span>
+                <div className="flex items-center gap-2">
+                  <ZoomIn className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Zoom
+                  </label>
+                </div>
+                <span className="text-xs font-mono font-medium text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                  {Math.round(zoom * 100)}%
+                </span>
               </div>
               <div className="flex items-center gap-3">
-                <ZoomOut className="h-4 w-4 text-slate-400" />
+                <button
+                  onClick={() => setZoom(Math.max(1, zoom - 0.1))}
+                  className="p-1.5 rounded hover:bg-white dark:hover:bg-slate-700 transition-colors"
+                  title="Zoom out"
+                >
+                  <ZoomOut className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
+                </button>
                 <Slider
                   value={[zoom]}
                   onValueChange={(value) => setZoom(value[0])}
                   min={1}
                   max={3}
-                  step={0.1}
-                  className="flex-1"
+                  step={0.05}
+                  className="cursor-pointer flex-1"
                 />
-                <ZoomIn className="h-4 w-4 text-slate-400" />
+                <button
+                  onClick={() => setZoom(Math.min(3, zoom + 0.1))}
+                  className="p-1.5 rounded hover:bg-white dark:hover:bg-slate-700 transition-colors"
+                  title="Zoom in"
+                >
+                  <ZoomIn className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
+                </button>
               </div>
             </div>
+
+            {/* Divider */}
+            <div className="border-t border-slate-200 dark:border-slate-700"></div>
 
             {/* Rotation Control */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <RotateCw className="h-4 w-4" />
-                  Rotation
-                </label>
-                <span className="text-xs text-slate-500">{rotation}°</span>
+                <div className="flex items-center gap-2">
+                  <RotateCw className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Rotation
+                  </label>
+                </div>
+                <span className="text-xs font-mono font-medium text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                  {rotation}°
+                </span>
               </div>
-              <Slider
-                value={[rotation]}
-                onValueChange={(value) => setRotation(value[0])}
-                min={0}
-                max={360}
-                step={1}
-                className="flex-1"
-              />
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setRotation((rotation - 15 + 360) % 360)}
+                  className="p-1.5 rounded hover:bg-white dark:hover:bg-slate-700 transition-colors"
+                  title="Rotate left"
+                >
+                  <RotateCw className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400 transform -scale-x-100" />
+                </button>
+                <Slider
+                  value={[rotation]}
+                  onValueChange={(value) => setRotation(value[0])}
+                  min={0}
+                  max={360}
+                  step={1}
+                  className="cursor-pointer flex-1"
+                />
+                <button
+                  onClick={() => setRotation((rotation + 15) % 360)}
+                  className="p-1.5 rounded hover:bg-white dark:hover:bg-slate-700 transition-colors"
+                  title="Rotate right"
+                >
+                  <RotateCw className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button onClick={createCroppedImage} className="bg-blue-600 hover:bg-blue-700">
-            Apply Crop
-          </Button>
+        {/* Footer - Compact */}
+        <DialogFooter className="px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+          <div className="flex items-center justify-end w-full gap-2">
+            <Button 
+              variant="outline" 
+              onClick={onCancel}
+              className="h-9 px-4 text-sm"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={createCroppedImage} 
+              className="h-9 px-5 text-sm bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Apply Crop
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
