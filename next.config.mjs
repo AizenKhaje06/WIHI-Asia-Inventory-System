@@ -150,7 +150,7 @@ const nextConfig = {
         },
         {
           key: 'Content-Security-Policy',
-          value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; frame-ancestors 'self'; base-uri 'self'; form-action 'self';",
+          value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co blob:; frame-ancestors 'self'; base-uri 'self'; form-action 'self';",
         },
         {
           key: 'X-Permitted-Cross-Domain-Policies',
@@ -158,7 +158,7 @@ const nextConfig = {
         },
         {
           key: 'Cross-Origin-Embedder-Policy',
-          value: 'require-corp',
+          value: 'unsafe-none',
         },
         {
           key: 'Cross-Origin-Opener-Policy',

@@ -131,7 +131,9 @@ export function ImageUpload({
           <>
             {/* Image Preview */}
             <img
-              src={`/api/image-proxy?url=${encodeURIComponent(preview)}`}
+              src={preview.startsWith('blob:') || preview.startsWith('data:') 
+                ? preview 
+                : `/api/image-proxy?url=${encodeURIComponent(preview)}`}
               alt="Product"
               className="w-full h-full object-cover"
             />
