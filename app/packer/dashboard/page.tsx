@@ -45,12 +45,14 @@ interface PackedOrder {
 }
 
 export default function PackerDashboard() {
+  const [allOrders, setAllOrders] = useState<Order[]>([])
   const [pendingOrders, setPendingOrders] = useState<Order[]>([])
   const [packedHistory, setPackedHistory] = useState<PackedOrder[]>([])
   const [filteredPending, setFilteredPending] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedChannel, setSelectedChannel] = useState<string>('All')
+  const [statusFilter, setStatusFilter] = useState<string>('Pending')
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [scannerOpen, setScannerOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -128,7 +130,7 @@ export default function PackerDashboard() {
 
   useEffect(() => {
     filterOrders()
-  }, [searchTerm, selectedChannel, pendingOrders])
+  }, [searchTerm, selectedChannel, statusFilter, pendingOrders, packedHistory])
 
   const fetchData = async (silent = false) => {
     try {
@@ -183,8 +185,38 @@ export default function PackerDashboard() {
   const filterOrders = () => {
     let filtered = pendingOrders
 
-    // Filter by channel
-    if (selectedChannel !== 'All') {
+    // Filter by status
+    if (statusFilter === 'Pending') {
+      filtered = filtered.filter(order => !order.is_cancelled)
+    } else if (statusFilter === 'Cancelled') {
+      filtered = filtered.filter(order => order.is_cancelled)
+    } else if (statusFilter === 'Packed') {
+      // Show packed history - convert PackedOrder to Order format
+      filtered = packedHistory.map((packed: PackedOrder) => ({
+        id: packed.id,
+        orderNumber: packed.orderNumber,
+        waybill: packed.waybill,
+        customerName: packed.customerName,
+        customerPhone: '',
+        customerAddress: '',
+        itemName: packed.itemName,
+        quantity: packed.quantity,
+        totalAmount: packed.totalAmount,
+        orderStatus: 'Packed',
+        parcelStatus: 'PACKED',
+        orderDate: packed.packedAt,
+        channel: '',
+        store: '',
+        courier: '',
+        is_cancelled: false
+      })) as Order[]
+    } else if (statusFilter === 'All') {
+      // Show all pending orders (both cancelled and not cancelled)
+      filtered = pendingOrders
+    }
+
+    // Filter by channel (skip for packed orders as they don't have channel info)
+    if (selectedChannel !== 'All' && statusFilter !== 'Packed') {
       filtered = filtered.filter(order => order.channel === selectedChannel)
     }
 
@@ -512,7 +544,21 @@ export default function PackerDashboard() {
               </div>
             </div>
 
-            {/* Channel Filter - Now Second */}
+            {/* Status Filter - First */}
+            <div className="sm:w-48">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full h-10 px-3 py-2 text-sm font-medium border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-0 focus:border-slate-300 dark:focus:border-slate-600 transition-colors cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22M6%208l4%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat pr-10"
+              >
+                <option value="All">All Orders</option>
+                <option value="Pending">Pending</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Packed">Packed</option>
+              </select>
+            </div>
+
+            {/* Channel Filter - Second */}
             <div className="sm:w-48">
               <select
                 value={selectedChannel}
@@ -674,125 +720,6 @@ export default function PackerDashboard() {
                 </table>
               </div>
             </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Packed History */}
-      <Card className="shadow-lg overflow-hidden">
-        <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-3 sm:p-6">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-lg">
-                <Award className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                Packed History
-              </CardTitle>
-              <CardDescription className="mt-1 text-xs sm:text-sm">
-                Recent activity
-              </CardDescription>
-            </div>
-            <Badge variant="secondary" className="text-xs whitespace-nowrap flex-shrink-0">
-              Last {filteredPackedHistory.length > 20 ? '20' : filteredPackedHistory.length}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="p-3 sm:p-6">
-          {filteredPackedHistory.length === 0 ? (
-            <div className="text-center py-12 bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed">
-              <Clock className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-              <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">No packed orders yet</p>
-              <p className="text-xs text-slate-500 mt-1">
-                Start packing to see history
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-hidden rounded-lg border">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gradient-to-r from-slate-800 to-slate-900 text-white">
-                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider border-r border-slate-700/50" style={{ width: '12%' }}>
-                      DATE
-                    </th>
-                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider border-r border-slate-700/50" style={{ width: '15%' }}>
-                      CUSTOMER
-                    </th>
-                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider border-r border-slate-700/50" style={{ width: '20%' }}>
-                      ITEM
-                    </th>
-                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider border-r border-slate-700/50" style={{ width: '8%' }}>
-                      QTY
-                    </th>
-                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>
-                      PRICE
-                    </th>
-                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider border-r border-slate-700/50" style={{ width: '15%' }}>
-                      WAYBILL
-                    </th>
-                    <th className="text-left py-3 px-3 text-[11px] font-bold tracking-wider" style={{ width: '20%' }}>
-                      PACKED BY
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPackedHistory.slice(0, 20).map((order, index) => (
-                    <tr
-                      key={order.id}
-                      className={`border-b border-slate-100 dark:border-slate-800 ${
-                        index % 2 === 0 ? 'bg-white dark:bg-slate-950' : 'bg-slate-50/50 dark:bg-slate-900/50'
-                      }`}
-                    >
-                      <td className="py-2.5 px-3">
-                        <div className="flex flex-col">
-                          <span className="text-[11px] font-semibold text-slate-900 dark:text-white whitespace-nowrap">
-                            {new Date(order.packedAt).toLocaleDateString('en-US', { 
-                              month: 'short', 
-                              day: '2-digit'
-                            })}
-                          </span>
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                            {new Date(order.packedAt).toLocaleTimeString('en-US', { 
-                              hour: '2-digit', 
-                              minute: '2-digit',
-                              hour12: true
-                            })}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className="text-[11px] text-slate-900 dark:text-white font-medium block truncate">
-                          {order.customerName || 'N/A'}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className="text-[11px] text-slate-700 dark:text-slate-300 block truncate">
-                          {(order.itemName || 'N/A').replace(/\s*\(\d+\)\s*$/, '')}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className="text-[11px] font-semibold text-slate-900 dark:text-white">
-                          {order.quantity || 0}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className="text-[11px] font-bold text-slate-900 dark:text-white tabular-nums">
-                          ₱{(order.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className="font-mono text-[11px] font-semibold text-green-600 dark:text-green-400 block truncate">
-                          {order.waybill || 'N/A'}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <Badge variant="outline" className="text-[10px] font-medium">
-                          {order.packedBy || 'Unknown'}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           )}
         </CardContent>
       </Card>
