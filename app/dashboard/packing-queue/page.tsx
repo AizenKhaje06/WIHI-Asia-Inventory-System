@@ -442,11 +442,21 @@ export default function PackingQueuePage() {
         throw new Error(data.error || data.details || 'Failed to cancel order')
       }
 
-      toast.success('Order cancelled successfully')
+      toast.success('Order cancelled successfully - Order will remain in queue with red highlight')
+      
+      // Update the order in the local state to mark as cancelled (keeps it in the list)
+      setOrders(prev => prev.map(o => 
+        o.id === selectedOrder.id ? { ...o, is_cancelled: true } : o
+      ))
+      setFilteredOrders(prev => prev.map(o => 
+        o.id === selectedOrder.id ? { ...o, is_cancelled: true } : o
+      ))
+      
+      // Update selected order to show cancelled state in modal
+      setSelectedOrder({ ...selectedOrder, is_cancelled: true })
+      
       setShowCancelConfirm(false)
-      setShowDetailsModal(false)
-      setSelectedOrder(null)
-      fetchOrders()
+      // Keep modal open so user can see the cancelled state
     } catch (error: any) {
       console.error('Error cancelling order:', error)
       toast.error(error.message || 'Failed to cancel order')
@@ -639,10 +649,17 @@ export default function PackingQueuePage() {
                         }`}
                       >
                       <td className="py-3 px-4">
-                        <div className="flex flex-col">
-                          <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
-                            {order.waybill || order.id || 'N/A'}
-                          </span>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                              {order.waybill || order.id || 'N/A'}
+                            </span>
+                            {order.is_cancelled && (
+                              <Badge className="bg-red-600 text-white text-[10px] px-2 py-0.5 font-bold">
+                                CANCELLED
+                              </Badge>
+                            )}
+                          </div>
                           <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
                             #{(order.id || '').slice(-6).toUpperCase()}
                           </span>

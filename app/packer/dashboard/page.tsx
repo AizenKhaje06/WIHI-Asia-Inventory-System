@@ -640,9 +640,16 @@ export default function PackerDashboard() {
                         </td>
                         <td className="py-3 px-3">
                           <div className="flex flex-col gap-0.5">
-                            <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 block break-all">
-                              {order.waybill}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 block break-all">
+                                {order.waybill}
+                              </span>
+                              {order.is_cancelled && (
+                                <Badge className="bg-red-600 text-white text-[9px] px-1.5 py-0.5 font-bold">
+                                  CANCELLED
+                                </Badge>
+                              )}
+                            </div>
                             <span className="text-[10px] text-slate-500 dark:text-slate-400">
                               {order.courier}
                             </span>
