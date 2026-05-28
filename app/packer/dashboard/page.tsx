@@ -209,7 +209,7 @@ export default function PackerDashboard() {
 
     if (!order) {
       toast.error('Order not found in queue')
-      return
+      throw new Error('Order not found')
     }
 
     // Check if order is cancelled
@@ -226,7 +226,7 @@ export default function PackerDashboard() {
           padding: '16px 24px',
         }
       })
-      return
+      throw new Error('Order cancelled')
     }
 
     // Auto-pack immediately after scan and WAIT for it to complete

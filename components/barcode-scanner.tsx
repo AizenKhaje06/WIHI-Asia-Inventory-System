@@ -177,6 +177,9 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
       }
       setLastResult(successResult)
       
+      // Voice feedback for success
+      speakMessage('Order scanned successfully')
+      
     } catch (error: any) {
       // Show error feedback
       const errorResult: ScanResult = {
@@ -187,6 +190,15 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
       }
       setLastResult(errorResult)
       playBeep(400, 0.2)
+      
+      // Voice feedback for error
+      if (error.message?.toLowerCase().includes('cancelled')) {
+        speakMessage('Order cancelled')
+      } else if (error.message?.toLowerCase().includes('not found')) {
+        speakMessage('Order not found')
+      } else {
+        speakMessage('Scan failed')
+      }
       
       // Vibrate on error (different pattern)
       if (navigator.vibrate) {
@@ -232,6 +244,23 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
       oscillator.stop(audioContext.currentTime + duration)
     } catch (error) {
       // Ignore audio errors
+    }
+  }
+
+  const speakMessage = (message: string) => {
+    try {
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel()
+      
+      const utterance = new SpeechSynthesisUtterance(message)
+      utterance.rate = 1.0 // Normal speed
+      utterance.pitch = 1.0 // Normal pitch
+      utterance.volume = 1.0 // Full volume
+      utterance.lang = 'en-US' // English
+      
+      window.speechSynthesis.speak(utterance)
+    } catch (error) {
+      console.error('Speech synthesis error:', error)
     }
   }
 
