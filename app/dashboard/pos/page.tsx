@@ -62,6 +62,12 @@ export default function POSPage() {
     notes: ''
   })
 
+  // Waybill validation states
+  const [waybillChecking, setWaybillChecking] = useState(false)
+  const [waybillError, setWaybillError] = useState<string | null>(null)
+  const [duplicateOrders, setDuplicateOrders] = useState<any[]>([])
+  const [waybillValid, setWaybillValid] = useState(false)
+
   const total = useMemo(() => cart.reduce((sum, cartItem) => sum + cartItem.item.sellingPrice * cartItem.quantity, 0), [cart])
 
   const filteredItems = useMemo(() => {
@@ -122,6 +128,53 @@ export default function POSPage() {
     }
   }
 
+  // Waybill validation function
+  const checkWaybillDuplicate = async (waybill: string) => {
+    if (!waybill || waybill.trim() === '') {
+      setWaybillError(null)
+      setDuplicateOrders([])
+      setWaybillValid(false)
+      return
+    }
+
+    try {
+      setWaybillChecking(true)
+      const response = await fetch(`/api/orders/check-waybill?waybill=${encodeURIComponent(waybill.trim())}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to check waybill')
+      }
+
+      if (data.exists && data.orders.length > 0) {
+        setWaybillError(`Duplicate waybill found! This waybill is already used by ${data.count} order(s).`)
+        setDuplicateOrders(data.orders)
+        setWaybillValid(false)
+      } else {
+        setWaybillError(null)
+        setDuplicateOrders([])
+        setWaybillValid(true)
+      }
+    } catch (error: any) {
+      console.error('[Waybill Check] Error:', error)
+      setWaybillError('Failed to validate waybill')
+      setWaybillValid(false)
+    } finally {
+      setWaybillChecking(false)
+    }
+  }
+
+  // Debounced waybill validation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (orderForm.waybill) {
+        checkWaybillDuplicate(orderForm.waybill)
+      }
+    }, 500) // 500ms debounce
+
+    return () => clearTimeout(timer)
+  }, [orderForm.waybill])
+
   function handleOpenOrderForm() {
     if (cart.length === 0) {
       alert('Please add items to cart first')
@@ -155,6 +208,12 @@ export default function POSPage() {
       customerContact: '',
       notes: ''
     })
+    
+    // Reset waybill validation state
+    setWaybillError(null)
+    setDuplicateOrders([])
+    setWaybillValid(false)
+    setWaybillChecking(false)
     
     setOrderFormOpen(true)
   }
@@ -802,12 +861,61 @@ export default function POSPage() {
                   </div>
                   <div>
                     <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Waybill / Tracking Number *</Label>
-                    <Input
-                      value={orderForm.waybill}
-                      onChange={(e) => setOrderForm({...orderForm, waybill: e.target.value})}
-                      placeholder="Enter tracking number"
-                      className="mt-2 h-11 border-2 focus:ring-2 focus:ring-purple-500"
-                    />
+                    <div className="relative">
+                      <Input
+                        value={orderForm.waybill}
+                        onChange={(e) => setOrderForm({...orderForm, waybill: e.target.value})}
+                        placeholder="Enter tracking number"
+                        className={cn(
+                          "mt-2 h-11 border-2 focus:ring-2 focus:ring-purple-500",
+                          waybillError && "border-red-500 focus:ring-red-500",
+                          waybillValid && !waybillError && "border-green-500 focus:ring-green-500"
+                        )}
+                      />
+                      {waybillChecking && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 mt-1">
+                          <div className="animate-spin h-4 w-4 border-2 border-purple-600 border-t-transparent rounded-full"></div>
+                        </div>
+                      )}
+                      {waybillValid && !waybillChecking && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 mt-1">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Validation Error Message */}
+                    {waybillError && (
+                      <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                        <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-2">
+                          ❌ {waybillError}
+                        </p>
+                        {duplicateOrders.length > 0 && (
+                          <div className="space-y-1">
+                            {duplicateOrders.map((order, index) => (
+                              <div key={index} className="text-xs text-red-600 dark:text-red-500 flex items-center gap-2">
+                                <span className="font-mono">•</span>
+                                <span>
+                                  Order {order.orderNumber} - {order.location}
+                                  {order.isCancelled && <span className="ml-1 text-orange-600">(Cancelled)</span>}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-xs text-red-600 dark:text-red-500 mt-2 font-medium">
+                          Please use a unique waybill number.
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Success Message */}
+                    {waybillValid && !waybillError && orderForm.waybill && (
+                      <p className="mt-2 text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        Waybill is unique and valid
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Notes (Optional)</Label>
@@ -844,10 +952,10 @@ export default function POSPage() {
             </Button>
             <Button
               onClick={handleSubmitOrder}
-              disabled={loading || !orderForm.salesChannel || !orderForm.store || !orderForm.courier || !orderForm.waybill || !orderForm.customerName || !orderForm.customerAddress || !orderForm.customerContact}
+              disabled={loading || !orderForm.salesChannel || !orderForm.store || !orderForm.courier || !orderForm.waybill || !orderForm.customerName || !orderForm.customerAddress || !orderForm.customerContact || waybillError !== null || !waybillValid || waybillChecking}
               className="h-11 px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 font-semibold shadow-lg shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Submitting..." : "Submit Order"}
+              {loading ? "Submitting..." : waybillChecking ? "Validating..." : "Submit Order"}
             </Button>
           </div>
         </DialogContent>
