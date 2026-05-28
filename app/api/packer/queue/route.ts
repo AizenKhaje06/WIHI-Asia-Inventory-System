@@ -39,7 +39,8 @@ export async function GET(request: NextRequest) {
       orderDate: order.date,
       channel: order.sales_channel,
       store: order.store,
-      courier: order.courier || 'N/A'
+      courier: order.courier || 'N/A',
+      is_cancelled: order.is_cancelled || false
     })) || []
 
     return NextResponse.json({

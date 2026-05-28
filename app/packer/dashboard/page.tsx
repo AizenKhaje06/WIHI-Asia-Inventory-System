@@ -971,12 +971,31 @@ export default function PackerDashboard() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
-                      Ready to Pack?
+                      {selectedOrder.is_cancelled ? 'Order Cancelled' : 'Ready to Pack?'}
                     </h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
-                      Confirm that all items are packed and ready for dispatch. This action will mark the order as packed.
+                      {selectedOrder.is_cancelled 
+                        ? 'This order has been cancelled and cannot be packed.' 
+                        : 'Confirm that all items are packed and ready for dispatch. This action will mark the order as packed.'}
                     </p>
                   </div>
+                  
+                  {selectedOrder.is_cancelled && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl">⚠️</span>
+                        <div>
+                          <p className="text-sm font-semibold text-red-700 dark:text-red-400">
+                            Order Cancelled
+                          </p>
+                          <p className="text-xs text-red-600 dark:text-red-500 mt-1">
+                            This order was cancelled by the department and cannot be packed.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="flex gap-3">
                     <Button
                       variant="outline"
@@ -984,12 +1003,12 @@ export default function PackerDashboard() {
                       disabled={packing}
                       className="flex-1 h-12 text-base border-2"
                     >
-                      Cancel
+                      {selectedOrder.is_cancelled ? 'Close' : 'Cancel'}
                     </Button>
                     <Button
                       onClick={handleConfirmPack}
-                      disabled={packing}
-                      className="flex-1 h-12 text-base bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 font-semibold shadow-lg"
+                      disabled={packing || selectedOrder.is_cancelled}
+                      className="flex-1 h-12 text-base bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {packing ? (
                         <>
