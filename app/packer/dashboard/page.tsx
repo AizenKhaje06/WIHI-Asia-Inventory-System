@@ -48,7 +48,6 @@ export default function PackerDashboard() {
   const [allOrders, setAllOrders] = useState<Order[]>([])
   const [pendingOrders, setPendingOrders] = useState<Order[]>([])
   const [packedHistory, setPackedHistory] = useState<PackedOrder[]>([])
-  const [filteredPending, setFilteredPending] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedChannel, setSelectedChannel] = useState<string>('All')
@@ -128,8 +127,56 @@ export default function PackerDashboard() {
     return () => clearInterval(interval)
   }, [])
 
-  useEffect(() => {
-    filterOrders()
+  // Use useMemo for filtering instead of useEffect to prevent unnecessary re-renders
+  const filteredOrders = useMemo(() => {
+    let filtered = pendingOrders
+
+    // Filter by status
+    if (statusFilter === 'Pending') {
+      filtered = filtered.filter(order => !order.is_cancelled)
+    } else if (statusFilter === 'Cancelled') {
+      filtered = filtered.filter(order => order.is_cancelled)
+    } else if (statusFilter === 'Packed') {
+      // Show packed history - convert PackedOrder to Order format
+      filtered = packedHistory.map((packed: PackedOrder) => ({
+        id: packed.id,
+        orderNumber: packed.orderNumber,
+        waybill: packed.waybill,
+        customerName: packed.customerName,
+        customerPhone: '',
+        customerAddress: '',
+        itemName: packed.itemName,
+        quantity: packed.quantity,
+        totalAmount: packed.totalAmount,
+        orderStatus: 'Packed',
+        parcelStatus: 'PACKED',
+        orderDate: packed.packedAt,
+        channel: '',
+        store: '',
+        courier: '',
+        is_cancelled: false
+      })) as Order[]
+    } else if (statusFilter === 'All') {
+      // Show all pending orders (both cancelled and not cancelled)
+      filtered = pendingOrders
+    }
+
+    // Filter by channel (skip for packed orders as they don't have channel info)
+    if (selectedChannel !== 'All' && statusFilter !== 'Packed') {
+      filtered = filtered.filter(order => order.channel === selectedChannel)
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(order =>
+        order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.waybill.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    return filtered
   }, [searchTerm, selectedChannel, statusFilter, pendingOrders, packedHistory])
 
   const fetchData = async (silent = false) => {
@@ -147,11 +194,6 @@ export default function PackerDashboard() {
       // Only update state if data actually changed (prevents flickering)
       const newQueue = queueData.queue || []
       setPendingOrders(prev => {
-        const prevIds = prev.map(o => o.id).join(',')
-        const newIds = newQueue.map((o: Order) => o.id).join(',')
-        return prevIds === newIds ? prev : newQueue
-      })
-      setFilteredPending(prev => {
         const prevIds = prev.map(o => o.id).join(',')
         const newIds = newQueue.map((o: Order) => o.id).join(',')
         return prevIds === newIds ? prev : newQueue
@@ -278,7 +320,6 @@ export default function PackerDashboard() {
 
       // OPTIMISTIC UPDATE: Remove from pending immediately
       setPendingOrders(prev => prev.filter(o => o.id !== order.id))
-      setFilteredPending(prev => prev.filter(o => o.id !== order.id))
 
       const response = await fetch(`/api/packer/pack/${order.id}`, {
         method: 'PUT',
@@ -295,7 +336,6 @@ export default function PackerDashboard() {
       if (!response.ok) {
         // ROLLBACK: Add back to pending if failed
         setPendingOrders(prev => [...prev, order])
-        setFilteredPending(prev => [...prev, order])
         throw new Error(data.error || 'Failed to pack order')
       }
 
@@ -505,7 +545,7 @@ export default function PackerDashboard() {
                   Packing Queue
                 </CardTitle>
                 <CardDescription className="mt-1 text-xs sm:text-sm">
-                  {filteredPending.length} {filteredPending.length === 1 ? 'order' : 'orders'} ready
+                  {filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'} ready
                 </CardDescription>
               </div>
               <div className="flex gap-2 flex-wrap justify-end flex-shrink-0">
@@ -575,7 +615,7 @@ export default function PackerDashboard() {
           </div>
 
           {/* Table */}
-          {filteredPending.length === 0 ? (
+          {filteredOrders.length === 0 ? (
             <div className="text-center py-12">
               <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
               <p className="text-slate-600 dark:text-slate-400 font-medium">
@@ -627,7 +667,7 @@ export default function PackerDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                    {filteredPending.map((order) => (
+                    {filteredOrders.map((order) => (
                       <tr
                         key={order.id}
                         className={`transition-all duration-200 cursor-pointer ${
