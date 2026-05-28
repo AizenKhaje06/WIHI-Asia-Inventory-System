@@ -30,6 +30,7 @@ interface Order {
   channel: string
   store: string
   courier: string
+  is_cancelled?: boolean
 }
 
 interface PackedOrder {
@@ -208,6 +209,23 @@ export default function PackerDashboard() {
 
     if (!order) {
       toast.error('Order not found in queue')
+      return
+    }
+
+    // Check if order is cancelled
+    if ((order as any).is_cancelled) {
+      toast.error('⚠️ This order is already cancelled', {
+        description: 'This order was cancelled by the department and cannot be packed.',
+        duration: 4000,
+        position: 'top-center',
+        style: {
+          background: '#ef4444',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '600',
+          padding: '16px 24px',
+        }
+      })
       return
     }
 
@@ -566,7 +584,11 @@ export default function PackerDashboard() {
                     {filteredPending.map((order) => (
                       <tr
                         key={order.id}
-                        className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                        className={`transition-all duration-200 cursor-pointer ${
+                          order.is_cancelled 
+                            ? 'bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30' 
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                        }`}
                       >
                         <td className="py-3 px-3">
                           <div className="flex flex-col">

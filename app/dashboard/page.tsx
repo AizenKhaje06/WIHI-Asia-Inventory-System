@@ -646,7 +646,10 @@ export default function DashboardPage() {
             {stats?.cancelledOrdersByChannel && Object.keys(stats.cancelledOrdersByChannel).length > 0 ? (
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart 
-                  data={Object.entries(stats.cancelledOrdersByChannel).map(([name, count]) => ({ name, count }))} 
+                  data={Object.entries(stats.cancelledOrdersByChannel).map(([name, data]) => ({ 
+                    name, 
+                    count: typeof data === 'object' ? data.count : data 
+                  }))} 
                   layout="vertical"
                   margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
                 >

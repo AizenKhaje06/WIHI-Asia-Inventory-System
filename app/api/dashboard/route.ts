@@ -514,6 +514,17 @@ export async function GET(request: Request) {
       { reason: 'Other', count: Math.floor(totalCancelledOrders * 0.1) },
     ].filter(r => r.count > 0)
 
+    // Return Count by Sales Channel (for KPI cards)
+    const returnedOrdersByChannel = returnedOrders.reduce((acc: { [key: string]: { count: number; value: number } }, order) => {
+      const channel = order.sales_channel || 'Unknown'
+      if (!acc[channel]) {
+        acc[channel] = { count: 0, value: 0 }
+      }
+      acc[channel].count += 1 // Count orders
+      acc[channel].value += order.total || 0 // Sum total value
+      return acc
+    }, {})
+
     // Average order value
     const averageOrderValue = financialMetrics.totalOrders > 0 
       ? financialMetrics.totalRevenue / financialMetrics.totalOrders 
@@ -622,6 +633,7 @@ export async function GET(request: Request) {
       cancelledOrdersValue,
       cancellationRate,
       topCancellationReasons,
+      cancelledOrdersByChannel: returnedOrdersByChannel, // Return Count by Sales Channel
     }
 
     console.log('[Dashboard API] Financial Metrics Summary:', {

@@ -45,6 +45,7 @@ interface Order {
   packed_at: string | null
   created_at?: string
   orderDate?: string
+  is_cancelled?: boolean
 }
 
 /**
@@ -65,6 +66,8 @@ export default function PackingQueuePage() {
   const [isEditMode, setIsEditMode] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [editForm, setEditForm] = useState({
     customerName: '',
     customerPhone: '',
@@ -418,6 +421,40 @@ export default function PackingQueuePage() {
     }
   }
 
+  const handleCancelOrder = async () => {
+    if (!selectedOrder) return
+
+    try {
+      setCancelling(true)
+      const headers = getAuthHeaders()
+      const response = await fetch(`/api/orders/${selectedOrder.id}/cancel`, {
+        method: 'PATCH',
+        headers: {
+          ...headers,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        console.error('Cancel order error:', data)
+        throw new Error(data.error || data.details || 'Failed to cancel order')
+      }
+
+      toast.success('Order cancelled successfully')
+      setShowCancelConfirm(false)
+      setShowDetailsModal(false)
+      setSelectedOrder(null)
+      fetchOrders()
+    } catch (error: any) {
+      console.error('Error cancelling order:', error)
+      toast.error(error.message || 'Failed to cancel order')
+    } finally {
+      setCancelling(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center min-h-[600px]">
@@ -595,7 +632,11 @@ export default function PackingQueuePage() {
                     {filteredOrders.map((order) => (
                       <tr
                         key={order.id}
-                        className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                        className={`transition-all duration-200 cursor-pointer ${
+                          order.is_cancelled 
+                            ? 'bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30' 
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                        }`}
                       >
                       <td className="py-3 px-4">
                         <div className="flex flex-col">
@@ -1045,20 +1086,47 @@ export default function PackingQueuePage() {
                           Actions
                         </h3>
                         <p className="text-sm text-slate-600 dark:text-slate-400">
-                          Mark this order as packed or delete it from the queue.
+                          {selectedOrder?.is_cancelled 
+                            ? 'This order has been cancelled and cannot be packed.' 
+                            : 'Mark this order as packed, cancel it, or delete it from the queue.'}
                         </p>
                       </div>
+                      
+                      {selectedOrder?.is_cancelled && (
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                          <p className="text-sm font-semibold text-red-700 dark:text-red-400">
+                            ⚠️ Order Cancelled
+                          </p>
+                          <p className="text-xs text-red-600 dark:text-red-500 mt-1">
+                            This order was cancelled by the department and cannot be packed.
+                          </p>
+                        </div>
+                      )}
+                      
                       <div className="flex gap-3">
                         <Button
                           onClick={() => {
                             setShowDetailsModal(false)
                             openConfirmDialog(selectedOrder)
                           }}
-                          className="flex-1 h-12 px-8 rounded-xl font-bold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg"
+                          disabled={selectedOrder?.is_cancelled}
+                          className="flex-1 h-12 px-8 rounded-xl font-bold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <CheckCircle className="h-5 w-5 mr-3" />
                           MARK AS PACKED
                         </Button>
+                        
+                        {/* CANCEL button - Only for department accounts (operations role) */}
+                        {userRole === 'operations' && !selectedOrder?.is_cancelled && (
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowCancelConfirm(true)}
+                            className="h-12 px-8 rounded-xl font-bold border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:border-orange-600 dark:text-orange-500 dark:hover:bg-orange-950"
+                          >
+                            CANCEL
+                          </Button>
+                        )}
+                        
                         <Button
                           variant="destructive"
                           onClick={() => setShowDeleteConfirm(true)}
@@ -1147,6 +1215,43 @@ export default function PackingQueuePage() {
                   <Trash2 className="h-5 w-5 mr-3" />
                   DELETE ORDER
                 </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-orange-600 dark:text-orange-400">Cancel Order</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel order{' '}
+              <span className="font-mono font-semibold">
+                #{(selectedOrder?.orderNumber || selectedOrder?.id || '').slice(-6)}
+              </span>?{' '}
+              <span className="text-orange-600 dark:text-orange-400 font-semibold">
+                This will prevent the order from being packed.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cancelling} className="h-12 px-8 rounded-xl font-semibold">
+              GO BACK
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelOrder}
+              disabled={cancelling}
+              className="h-12 px-8 rounded-xl font-bold bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              {cancelling ? (
+                <>
+                  <RefreshCw className="h-5 w-5 mr-3 animate-spin" />
+                  CANCELLING...
+                </>
+              ) : (
+                'CANCEL ORDER'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
