@@ -258,7 +258,7 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl p-0 gap-0 border-2 border-slate-300 dark:border-slate-700">
+      <DialogContent className="max-w-3xl p-0 gap-0 border-2 border-slate-300 dark:border-slate-700 [&>button]:hidden">
         <VisuallyHidden>
           <DialogTitle>Barcode Scanner</DialogTitle>
         </VisuallyHidden>
@@ -270,24 +270,34 @@ export function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
             <h2 className="text-lg font-bold text-white dark:text-slate-900 uppercase tracking-wide">
               SCAN ITEM
             </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={switchMode}
-              className="h-8 text-white dark:text-slate-900 hover:bg-white/20 dark:hover:bg-slate-900/20"
-            >
-              {cameraActive ? (
-                <>
-                  <Keyboard className="h-4 w-4 mr-2" />
-                  Input Mode
-                </>
-              ) : (
-                <>
-                  <Camera className="h-4 w-4 mr-2" />
-                  Camera Mode
-                </>
-              )}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={switchMode}
+                className="h-8 text-white dark:text-slate-900 hover:bg-white/20 dark:hover:bg-slate-900/20"
+              >
+                {cameraActive ? (
+                  <>
+                    <Keyboard className="h-4 w-4 mr-2" />
+                    Input Mode
+                  </>
+                ) : (
+                  <>
+                    <Camera className="h-4 w-4 mr-2" />
+                    Camera Mode
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="h-8 w-8 p-0 text-white dark:text-slate-900 hover:bg-white/20 dark:hover:bg-slate-900/20"
+              >
+                <XCircle className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
 
           {/* Main Content */}
