@@ -48,13 +48,25 @@ export async function PUT(
     await updateInventoryItem(id, body)
     invalidateCachePattern('inventory')
     
-    const changes = Object.entries(body).map(([key, value]) => `${key}: ${value}`).join(', ')
-    await addLog({
-      operation: "update",
-      itemId: id,
-      itemName: item.name,
-      details: `Updated "${item.name}" by ${user.displayName} - Changes: ${changes}`
-    })
+    // Skip logging if only imageUrl is being updated (happens during product creation with image upload)
+    const updatedFields = Object.keys(body)
+    const isOnlyImageUpdate = updatedFields.length === 1 && updatedFields[0] === 'imageUrl'
+    
+    if (!isOnlyImageUpdate) {
+      const changes = Object.entries(body)
+        .filter(([key]) => key !== 'imageUrl') // Don't include imageUrl in change log
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(', ')
+      
+      if (changes) { // Only log if there are actual changes to log
+        await addLog({
+          operation: "update",
+          itemId: id,
+          itemName: item.name,
+          details: `Updated "${item.name}" by ${user.displayName} - Changes: ${changes}`
+        })
+      }
+    }
     
     return NextResponse.json({ success: true })
   } catch (error) {

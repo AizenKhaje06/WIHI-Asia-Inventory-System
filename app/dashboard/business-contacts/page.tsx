@@ -38,6 +38,7 @@ export default function BusinessContactsPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState<BusinessContact | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
@@ -149,6 +150,7 @@ export default function BusinessContactsPage() {
   async function handleDelete() {
     if (!selectedContact) return
     try {
+      setIsDeleting(true)
       await apiDelete(`/api/business-contacts/${selectedContact.id}`)
       setDeleteDialogOpen(false)
       setSelectedContact(null)
@@ -157,6 +159,8 @@ export default function BusinessContactsPage() {
     } catch (error) {
       console.error("Error deleting contact:", error)
       toast.error("Failed to delete contact")
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -788,25 +792,107 @@ export default function BusinessContactsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Professional SaaS Delete Confirmation Modal */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Contact</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-slate-600 dark:text-slate-400">
-              Are you sure you want to delete <strong>{selectedContact?.name}</strong>? This action cannot be undone.
-            </p>
+        <DialogContent className="sm:max-w-[480px] p-0 gap-0 overflow-hidden border-0">
+          {/* Header with gradient background */}
+          <div className="relative bg-gradient-to-br from-red-500 via-red-600 to-red-700 px-6 py-5 text-center">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-20"></div>
+            <div className="relative">
+              <div className="inline-flex items-center justify-center w-14 h-14 mx-auto mb-3 rounded-full bg-white/20 backdrop-blur-sm ring-4 ring-white/30">
+                <Trash2 className="h-7 w-7 text-white" strokeWidth={2.5} />
+              </div>
+              <DialogTitle className="text-xl font-bold !text-white tracking-tight">
+                Delete Contact
+              </DialogTitle>
+              <p className="text-white text-xs mt-1.5 font-medium">
+                This action is permanent and cannot be undone
+              </p>
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Delete Contact
-            </Button>
-          </DialogFooter>
+
+          {/* Content */}
+          <div className="px-6 py-6 space-y-4">
+            <div className="text-center space-y-3">
+              <p className="text-slate-700 dark:text-slate-300 font-medium">
+                Are you sure you want to delete this contact?
+              </p>
+              {selectedContact && (
+                <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3 rounded-lg">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide font-semibold mb-1">
+                    Contact Name
+                  </p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">
+                    {selectedContact.name}
+                  </p>
+                  {selectedContact.companyName && (
+                    <>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide font-semibold mb-1 mt-2">
+                        Company
+                      </p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">
+                        {selectedContact.companyName}
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Warning box */}
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-red-900 dark:text-red-100 mb-1">
+                    Warning: Permanent Action
+                  </p>
+                  <p className="text-xs text-red-700 dark:text-red-300">
+                    All contact data and associated records will be permanently removed from the system.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer with buttons */}
+          <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setDeleteDialogOpen(false)
+                  setSelectedContact(null)
+                }}
+                disabled={isDeleting}
+                className="h-11 px-6 font-semibold border-2 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="h-11 px-6 font-semibold bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Please wait...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Contact
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

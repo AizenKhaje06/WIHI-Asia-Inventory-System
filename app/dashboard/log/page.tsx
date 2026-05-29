@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DateRangePicker } from "@/components/ui/date-range-picker"
 import { 
   Database, 
   Search, 
@@ -31,6 +30,7 @@ import { toast } from "sonner"
 import { apiGet } from "@/lib/api-client"
 import { getCurrentUserRole } from "@/lib/role-utils"
 import { getCurrentUser } from "@/lib/auth"
+import { EnterpriseDateRangePicker } from "@/components/ui/enterprise-date-range-picker"
 
 const ITEMS_PER_PAGE = 50
 
@@ -41,6 +41,8 @@ const OPERATION_CONFIG = {
   delete: { label: "Delete", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800", icon: Trash2 },
   restock: { label: "Restock", color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-800", icon: RefreshCw },
   sale: { label: "Sale", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800", icon: ShoppingCart },
+  cancel: { label: "Cancelled", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800", icon: X },
+  uncancel: { label: "Uncancelled", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800", icon: RefreshCw },
   'transaction-cancelled': { label: "Cancelled", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800", icon: X },
   'internal-usage': { label: "Internal Usage", color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800", icon: Package },
   'demo-display': { label: "Demo/Display", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800", icon: Activity },
@@ -130,11 +132,22 @@ export default function LogPage() {
       )
     }
 
-    // Operation filter
+    // Operation filter (now includes cancel and uncancel)
     if (operationFilter !== "all") {
       filtered = filtered.filter(log => {
+        const operation = log.operation?.toLowerCase() || ''
+        
+        // Direct match for cancel/uncancel operations (case-insensitive)
+        if (operationFilter === 'cancel' && operation === 'cancel') {
+          return true
+        }
+        
+        if (operationFilter === 'uncancel' && operation === 'uncancel') {
+          return true
+        }
+        
         // Use the same logic as getOperationBadge to determine actual operation
-        let actualOperation = log.operation?.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-') || 'other'
+        let actualOperation = operation.replace(/\s+/g, '-').replace(/_/g, '-') || 'other'
         
         // Check if it's a cancellation operation
         if (actualOperation.includes('cancelled') || (log.details?.toLowerCase().includes('transaction') && log.details?.toLowerCase().includes('cancelled'))) {
@@ -142,7 +155,7 @@ export default function LogPage() {
         }
         
         // Only override based on details if operation is still unclear
-        const explicitOperations = ['create', 'update', 'delete', 'restock', 'transaction-cancelled', 'to-be-packed', 'sale']
+        const explicitOperations = ['create', 'update', 'delete', 'restock', 'transaction-cancelled', 'to-be-packed', 'sale', 'cancel', 'uncancel']
         const isExplicitOperation = explicitOperations.includes(actualOperation)
         
         if (!isExplicitOperation) {
@@ -155,7 +168,6 @@ export default function LogPage() {
           } else if (detailsLower.includes('warehouse') || detailsLower.includes('transferred')) {
             actualOperation = 'warehouse'
           }
-          // REMOVED: else if (detailsLower.includes('dispatched')...) - no longer needed
         }
         
         return actualOperation === operationFilter
@@ -236,13 +248,19 @@ export default function LogPage() {
     // Normalize operation: convert to lowercase, replace spaces and underscores with dashes
     let actualOperation = operation?.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-') || 'other'
     
+    // Direct mapping for cancel/uncancel
+    if (actualOperation === 'cancel') {
+      actualOperation = 'cancel'
+    } else if (actualOperation === 'uncancel') {
+      actualOperation = 'uncancel'
+    }
     // Check if it's a cancellation operation
-    if (actualOperation.includes('cancelled') || details?.toLowerCase().includes('transaction') && details?.toLowerCase().includes('cancelled')) {
+    else if (actualOperation.includes('cancelled') || details?.toLowerCase().includes('transaction') && details?.toLowerCase().includes('cancelled')) {
       actualOperation = 'transaction-cancelled'
     }
     
     // Only override based on details if operation is still unclear
-    const explicitOperations = ['create', 'update', 'delete', 'restock', 'transaction-cancelled', 'to-be-packed', 'sale']
+    const explicitOperations = ['create', 'update', 'delete', 'restock', 'transaction-cancelled', 'to-be-packed', 'sale', 'cancel', 'uncancel']
     const isExplicitOperation = explicitOperations.includes(actualOperation)
     
     if (!isExplicitOperation) {
@@ -255,7 +273,6 @@ export default function LogPage() {
       } else if (detailsLower.includes('warehouse') || detailsLower.includes('transferred')) {
         actualOperation = 'warehouse'
       }
-      // REMOVED: else if (detailsLower.includes('dispatched')...) - no longer needed
     }
     
     const config = OPERATION_CONFIG[actualOperation as keyof typeof OPERATION_CONFIG] || OPERATION_CONFIG.other
@@ -331,14 +348,26 @@ export default function LogPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Page Header - Professional Style */}
-      <div className="mb-8">
-        <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Activity Logs Overview</h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">View all system operations and changes</p>
+      {/* Page Header with Date Filter - Professional Style */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Activity Logs Overview</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">View all system operations and changes</p>
+        </div>
+        
+        {/* Date Range Filter - Aligned with title */}
+        <EnterpriseDateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onDateChange={(start, end) => {
+            setStartDate(start)
+            setEndDate(end)
+          }}
+        />
       </div>
 
       {/* Statistics Cards - Professional Corporate Design */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {/* Total Logs - Blue */}
         <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
           <div className="flex items-center gap-3">
@@ -418,105 +447,93 @@ export default function LogPage() {
         </Card>
       </div>
 
-      {/* Filters Card - Professional Design */}
-      <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm mb-6">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 mb-5">
+      {/* Filters Section - SaaS Professional Design */}
+      <div className="mb-4">
+        {/* Title Row */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-slate-600 dark:text-slate-400" />
             <h3 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">Search & Filter Logs</h3>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            {/* Clear All Button - Aligned with title */}
             {hasActiveFilters && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={clearFilters}
-                className="ml-auto h-8 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                className="h-7 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
               >
                 <X className="h-3 w-3" />
                 Clear All
               </Button>
             )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="Search logs..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
-              />
+            
+            {/* Results Summary - Above filters on right */}
+            <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+              Showing <span className="font-bold text-slate-900 dark:text-white">{paginatedLogs.length}</span> of <span className="font-bold text-slate-900 dark:text-white">{filteredLogs.length}</span> logs
+              {hasActiveFilters && ` (filtered from ${logs.length} total)`}
             </div>
+          </div>
+        </div>
 
-            {/* Operation Filter */}
-            <Select value={operationFilter} onValueChange={setOperationFilter}>
-              <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                <SelectValue placeholder="All Operations" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Operations</SelectItem>
-                <SelectItem value="create">Create</SelectItem>
-                <SelectItem value="update">Update</SelectItem>
-                <SelectItem value="delete">Delete</SelectItem>
-                <SelectItem value="restock">Restock</SelectItem>
-                <SelectItem value="sale">Sale</SelectItem>
-                <SelectItem value="to-be-packed">To Be Packed</SelectItem>
-                <SelectItem value="transaction-cancelled">Cancelled Transactions</SelectItem>
-                <SelectItem value="internal-usage">Internal Usage</SelectItem>
-                <SelectItem value="demo-display">Demo/Display</SelectItem>
-                <SelectItem value="warehouse">Warehouse</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Sales Channel Filter - Admin Only */}
-            {!isDepartment && (
-              <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-                <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  <SelectValue placeholder="All Channels" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Channels</SelectItem>
-                  <SelectItem value="Shopee">Shopee</SelectItem>
-                  <SelectItem value="Lazada">Lazada</SelectItem>
-                  <SelectItem value="Facebook">Facebook</SelectItem>
-                  <SelectItem value="TikTok">TikTok</SelectItem>
-                  <SelectItem value="Office Store">Office Store</SelectItem>
-                  <SelectItem value="Physical Store">Physical Store</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-
-            {/* Date Range Filter */}
-            <DateRangePicker
-              startDate={startDate}
-              endDate={endDate}
-              onDateChange={(start, end) => {
-                setStartDate(start)
-                setEndDate(end)
-              }}
-              className="h-10"
+        {/* Search and Filters Row */}
+        <div className="flex gap-3">
+          {/* Search - Fixed width */}
+          <div className="relative" style={{ width: '450px' }}>
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Search logs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-slate-800"
             />
+          </div>
 
-            {/* Sort */}
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                <SelectValue placeholder="Sort by" />
+          {/* Spacer to push filters to the right */}
+          <div className="flex-1" />
+
+          {/* Operation Filter */}
+          <Select value={operationFilter} onValueChange={setOperationFilter}>
+            <SelectTrigger className="h-10 w-[200px] bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <SelectValue placeholder="All Operations" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Operations</SelectItem>
+              <SelectItem value="create">Create</SelectItem>
+              <SelectItem value="update">Update</SelectItem>
+              <SelectItem value="delete">Delete</SelectItem>
+              <SelectItem value="restock">Restock</SelectItem>
+              <SelectItem value="sale">Sale</SelectItem>
+              <SelectItem value="to-be-packed">To Be Packed</SelectItem>
+              <SelectItem value="cancel">Cancelled Orders</SelectItem>
+              <SelectItem value="uncancel">Uncancelled Orders</SelectItem>
+              <SelectItem value="internal-usage">Internal Usage</SelectItem>
+              <SelectItem value="demo-display">Demo/Display</SelectItem>
+              <SelectItem value="warehouse">Warehouse</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Sales Channel Filter - Admin Only */}
+          {!isDepartment && (
+            <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
+              <SelectTrigger className="h-10 w-[180px] bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <SelectValue placeholder="All Channels" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="all">All Channels</SelectItem>
+                <SelectItem value="Shopee">Shopee</SelectItem>
+                <SelectItem value="Lazada">Lazada</SelectItem>
+                <SelectItem value="Facebook">Facebook</SelectItem>
+                <SelectItem value="TikTok">TikTok</SelectItem>
+                <SelectItem value="Office Store">Office Store</SelectItem>
+                <SelectItem value="Physical Store">Physical Store</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          {/* Results Summary */}
-          <div className="mt-4 text-sm text-slate-600 dark:text-slate-400 font-medium">
-            Showing <span className="font-bold text-slate-900 dark:text-white">{paginatedLogs.length}</span> of <span className="font-bold text-slate-900 dark:text-white">{filteredLogs.length}</span> logs
-            {hasActiveFilters && ` (filtered from ${logs.length} total)`}
-          </div>
-        </CardContent>
-      </Card>
+          )}
+        </div>
+      </div>
 
       {/* Logs Table - Professional Design */}
       <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">

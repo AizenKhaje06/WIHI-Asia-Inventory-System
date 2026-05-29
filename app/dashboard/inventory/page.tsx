@@ -177,6 +177,7 @@ export default function InventoryPage() {
   // Delete confirmation modal state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [itemToDelete, setItemToDelete] = useState<{id: string, name: string} | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [createBundleOpen, setCreateBundleOpen] = useState(false)
 
   useEffect(() => {
@@ -339,6 +340,8 @@ export default function InventoryPage() {
 
   async function handleDelete(id: string) {
     try {
+      setIsDeleting(true)
+      
       // Check if it's a bundle (bundles have ID starting with "BUNDLE-")
       const isBundle = id.startsWith('BUNDLE-')
       const endpoint = isBundle ? `/api/bundles/${id}` : `/api/items/${id}`
@@ -373,6 +376,8 @@ export default function InventoryPage() {
     } catch (error) {
       console.error("[Inventory] Error deleting item:", error)
       showError(error instanceof Error ? error.message : "Failed to delete product")
+    } finally {
+      setIsDeleting(false)
     }
   }
   
@@ -2032,10 +2037,10 @@ export default function InventoryPage() {
               <div className="inline-flex items-center justify-center w-14 h-14 mx-auto mb-3 rounded-full bg-white/20 backdrop-blur-sm ring-4 ring-white/30">
                 <AlertCircle className="h-7 w-7 text-white" strokeWidth={2.5} />
               </div>
-              <DialogTitle className="text-xl font-bold text-white tracking-tight">
+              <DialogTitle className="text-xl font-bold !text-white tracking-tight">
                 Delete Product
               </DialogTitle>
-              <p className="text-red-100 text-xs mt-1.5 font-medium">
+              <p className="text-white text-xs mt-1.5 font-medium">
                 This action is permanent and cannot be undone
               </p>
             </div>
@@ -2085,6 +2090,7 @@ export default function InventoryPage() {
                   setDeleteDialogOpen(false)
                   setItemToDelete(null)
                 }}
+                disabled={isDeleting}
                 className="h-11 px-6 font-semibold border-2 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 Cancel
@@ -2092,10 +2098,23 @@ export default function InventoryPage() {
               <Button
                 type="button"
                 onClick={() => itemToDelete && handleDelete(itemToDelete.id)}
-                className="h-11 px-6 font-semibold bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all"
+                disabled={isDeleting}
+                className="h-11 px-6 font-semibold bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete Product
+                {isDeleting ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Please wait...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Product
+                  </>
+                )}
               </Button>
             </div>
           </div>

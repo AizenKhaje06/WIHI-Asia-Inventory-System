@@ -115,12 +115,28 @@ export function DateRangePicker({
   }
 
   const formatDateRange = () => {
-    if (!tempStart && !tempEnd) return "Select date range"
-    if (tempStart && !tempEnd) return `${tempStart.toLocaleDateString()} - ...`
-    if (tempStart && tempEnd) {
-      return `${tempStart.toLocaleDateString()} - ${tempEnd.toLocaleDateString()}`
+    const today = new Date()
+    const isToday = tempStart && tempEnd && 
+      tempStart.toDateString() === today.toDateString() && 
+      tempEnd.toDateString() === today.toDateString()
+    
+    if (!tempStart && !tempEnd) {
+      return `Today: ${today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
     }
-    return "Select date range"
+    
+    if (isToday) {
+      return `Today: ${today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+    }
+    
+    if (tempStart && !tempEnd) {
+      return `${tempStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ...`
+    }
+    
+    if (tempStart && tempEnd) {
+      return `${tempStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${tempEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+    }
+    
+    return `Today: ${today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
   }
 
   const days = getDaysInMonth(currentMonth)
@@ -131,13 +147,21 @@ export function DateRangePicker({
         <Button
           variant="outline"
           className={cn(
-            "justify-start text-left font-normal",
-            !tempStart && !tempEnd && "text-muted-foreground",
+            "h-12 px-4 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800",
+            "hover:border-slate-400 dark:hover:border-slate-500 hover:shadow-md transition-all",
+            "flex items-center justify-between gap-3 min-w-[280px]",
             className
           )}
         >
-          <Calendar className="mr-2 h-4 w-4" />
-          {formatDateRange()}
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700">
+              <Calendar className="h-5 w-5 text-slate-700 dark:text-slate-300" />
+            </div>
+            <span className="text-base font-semibold text-slate-700 dark:text-slate-200">
+              {formatDateRange()}
+            </span>
+          </div>
+          <ChevronRight className="h-5 w-5 text-slate-600 dark:text-slate-400 rotate-90" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { LoadingOverlay } from '@/components/ui/loading-overlay'
 import { Search, Package, RefreshCw, CheckCircle, ShoppingCart, TrendingUp, Eye, User, Phone, MapPin, Clock, Truck, Trash2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -46,6 +47,11 @@ interface Order {
   created_at?: string
   orderDate?: string
   is_cancelled?: boolean
+  cancellation_reason?: string
+  cancelled_by?: string
+  cancelled_at?: string
+  restored_by?: string
+  restored_at?: string
 }
 
 /**
@@ -68,6 +74,9 @@ export default function PackingQueuePage() {
   const [deleting, setDeleting] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [cancellationReason, setCancellationReason] = useState('')
+  const [cancellationReasonOther, setCancellationReasonOther] = useState('') // For "Other" option
+  const [uncancelling, setUncancelling] = useState(false)
   const [editForm, setEditForm] = useState({
     customerName: '',
     customerPhone: '',
@@ -217,7 +226,13 @@ export default function PackingQueuePage() {
         packed_by: order.packed_by,
         packed_at: order.packed_at,
         created_at: order.created_at,
-        orderDate: order.created_at
+        orderDate: order.created_at,
+        is_cancelled: order.is_cancelled,
+        cancellation_reason: order.cancellation_reason,
+        cancelled_by: order.cancelled_by,
+        cancelled_at: order.cancelled_at,
+        restored_by: order.restored_by,
+        restored_at: order.restored_at
       } as any))
       
       console.log('[Packing Queue] Orders to display:', mappedOrders.map(o => ({
@@ -423,17 +438,46 @@ export default function PackingQueuePage() {
 
   const handleCancelOrder = async () => {
     if (!selectedOrder) return
+    
+    // Validate cancellation reason
+    if (!cancellationReason || cancellationReason.trim() === '') {
+      toast.error('Please select a cancellation reason')
+      return
+    }
+    
+    // If "Other" is selected, validate the custom reason
+    if (cancellationReason === 'Other (please specify)' && (!cancellationReasonOther || cancellationReasonOther.trim() === '')) {
+      toast.error('Please specify the cancellation reason')
+      return
+    }
+    
+    // Use custom reason if "Other" is selected, otherwise use the dropdown value
+    const finalReason = cancellationReason === 'Other (please specify)' 
+      ? cancellationReasonOther.trim() 
+      : cancellationReason
 
     try {
       setCancelling(true)
+      
+      // Add timeout to prevent hanging
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+      
       const headers = getAuthHeaders()
       const response = await fetch(`/api/orders/${selectedOrder.id}/cancel`, {
         method: 'PATCH',
         headers: {
           ...headers,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({
+          reason: finalReason,
+          cancelledBy: currentUser?.displayName || currentUser?.username || 'Unknown'
+        }),
+        signal: controller.signal
       })
+      
+      clearTimeout(timeoutId)
 
       const data = await response.json()
 
@@ -446,22 +490,93 @@ export default function PackingQueuePage() {
       
       // Update the order in the local state to mark as cancelled (keeps it in the list)
       setOrders(prev => prev.map(o => 
-        o.id === selectedOrder.id ? { ...o, is_cancelled: true } : o
+        o.id === selectedOrder.id ? { ...o, is_cancelled: true, cancellation_reason: finalReason } : o
       ))
       setFilteredOrders(prev => prev.map(o => 
-        o.id === selectedOrder.id ? { ...o, is_cancelled: true } : o
+        o.id === selectedOrder.id ? { ...o, is_cancelled: true, cancellation_reason: finalReason } : o
       ))
       
       // Update selected order to show cancelled state in modal
-      setSelectedOrder({ ...selectedOrder, is_cancelled: true })
+      setSelectedOrder({ ...selectedOrder, is_cancelled: true, cancellation_reason: finalReason })
       
       setShowCancelConfirm(false)
+      setCancellationReason('') // Reset reason
+      setCancellationReasonOther('') // Reset custom reason
       // Keep modal open so user can see the cancelled state
     } catch (error: any) {
       console.error('Error cancelling order:', error)
-      toast.error(error.message || 'Failed to cancel order')
+      if (error.name === 'AbortError') {
+        toast.error('Request timed out - Please try again')
+      } else {
+        toast.error(error.message || 'Failed to cancel order')
+      }
     } finally {
       setCancelling(false)
+    }
+  }
+
+  const handleUncancelOrder = async () => {
+    if (!selectedOrder) return
+
+    try {
+      setUncancelling(true)
+      
+      // Add timeout to prevent hanging
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+      
+      const headers = getAuthHeaders()
+      const response = await fetch(`/api/orders/${selectedOrder.id}/cancel`, {
+        method: 'POST',
+        headers: {
+          ...headers,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          restoredBy: currentUser?.displayName || currentUser?.username || 'Unknown'
+        }),
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        console.error('Uncancel order error:', data)
+        throw new Error(data.error || data.details || 'Failed to uncancel order')
+      }
+
+      toast.success('Order restored successfully - Order is now available for packing')
+      
+      // Update the order in the local state to mark as uncancelled with restoration info
+      const restorationInfo = {
+        is_cancelled: false,
+        cancellation_reason: undefined,
+        restored_by: currentUser?.displayName || currentUser?.username || 'Unknown',
+        restored_at: new Date().toISOString()
+      }
+      
+      setOrders(prev => prev.map(o => 
+        o.id === selectedOrder.id ? { ...o, ...restorationInfo } : o
+      ))
+      setFilteredOrders(prev => prev.map(o => 
+        o.id === selectedOrder.id ? { ...o, ...restorationInfo } : o
+      ))
+      
+      // Update selected order to show uncancelled state with restoration info in modal
+      setSelectedOrder({ ...selectedOrder, ...restorationInfo })
+      
+      // Keep modal open so user can see the restored state
+    } catch (error: any) {
+      console.error('Error uncancelling order:', error)
+      if (error.name === 'AbortError') {
+        toast.error('Request timed out - Please try again')
+      } else {
+        toast.error(error.message || 'Failed to uncancel order')
+      }
+    } finally {
+      setUncancelling(false)
     }
   }
 
@@ -650,19 +765,21 @@ export default function PackingQueuePage() {
                       >
                       <td className="py-3 px-4">
                         <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-start gap-2 flex-wrap">
                             <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
                               {order.waybill || order.id || 'N/A'}
                             </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
+                              #{(order.id || '').slice(-6).toUpperCase()}
+                            </span>
                             {order.is_cancelled && (
-                              <Badge className="bg-red-600 text-white text-[10px] px-2 py-0.5 font-bold">
+                              <Badge className="bg-red-600 text-white text-[9px] px-1.5 py-0 font-bold uppercase">
                                 CANCELLED
                               </Badge>
                             )}
                           </div>
-                          <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
-                            #{(order.id || '').slice(-6).toUpperCase()}
-                          </span>
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -1104,53 +1221,145 @@ export default function PackingQueuePage() {
                         </h3>
                         <p className="text-sm text-slate-600 dark:text-slate-400">
                           {selectedOrder?.is_cancelled 
-                            ? 'This order has been cancelled and cannot be packed.' 
+                            ? 'This order has been cancelled. You can restore it to allow packing.' 
                             : 'Mark this order as packed, cancel it, or delete it from the queue.'}
                         </p>
                       </div>
                       
                       {selectedOrder?.is_cancelled && (
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                          <p className="text-sm font-semibold text-red-700 dark:text-red-400">
+                          <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-2">
                             ⚠️ Order Cancelled
                           </p>
-                          <p className="text-xs text-red-600 dark:text-red-500 mt-1">
-                            This order was cancelled by the department and cannot be packed.
+                          {selectedOrder.cancellation_reason && (
+                            <div className="mb-2">
+                              <p className="text-xs font-semibold text-red-600 dark:text-red-500 uppercase tracking-wider mb-1">
+                                Reason:
+                              </p>
+                              <p className="text-sm text-red-700 dark:text-red-400 font-medium">
+                                {selectedOrder.cancellation_reason}
+                              </p>
+                            </div>
+                          )}
+                          {selectedOrder.cancelled_by && (
+                            <p className="text-xs text-red-600 dark:text-red-500">
+                              Cancelled by: <span className="font-semibold">{selectedOrder.cancelled_by}</span>
+                              {selectedOrder.cancelled_at && (
+                                <> on {parseAsPhilippineTime(selectedOrder.cancelled_at).toLocaleString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}</>
+                              )}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Show restoration info if order was previously cancelled and restored */}
+                      {!selectedOrder?.is_cancelled && selectedOrder?.restored_by && (
+                        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                          <p className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">
+                            ✓ Order Restored
+                          </p>
+                          <p className="text-xs text-green-600 dark:text-green-500">
+                            Restored by: <span className="font-semibold">{selectedOrder.restored_by}</span>
+                            {selectedOrder.restored_at && (
+                              <> on {parseAsPhilippineTime(selectedOrder.restored_at).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}</>
+                            )}
+                          </p>
+                          <p className="text-xs text-green-600 dark:text-green-500 mt-1">
+                            This order was previously cancelled
+                            {selectedOrder.cancelled_at && (
+                              <> on {parseAsPhilippineTime(selectedOrder.cancelled_at).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}</>
+                            )}
+                            {selectedOrder.cancelled_by && (
+                              <> by <span className="font-semibold">{selectedOrder.cancelled_by}</span></>
+                            )}
+                            .
                           </p>
                         </div>
                       )}
                       
                       <div className="flex gap-3">
-                        <Button
-                          onClick={() => {
-                            setShowDetailsModal(false)
-                            openConfirmDialog(selectedOrder)
-                          }}
-                          disabled={selectedOrder?.is_cancelled}
-                          className="flex-1 h-12 px-8 rounded-xl font-bold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <CheckCircle className="h-5 w-5 mr-3" />
-                          MARK AS PACKED
-                        </Button>
-                        
-                        {/* CANCEL button - Only for department accounts (operations role) */}
-                        {userRole === 'operations' && !selectedOrder?.is_cancelled && (
-                          <Button
-                            variant="outline"
-                            onClick={() => setShowCancelConfirm(true)}
-                            className="h-12 px-8 rounded-xl font-bold border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:border-orange-600 dark:text-orange-500 dark:hover:bg-orange-950"
-                          >
-                            CANCEL
-                          </Button>
+                        {selectedOrder?.is_cancelled ? (
+                          <>
+                            {/* UNCANCEL button - For admin and department accounts (operations role) */}
+                            {(userRole === 'operations' || userRole === 'admin') && (
+                              <Button
+                                onClick={handleUncancelOrder}
+                                disabled={uncancelling}
+                                className="flex-1 h-12 px-8 rounded-xl font-bold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {uncancelling ? (
+                                  <>
+                                    <RefreshCw className="h-5 w-5 mr-3 animate-spin" />
+                                    RESTORING...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="h-5 w-5 mr-3" />
+                                    RESTORE ORDER
+                                  </>
+                                )}
+                              </Button>
+                            )}
+                            
+                            <Button
+                              variant="destructive"
+                              onClick={() => setShowDeleteConfirm(true)}
+                              className="h-12 px-8 rounded-xl font-bold"
+                            >
+                              DELETE
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              onClick={() => {
+                                setShowDetailsModal(false)
+                                openConfirmDialog(selectedOrder)
+                              }}
+                              className="flex-1 h-12 px-8 rounded-xl font-bold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg"
+                            >
+                              <CheckCircle className="h-5 w-5 mr-3" />
+                              MARK AS PACKED
+                            </Button>
+                            
+                            {/* CANCEL button - For admin and department accounts (operations role) */}
+                            {(userRole === 'operations' || userRole === 'admin') && (
+                              <Button
+                                variant="outline"
+                                onClick={() => setShowCancelConfirm(true)}
+                                className="h-12 px-8 rounded-xl font-bold border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:border-orange-600 dark:text-orange-500 dark:hover:bg-orange-950"
+                              >
+                                CANCEL
+                              </Button>
+                            )}
+                            
+                            <Button
+                              variant="destructive"
+                              onClick={() => setShowDeleteConfirm(true)}
+                              className="h-12 px-8 rounded-xl font-bold"
+                            >
+                              DELETE
+                            </Button>
+                          </>
                         )}
-                        
-                        <Button
-                          variant="destructive"
-                          onClick={() => setShowDeleteConfirm(true)}
-                          className="h-12 px-8 rounded-xl font-bold"
-                        >
-                          DELETE
-                        </Button>
                       </div>
                     </>
                   )}
@@ -1198,49 +1407,119 @@ export default function PackingQueuePage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-red-600 dark:text-red-400">Delete Order</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete order{' '}
-              <span className="font-mono font-semibold">
-                #{(selectedOrder?.orderNumber || selectedOrder?.id || '').slice(-6)}
-              </span>?{' '}
-              <span className="text-red-600 dark:text-red-400 font-semibold">
-                This action cannot be undone.
-              </span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting} className="h-12 px-8 rounded-xl font-semibold">
-              CANCEL
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteOrder}
-              disabled={deleting}
-              className="h-12 px-8 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white"
-            >
-              {deleting ? (
-                <>
-                  <RefreshCw className="h-5 w-5 mr-3 animate-spin" />
-                  DELETING...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="h-5 w-5 mr-3" />
-                  DELETE ORDER
-                </>
+      {/* Professional SaaS Delete Confirmation Modal */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="sm:max-w-[480px] p-0 gap-0 overflow-hidden border-0">
+          {/* Header with gradient background */}
+          <div className="relative bg-gradient-to-br from-red-500 via-red-600 to-red-700 px-6 py-5 text-center">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-20"></div>
+            <div className="relative">
+              <div className="inline-flex items-center justify-center w-14 h-14 mx-auto mb-3 rounded-full bg-white/20 backdrop-blur-sm ring-4 ring-white/30">
+                <Trash2 className="h-7 w-7 text-white" strokeWidth={2.5} />
+              </div>
+              <DialogTitle className="text-xl font-bold !text-white tracking-tight">
+                Delete Order
+              </DialogTitle>
+              <p className="text-white text-xs mt-1.5 font-medium">
+                This action is permanent and cannot be undone
+              </p>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="px-6 py-6 space-y-4">
+            <div className="text-center space-y-3">
+              <p className="text-slate-700 dark:text-slate-300 font-medium">
+                Are you sure you want to delete this order?
+              </p>
+              {selectedOrder && (
+                <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3 rounded-lg">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide font-semibold mb-1">
+                    Order Number
+                  </p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white font-mono">
+                    #{(selectedOrder.orderNumber || selectedOrder.id || '').slice(-6)}
+                  </p>
+                  {selectedOrder.product && (
+                    <>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide font-semibold mb-1 mt-2">
+                        Product
+                      </p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">
+                        {selectedOrder.product}
+                      </p>
+                    </>
+                  )}
+                </div>
               )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </div>
+
+            {/* Warning box */}
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-red-900 dark:text-red-100 mb-1">
+                    Warning: Permanent Action
+                  </p>
+                  <p className="text-xs text-red-700 dark:text-red-300">
+                    All order data and associated records will be permanently removed from the system.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer with buttons */}
+          <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteConfirm(false)
+                  // Don't clear selectedOrder - keep the Order Details modal open
+                }}
+                disabled={deleting}
+                className="h-11 px-6 font-semibold border-2 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleDeleteOrder}
+                disabled={deleting}
+                className="h-11 px-6 font-semibold bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {deleting ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Please wait...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Order
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Cancel Confirmation Dialog */}
-      <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
-        <AlertDialogContent>
+      <AlertDialog open={showCancelConfirm} onOpenChange={(open) => {
+        setShowCancelConfirm(open)
+        if (!open) {
+          setCancellationReason('') // Reset reason when closing
+          setCancellationReasonOther('') // Reset custom reason when closing
+        }
+      }}>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-orange-600 dark:text-orange-400">Cancel Order</AlertDialogTitle>
             <AlertDialogDescription>
@@ -1253,14 +1532,78 @@ export default function PackingQueuePage() {
               </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
+          
+          {/* Cancellation Reason Dropdown */}
+          <div className="py-4 space-y-4">
+            <div>
+              <Label htmlFor="cancellation-reason" className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+                Cancellation Reason <span className="text-red-500">*</span>
+              </Label>
+              <Select 
+                value={cancellationReason} 
+                onValueChange={setCancellationReason}
+                disabled={cancelling}
+              >
+                <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none">
+                  <SelectValue placeholder="Select a reason..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Customer changed mind">Customer changed mind</SelectItem>
+                  <SelectItem value="Ordered by mistake">Ordered by mistake</SelectItem>
+                  <SelectItem value="Duplicate order">Duplicate order</SelectItem>
+                  <SelectItem value="No longer needed">No longer needed</SelectItem>
+                  <SelectItem value="Payment not completed">Payment not completed</SelectItem>
+                  <SelectItem value="Payment declined">Payment declined</SelectItem>
+                  <SelectItem value="COD not confirmed">COD not confirmed</SelectItem>
+                  <SelectItem value="Out of stock">Out of stock</SelectItem>
+                  <SelectItem value="Item damaged before packing">Item damaged before packing</SelectItem>
+                  <SelectItem value="Unable to ship to location">Unable to ship to location</SelectItem>
+                  <SelectItem value="Invalid / incomplete address">Invalid / incomplete address</SelectItem>
+                  <SelectItem value="Shipping delay issue">Shipping delay issue</SelectItem>
+                  <SelectItem value="Pricing or listing error">Pricing or listing error</SelectItem>
+                  <SelectItem value="Suspected fraudulent order">Suspected fraudulent order</SelectItem>
+                  <SelectItem value="Internal processing issue">Internal processing issue</SelectItem>
+                  <SelectItem value="Other (please specify)">Other (please specify)</SelectItem>
+                </SelectContent>
+              </Select>
+              {cancellationReason === '' && (
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Please select a reason for cancelling this order
+                </p>
+              )}
+            </div>
+            
+            {/* Show text input if "Other" is selected */}
+            {cancellationReason === 'Other (please specify)' && (
+              <div>
+                <Label htmlFor="cancellation-reason-other" className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+                  Please Specify <span className="text-red-500">*</span>
+                </Label>
+                <textarea
+                  id="cancellation-reason-other"
+                  value={cancellationReasonOther}
+                  onChange={(e) => setCancellationReasonOther(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  placeholder="Please provide details..."
+                  disabled={cancelling}
+                />
+              </div>
+            )}
+          </div>
+          
           <AlertDialogFooter>
             <AlertDialogCancel disabled={cancelling} className="h-12 px-8 rounded-xl font-semibold">
               GO BACK
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancelOrder}
-              disabled={cancelling}
-              className="h-12 px-8 rounded-xl font-bold bg-orange-600 hover:bg-orange-700 text-white"
+              disabled={
+                cancelling || 
+                cancellationReason === '' || 
+                (cancellationReason === 'Other (please specify)' && cancellationReasonOther.trim() === '')
+              }
+              className="h-12 px-8 rounded-xl font-bold bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {cancelling ? (
                 <>
@@ -1274,6 +1617,12 @@ export default function PackingQueuePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Loading Overlay */}
+      <LoadingOverlay 
+        show={cancelling || uncancelling} 
+        message={cancelling ? 'Cancelling order...' : 'Restoring order...'}
+      />
     </div>
   )
 }

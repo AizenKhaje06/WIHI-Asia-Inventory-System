@@ -119,10 +119,10 @@ export default function PackerDashboard() {
     setCurrentUser(user)
     fetchData()
 
-    // Auto-refresh every 30 seconds silently in the background
+    // Auto-refresh every 1 second silently in the background
     const interval = setInterval(() => {
       fetchData(true) // Silent refresh
-    }, 30000) // 30 seconds
+    }, 1000) // 1 second
     
     return () => clearInterval(interval)
   }, [])
