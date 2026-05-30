@@ -64,6 +64,7 @@ export default function PackingQueuePage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [salesChannelFilter, setChannelFilter] = useState<string>('all')
+  const [cancellationFilter, setCancellationFilter] = useState<string>('all')
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [packing, setPacking] = useState<string | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -155,7 +156,7 @@ export default function PackingQueuePage() {
 
   useEffect(() => {
     filterOrders()
-  }, [searchTerm, salesChannelFilter, orders])
+  }, [searchTerm, salesChannelFilter, cancellationFilter, orders])
 
   const fetchOrders = async () => {
     try {
@@ -269,6 +270,13 @@ export default function PackingQueuePage() {
       filtered = filtered.filter(order => 
         (order.sales_channel || order.channel) === salesChannelFilter
       )
+    }
+    
+    // Cancellation status filter
+    if (cancellationFilter === 'cancelled') {
+      filtered = filtered.filter(order => order.is_cancelled === true)
+    } else if (cancellationFilter === 'active') {
+      filtered = filtered.filter(order => !order.is_cancelled)
     }
     
     setFilteredOrders(filtered)
@@ -653,27 +661,41 @@ export default function PackingQueuePage() {
       </div>
 
       {/* Filters - Professional Design */}
-      <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Search className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">Search & Filter Orders</h3>
-            <Button onClick={fetchOrders} variant="ghost" size="sm" className="ml-auto h-8 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-              <RefreshCw className="h-3 w-3" />
-              Refresh
-            </Button>
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Search className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+          <h3 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">Search & Filter Orders</h3>
+          <Button onClick={fetchOrders} variant="ghost" size="sm" className="ml-auto h-8 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+            <RefreshCw className="h-3 w-3" />
+            Refresh
+          </Button>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="w-full sm:w-1/2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Search orders..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder="Search orders..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
-                />
-              </div>
+          
+          <div className="flex gap-4 sm:ml-auto">
+            {/* Cancellation Status Filter */}
+            <div className="w-full sm:w-[200px]">
+              <Select value={cancellationFilter} onValueChange={setCancellationFilter}>
+                <SelectTrigger className="h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20 rounded-md">
+                  <SelectValue placeholder="All Orders" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Orders</SelectItem>
+                  <SelectItem value="active">Active Orders</SelectItem>
+                  <SelectItem value="cancelled">Cancelled Orders</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
             {/* Sales Channel Filter - Admin Only */}
@@ -695,8 +717,8 @@ export default function PackingQueuePage() {
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Orders Table */}
       <div>
