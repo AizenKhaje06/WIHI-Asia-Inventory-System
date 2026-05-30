@@ -62,6 +62,7 @@ export default function PackerDashboard() {
   const [voiceEnabled, setVoiceEnabled] = useState(true)
   const [previousOrderCount, setPreviousOrderCount] = useState(0)
   const [announcedOrderIds, setAnnouncedOrderIds] = useState<Set<string>>(new Set())
+  const [announcedCancelledIds, setAnnouncedCancelledIds] = useState<Set<string>>(new Set())
   
   // Date filter states - using same format as Admin/Operations dashboard (Date objects, not strings)
   // Default to current month
@@ -157,6 +158,44 @@ export default function PackerDashboard() {
     }
   }, [voiceEnabled])
 
+  // Voice notification for cancelled orders
+  const speakCancelledOrder = useCallback((channel: string) => {
+    if (!voiceEnabled) return
+    
+    try {
+      // Map channel name to audio file name
+      const channelMap: { [key: string]: string } = {
+        'Shopee': 'shopee',
+        'Lazada': 'lazada',
+        'TikTok': 'tiktok',
+        'Facebook': 'facebook',
+        'Physical Store': 'physical-store'
+      }
+      
+      const audioFileName = channelMap[channel] || 'shopee' // Default to shopee if channel not found
+      const audioPath = `/sounds/order-cancelled-${audioFileName}.mp3`
+      
+      // Create and play audio
+      const audio = new Audio(audioPath)
+      audio.volume = 1.0 // Full volume
+      
+      // Play the audio
+      audio.play().catch(error => {
+        console.error('Error playing cancellation audio:', error)
+        // Fallback to text-to-speech if audio fails
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(`Order cancelled from ${channel}`)
+          utterance.rate = 1.0
+          utterance.pitch = 1.0
+          utterance.volume = 1.0
+          window.speechSynthesis.speak(utterance)
+        }
+      })
+    } catch (error) {
+      console.error('Error in cancellation voice notification:', error)
+    }
+  }, [voiceEnabled])
+
   useEffect(() => {
     const user = getCurrentUser()
     setCurrentUser(user)
@@ -237,13 +276,13 @@ export default function PackerDashboard() {
       // Only update state if data actually changed (prevents flickering)
       const newQueue = queueData.queue || []
       
-      // Detect new orders and announce them
+      // Detect new orders and cancelled orders
       setPendingOrders(prev => {
         const prevIds = prev.map(o => o.id).join(',')
         const newIds = newQueue.map((o: Order) => o.id).join(',')
         
-        // If data changed, check for new orders
-        if (prevIds !== newIds) {
+        // If data changed, check for new orders and cancellations
+        if (prevIds !== newIds || prev.length !== newQueue.length) {
           const prevIdSet = new Set(prev.map(o => o.id))
           const newOrders = newQueue.filter((order: Order) => !prevIdSet.has(order.id))
           
@@ -252,6 +291,20 @@ export default function PackerDashboard() {
             if (!announcedOrderIds.has(order.id)) {
               speakNewOrder(order.channel || 'Unknown')
               setAnnouncedOrderIds(prevAnnounced => new Set([...prevAnnounced, order.id]))
+            }
+          })
+          
+          // Check for newly cancelled orders
+          const prevOrderMap = new Map(prev.map(o => [o.id, o]))
+          newQueue.forEach((order: Order) => {
+            const prevOrder = prevOrderMap.get(order.id)
+            // If order exists in previous state but wasn't cancelled, and now it is cancelled
+            if (prevOrder && !prevOrder.is_cancelled && order.is_cancelled) {
+              // Announce cancellation (only if not already announced)
+              if (!announcedCancelledIds.has(order.id)) {
+                speakCancelledOrder(order.channel || 'Unknown')
+                setAnnouncedCancelledIds(prevAnnounced => new Set([...prevAnnounced, order.id]))
+              }
             }
           })
           
