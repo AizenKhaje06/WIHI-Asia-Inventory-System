@@ -58,6 +58,11 @@ export default function PackerDashboard() {
   const [showOrderDetails, setShowOrderDetails] = useState(false)
   const [packing, setPacking] = useState(false)
   
+  // Voice notification states
+  const [voiceEnabled, setVoiceEnabled] = useState(true)
+  const [previousOrderCount, setPreviousOrderCount] = useState(0)
+  const [announcedOrderIds, setAnnouncedOrderIds] = useState<Set<string>>(new Set())
+  
   // Date filter states - using same format as Admin/Operations dashboard (Date objects, not strings)
   // Default to current month
   const [startDate, setStartDate] = useState<Date | null>(() => {
@@ -113,6 +118,44 @@ export default function PackerDashboard() {
     if (avgPackingTime === 0) return 0
     return Math.round(3600 / avgPackingTime)
   }, [avgPackingTime])
+
+  // Voice notification function - Using pre-recorded audio files
+  const speakNewOrder = useCallback((channel: string) => {
+    if (!voiceEnabled) return
+    
+    try {
+      // Map channel name to audio file name
+      const channelMap: { [key: string]: string } = {
+        'Shopee': 'shopee',
+        'Lazada': 'lazada',
+        'TikTok': 'tiktok',
+        'Facebook': 'facebook',
+        'Physical Store': 'physical-store'
+      }
+      
+      const audioFileName = channelMap[channel] || 'shopee' // Default to shopee if channel not found
+      const audioPath = `/sounds/new-order-${audioFileName}.mp3`
+      
+      // Create and play audio
+      const audio = new Audio(audioPath)
+      audio.volume = 1.0 // Full volume
+      
+      // Play the audio
+      audio.play().catch(error => {
+        console.error('Error playing audio:', error)
+        // Fallback to text-to-speech if audio fails
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(`New order from ${channel}`)
+          utterance.rate = 1.0
+          utterance.pitch = 1.0
+          utterance.volume = 1.0
+          window.speechSynthesis.speak(utterance)
+        }
+      })
+    } catch (error) {
+      console.error('Error in voice notification:', error)
+    }
+  }, [voiceEnabled])
 
   useEffect(() => {
     const user = getCurrentUser()
@@ -193,10 +236,29 @@ export default function PackerDashboard() {
 
       // Only update state if data actually changed (prevents flickering)
       const newQueue = queueData.queue || []
+      
+      // Detect new orders and announce them
       setPendingOrders(prev => {
         const prevIds = prev.map(o => o.id).join(',')
         const newIds = newQueue.map((o: Order) => o.id).join(',')
-        return prevIds === newIds ? prev : newQueue
+        
+        // If data changed, check for new orders
+        if (prevIds !== newIds) {
+          const prevIdSet = new Set(prev.map(o => o.id))
+          const newOrders = newQueue.filter((order: Order) => !prevIdSet.has(order.id))
+          
+          // Announce each new order (only if not already announced)
+          newOrders.forEach((order: Order) => {
+            if (!announcedOrderIds.has(order.id)) {
+              speakNewOrder(order.channel || 'Unknown')
+              setAnnouncedOrderIds(prevAnnounced => new Set([...prevAnnounced, order.id]))
+            }
+          })
+          
+          return newQueue
+        }
+        
+        return prev
       })
 
       // Fetch packed history
@@ -405,6 +467,28 @@ export default function PackerDashboard() {
               setEndDate(end)
             }}
           />
+          
+          {/* Voice Notification Toggle */}
+          <Button 
+            onClick={() => setVoiceEnabled(!voiceEnabled)}
+            variant={voiceEnabled ? "default" : "outline"}
+            className={`h-10 px-4 gap-2 text-sm font-semibold w-full sm:w-auto ${
+              voiceEnabled 
+                ? 'bg-green-600 hover:bg-green-700 text-white border-0' 
+                : 'border-2 border-slate-300 dark:border-slate-600'
+            }`}
+            title={voiceEnabled ? 'Voice notifications enabled' : 'Voice notifications disabled'}
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {voiceEnabled ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+              )}
+            </svg>
+            <span className="hidden sm:inline">{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
+          </Button>
+          
           <Button 
             onClick={() => setScannerOpen(true)} 
             className="h-10 px-4 gap-2 text-sm font-semibold w-full sm:w-auto border-0 text-white shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-orange-500 via-orange-600 to-black hover:from-orange-600 hover:via-orange-700 hover:to-gray-900"
