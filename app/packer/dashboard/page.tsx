@@ -9,17 +9,10 @@ import { Badge } from '@/components/ui/badge'
 import { BarcodeScanner } from '@/components/barcode-scanner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
-import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Truck, User, Bell, BellOff } from 'lucide-react'
+import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Truck, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { getCurrentUser } from '@/lib/auth'
 import { AnimatedNumber } from '@/components/ui/animated-number'
-import { 
-  requestNotificationPermission, 
-  getNotificationPermission, 
-  subscribeToPushNotifications,
-  showLocalNotification,
-  isPushNotificationSupported
-} from '@/lib/push-notifications'
 
 interface Order {
   id: string
@@ -70,11 +63,6 @@ export default function PackerDashboard() {
   const [previousOrderCount, setPreviousOrderCount] = useState(0)
   const [announcedOrderIds, setAnnouncedOrderIds] = useState<Set<string>>(new Set())
   const [announcedCancelledIds, setAnnouncedCancelledIds] = useState<Set<string>>(new Set())
-  
-  // Push notification states
-  const [pushEnabled, setPushEnabled] = useState(false)
-  const [pushSupported, setPushSupported] = useState(false)
-  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default')
   
   // Date filter states - using same format as Admin/Operations dashboard (Date objects, not strings)
   // Default to current month
@@ -220,85 +208,6 @@ export default function PackerDashboard() {
     }
   }, [voiceEnabled])
 
-  // Push notification for new orders
-  const sendPushNotification = useCallback(async (channel: string, type: 'new' | 'cancelled') => {
-    // Check if push is enabled and permission granted
-    if (!pushEnabled || notificationPermission !== 'granted') {
-      console.log('[Push] Skipped - not enabled or no permission')
-      return
-    }
-    
-    // Only send push notification if app is in background or not focused
-    // If app is focused, voice notification already played
-    if (document.hasFocus()) {
-      console.log('[Push] Skipped - app is focused, voice notification already played')
-      return
-    }
-    
-    try {
-      const title = 'WIHI Inventory System'
-      const body = type === 'new' 
-        ? `📦 New order from ${channel}`
-        : `❌ Order cancelled from ${channel}`
-      
-      await showLocalNotification({
-        title,
-        body,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        tag: `order-${type}-${Date.now()}`,
-        url: '/packer/dashboard',
-        channel,
-        requireInteraction: false,
-        vibrate: [200, 100, 200]
-      })
-      
-      console.log('[Push] Notification sent:', type, channel)
-    } catch (error) {
-      console.error('[Push] Failed to send notification:', error)
-    }
-  }, [pushEnabled, notificationPermission])
-
-  // Request push notification permission
-  const handleEnablePushNotifications = useCallback(async () => {
-    try {
-      const permission = await requestNotificationPermission()
-      setNotificationPermission(permission)
-      
-      if (permission === 'granted') {
-        // Using local notifications (no server subscription needed)
-        setPushEnabled(true)
-        toast.success('Push notifications enabled! You will receive alerts even when app is in background.')
-      } else if (permission === 'denied') {
-        toast.error('Push notifications blocked. Please enable in browser settings.')
-      }
-    } catch (error) {
-      console.error('[Push] Failed to enable:', error)
-      toast.error('Failed to enable push notifications')
-    }
-  }, [])
-
-  // Initialize push notifications
-  useEffect(() => {
-    const initPush = async () => {
-      const supported = isPushNotificationSupported()
-      setPushSupported(supported)
-      
-      if (supported) {
-        const permission = getNotificationPermission()
-        setNotificationPermission(permission)
-        
-        if (permission === 'granted') {
-          setPushEnabled(true)
-          // Using local notifications, no subscription needed
-          console.log('[Push] Local notifications ready')
-        }
-      }
-    }
-    
-    initPush()
-  }, [])
-
   useEffect(() => {
     const user = getCurrentUser()
     setCurrentUser(user)
@@ -410,9 +319,6 @@ export default function PackerDashboard() {
                 // Voice notification (if app is open)
                 speakNewOrder(order.channel || 'Unknown')
                 
-                // Push notification (if enabled and permission granted)
-                sendPushNotification(order.channel || 'Unknown', 'new')
-                
                 setAnnouncedOrderIds(prevAnnounced => new Set([...prevAnnounced, order.id]))
               }
             })
@@ -444,9 +350,6 @@ export default function PackerDashboard() {
                   
                   // Voice notification (if app is open)
                   speakCancelledOrder(order.channel || 'Unknown')
-                  
-                  // Push notification (if enabled and permission granted)
-                  sendPushNotification(order.channel || 'Unknown', 'cancelled')
                   
                   setAnnouncedCancelledIds(prevAnnounced => new Set([...prevAnnounced, order.id]))
                 } else {
@@ -652,79 +555,73 @@ export default function PackerDashboard() {
   return (
     <div className="max-w-[1400px] mx-auto space-y-4 sm:space-y-6 pb-6 sm:pb-8 px-4 sm:px-6 lg:px-8">
       {/* Page Header - Mobile Responsive */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 pt-4 sm:pt-6 mb-4 sm:mb-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold gradient-text mb-1 sm:mb-2">Packer Dashboard</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
-            Scan and pack orders for dispatch
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-          <EnterpriseDateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onDateChange={(start, end) => {
-              setStartDate(start)
-              setEndDate(end)
-            }}
-          />
+      <div className="flex flex-col gap-3 pt-4 sm:pt-6 mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold gradient-text mb-1 sm:mb-2">Packer Dashboard</h1>
+            <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
+              Scan and pack orders for dispatch
+            </p>
+          </div>
           
-          {/* Voice Notification Toggle */}
-          <Button 
-            onClick={() => setVoiceEnabled(!voiceEnabled)}
-            variant={voiceEnabled ? "default" : "outline"}
-            className={`h-10 px-4 gap-2 text-sm font-semibold w-full sm:w-auto ${
-              voiceEnabled 
-                ? 'bg-green-600 hover:bg-green-700 text-white border-0' 
-                : 'border-2 border-slate-300 dark:border-slate-600'
-            }`}
-            title={voiceEnabled ? 'Voice notifications enabled' : 'Voice notifications disabled'}
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {voiceEnabled ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-              )}
-            </svg>
-            <span className="hidden sm:inline">{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
-          </Button>
-          
-          {/* Push Notification Toggle */}
-          {pushSupported && (
-            <Button 
-              onClick={() => {
-                if (notificationPermission === 'granted') {
-                  setPushEnabled(!pushEnabled)
-                  toast.success(pushEnabled ? 'Push notifications disabled' : 'Push notifications enabled')
-                } else {
-                  handleEnablePushNotifications()
-                }
+          {/* Desktop: Date picker on the right */}
+          <div className="hidden sm:block">
+            <EnterpriseDateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onDateChange={(start, end) => {
+                setStartDate(start)
+                setEndDate(end)
               }}
-              variant={pushEnabled ? "default" : "outline"}
-              className={`h-10 px-4 gap-2 text-sm font-semibold w-full sm:w-auto ${
-                pushEnabled 
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white border-0' 
+            />
+          </div>
+        </div>
+        
+        {/* Mobile & Desktop: Date picker and buttons row */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          {/* Mobile: Date picker */}
+          <div className="sm:hidden">
+            <EnterpriseDateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onDateChange={(start, end) => {
+                setStartDate(start)
+                setEndDate(end)
+              }}
+            />
+          </div>
+          
+          {/* Buttons Row */}
+          <div className="flex items-center gap-3 sm:ml-auto">
+            {/* Voice Notification Toggle */}
+            <Button 
+              onClick={() => setVoiceEnabled(!voiceEnabled)}
+              variant={voiceEnabled ? "default" : "outline"}
+              className={`flex-1 sm:flex-none h-12 sm:h-10 px-4 sm:px-4 gap-2 text-sm font-semibold ${
+                voiceEnabled 
+                  ? 'bg-green-600 hover:bg-green-700 text-white border-0' 
                   : 'border-2 border-slate-300 dark:border-slate-600'
               }`}
-              title={pushEnabled ? 'Push notifications enabled' : 'Push notifications disabled'}
+              title={voiceEnabled ? 'Voice notifications enabled' : 'Voice notifications disabled'}
             >
-              {pushEnabled ? (
-                <Bell className="h-4 w-4" />
-              ) : (
-                <BellOff className="h-4 w-4" />
-              )}
-              <span className="hidden sm:inline">{pushEnabled ? 'Push On' : 'Push Off'}</span>
+              <svg className="h-5 w-5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {voiceEnabled ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                )}
+              </svg>
+              <span>Voice Notification</span>
             </Button>
-          )}
-          
-          <Button 
-            onClick={() => setScannerOpen(true)} 
-            className="h-10 px-4 gap-2 text-sm font-semibold w-full sm:w-auto border-0 text-white shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-orange-500 via-orange-600 to-black hover:from-orange-600 hover:via-orange-700 hover:to-gray-900"
-          >
-            <Camera className="h-4 w-4" />
-            <span>Scan Barcode</span>
-          </Button>
+            
+            <Button 
+              onClick={() => setScannerOpen(true)} 
+              className="flex-1 sm:flex-none h-12 sm:h-10 px-4 sm:px-4 gap-2 text-sm font-semibold border-0 text-white shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 hover:from-orange-600 hover:via-orange-700 hover:to-orange-800"
+            >
+              <Camera className="h-5 w-5 sm:h-4 sm:w-4" />
+              <span>Scan Barcode</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -940,18 +837,10 @@ export default function PackerDashboard() {
             </div>
           ) : (
             <>
-              {/* Mobile Scroll Hint */}
-              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
-                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
-                  <span className="text-blue-500">←</span>
-                  <span>Swipe to see all columns • Tap row to highlight</span>
-                  <span className="text-blue-500">→</span>
-                </p>
-              </div>
-
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="sticky top-0 z-10">
+                  {/* Desktop Header - Hidden on Mobile */}
+                  <thead className="sticky top-0 z-10 hidden md:table-header-group">
                     <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
                       <th className="text-left py-4 px-3 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '10%' }}>
                         Date
@@ -979,6 +868,22 @@ export default function PackerDashboard() {
                       </th>
                     </tr>
                   </thead>
+
+                  {/* Mobile Header - Only Date, Waybill, Action */}
+                  <thead className="sticky top-0 z-10 md:hidden">
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                      <th className="text-left py-3 px-3 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                        Date
+                      </th>
+                      <th className="text-left py-3 px-3 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50">
+                        Waybill Number
+                      </th>
+                      <th className="text-center py-3 px-3 text-[10px] font-bold text-white uppercase tracking-wider">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     {filteredOrders.map((order) => (
                       <tr
@@ -989,7 +894,8 @@ export default function PackerDashboard() {
                             : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
                         }`}
                       >
-                        <td className="py-3 px-3">
+                        {/* Desktop View - All Columns */}
+                        <td className="py-3 px-3 hidden md:table-cell">
                           <div className="flex flex-col">
                             <span className="text-[11px] font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                               {new Date(order.orderDate).toLocaleDateString('en-US', { 
@@ -1007,22 +913,22 @@ export default function PackerDashboard() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-3 hidden md:table-cell">
                           <span className="text-[11px] text-slate-900 dark:text-white font-medium whitespace-nowrap">
                             {order.customerName}
                           </span>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-3 hidden md:table-cell">
                           <span className="text-[11px] text-slate-700 dark:text-slate-300 block break-words leading-relaxed">
                             {order.customerAddress}
                           </span>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-3 hidden md:table-cell">
                           <span className="text-[11px] font-mono text-slate-900 dark:text-white font-medium whitespace-nowrap">
                             {order.customerPhone}
                           </span>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-3 hidden md:table-cell">
                           <div className="flex flex-col gap-0.5">
                             <span className="text-[11px] text-slate-900 dark:text-white font-medium">
                               {order.itemName.replace(/\s*\(\d+\)\s*$/, '')}
@@ -1032,12 +938,12 @@ export default function PackerDashboard() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-3 hidden md:table-cell">
                           <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums whitespace-nowrap">
                             ₱{order.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-3 hidden md:table-cell">
                           <div className="flex flex-col gap-0.5">
                             <div className="flex items-center gap-2">
                               <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
@@ -1054,7 +960,7 @@ export default function PackerDashboard() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-3 hidden md:table-cell">
                           <div className="flex items-center justify-center">
                             <Button
                               variant="outline"
@@ -1064,6 +970,50 @@ export default function PackerDashboard() {
                             >
                               <Eye className="h-3.5 w-3.5 mr-1.5" />
                               View Details
+                            </Button>
+                          </div>
+                        </td>
+
+                        {/* Mobile View - Simplified: Date, Waybill, Action */}
+                        <td className="py-3 px-3 md:hidden">
+                          <div className="flex flex-col">
+                            <span className="text-[11px] font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                              {new Date(order.orderDate).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: '2-digit'
+                              })}
+                            </span>
+                            <span className="text-[9px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                              {new Date(order.orderDate).toLocaleTimeString('en-US', { 
+                                hour: '2-digit', 
+                                minute: '2-digit', 
+                                hour12: true
+                              })}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 md:hidden">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                              {order.waybill}
+                            </span>
+                            {order.is_cancelled && (
+                              <Badge className="bg-red-600 text-white text-[8px] px-1.5 py-0.5 font-bold whitespace-nowrap w-fit">
+                                CANCELLED
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 md:hidden">
+                          <div className="flex items-center justify-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewOrder(order)}
+                              className="h-8 px-3 text-[10px] font-medium border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 whitespace-nowrap rounded-lg"
+                            >
+                              <Eye className="h-3.5 w-3.5 mr-1" />
+                              View
                             </Button>
                           </div>
                         </td>
