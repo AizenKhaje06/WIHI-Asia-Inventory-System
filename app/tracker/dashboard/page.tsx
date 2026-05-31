@@ -497,7 +497,8 @@ export default function TrackerDashboardPage() {
 
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="sticky top-0 z-10">
+                  {/* Desktop Header - Hidden on Mobile */}
+                  <thead className="sticky top-0 z-10 hidden md:table-header-group">
                     <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
                       <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '8%' }}>
                         Date
@@ -531,13 +532,33 @@ export default function TrackerDashboardPage() {
                       </th>
                     </tr>
                   </thead>
+
+                  {/* Mobile Header - Only Date, Waybill, Parcel Status, Action */}
+                  <thead className="sticky top-0 z-10 md:hidden">
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                      <th className="text-left py-3 px-2 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '15%' }}>
+                        Date
+                      </th>
+                      <th className="text-left py-3 px-2 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '25%' }}>
+                        Waybill
+                      </th>
+                      <th className="text-left py-3 px-2 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '35%' }}>
+                        Status
+                      </th>
+                      <th className="text-center py-3 px-2 text-[10px] font-bold text-white uppercase tracking-wider" style={{ width: '25%' }}>
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     {filteredOrders.map((order) => (
                       <tr
                         key={order.id}
                         className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
                       >
-                        <td className="py-3 px-2">
+                        {/* Desktop View - All Columns */}
+                        <td className="py-3 px-2 hidden md:table-cell">
                           <div className="flex flex-col">
                             <span className="text-[11px] font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                               {new Date(order.orderDate).toLocaleDateString('en-US', { 
@@ -555,27 +576,27 @@ export default function TrackerDashboardPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-2 hidden md:table-cell">
                           <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
                             {order.customerName}
                           </span>
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-2 hidden md:table-cell">
                           <span className="text-[11px] text-slate-700 dark:text-slate-300 block break-words leading-relaxed">
                             {order.customerAddress}
                           </span>
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-2 hidden md:table-cell">
                           <span className="text-[11px] font-mono text-slate-900 dark:text-white font-medium block break-words">
                             {order.customerPhone}
                           </span>
                         </td>
-                        <td className="py-3 px-2 text-right">
+                        <td className="py-3 px-2 text-right hidden md:table-cell">
                           <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
                             ₱{order.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-2 hidden md:table-cell">
                           <div className="flex flex-col gap-0.5">
                             <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
                               {order.itemName.replace(/\s*\(\d+\)\s*$/, '')}
@@ -585,7 +606,7 @@ export default function TrackerDashboardPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-2 hidden md:table-cell">
                           <div className="flex flex-col gap-0.5">
                             <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 block break-all">
                               {order.trackingNumber}
@@ -595,7 +616,7 @@ export default function TrackerDashboardPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
+                        <td className="py-3 px-2 hidden md:table-cell" onClick={(e) => e.stopPropagation()}>
                           <Select 
                             value={order.paymentStatus} 
                             onValueChange={(value) => {
@@ -613,7 +634,7 @@ export default function TrackerDashboardPage() {
                             </SelectContent>
                           </Select>
                         </td>
-                        <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
+                        <td className="py-3 px-2 hidden md:table-cell" onClick={(e) => e.stopPropagation()}>
                           <Select 
                             value={order.parcelStatus} 
                             onValueChange={(value) => {
@@ -637,7 +658,7 @@ export default function TrackerDashboardPage() {
                             </SelectContent>
                           </Select>
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-2 hidden md:table-cell">
                           <div className="flex items-center justify-center">
                             <button
                               onClick={() => openDetailsModal(order)}
@@ -645,6 +666,64 @@ export default function TrackerDashboardPage() {
                             >
                               <Eye className="h-3.5 w-3.5" />
                               View Details
+                            </button>
+                          </div>
+                        </td>
+
+                        {/* Mobile View - Simplified: Date, Waybill, Parcel Status, Action */}
+                        <td className="py-3 px-2 md:hidden" style={{ width: '15%' }}>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                              {new Date(order.orderDate).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: '2-digit'
+                              })}
+                            </span>
+                            <span className="text-[9px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                              {new Date(order.orderDate).toLocaleTimeString('en-US', { 
+                                hour: '2-digit', 
+                                minute: '2-digit', 
+                                hour12: true
+                              })}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-2 md:hidden" style={{ width: '25%' }}>
+                          <span className="font-mono text-[10px] font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap block">
+                            {order.trackingNumber}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 md:hidden" style={{ width: '35%' }} onClick={(e) => e.stopPropagation()}>
+                          <Select 
+                            value={order.parcelStatus} 
+                            onValueChange={(value) => {
+                              updateOrderStatus(order.id, value)
+                            }}
+                          >
+                            <SelectTrigger className="h-8 text-[10px] border-slate-200 dark:border-slate-700 w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="PENDING">Pending</SelectItem>
+                              <SelectItem value="IN TRANSIT">In Transit</SelectItem>
+                              <SelectItem value="ON DELIVERY">On Delivery</SelectItem>
+                              <SelectItem value="PICKUP">Pickup</SelectItem>
+                              <SelectItem value="DELIVERED">Delivered</SelectItem>
+                              <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                              <SelectItem value="DETAINED">Detained</SelectItem>
+                              <SelectItem value="PROBLEMATIC">Problematic</SelectItem>
+                              <SelectItem value="RETURNED">Returned</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="py-3 px-2 md:hidden" style={{ width: '25%' }}>
+                          <div className="flex items-center justify-center">
+                            <button
+                              onClick={() => openDetailsModal(order)}
+                              className="h-8 px-2 text-[9px] font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 whitespace-nowrap rounded inline-flex items-center gap-1"
+                            >
+                              <Eye className="h-3 w-3" />
+                              View
                             </button>
                           </div>
                         </td>
