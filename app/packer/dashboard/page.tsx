@@ -107,6 +107,11 @@ export default function PackerDashboard() {
     return pendingOrders.filter(o => o.channel === selectedChannel).length
   }, [pendingOrders, selectedChannel])
 
+  // Count cancelled orders in the date range
+  const cancelledCount = useMemo(() => {
+    return pendingOrders.filter(o => o.is_cancelled === true).length
+  }, [pendingOrders])
+
   const avgPackingTime = useMemo(() => {
     if (todayPacked.length < 2) return 0
     const times = todayPacked.slice(0, 10).map(p => new Date(p.packedAt).getTime())
@@ -681,33 +686,31 @@ export default function PackerDashboard() {
           </CardContent>
         </Card>
 
-        {/* Avg Packing Time */}
+        {/* Cancelled Orders */}
         <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
           <CardHeader className="pb-1.5 sm:pb-2 md:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <Timer className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400" />
+              <div className="p-1.5 sm:p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </div>
-              <span className="leading-tight">Avg Time</span>
+              <span className="leading-tight">Cancelled</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent">
-              {avgPackingTime > 0 ? (
-                <><AnimatedNumber value={avgPackingTime} />s</>
-              ) : (
-                '--'
-              )}
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent">
+              <AnimatedNumber value={cancelledCount} />
             </div>
             <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium leading-tight">
-              {avgPackingTime > 0 ? 'Per order' : 'No data yet'}
+              {cancelledCount === 0 ? '✨ No cancellations' : `${cancelledCount} ${cancelledCount === 1 ? 'order' : 'orders'} cancelled`}
             </p>
-            <div className="mt-2 sm:mt-3 flex items-center gap-1.5 sm:gap-2">
-              <Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-600" />
-              <span className="text-[10px] sm:text-xs font-semibold text-blue-600">
-                {avgPackingTime > 0 && avgPackingTime < 60 ? 'Fast!' : avgPackingTime >= 60 ? 'Good pace' : 'Start packing'}
-              </span>
+            <div className="mt-2 sm:mt-3 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-500"
+                style={{ width: `${Math.min((cancelledCount / Math.max(pendingOrders.length, 1)) * 100, 100)}%` }}
+              />
             </div>
           </CardContent>
         </Card>
