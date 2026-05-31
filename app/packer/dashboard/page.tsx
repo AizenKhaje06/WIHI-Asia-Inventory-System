@@ -384,8 +384,20 @@ export default function PackerDashboard() {
         const prevIds = prev.map(o => o.id).join(',')
         const newIds = newQueue.map((o: Order) => o.id).join(',')
         
-        // If data changed, check for new orders and cancellations
-        if (prevIds !== newIds || prev.length !== newQueue.length) {
+        // Create a map of previous orders with their cancellation status
+        const prevOrderMap = new Map(prev.map(o => [o.id, o]))
+        
+        // Check if any order's cancellation status changed
+        let hasCancellationChange = false
+        newQueue.forEach((order: Order) => {
+          const prevOrder = prevOrderMap.get(order.id)
+          if (prevOrder && prevOrder.is_cancelled !== order.is_cancelled) {
+            hasCancellationChange = true
+          }
+        })
+        
+        // If data changed (IDs, length, or cancellation status), check for new orders and cancellations
+        if (prevIds !== newIds || prev.length !== newQueue.length || hasCancellationChange) {
           const prevIdSet = new Set(prev.map(o => o.id))
           const newOrders = newQueue.filter((order: Order) => !prevIdSet.has(order.id))
           
@@ -408,7 +420,6 @@ export default function PackerDashboard() {
           
           // Check for newly cancelled orders (also skip on first load)
           if (prev.length > 0) {
-            const prevOrderMap = new Map(prev.map(o => [o.id, o]))
             newQueue.forEach((order: Order) => {
               const prevOrder = prevOrderMap.get(order.id)
               
@@ -997,7 +1008,7 @@ export default function PackerDashboard() {
                           </div>
                         </td>
                         <td className="py-3 px-3">
-                          <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
+                          <span className="text-[11px] text-slate-900 dark:text-white font-medium whitespace-nowrap">
                             {order.customerName}
                           </span>
                         </td>
@@ -1007,38 +1018,38 @@ export default function PackerDashboard() {
                           </span>
                         </td>
                         <td className="py-3 px-3">
-                          <span className="text-[11px] font-mono text-slate-900 dark:text-white font-medium block break-words">
+                          <span className="text-[11px] font-mono text-slate-900 dark:text-white font-medium whitespace-nowrap">
                             {order.customerPhone}
                           </span>
                         </td>
                         <td className="py-3 px-3">
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
+                            <span className="text-[11px] text-slate-900 dark:text-white font-medium">
                               {order.itemName.replace(/\s*\(\d+\)\s*$/, '')}
                             </span>
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
                               Qty: {order.quantity}
                             </span>
                           </div>
                         </td>
                         <td className="py-3 px-3">
-                          <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
+                          <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums whitespace-nowrap">
                             ₱{order.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         </td>
                         <td className="py-3 px-3">
                           <div className="flex flex-col gap-0.5">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 block break-all">
+                              <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
                                 {order.waybill}
                               </span>
                               {order.is_cancelled && (
-                                <Badge className="bg-red-600 text-white text-[9px] px-1.5 py-0.5 font-bold">
+                                <Badge className="bg-red-600 text-white text-[9px] px-1.5 py-0.5 font-bold whitespace-nowrap">
                                   CANCELLED
                                 </Badge>
                               )}
                             </div>
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
                               {order.courier}
                             </span>
                           </div>
