@@ -8,6 +8,7 @@ import { QueryProvider } from "@/components/providers/query-provider"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { Toaster } from "@/components/ui/sonner"
 import { Analytics } from "@vercel/analytics/next"
+import { PWAInstaller } from "@/components/pwa-installer"
 
 export const metadata: Metadata = {
   title: "Vertex - Professional Inventory Management System",
@@ -93,6 +94,9 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
+              {/* PWA Service Worker Registration */}
+              <PWAInstaller />
+              
               {/* Skip to main content for accessibility */}
               <a href="#main-content" className="skip-to-main sr-only focus:not-sr-only">
                 Skip to main content

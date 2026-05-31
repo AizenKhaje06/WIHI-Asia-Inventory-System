@@ -9,10 +9,17 @@ import { Badge } from '@/components/ui/badge'
 import { BarcodeScanner } from '@/components/barcode-scanner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
-import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Truck, User } from 'lucide-react'
+import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp, Zap, Target, Timer, Award, Truck, User, Bell, BellOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { getCurrentUser } from '@/lib/auth'
 import { AnimatedNumber } from '@/components/ui/animated-number'
+import { 
+  requestNotificationPermission, 
+  getNotificationPermission, 
+  subscribeToPushNotifications,
+  showLocalNotification,
+  isPushNotificationSupported
+} from '@/lib/push-notifications'
 
 interface Order {
   id: string
@@ -63,6 +70,11 @@ export default function PackerDashboard() {
   const [previousOrderCount, setPreviousOrderCount] = useState(0)
   const [announcedOrderIds, setAnnouncedOrderIds] = useState<Set<string>>(new Set())
   const [announcedCancelledIds, setAnnouncedCancelledIds] = useState<Set<string>>(new Set())
+  
+  // Push notification states
+  const [pushEnabled, setPushEnabled] = useState(false)
+  const [pushSupported, setPushSupported] = useState(false)
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default')
   
   // Date filter states - using same format as Admin/Operations dashboard (Date objects, not strings)
   // Default to current month
@@ -125,17 +137,22 @@ export default function PackerDashboard() {
     if (!voiceEnabled) return
     
     try {
-      // Map channel name to audio file name
+      console.log('[Voice] New order from channel:', channel)
+      
+      // Map channel name to audio file name (case-insensitive)
       const channelMap: { [key: string]: string } = {
-        'Shopee': 'shopee',
-        'Lazada': 'lazada',
-        'TikTok': 'tiktok',
-        'Facebook': 'facebook',
-        'Physical Store': 'physical-store'
+        'shopee': 'shopee',
+        'lazada': 'lazada',
+        'tiktok': 'tiktok',
+        'facebook': 'facebook',
+        'physical store': 'physical-store'
       }
       
-      const audioFileName = channelMap[channel] || 'shopee' // Default to shopee if channel not found
+      const channelLower = channel.toLowerCase()
+      const audioFileName = channelMap[channelLower] || 'shopee' // Default to shopee if channel not found
       const audioPath = `/sounds/new-order-${audioFileName}.mp3`
+      
+      console.log('[Voice] Playing audio:', audioPath)
       
       // Create and play audio
       const audio = new Audio(audioPath)
@@ -143,7 +160,8 @@ export default function PackerDashboard() {
       
       // Play the audio
       audio.play().catch(error => {
-        console.error('Error playing audio:', error)
+        console.error('[Voice] Error playing audio:', error)
+        console.error('[Voice] Audio path:', audioPath)
         // Fallback to text-to-speech if audio fails
         if ('speechSynthesis' in window) {
           const utterance = new SpeechSynthesisUtterance(`New order from ${channel}`)
@@ -154,7 +172,7 @@ export default function PackerDashboard() {
         }
       })
     } catch (error) {
-      console.error('Error in voice notification:', error)
+      console.error('[Voice] Error in voice notification:', error)
     }
   }, [voiceEnabled])
 
@@ -163,17 +181,22 @@ export default function PackerDashboard() {
     if (!voiceEnabled) return
     
     try {
-      // Map channel name to audio file name
+      console.log('[Voice] Order cancelled from channel:', channel)
+      
+      // Map channel name to audio file name (case-insensitive)
       const channelMap: { [key: string]: string } = {
-        'Shopee': 'shopee',
-        'Lazada': 'lazada',
-        'TikTok': 'tiktok',
-        'Facebook': 'facebook',
-        'Physical Store': 'physical-store'
+        'shopee': 'shopee',
+        'lazada': 'lazada',
+        'tiktok': 'tiktok',
+        'facebook': 'facebook',
+        'physical store': 'physical-store'
       }
       
-      const audioFileName = channelMap[channel] || 'shopee' // Default to shopee if channel not found
+      const channelLower = channel.toLowerCase()
+      const audioFileName = channelMap[channelLower] || 'shopee' // Default to shopee if channel not found
       const audioPath = `/sounds/order-cancelled-${audioFileName}.mp3`
+      
+      console.log('[Voice] Playing audio:', audioPath)
       
       // Create and play audio
       const audio = new Audio(audioPath)
@@ -181,7 +204,8 @@ export default function PackerDashboard() {
       
       // Play the audio
       audio.play().catch(error => {
-        console.error('Error playing cancellation audio:', error)
+        console.error('[Voice] Error playing cancellation audio:', error)
+        console.error('[Voice] Audio path:', audioPath)
         // Fallback to text-to-speech if audio fails
         if ('speechSynthesis' in window) {
           const utterance = new SpeechSynthesisUtterance(`Order cancelled from ${channel}`)
@@ -192,9 +216,88 @@ export default function PackerDashboard() {
         }
       })
     } catch (error) {
-      console.error('Error in cancellation voice notification:', error)
+      console.error('[Voice] Error in cancellation voice notification:', error)
     }
   }, [voiceEnabled])
+
+  // Push notification for new orders
+  const sendPushNotification = useCallback(async (channel: string, type: 'new' | 'cancelled') => {
+    // Check if push is enabled and permission granted
+    if (!pushEnabled || notificationPermission !== 'granted') {
+      console.log('[Push] Skipped - not enabled or no permission')
+      return
+    }
+    
+    // Only send push notification if app is in background or not focused
+    // If app is focused, voice notification already played
+    if (document.hasFocus()) {
+      console.log('[Push] Skipped - app is focused, voice notification already played')
+      return
+    }
+    
+    try {
+      const title = 'WIHI Inventory System'
+      const body = type === 'new' 
+        ? `📦 New order from ${channel}`
+        : `❌ Order cancelled from ${channel}`
+      
+      await showLocalNotification({
+        title,
+        body,
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        tag: `order-${type}-${Date.now()}`,
+        url: '/packer/dashboard',
+        channel,
+        requireInteraction: false,
+        vibrate: [200, 100, 200]
+      })
+      
+      console.log('[Push] Notification sent:', type, channel)
+    } catch (error) {
+      console.error('[Push] Failed to send notification:', error)
+    }
+  }, [pushEnabled, notificationPermission])
+
+  // Request push notification permission
+  const handleEnablePushNotifications = useCallback(async () => {
+    try {
+      const permission = await requestNotificationPermission()
+      setNotificationPermission(permission)
+      
+      if (permission === 'granted') {
+        // Using local notifications (no server subscription needed)
+        setPushEnabled(true)
+        toast.success('Push notifications enabled! You will receive alerts even when app is in background.')
+      } else if (permission === 'denied') {
+        toast.error('Push notifications blocked. Please enable in browser settings.')
+      }
+    } catch (error) {
+      console.error('[Push] Failed to enable:', error)
+      toast.error('Failed to enable push notifications')
+    }
+  }, [])
+
+  // Initialize push notifications
+  useEffect(() => {
+    const initPush = async () => {
+      const supported = isPushNotificationSupported()
+      setPushSupported(supported)
+      
+      if (supported) {
+        const permission = getNotificationPermission()
+        setNotificationPermission(permission)
+        
+        if (permission === 'granted') {
+          setPushEnabled(true)
+          // Using local notifications, no subscription needed
+          console.log('[Push] Local notifications ready')
+        }
+      }
+    }
+    
+    initPush()
+  }, [])
 
   useEffect(() => {
     const user = getCurrentUser()
@@ -286,27 +389,61 @@ export default function PackerDashboard() {
           const prevIdSet = new Set(prev.map(o => o.id))
           const newOrders = newQueue.filter((order: Order) => !prevIdSet.has(order.id))
           
-          // Announce each new order (only if not already announced)
-          newOrders.forEach((order: Order) => {
-            if (!announcedOrderIds.has(order.id)) {
-              speakNewOrder(order.channel || 'Unknown')
-              setAnnouncedOrderIds(prevAnnounced => new Set([...prevAnnounced, order.id]))
-            }
-          })
-          
-          // Check for newly cancelled orders
-          const prevOrderMap = new Map(prev.map(o => [o.id, o]))
-          newQueue.forEach((order: Order) => {
-            const prevOrder = prevOrderMap.get(order.id)
-            // If order exists in previous state but wasn't cancelled, and now it is cancelled
-            if (prevOrder && !prevOrder.is_cancelled && order.is_cancelled) {
-              // Announce cancellation (only if not already announced)
-              if (!announcedCancelledIds.has(order.id)) {
-                speakCancelledOrder(order.channel || 'Unknown')
-                setAnnouncedCancelledIds(prevAnnounced => new Set([...prevAnnounced, order.id]))
+          // Only announce if this is NOT the first load (prev.length > 0)
+          // This prevents voice notification on initial page load
+          if (prev.length > 0) {
+            // Announce each new order (only if not already announced)
+            newOrders.forEach((order: Order) => {
+              if (!announcedOrderIds.has(order.id)) {
+                // Voice notification (if app is open)
+                speakNewOrder(order.channel || 'Unknown')
+                
+                // Push notification (if enabled and permission granted)
+                sendPushNotification(order.channel || 'Unknown', 'new')
+                
+                setAnnouncedOrderIds(prevAnnounced => new Set([...prevAnnounced, order.id]))
               }
-            }
-          })
+            })
+          }
+          
+          // Check for newly cancelled orders (also skip on first load)
+          if (prev.length > 0) {
+            const prevOrderMap = new Map(prev.map(o => [o.id, o]))
+            newQueue.forEach((order: Order) => {
+              const prevOrder = prevOrderMap.get(order.id)
+              
+              // Debug logging
+              if (prevOrder) {
+                console.log('[Cancellation Check]', {
+                  orderId: order.id.slice(-6),
+                  channel: order.channel,
+                  wasPrevCancelled: prevOrder.is_cancelled,
+                  isNowCancelled: order.is_cancelled,
+                  shouldAnnounce: !prevOrder.is_cancelled && order.is_cancelled
+                })
+              }
+              
+              // If order exists in previous state but wasn't cancelled, and now it is cancelled
+              if (prevOrder && !prevOrder.is_cancelled && order.is_cancelled) {
+                console.log('[Cancellation Detected!] Order:', order.id.slice(-6), 'Channel:', order.channel)
+                
+                // Announce cancellation (only if not already announced)
+                if (!announcedCancelledIds.has(order.id)) {
+                  console.log('[Voice] Playing cancellation audio for:', order.channel)
+                  
+                  // Voice notification (if app is open)
+                  speakCancelledOrder(order.channel || 'Unknown')
+                  
+                  // Push notification (if enabled and permission granted)
+                  sendPushNotification(order.channel || 'Unknown', 'cancelled')
+                  
+                  setAnnouncedCancelledIds(prevAnnounced => new Set([...prevAnnounced, order.id]))
+                } else {
+                  console.log('[Voice] Cancellation already announced for:', order.id.slice(-6))
+                }
+              }
+            })
+          }
           
           return newQueue
         }
@@ -541,6 +678,34 @@ export default function PackerDashboard() {
             </svg>
             <span className="hidden sm:inline">{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
           </Button>
+          
+          {/* Push Notification Toggle */}
+          {pushSupported && (
+            <Button 
+              onClick={() => {
+                if (notificationPermission === 'granted') {
+                  setPushEnabled(!pushEnabled)
+                  toast.success(pushEnabled ? 'Push notifications disabled' : 'Push notifications enabled')
+                } else {
+                  handleEnablePushNotifications()
+                }
+              }}
+              variant={pushEnabled ? "default" : "outline"}
+              className={`h-10 px-4 gap-2 text-sm font-semibold w-full sm:w-auto ${
+                pushEnabled 
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white border-0' 
+                  : 'border-2 border-slate-300 dark:border-slate-600'
+              }`}
+              title={pushEnabled ? 'Push notifications enabled' : 'Push notifications disabled'}
+            >
+              {pushEnabled ? (
+                <Bell className="h-4 w-4" />
+              ) : (
+                <BellOff className="h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">{pushEnabled ? 'Push On' : 'Push Off'}</span>
+            </Button>
+          )}
           
           <Button 
             onClick={() => setScannerOpen(true)} 
