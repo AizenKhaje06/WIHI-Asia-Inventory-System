@@ -293,8 +293,19 @@ export default function PackerDashboard() {
       // Only update state if data actually changed (prevents flickering)
       const newQueue = queueData.queue || []
       
+      console.log('[Fetch Data] Received queue data:', {
+        count: newQueue.length,
+        cancelledOrders: newQueue.filter((o: Order) => o.is_cancelled).map((o: Order) => ({
+          id: o.id.slice(-6),
+          channel: o.channel,
+          is_cancelled: o.is_cancelled
+        }))
+      })
+      
       // Detect new orders and cancelled orders
       setPendingOrders(prev => {
+        console.log('[State Update] Previous orders:', prev.length, 'New orders:', newQueue.length)
+        
         const prevIds = prev.map(o => o.id).join(',')
         const newIds = newQueue.map((o: Order) => o.id).join(',')
         
@@ -306,8 +317,21 @@ export default function PackerDashboard() {
         newQueue.forEach((order: Order) => {
           const prevOrder = prevOrderMap.get(order.id)
           if (prevOrder && prevOrder.is_cancelled !== order.is_cancelled) {
+            console.log('[Cancellation Status Changed]', {
+              orderId: order.id.slice(-6),
+              channel: order.channel,
+              wasPrevCancelled: prevOrder.is_cancelled,
+              isNowCancelled: order.is_cancelled
+            })
             hasCancellationChange = true
           }
+        })
+        
+        console.log('[Change Detection]', {
+          idsChanged: prevIds !== newIds,
+          lengthChanged: prev.length !== newQueue.length,
+          hasCancellationChange,
+          willProcess: prevIds !== newIds || prev.length !== newQueue.length || hasCancellationChange
         })
         
         // If data changed (IDs, length, or cancellation status), check for new orders and cancellations
@@ -321,6 +345,7 @@ export default function PackerDashboard() {
             // Announce each new order (only if not already announced)
             newOrders.forEach((order: Order) => {
               if (!announcedOrderIds.has(order.id)) {
+                console.log('[New Order Detected]', order.channel, order.id.slice(-6))
                 // Voice notification (if app is open)
                 speakNewOrder(order.channel || 'Unknown')
                 
@@ -331,27 +356,31 @@ export default function PackerDashboard() {
           
           // Check for newly cancelled orders (also skip on first load)
           if (prev.length > 0) {
+            console.log('[Checking Cancellations] Processing', newQueue.length, 'orders')
             newQueue.forEach((order: Order) => {
               const prevOrder = prevOrderMap.get(order.id)
               
-              // Debug logging
-              if (prevOrder) {
-                console.log('[Cancellation Check]', {
-                  orderId: order.id.slice(-6),
-                  channel: order.channel,
-                  wasPrevCancelled: prevOrder.is_cancelled,
-                  isNowCancelled: order.is_cancelled,
-                  shouldAnnounce: !prevOrder.is_cancelled && order.is_cancelled
-                })
-              }
+              // Debug logging for ALL orders
+              console.log('[Order Check]', {
+                orderId: order.id.slice(-6),
+                channel: order.channel,
+                existsInPrev: !!prevOrder,
+                wasPrevCancelled: prevOrder?.is_cancelled,
+                isNowCancelled: order.is_cancelled,
+                shouldAnnounce: prevOrder && !prevOrder.is_cancelled && order.is_cancelled
+              })
               
               // If order exists in previous state but wasn't cancelled, and now it is cancelled
               if (prevOrder && !prevOrder.is_cancelled && order.is_cancelled) {
-                console.log('[Cancellation Detected!] Order:', order.id.slice(-6), 'Channel:', order.channel)
+                console.log('[🔴 CANCELLATION DETECTED!]', {
+                  orderId: order.id.slice(-6),
+                  channel: order.channel,
+                  alreadyAnnounced: announcedCancelledIds.has(order.id)
+                })
                 
                 // Announce cancellation (only if not already announced)
                 if (!announcedCancelledIds.has(order.id)) {
-                  console.log('[Voice] Playing cancellation audio for:', order.channel)
+                  console.log('[🔊 PLAYING CANCELLATION AUDIO]', order.channel)
                   
                   // Voice notification (if app is open)
                   speakCancelledOrder(order.channel || 'Unknown')
@@ -362,11 +391,14 @@ export default function PackerDashboard() {
                 }
               }
             })
+          } else {
+            console.log('[Skip Cancellation Check] First load, prev.length =', prev.length)
           }
           
           return newQueue
         }
         
+        console.log('[No Changes] Keeping previous state')
         return prev
       })
 
