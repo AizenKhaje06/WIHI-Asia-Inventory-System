@@ -55,7 +55,7 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
     sellingPrice: item.sellingPrice,
     reorderLevel: item.reorderLevel,
     lastUpdated: item.lastUpdated,
-    imageUrl: item.image_url || null,
+    imageUrl: item.imageUrl || null,  // FIXED: Use camelCase to match view alias
   }))
 }
 

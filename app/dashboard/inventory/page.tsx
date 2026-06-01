@@ -295,22 +295,29 @@ export default function InventoryPage() {
       // Fetch from inventory table only (NOT bundles)
       // Bundles are virtual products - their items are already in inventory
       const data = await apiGet<InventoryItem[]>("/api/items")
+      console.log('[Inventory] RAW API Response:', data)
+      
       let itemsArray = Array.isArray(data) ? data : []
       
       // Department users can now see ALL products (no sales channel filtering)
       // This matches the behavior of the Warehouse Dispatch page
       
-      // Debug: Log items with images
+      // Debug: Log items with images BEFORE setting state
       const itemsWithImages = itemsArray.filter(item => item.imageUrl)
       if (itemsWithImages.length > 0) {
-        console.log('[Inventory] Items with images:', itemsWithImages.map(item => ({
+        console.log('[Inventory] Items with images BEFORE setState:', itemsWithImages.map(item => ({
           name: item.name,
-          imageUrl: item.imageUrl
+          imageUrl: item.imageUrl,
+          imageUrlType: typeof item.imageUrl,
+          imageUrlLength: item.imageUrl?.length
         })))
       }
       
       setItems(itemsArray)
       setFilteredItems(itemsArray)
+      
+      // Debug: Log items AFTER setting state
+      console.log('[Inventory] Items AFTER setState:', itemsArray.slice(0, 3))
     } catch (error) {
       console.error("[Inventory] Error fetching items:", error)
       setItems([])
@@ -1306,9 +1313,18 @@ export default function InventoryPage() {
                               {item.imageUrl ? (
                                 <div className="w-10 h-10 rounded overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
                                   <img
-                                    src={`/api/image-proxy?url=${encodeURIComponent(item.imageUrl)}`}
+                                    src={item.imageUrl}
                                     alt={item.name}
                                     className="w-full h-full object-cover"
+                                    onLoad={() => console.log('[Inventory] Image loaded:', item.name, item.imageUrl)}
+                                    onError={(e) => {
+                                      console.error('[Inventory] Image failed to load:', {
+                                        name: item.name,
+                                        imageUrl: item.imageUrl,
+                                        actualSrc: (e.target as HTMLImageElement).src,
+                                        error: e
+                                      })
+                                    }}
                                   />
                                 </div>
                               ) : (

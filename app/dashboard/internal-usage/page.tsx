@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -39,6 +40,7 @@ export default function InternalUsagePage() {
   const [searchProducts, setSearchProducts] = useState("")
   const [loading, setLoading] = useState(false)
   const [staffName, setStaffName] = useState('')
+  const [staffProfileImage, setStaffProfileImage] = useState<string | null>(null)
   const [dispatchId, setDispatchId] = useState('')
   const [dispatchedItems, setDispatchedItems] = useState<Array<{name: string, quantity: number, price: number}>>([])
   const [successModalOpen, setSuccessModalOpen] = useState(false)
@@ -134,10 +136,8 @@ export default function InternalUsagePage() {
       const name = currentUser.displayName || currentUser.username || 'Unknown User'
       setStaffName(name)
       
-      // Auto-set sales channel filter for team leaders
-      if (currentUser.role === 'team_leader' && currentUser.sales_channel) {
-        setFilterSalesChannel(currentUser.sales_channel)
-      }
+      // Fetch user profile image from API
+      fetchUserProfile(currentUser.username)
     } else {
       setStaffName('Unknown User')
     }
@@ -146,6 +146,18 @@ export default function InternalUsagePage() {
     fetchItems()
     fetchStores()
   }, [])
+
+  async function fetchUserProfile(username: string) {
+    try {
+      const data = await apiGet<any>('/api/auth/profile')
+      if (data.profile_image) {
+        setStaffProfileImage(data.profile_image)
+        console.log('[Internal Usage] Profile image loaded:', data.profile_image)
+      }
+    } catch (error) {
+      console.error('[Internal Usage] Error fetching user profile:', error)
+    }
+  }
 
   async function fetchTransactions() {
     try {
@@ -160,6 +172,8 @@ export default function InternalUsagePage() {
   async function fetchItems() {
     try {
       const data = await apiGet<InventoryItem[]>("/api/items")
+      console.log('[Internal Usage] Fetched items:', data)
+      console.log('[Internal Usage] First item imageUrl:', data[0]?.imageUrl)
       setItems(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error("[Internal Usage] Error fetching items:", error)
@@ -948,9 +962,12 @@ export default function InternalUsagePage() {
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold gradient-text">Dispatch Items</DialogTitle>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+              Select products and fill in dispatch information to process internal usage
+            </p>
           </DialogHeader>
           
-          <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+          <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 items-start">
             {/* Left: Dispatch Form */}
             <div className="space-y-4">
               <Card className="border-slate-200 dark:border-slate-800">
@@ -1087,9 +1104,29 @@ export default function InternalUsagePage() {
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Dispatched By *</Label>
                     <div className="flex items-center gap-3 p-3 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                        {staffName ? staffName.charAt(0).toUpperCase() : '?'}
-                      </div>
+                      {/* Profile Image or Gradient Circle */}
+                      {staffProfileImage ? (
+                        <div className="h-10 w-10 rounded-full overflow-hidden shadow-md ring-2 ring-blue-500/30">
+                          <img 
+                            src={staffProfileImage} 
+                            alt={staffName}
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              // Fallback to gradient circle if image fails to load
+                              e.currentTarget.style.display = 'none'
+                              const fallback = e.currentTarget.nextElementSibling as HTMLElement
+                              if (fallback) fallback.style.display = 'flex'
+                            }}
+                          />
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold" style={{ display: 'none' }}>
+                            {staffName ? staffName.charAt(0).toUpperCase() : '?'}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                          {staffName ? staffName.charAt(0).toUpperCase() : '?'}
+                        </div>
+                      )}
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-slate-900 dark:text-white">
                           {staffName || 'Unknown User'}
@@ -1105,8 +1142,8 @@ export default function InternalUsagePage() {
               </Card>
 
               {/* Cart Summary */}
-              <Card className="border-slate-200 dark:border-slate-800">
-                <CardHeader className="pb-3">
+              <Card className="border-slate-200 dark:border-slate-800 h-[358px] flex flex-col">
+                <CardHeader className="pb-3 flex-shrink-0">
                   <CardTitle className="text-base font-semibold flex items-center justify-between">
                     <span>Cart</span>
                     <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
@@ -1114,14 +1151,16 @@ export default function InternalUsagePage() {
                     </span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 overflow-hidden flex flex-col">
                   {cart.length === 0 ? (
-                    <div className="text-center py-6">
-                      <ShoppingCart className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No items in cart</p>
+                    <div className="flex-1 flex items-center justify-center">
+                      <div className="text-center">
+                        <ShoppingCart className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                        <p className="text-sm text-slate-500 dark:text-slate-400">No items in cart</p>
+                      </div>
                     </div>
                   ) : (
-                    <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                    <div className="space-y-2 overflow-y-auto flex-1">
                       {cart.map((cartItem) => (
                         <div
                           key={cartItem.item.id}
@@ -1166,17 +1205,41 @@ export default function InternalUsagePage() {
                     </div>
                   )}
                 </CardContent>
+                
+                {/* Action Buttons */}
+                <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setDispatchModalOpen(false)}
+                    disabled={loading}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleDispatch}
+                    disabled={loading || cart.length === 0}
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  >
+                    {loading ? "Processing..." : `Dispatch ${cart.length > 0 ? `(${cart.length})` : ''}`}
+                  </Button>
+                </div>
               </Card>
             </div>
 
             {/* Right: Products */}
             <div>
-              <Card className="border-slate-200 dark:border-slate-800">
-                <CardHeader className="pb-3">
+              <Card className="border-slate-200 dark:border-slate-800 h-[740px] flex flex-col">
+                <CardHeader className="pb-3 flex-shrink-0">
                   <div className="space-y-3">
-                    <CardTitle className="text-base font-semibold">
-                      Products ({filteredProducts.length})
-                    </CardTitle>
+                    <div>
+                      <CardTitle className="text-base font-semibold">
+                        Products ({filteredProducts.length})
+                      </CardTitle>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Select items to add to cart
+                      </p>
+                    </div>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                       <Input
@@ -1188,84 +1251,94 @@ export default function InternalUsagePage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-2 max-h-[400px] overflow-y-auto">
-                    {filteredProducts.map((item) => {
-                      const isOutOfStock = item.quantity === 0
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => addToCart(item)}
-                          disabled={isOutOfStock}
-                          className={cn(
-                            "text-left border rounded-lg p-3 transition-all duration-200",
-                            isOutOfStock
-                              ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10 opacity-60 cursor-not-allowed"
-                              : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:shadow-md hover:border-purple-300 dark:hover:border-purple-600 cursor-pointer active:scale-95"
-                          )}
-                        >
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <h4 className="text-xs font-bold text-slate-900 dark:text-white line-clamp-2 flex-1">
-                              {item.name}
-                            </h4>
-                            <span className={cn(
-                              "px-1.5 py-0.5 text-[10px] font-bold rounded",
-                              isOutOfStock
-                                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                                : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                            )}>
-                              {isOutOfStock ? "OUT" : item.quantity}
-                            </span>
-                          </div>
-                          <p className="text-lg font-bold text-slate-900 dark:text-white mb-1">
-                            ₱{item.costPrice.toFixed(2)}
-                          </p>
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                              {item.category}
-                            </p>
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              {item.salesChannel && (
-                                <span className="text-[9px] font-semibold text-slate-600 dark:text-slate-300 bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 rounded whitespace-nowrap">
-                                  {item.salesChannel}
-                                </span>
-                              )}
-                              <span className="text-[9px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded whitespace-nowrap">
-                                {item.store || 'Warehouse'}
-                              </span>
-                            </div>
-                          </div>
-                        </button>
-                      )
-                    })}
+                <CardContent className="flex-1 overflow-hidden p-0">
+                  <div className="h-full overflow-y-auto px-4">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-slate-900 dark:bg-slate-950 z-10">
+                        <TableRow className="hover:bg-slate-900 dark:hover:bg-slate-950 border-b border-slate-700">
+                          <TableHead className="text-white font-bold w-[80px]">Image</TableHead>
+                          <TableHead className="text-white font-bold">Item Name</TableHead>
+                          <TableHead className="text-white font-bold text-right w-[120px]">Price</TableHead>
+                          <TableHead className="text-white font-bold text-center w-[100px]">Quantity</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredProducts.length === 0 ? (
+                          <TableRow className="hover:bg-transparent">
+                            <TableCell colSpan={4} className="text-center py-16">
+                              <div className="flex flex-col items-center justify-center">
+                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+                                  <Package className="h-8 w-8 text-slate-400 dark:text-slate-500" />
+                                </div>
+                                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">No products found</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Try adjusting your search</p>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          filteredProducts.map((item) => {
+                            const isOutOfStock = item.quantity === 0
+                            const isLowStock = item.quantity > 0 && item.quantity < 10
+                            
+                            return (
+                              <TableRow 
+                                key={item.id}
+                                onClick={() => !isOutOfStock && addToCart(item)}
+                                className={cn(
+                                  "border-b border-slate-200 dark:border-slate-800 transition-colors",
+                                  !isOutOfStock && "hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer",
+                                  isOutOfStock && "opacity-50 bg-slate-50 dark:bg-slate-900"
+                                )}
+                              >
+                                <TableCell className="py-3">
+                                  <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden flex items-center justify-center">
+                                    {item.imageUrl ? (
+                                      <img 
+                                        src={item.imageUrl} 
+                                        alt={item.name}
+                                        className="w-full h-full object-contain p-1"
+                                        onLoad={() => console.log('[Internal Usage] Image loaded:', item.name, item.imageUrl)}
+                                        onError={(e) => {
+                                          console.error('[Internal Usage] Image failed:', item.name, item.imageUrl)
+                                          e.currentTarget.style.display = 'none'
+                                        }}
+                                      />
+                                    ) : (
+                                      <Package className="h-6 w-6 text-slate-300 dark:text-slate-600" />
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="font-medium text-slate-900 dark:text-white">
+                                  {item.name}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <span className="font-bold text-slate-900 dark:text-white">
+                                    ₱{item.costPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <span className={cn(
+                                    "inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold",
+                                    isOutOfStock
+                                      ? "bg-red-500 text-white"
+                                      : isLowStock
+                                      ? "bg-amber-500 text-white"
+                                      : "bg-emerald-500 text-white"
+                                  )}>
+                                    {isOutOfStock ? "OUT" : item.quantity}
+                                  </span>
+                                </TableCell>
+                              </TableRow>
+                            )
+                          })
+                        )}
+                      </TableBody>
+                    </Table>
                   </div>
-                  {filteredProducts.length === 0 && (
-                    <div className="text-center py-8">
-                      <Package className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No products found</p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </div>
           </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setDispatchModalOpen(false)}
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDispatch}
-              disabled={loading || cart.length === 0}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-            >
-              {loading ? "Processing..." : `Dispatch ${cart.length > 0 ? `(${cart.length} items)` : ''}`}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 

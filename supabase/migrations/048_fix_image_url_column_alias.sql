@@ -1,11 +1,11 @@
--- Migration: Add image_url to products_unified view
--- Date: 2026-05-26
--- Description: Update products_unified view to include image_url column
+-- Migration: Fix image_url column alias in products_unified view
+-- Date: 2026-06-02
+-- Description: Add camelCase alias to image_url column for consistency with other columns
 
 -- Drop existing view
 DROP VIEW IF EXISTS products_unified;
 
--- Recreate view with image_url column
+-- Recreate view with proper imageUrl alias
 CREATE VIEW products_unified AS
 -- Regular products from inventory
 SELECT 
@@ -21,7 +21,7 @@ SELECT
     reorder_level as "reorderLevel",
     last_updated as "lastUpdated",
     sku,
-    image_url as "imageUrl",  -- FIXED: Add alias for consistency
+    image_url as "imageUrl",  -- FIXED: Add camelCase alias for consistency
     NULL::decimal as "bundleCost",
     NULL::decimal as "regularPrice",
     NULL::decimal as savings,
@@ -30,12 +30,12 @@ FROM inventory
 
 UNION ALL
 
--- Bundles (no category, sku, or image_url)
+-- Bundles with image support
 SELECT 
     id,
     name,
     'bundle' as "productType",
-    'Bundles' as category,  -- Default category for all bundles
+    'Bundles' as category,
     store,
     sales_channel as "salesChannel",
     quantity,
@@ -43,8 +43,8 @@ SELECT
     bundle_price as "sellingPrice",
     reorder_level as "reorderLevel",
     updated_at as "lastUpdated",
-    NULL::text as sku,  -- Bundles don't have SKU
-    image_url as "imageUrl",  -- FIXED: Add alias for consistency (bundles now support images)
+    NULL::text as sku,
+    image_url as "imageUrl",  -- FIXED: Add camelCase alias (bundles now support images)
     bundle_cost as "bundleCost",
     regular_price as "regularPrice",
     savings,
@@ -56,4 +56,4 @@ WHERE is_active = true;
 GRANT SELECT ON products_unified TO authenticated, anon;
 
 -- Add comment
-COMMENT ON VIEW products_unified IS 'Unified view of regular products and bundles for inventory display (with image support)';
+COMMENT ON VIEW products_unified IS 'Unified view of regular products and bundles with consistent camelCase column naming';

@@ -1,7 +1,7 @@
 // Service Worker for Inventory Pro PWA
-const CACHE_NAME = 'inventory-pro-v15';
-const STATIC_CACHE = 'inventory-pro-static-v15';
-const DYNAMIC_CACHE = 'inventory-pro-dynamic-v15';
+const CACHE_NAME = 'inventory-pro-v16';
+const STATIC_CACHE = 'inventory-pro-static-v16';
+const DYNAMIC_CACHE = 'inventory-pro-dynamic-v16';
 
 // Files to cache immediately (only essential files that definitely exist)
 const STATIC_ASSETS = [
@@ -58,6 +58,12 @@ self.addEventListener('fetch', (event) => {
 
   // Skip API routes - always fetch fresh
   if (event.request.url.includes('/api/')) {
+    return;
+  }
+
+  // Skip Supabase Storage URLs - always fetch fresh (IMPORTANT for product images)
+  if (event.request.url.includes('supabase.co/storage')) {
+    event.respondWith(fetch(event.request));
     return;
   }
 
