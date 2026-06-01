@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { registerServiceWorker, isPushNotificationSupported } from '@/lib/push-notifications'
 
 /**
  * PWA Installer Component
@@ -11,17 +10,32 @@ export function PWAInstaller() {
   const [isInstalled, setIsInstalled] = useState(false)
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return
+
     // Register service worker on mount
     const initPWA = async () => {
-      if (isPushNotificationSupported()) {
+      // Check if push notifications are supported
+      const isSupported = 
+        'serviceWorker' in navigator &&
+        'PushManager' in window &&
+        'Notification' in window
+
+      if (isSupported) {
         console.log('[PWA] Initializing...')
         
         try {
-          const registration = await registerServiceWorker()
-          
-          if (registration) {
+          // Register service worker
+          if ('serviceWorker' in navigator) {
+            const registration = await navigator.serviceWorker.register('/sw.js', {
+              scope: '/'
+            })
+            
             console.log('[PWA] Service Worker registered successfully')
             setIsInstalled(true)
+            
+            // Wait for service worker to be ready
+            await navigator.serviceWorker.ready
             
             // Listen for updates
             registration.addEventListener('updatefound', () => {
@@ -47,19 +61,21 @@ export function PWAInstaller() {
     initPWA()
 
     // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
       console.log('[PWA] Running as installed app')
       setIsInstalled(true)
     }
 
     // Listen for app install event
-    window.addEventListener('appinstalled', () => {
+    const handleAppInstalled = () => {
       console.log('[PWA] App installed')
       setIsInstalled(true)
-    })
+    }
+
+    window.addEventListener('appinstalled', handleAppInstalled)
 
     return () => {
-      window.removeEventListener('appinstalled', () => {})
+      window.removeEventListener('appinstalled', handleAppInstalled)
     }
   }, [])
 

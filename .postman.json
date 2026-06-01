@@ -836,6 +836,330 @@
           ]
         },
         {
+          "name": "Return Order to Queue",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "x-user-username",
+                "value": "tracker",
+                "type": "text"
+              },
+              {
+                "key": "x-user-role",
+                "value": "tracker",
+                "type": "text"
+              },
+              {
+                "key": "x-user-display-name",
+                "value": "Tracker User",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Customer requested to change delivery address\",\n  \"returnedBy\": \"Tracker User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}/return-to-queue",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderId}}", "return-to-queue"]
+            },
+            "description": "Return a packed order back to packing queue. Restores inventory, removes sale activity log, and resets order to Pending status. Only accessible by tracker and admin roles."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Status code should be 200",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Response should be JSON",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "// Test 3: Response has required fields",
+                  "pm.test('Response has required fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success');",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData).to.have.property('order');",
+                  "});",
+                  "",
+                  "// Test 4: Success is true",
+                  "pm.test('Success is true', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "// Test 5: Order status is Pending",
+                  "pm.test('Order status is Pending', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.order.status).to.equal('Pending');",
+                  "});",
+                  "",
+                  "// Test 6: Order ID matches request",
+                  "pm.test('Order ID matches request', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.order.id).to.equal(pm.variables.get('orderId'));",
+                  "});",
+                  "",
+                  "// Test 7: Inventory restoration status is included",
+                  "pm.test('Inventory restoration status is included', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.order).to.have.property('inventoryRestored');",
+                  "    pm.expect(jsonData.order.inventoryRestored).to.be.a('boolean');",
+                  "});",
+                  "",
+                  "// Test 8: Message confirms return to queue",
+                  "pm.test('Message confirms return to queue', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('returned');",
+                  "    pm.expect(jsonData.message).to.include('packing queue');",
+                  "});",
+                  "",
+                  "// Test 9: Response time is acceptable",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Return Order to Queue - Missing Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "x-user-username",
+                "value": "tracker",
+                "type": "text"
+              },
+              {
+                "key": "x-user-role",
+                "value": "tracker",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Missing returnedBy field\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}/return-to-queue",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderId}}", "return-to-queue"]
+            },
+            "description": "Test validation - should fail without returnedBy field"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Status code should be 400 (Bad Request)",
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Test 2: Response has error message",
+                  "pm.test('Response has error message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.include('required');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Return Order to Queue - Not Packed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "x-user-username",
+                "value": "tracker",
+                "type": "text"
+              },
+              {
+                "key": "x-user-role",
+                "value": "tracker",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Test reason\",\n  \"returnedBy\": \"Tracker User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{pendingOrderId}}/return-to-queue",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{pendingOrderId}}", "return-to-queue"]
+            },
+            "description": "Test validation - should fail when trying to return an order that is not in Packed status"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Status code should be 400 (Bad Request)",
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Test 2: Response has error message",
+                  "pm.test('Response has error message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.include('Packed status');",
+                  "});",
+                  "",
+                  "// Test 3: Response includes current status",
+                  "pm.test('Response includes current status', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('currentStatus');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Return Order to Queue - Unauthorized Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "x-user-username",
+                "value": "packer1",
+                "type": "text"
+              },
+              {
+                "key": "x-user-role",
+                "value": "packer",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Test reason\",\n  \"returnedBy\": \"Packer User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}/return-to-queue",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderId}}", "return-to-queue"]
+            },
+            "description": "Test authorization - should fail when non-tracker/non-admin role tries to return order"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Status code should be 403 (Forbidden)",
+                  "pm.test('Status code is 403', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "// Test 2: Response has error message",
+                  "pm.test('Response has error message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.include('Unauthorized');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Return Order to Queue - Invalid Order ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "x-user-username",
+                "value": "tracker",
+                "type": "text"
+              },
+              {
+                "key": "x-user-role",
+                "value": "tracker",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Test reason\",\n  \"returnedBy\": \"Tracker User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/INVALID-ORDER-ID/return-to-queue",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "INVALID-ORDER-ID", "return-to-queue"]
+            },
+            "description": "Test with non-existent order ID"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Status code should be 404 (Not Found)",
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "// Test 2: Response has error message",
+                  "pm.test('Response has error message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.include('not found');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
           "name": "Dashboard & Analytics",
           "item": [
             {

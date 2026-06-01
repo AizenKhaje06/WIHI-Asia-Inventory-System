@@ -53,6 +53,9 @@ export default function TrackerDashboardPage() {
   const [endDate, setEndDate] = useState<Date | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [showReturnConfirm, setShowReturnConfirm] = useState(false)
+  const [returnReason, setReturnReason] = useState('')
+  const [returning, setReturning] = useState(false)
 
   useEffect(() => {
     fetchOrders()
@@ -188,6 +191,53 @@ export default function TrackerDashboardPage() {
     } catch (error) {
       console.error('Error updating payment status:', error)
       toast.error('Failed to update payment status')
+    }
+  }
+
+  const handleReturnToQueue = async () => {
+    if (!selectedOrder) return
+
+    if (!returnReason.trim()) {
+      toast.error('Please provide a reason for returning to queue')
+      return
+    }
+
+    try {
+      setReturning(true)
+
+      const response = await fetch(`/api/orders/${selectedOrder.id}/return-to-queue`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reason: returnReason,
+          returnedBy: 'Tracker' // You can get actual user name from auth
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to return order to queue')
+      }
+
+      toast.success('Order returned to packing queue successfully')
+      toast.info('Inventory has been restored and sales data updated')
+      
+      // Close modals and reset
+      setShowReturnConfirm(false)
+      setShowDetailsModal(false)
+      setReturnReason('')
+      setSelectedOrder(null)
+      
+      // Refresh orders list
+      await fetchOrders()
+    } catch (error: any) {
+      console.error('Error returning to queue:', error)
+      toast.error(error.message || 'Failed to return order to queue')
+    } finally {
+      setReturning(false)
     }
   }
 
@@ -1042,6 +1092,15 @@ export default function TrackerDashboardPage() {
                     >
                       Update Status
                     </button>
+
+                    {/* Return to Queue Button */}
+                    <button
+                      onClick={() => setShowReturnConfirm(true)}
+                      className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] text-base flex items-center justify-center gap-2"
+                    >
+                      <RotateCcw className="h-5 w-5" />
+                      Return to Packing Queue
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1049,6 +1108,73 @@ export default function TrackerDashboardPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Return to Queue Confirmation Dialog */}
+      <AlertDialog open={showReturnConfirm} onOpenChange={setShowReturnConfirm}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-full">
+                <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              </div>
+              <AlertDialogTitle className="text-xl font-bold">Return to Packing Queue?</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="text-base text-slate-600 dark:text-slate-400">
+              This action will:
+              <ul className="list-disc list-inside mt-3 space-y-2 text-sm">
+                <li>Change order status from <strong>Packed</strong> to <strong>Pending</strong></li>
+                <li>Restore inventory quantity</li>
+                <li>Remove from sales calculations</li>
+                <li>Clear packing information</li>
+                <li>Update all dashboard metrics</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="my-4">
+            <Label htmlFor="return-reason" className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+              Reason for Return <span className="text-red-500">*</span>
+            </Label>
+            <Textarea
+              id="return-reason"
+              placeholder="e.g., Wrong item packed, damaged product, customer request..."
+              value={returnReason}
+              onChange={(e) => setReturnReason(e.target.value)}
+              rows={4}
+              className="text-sm border-2 border-slate-300 dark:border-slate-600 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 resize-none"
+            />
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+              This will be recorded in activity logs for accountability
+            </p>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              disabled={returning}
+              className="px-6 py-3 text-base font-semibold"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleReturnToQueue}
+              disabled={returning || !returnReason.trim()}
+              className="px-6 py-3 text-base font-bold bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
+            >
+              {returning ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Confirm Return
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

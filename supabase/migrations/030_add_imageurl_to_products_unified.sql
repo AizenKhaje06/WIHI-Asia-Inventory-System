@@ -1,11 +1,11 @@
--- Migration: Create Unified Products View (Clean Version)
--- Date: 2026-03-08
--- Description: Combine inventory and bundles into one view for display
+-- Migration: Add imageUrl to products_unified view
+-- Date: 2026-06-01
+-- Description: Update products_unified view to include image_url field
 
--- Drop existing view if any
+-- Drop existing view
 DROP VIEW IF EXISTS products_unified;
 
--- Create unified view that shows both regular products and bundles
+-- Recreate view with imageUrl field
 CREATE VIEW products_unified AS
 -- Regular products from inventory
 SELECT 
@@ -56,7 +56,4 @@ WHERE is_active = true;
 GRANT SELECT ON products_unified TO authenticated, anon;
 
 -- Add comment
-COMMENT ON VIEW products_unified IS 'Unified view of regular products and bundles for inventory display';
-
-
-
+COMMENT ON VIEW products_unified IS 'Unified view of regular products and bundles with image URLs for inventory display';

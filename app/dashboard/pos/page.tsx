@@ -521,11 +521,10 @@ export default function POSPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
             {filteredItems.map((item) => {
               const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
               const isOutOfStock = item.quantity === 0
-              const profitMargin = item.sellingPrice > 0 ? ((item.sellingPrice - item.costPrice) / item.sellingPrice * 100) : 0
               
               return (
                 <button
@@ -533,78 +532,68 @@ export default function POSPage() {
                   onClick={() => addToCart(item)}
                   disabled={isOutOfStock}
                   className={cn(
-                    "group relative overflow-hidden transition-all duration-300 text-left border rounded-lg",
+                    "group relative overflow-hidden transition-all duration-200 text-left border rounded-lg flex flex-col",
                     isOutOfStock
                       ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10 opacity-60 cursor-not-allowed"
-                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-600 hover:-translate-y-1 cursor-pointer active:scale-95 active:shadow-md"
+                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:shadow-lg hover:border-blue-400 dark:hover:border-blue-500 hover:-translate-y-0.5 cursor-pointer active:scale-95"
                   )}
                 >
-                  {/* Stock Badge - Fixed Position */}
-                  <div className="absolute top-3 right-3 z-10">
-                    <span className={cn(
-                      "px-2.5 py-1 text-xs font-bold rounded-md shadow-sm border",
-                      isOutOfStock
-                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
-                        : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
-                    )}>
-                      {isOutOfStock ? "OUT" : item.quantity}
-                    </span>
-                  </div>
-
-                  {/* Status Badge - Fixed Position */}
-                  {(isLowStock && !isOutOfStock) && (
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shadow-sm">
-                        LOW
+                  {/* Image Section - Top */}
+                  <div className="relative w-full aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                    {item.imageUrl ? (
+                      <img 
+                        src={item.imageUrl} 
+                        alt={item.name}
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+                      </div>
+                    )}
+                    
+                    {/* Stock Badge - Top Right */}
+                    <div className="absolute top-1.5 right-1.5">
+                      <span className={cn(
+                        "px-1.5 py-0.5 text-[9px] font-bold rounded shadow-sm",
+                        isOutOfStock
+                          ? "bg-red-500 text-white"
+                          : isLowStock
+                          ? "bg-amber-500 text-white"
+                          : "bg-slate-900/70 text-white"
+                      )}>
+                        {isOutOfStock ? "OUT" : item.quantity}
                       </span>
                     </div>
-                  )}
 
-                  <div className="p-5 pt-12">
-                    {/* Product Name - Fixed Height */}
-                    <div className="mb-4 h-16">
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 line-clamp-2">
-                        {item.name}
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
-                        {item.category}
-                      </p>
-                    </div>
-
-                    {/* Price */}
-                    <div className="mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
-                          ₱{item.sellingPrice.toFixed(2)}
-                        </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 line-through">
-                          ₱{item.costPrice.toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">
-                          {profitMargin.toFixed(0)}% margin
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Stock Info */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-600 dark:text-slate-400 font-medium">Stock Level</span>
-                        <span className="font-bold text-slate-900 dark:text-white">{item.quantity} units</span>
-                      </div>
-                    </div>
-
-                    {/* Add to Cart Indicator */}
+                    {/* Add Button - Hover */}
                     {!isOutOfStock && (
-                      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 text-sm font-semibold">
-                          <ShoppingCart className="h-4 w-4" />
-                          <span>Click to add</span>
+                      <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+                          </svg>
                         </div>
                       </div>
                     )}
+                  </div>
+
+                  {/* Text Section - Bottom */}
+                  <div className="p-1.5 flex flex-col gap-0.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+                    {/* Product Name */}
+                    <h3 
+                      className="text-[9px] font-semibold text-slate-900 dark:text-white line-clamp-2 leading-tight" 
+                      title={item.name}
+                    >
+                      {item.name}
+                    </h3>
+                    
+                    {/* Price */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                        ₱{item.sellingPrice.toFixed(0)}
+                      </span>
+                    </div>
                   </div>
                 </button>
               )
