@@ -26,6 +26,7 @@ export default function POSPage() {
   const [loading, setLoading] = useState(false)
   const [stores, setStores] = useState<Array<{id: string, store_name: string, sales_channel: string}>>([])
   const [staffName, setStaffName] = useState('')
+  const [staffProfileImage, setStaffProfileImage] = useState<string | null>(null)
   const [currentUserRole, setCurrentUserRole] = useState<string>('')
   const [assignedChannel, setAssignedChannel] = useState<string>('')
   const [dispatchId, setDispatchId] = useState('')
@@ -95,6 +96,9 @@ export default function POSPage() {
       setStaffName(name)
       setCurrentUserRole(currentUser.role || '')
       setAssignedChannel(currentUser.assignedChannel || '')
+      
+      // Fetch user profile image from API
+      fetchUserProfile(currentUser.username)
     } else {
       console.warn('[POS] No current user found in localStorage')
       setStaffName('Unknown User')
@@ -103,6 +107,18 @@ export default function POSPage() {
     fetchItems()
     fetchStorageRooms()
   }, [])
+
+  async function fetchUserProfile(username: string) {
+    try {
+      const data = await apiGet<any>('/api/auth/profile')
+      if (data.profile_image) {
+        setStaffProfileImage(data.profile_image)
+        console.log('[POS] Profile image loaded:', data.profile_image)
+      }
+    } catch (error) {
+      console.error('[POS] Error fetching user profile:', error)
+    }
+  }
 
   async function fetchItems() {
     try {
@@ -367,248 +383,271 @@ export default function POSPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Page Header - Professional Style */}
-      <div className="mb-8">
+    <div className="w-full px-4 lg:px-6 py-6">
+      {/* Page Header */}
+      <div className="mb-6">
         <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Order Dispatch Overview</h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Stock release and distribution management
         </p>
       </div>
 
-      {/* Top Section: Dispatch Form + Cart Summary */}
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mb-6">
-        {/* Dispatch Form - Left */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
-              Dispatch Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Dispatched By - Box Style */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Dispatched By *</Label>
-              <div className="flex items-center justify-between p-4 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                    {staffName ? staffName.charAt(0).toUpperCase() : '?'}
-                  </div>
-                  <div className="flex flex-col">
-                    <p className="text-base font-semibold text-slate-900 dark:text-white">
-                      {staffName || 'Unknown User'}
-                    </p>
-                    <div className="flex items-center gap-1.5">
-                      <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Currently logged in</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="px-4 py-2 rounded-md bg-blue-100 dark:bg-blue-800 border border-blue-300 dark:border-blue-600">
-                  <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">Verified</span>
+      {/* 2-Column Layout: Products (LEFT) + Sidebar (RIGHT) */}
+      <div className="grid grid-cols-1 lg:grid-cols-[2.5fr_1fr] gap-6">
+        
+        {/* LEFT COLUMN: Products Section */}
+        <div className="space-y-4">
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between gap-4">
+                <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
+                  Products ({filteredItems.length})
+                </CardTitle>
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    placeholder="Search products..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-2">
-                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <span>Auto-verified from your account for security</span>
-              </div>
-            </div>
-
-            <Button 
-              onClick={handleOpenOrderForm} 
-              disabled={loading || cart.length === 0} 
-              className="w-full bg-blue-600 hover:bg-blue-700 mt-2" 
-              size="lg"
-            >
-              {loading ? "Processing..." : `Dispatch ${cart.length > 0 ? `(${cart.length} items)` : ''}`}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Cart Summary - Right */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center justify-between">
-              <span>Cart Summary</span>
-              <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">₱{total.toFixed(2)}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {cart.length === 0 ? (
-              <div className="text-center py-8">
-                <ShoppingCart className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                <p className="text-slate-500 dark:text-slate-400 text-sm">No items in cart</p>
-                <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">Select products below to add</p>
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-[280px] overflow-y-auto">
-                {cart.map((cartItem) => (
-                  <div
-                    key={cartItem.item.id}
-                    className="flex items-center gap-3 p-3 rounded-[5px] border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{cartItem.item.name}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        ₱{cartItem.item.sellingPrice.toFixed(2)} × {cartItem.quantity}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min="1"
-                        max={cartItem.item.quantity}
-                        value={cartItem.quantity}
-                        onChange={(e) => {
-                          const value = e.target.value
-                          // Allow empty input for editing
-                          if (value === '') {
-                            return
-                          }
-                          // Parse and validate the number
-                          const numValue = parseInt(value, 10)
-                          if (!isNaN(numValue) && numValue >= 1) {
-                            updateQuantity(cartItem.item.id, numValue)
-                          }
-                        }}
-                        onBlur={(e) => {
-                          // On blur, ensure we have a valid value
-                          const value = e.target.value
-                          if (value === '' || parseInt(value, 10) < 1) {
-                            updateQuantity(cartItem.item.id, 1)
-                          }
-                        }}
-                        className="min-w-[60px] max-w-[100px] h-8 text-sm text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => removeFromCart(cartItem.item.id)} 
-                        className="h-8 w-8 p-0 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                    <p className="font-semibold text-sm text-emerald-600 dark:text-emerald-400 min-w-[70px] text-right">
-                      ₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Products Section */}
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between gap-4">
-            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
-              Products ({filteredItems.length})
-            </CardTitle>
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder="Search products..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-            {filteredItems.map((item) => {
-              const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
-              const isOutOfStock = item.quantity === 0
-              
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => addToCart(item)}
-                  disabled={isOutOfStock}
-                  className={cn(
-                    "group relative overflow-hidden transition-all duration-200 text-left border rounded-lg flex flex-col",
-                    isOutOfStock
-                      ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10 opacity-60 cursor-not-allowed"
-                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:shadow-lg hover:border-blue-400 dark:hover:border-blue-500 hover:-translate-y-0.5 cursor-pointer active:scale-95"
-                  )}
-                >
-                  {/* Image Section - Top */}
-                  <div className="relative w-full aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    {item.imageUrl ? (
-                      <img 
-                        src={item.imageUrl} 
-                        alt={item.name}
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Package className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-                      </div>
-                    )}
-                    
-                    {/* Stock Badge - Top Right */}
-                    <div className="absolute top-1.5 right-1.5">
-                      <span className={cn(
-                        "px-1.5 py-0.5 text-[9px] font-bold rounded shadow-sm",
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                {filteredItems.map((item) => {
+                  const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
+                  const isOutOfStock = item.quantity === 0
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => addToCart(item)}
+                      disabled={isOutOfStock}
+                      className={cn(
+                        "group relative overflow-hidden transition-all duration-200 text-left border rounded-lg flex flex-col",
                         isOutOfStock
-                          ? "bg-red-500 text-white"
-                          : isLowStock
-                          ? "bg-amber-500 text-white"
-                          : "bg-slate-900/70 text-white"
-                      )}>
-                        {isOutOfStock ? "OUT" : item.quantity}
-                      </span>
-                    </div>
+                          ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10 opacity-60 cursor-not-allowed"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:shadow-lg hover:border-blue-400 dark:hover:border-blue-500 hover:-translate-y-0.5 cursor-pointer active:scale-95"
+                      )}
+                    >
+                      {/* Image Section - Top */}
+                      <div className="relative w-full aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                        {item.imageUrl ? (
+                          <img 
+                            src={item.imageUrl} 
+                            alt={item.name}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Package className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+                          </div>
+                        )}
+                        
+                        {/* Stock Badge - Top Right */}
+                        <div className="absolute top-1.5 right-1.5">
+                          <span className={cn(
+                            "px-1.5 py-0.5 text-[9px] font-bold rounded shadow-sm",
+                            isOutOfStock
+                              ? "bg-red-500 text-white"
+                              : isLowStock
+                              ? "bg-amber-500 text-white"
+                              : "bg-slate-900/70 text-white"
+                          )}>
+                            {isOutOfStock ? "OUT" : item.quantity}
+                          </span>
+                        </div>
 
-                    {/* Add Button - Hover */}
-                    {!isOutOfStock && (
-                      <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
-                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
-                          </svg>
+                        {/* Add Button - Hover */}
+                        {!isOutOfStock && (
+                          <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
+                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Text Section - Bottom */}
+                      <div className="p-2 flex flex-col gap-1 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+                        {/* Product Name - Smaller Font Size */}
+                        <h3 
+                          className="text-[10px] sm:text-[11px] font-medium text-slate-900 dark:text-white line-clamp-2 leading-tight min-h-[28px]" 
+                          title={item.name}
+                        >
+                          {item.name}
+                        </h3>
+                        
+                        {/* Price - Emphasized */}
+                        <div className="flex items-center justify-between pt-0.5">
+                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                            ₱{item.sellingPrice.toFixed(0)}
+                          </span>
                         </div>
                       </div>
-                    )}
-                  </div>
+                    </button>
+                  )
+                })}
+              </div>
+              
+              {filteredItems.length === 0 && (
+                <div className="text-center py-12">
+                  <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                  <p className="text-slate-500 dark:text-slate-400">No products found</p>
+                  <p className="text-sm text-slate-400 dark:text-slate-500">Try adjusting your search</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-                  {/* Text Section - Bottom */}
-                  <div className="p-1.5 flex flex-col gap-0.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
-                    {/* Product Name */}
-                    <h3 
-                      className="text-[9px] font-semibold text-slate-900 dark:text-white line-clamp-2 leading-tight" 
-                      title={item.name}
+        {/* RIGHT COLUMN: Sticky Sidebar (Cart + Dispatch Info) */}
+        <div className="sticky top-5 h-[calc(100vh-120px)] flex flex-col gap-4">
+          
+          {/* Cart Summary - TOP (Flexible Height with Scroll) */}
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 flex-1 flex flex-col overflow-hidden">
+            <CardHeader className="pb-3 flex-shrink-0">
+              <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center justify-between">
+                <span>Cart Summary</span>
+                <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">₱{total.toFixed(2)}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-hidden flex flex-col">
+              {cart.length === 0 ? (
+                <div className="text-center py-8">
+                  <ShoppingCart className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                  <p className="text-slate-500 dark:text-slate-400 text-sm">No items in cart</p>
+                  <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">Select products to add</p>
+                </div>
+              ) : (
+                <div className="space-y-2 overflow-y-auto flex-1">
+                  {cart.map((cartItem) => (
+                    <div
+                      key={cartItem.item.id}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
                     >
-                      {item.name}
-                    </h3>
-                    
-                    {/* Price */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                        ₱{item.sellingPrice.toFixed(0)}
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{cartItem.item.name}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          ₱{cartItem.item.sellingPrice.toFixed(2)} × {cartItem.quantity}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min="1"
+                          max={cartItem.item.quantity}
+                          value={cartItem.quantity}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            if (value === '') return
+                            const numValue = parseInt(value, 10)
+                            if (!isNaN(numValue) && numValue >= 1) {
+                              updateQuantity(cartItem.item.id, numValue)
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const value = e.target.value
+                            if (value === '' || parseInt(value, 10) < 1) {
+                              updateQuantity(cartItem.item.id, 1)
+                            }
+                          }}
+                          className="min-w-[60px] max-w-[100px] h-8 text-sm text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => removeFromCart(cartItem.item.id)} 
+                          className="h-8 w-8 p-0 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      <p className="font-semibold text-sm text-emerald-600 dark:text-emerald-400 min-w-[70px] text-right">
+                        ₱{(cartItem.item.sellingPrice * cartItem.quantity).toFixed(2)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Dispatch Information - BOTTOM (Fixed at Bottom) */}
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 flex-shrink-0">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
+                Dispatch Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Dispatched By */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Dispatched By *</Label>
+                <div className="flex items-center justify-between p-4 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20">
+                  <div className="flex items-center gap-3">
+                    {/* Profile Image or Gradient Circle */}
+                    {staffProfileImage ? (
+                      <div className="h-12 w-12 rounded-full overflow-hidden shadow-md ring-2 ring-blue-500/30">
+                        <img 
+                          src={staffProfileImage} 
+                          alt={staffName}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            // Fallback to gradient circle if image fails to load
+                            e.currentTarget.style.display = 'none'
+                            const fallback = e.currentTarget.nextElementSibling as HTMLElement
+                            if (fallback) fallback.style.display = 'flex'
+                          }}
+                        />
+                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md" style={{ display: 'none' }}>
+                          {staffName ? staffName.charAt(0).toUpperCase() : '?'}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                        {staffName ? staffName.charAt(0).toUpperCase() : '?'}
+                      </div>
+                    )}
+                    <div className="flex flex-col">
+                      <p className="text-base font-semibold text-slate-900 dark:text-white">
+                        {staffName || 'Unknown User'}
+                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                        <span className="text-sm text-slate-600 dark:text-slate-400">Currently logged in</span>
+                      </div>
                     </div>
                   </div>
-                </button>
-              )
-            })}
-          </div>
-          
-          {filteredItems.length === 0 && (
-            <div className="text-center py-12">
-              <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-              <p className="text-slate-500 dark:text-slate-400">No products found</p>
-              <p className="text-sm text-slate-400 dark:text-slate-500">Try adjusting your search</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  <div className="px-4 py-2 rounded-md bg-blue-100 dark:bg-blue-800 border border-blue-300 dark:border-blue-600">
+                    <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">Verified</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <span>Auto-verified from your account</span>
+                </div>
+              </div>
+
+              <Button 
+                onClick={handleOpenOrderForm} 
+                disabled={loading || cart.length === 0} 
+                className="w-full bg-blue-600 hover:bg-blue-700" 
+                size="lg"
+              >
+                {loading ? "Processing..." : `Dispatch ${cart.length > 0 ? `(${cart.length} items)` : ''}`}
+              </Button>
+            </CardContent>
+          </Card>
+
+        </div>
+      </div>
 
       {/* Order Form Modal - Professional Design */}
       <Dialog open={orderFormOpen} onOpenChange={setOrderFormOpen}>

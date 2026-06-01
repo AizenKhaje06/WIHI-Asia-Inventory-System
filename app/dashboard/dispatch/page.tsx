@@ -234,9 +234,9 @@ export default function DispatchPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Header - Professional Style */}
-      <div className="mb-8">
+    <div className="w-full px-4 lg:px-6 py-6">
+      {/* Page Header */}
+      <div className="mb-6">
         <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Order Dispatch Overview</h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           {isTeamLeader 
@@ -246,177 +246,202 @@ export default function DispatchPage() {
         </p>
       </div>
 
-      {/* Stats Cards - Professional Corporate Design */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {/* Ready to Dispatch - Blue */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
-              <Truck className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Ready to Dispatch</p>
-              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">{filteredOrders.length}</p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Total Items - Purple */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
-              <Package className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Total Items</p>
-              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
-                {filteredOrders.reduce((sum, order) => sum + (order.qty || order.quantity || 0), 0)}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Total Value - Green */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30">
-              <Send className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Total Value</p>
-              <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
-                {formatCurrency(filteredOrders.reduce((sum, order) => sum + (order.total || order.totalAmount || 0), 0))}
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Filters - Professional Design */}
-      <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Search className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">Search & Filter Orders</h3>
-            <Button onClick={fetchQueue} variant="ghost" size="sm" className="ml-auto h-8 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-              <RefreshCw className="h-3 w-3" />
-              Refresh
-            </Button>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder="Search orders..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
-                />
+      {/* 2-Column Layout: Products (LEFT) + Sidebar (RIGHT) */}
+      <div className="grid grid-cols-1 lg:grid-cols-[2.5fr_1fr] gap-6">
+        
+        {/* LEFT COLUMN: Products Section */}
+        <div className="space-y-4">
+          {/* Filters Card */}
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Search className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">Search & Filter Orders</h3>
+                <Button onClick={fetchQueue} variant="ghost" size="sm" className="ml-auto h-8 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                  <RefreshCw className="h-3 w-3" />
+                  Refresh
+                </Button>
               </div>
-            </div>
-            {!isTeamLeader && (
-              <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
-                <SelectTrigger className="w-full sm:w-[200px] h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  <SelectValue placeholder="All Channels" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Channels</SelectItem>
-                  <SelectItem value="Shopee">Shopee</SelectItem>
-                  <SelectItem value="Lazada">Lazada</SelectItem>
-                  <SelectItem value="Facebook">Facebook</SelectItem>
-                  <SelectItem value="TikTok">TikTok</SelectItem>
-                  <SelectItem value="Physical Store">Physical Store</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Orders Grid - 5 Columns */}
-      {filteredOrders.length === 0 ? (
-        <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-          <CardContent className="pt-6">
-            <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
-                <Truck className="h-8 w-8 text-slate-400" />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                      placeholder="Search orders..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20"
+                    />
+                  </div>
+                </div>
+                {!isTeamLeader && (
+                  <Select value={salesChannelFilter} onValueChange={setSalesChannelFilter}>
+                    <SelectTrigger className="w-full sm:w-[200px] h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                      <SelectValue placeholder="All Channels" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Channels</SelectItem>
+                      <SelectItem value="Shopee">Shopee</SelectItem>
+                      <SelectItem value="Lazada">Lazada</SelectItem>
+                      <SelectItem value="Facebook">Facebook</SelectItem>
+                      <SelectItem value="TikTok">TikTok</SelectItem>
+                      <SelectItem value="Physical Store">Physical Store</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No orders ready for dispatch</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-500">
-                Packed orders will appear here
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {filteredOrders.map((order) => (
-            <Card key={order.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-slate-900">
+            </CardContent>
+          </Card>
+
+          {/* Orders Grid */}
+          {filteredOrders.length === 0 ? (
+            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
               <CardContent className="pt-6">
-                <div className="space-y-3">
-                  {/* Order Number */}
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
-                      #{(order.orderNumber || order.id).slice(-6)}
-                    </span>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-xs font-semibold">
-                      {order.parcel_status || order.parcelStatus || 'Packed'}
-                    </Badge>
+                <div className="text-center py-16">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
+                    <Truck className="h-8 w-8 text-slate-400" />
                   </div>
-
-                  {/* Date */}
-                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    {new Date(order.date || order.orderDate || '').toLocaleDateString()}
-                  </div>
-
-                  {/* Channel Badge */}
-                  {!isTeamLeader && (
-                    <Badge variant="outline" className="text-xs font-semibold">
-                      {order.sales_channel || order.channel || 'N/A'}
-                    </Badge>
-                  )}
-
-                  {/* Product Name */}
-                  <div className="text-sm font-semibold text-slate-900 dark:text-white line-clamp-2 min-h-[40px]">
-                    {order.product || order.itemName}
-                  </div>
-
-                  {/* Customer Info */}
-                  <div className="space-y-1">
-                    <div className="text-xs font-medium text-slate-900 dark:text-white truncate">
-                      {order.customerName}
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                      {order.customerPhone}
-                    </div>
-                  </div>
-
-                  {/* Quantity and Total */}
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
-                    <div className="text-xs text-slate-600 dark:text-slate-400">
-                      Qty: <span className="font-semibold text-slate-900 dark:text-white">{order.qty || order.quantity}</span>
-                    </div>
-                    <div className="text-sm font-bold text-slate-900 dark:text-white">
-                      {formatCurrency(order.total || order.totalAmount || 0)}
-                    </div>
-                  </div>
-
-                  {/* Dispatch Button */}
-                  <Button
-                    size="sm"
-                    onClick={() => openDispatchForm(order)}
-                    className="w-full mt-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30 font-semibold"
-                  >
-                    <Send className="h-3 w-3 mr-2" />
-                    Dispatch
-                  </Button>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No orders ready for dispatch</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-500">
+                    Packed orders will appear here
+                  </p>
                 </div>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+              {filteredOrders.map((order) => (
+                <Card 
+                  key={order.id} 
+                  className="group border-0 shadow-md hover:shadow-xl transition-all duration-300 bg-white dark:bg-slate-900 overflow-hidden flex flex-col h-full"
+                >
+                  <CardContent className="p-4 flex flex-col h-full">
+                    <div className="flex flex-col h-full space-y-3">
+                      {/* Header: Order Number & Status Badge */}
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                          #{(order.orderNumber || order.id).slice(-6)}
+                        </span>
+                        <Badge 
+                          variant="outline" 
+                          className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-[10px] font-semibold px-2 py-0.5 shrink-0"
+                        >
+                          {order.parcel_status || order.parcelStatus || 'Packed'}
+                        </Badge>
+                      </div>
+
+                      {/* Date */}
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                        {new Date(order.date || order.orderDate || '').toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
+                      </div>
+
+                      {/* Channel Badge - Only for Admin */}
+                      {!isTeamLeader && (
+                        <Badge 
+                          variant="outline" 
+                          className="text-[10px] font-semibold w-fit px-2 py-0.5 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border-orange-200 dark:border-orange-800"
+                        >
+                          {order.sales_channel || order.channel || 'N/A'}
+                        </Badge>
+                      )}
+
+                      {/* Product Name - Balanced Font Size with Consistent Height */}
+                      <div className="text-xs sm:text-[13px] font-medium text-slate-900 dark:text-white line-clamp-2 leading-tight min-h-[36px] flex items-start">
+                        {order.product || order.itemName}
+                      </div>
+
+                      {/* Customer Info */}
+                      <div className="space-y-1 pt-1">
+                        <div className="text-[11px] font-medium text-slate-900 dark:text-white truncate">
+                          {order.customerName}
+                        </div>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                          {order.customerPhone}
+                        </div>
+                      </div>
+
+                      {/* Spacer to push bottom content down */}
+                      <div className="flex-grow"></div>
+
+                      {/* Quantity and Total - Emphasized Price */}
+                      <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-700">
+                        <div className="text-[11px] text-slate-600 dark:text-slate-400">
+                          Qty: <span className="font-bold text-slate-900 dark:text-white">{order.qty || order.quantity}</span>
+                        </div>
+                        <div className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                          {formatCurrency(order.total || order.totalAmount || 0)}
+                        </div>
+                      </div>
+
+                      {/* Dispatch Button - Enhanced Hover */}
+                      <Button
+                        size="sm"
+                        onClick={() => openDispatchForm(order)}
+                        className="w-full mt-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200 font-semibold text-xs h-9"
+                      >
+                        <Send className="h-3.5 w-3.5 mr-2" />
+                        Dispatch Order
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+
+        {/* RIGHT COLUMN: Sticky Sidebar (Stats) */}
+        <div className="sticky top-5 h-fit space-y-4">
+          {/* Stats Cards - Professional Corporate Design */}
+          
+          {/* Ready to Dispatch - Blue */}
+          <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
+                <Truck className="h-4 w-4 text-white" strokeWidth={2.5} />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Ready to Dispatch</p>
+                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">{filteredOrders.length}</p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Total Items - Purple */}
+          <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
+                <Package className="h-4 w-4 text-white" strokeWidth={2.5} />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Total Items</p>
+                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
+                  {filteredOrders.reduce((sum, order) => sum + (order.qty || order.quantity || 0), 0)}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Total Value - Green */}
+          <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30">
+                <Send className="h-4 w-4 text-white" strokeWidth={2.5} />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Total Value</p>
+                <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
+                  {formatCurrency(filteredOrders.reduce((sum, order) => sum + (order.total || order.totalAmount || 0), 0))}
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
 
       {/* Dispatch Form Dialog - Professional Design */}
       <Dialog open={showDispatchForm} onOpenChange={setShowDispatchForm}>

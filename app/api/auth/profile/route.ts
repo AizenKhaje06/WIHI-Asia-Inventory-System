@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     // Fetch user profile from database
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('username, role, display_name, email, phone')
+      .select('username, role, display_name, email, phone, profile_image')
       .eq('username', username)
       .single()
 
@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
       role: user.role,
       displayName: user.display_name,
       email: user.email || '',
-      phone: user.phone || ''
+      phone: user.phone || '',
+      profile_image: user.profile_image || null
     })
 
   } catch (error) {
