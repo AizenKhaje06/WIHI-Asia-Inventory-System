@@ -1753,7 +1753,7 @@ export default function TrackOrdersPage() {
                   {filteredOrders.map((order, index) => (
                     <tr 
                       key={order.id} 
-                      className="group hover:bg-blue-50 dark:hover:bg-slate-800/50 transition-all duration-200"
+                      className="group hover:bg-blue-50 dark:hover:bg-slate-800/50 transition-all duration-200 h-16"
                     >
                       <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
                         <div className="flex items-center gap-1.5">
@@ -1769,7 +1769,7 @@ export default function TrackOrdersPage() {
                         </div>
                       </td>
                       <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-[11px] text-slate-900 dark:text-white font-semibold whitespace-normal break-words" title={order.customerName}>
+                        <div className="text-[11px] text-slate-900 dark:text-white font-semibold truncate max-w-[90px]" title={order.customerName}>
                           {order.customerName || 'N/A'}
                         </div>
                       </td>
@@ -1781,12 +1781,12 @@ export default function TrackOrdersPage() {
                         </td>
                       )}
                       <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-[11px] text-slate-900 dark:text-white font-semibold whitespace-normal break-words" title={order.storeName}>
+                        <div className="text-[11px] text-slate-900 dark:text-white font-semibold truncate max-w-[90px]" title={order.storeName}>
                           {order.storeName}
                         </div>
                       </td>
                       <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-[11px] text-slate-900 dark:text-white font-medium whitespace-normal break-words leading-relaxed" title={order.itemName}>
+                        <div className="text-[11px] text-slate-900 dark:text-white font-medium line-clamp-2 leading-tight max-h-[2.8em]" title={order.itemName}>
                           {order.itemName}
                         </div>
                       </td>
@@ -1836,83 +1836,33 @@ export default function TrackOrdersPage() {
 
       {/* Order Details Modal - Professional Design */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0">
-          {/* Modal Header with Gradient */}
-          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0 flex flex-col">
+          {/* Modal Header - Clean without buttons */}
+          <div className="bg-slate-900 dark:bg-slate-950 px-8 py-6 border-b border-slate-700 dark:border-slate-800 flex-shrink-0">
             <DialogHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
-                    <Package className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <DialogTitle className="text-2xl font-bold tracking-tight" style={{ color: 'white' }}>
-                      Order Details
-                    </DialogTitle>
-                    <p className="text-slate-200 text-sm mt-1 font-medium">
-                      View and manage order information
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
+                  <Package className="h-6 w-6 text-white" />
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {!isEditMode ? (
-                    <>
-                      <Button
-                        onClick={handleEditMode}
-                        variant="outline"
-                        size="sm"
-                        className="text-white border-white/30 hover:bg-white/10 hover:border-white/50"
-                      >
-                        <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          if (selectedOrder) {
-                            setShowDetailsModal(false)
-                            openDeleteDialog(selectedOrder.id)
-                          }
-                        }}
-                        variant="outline"
-                        size="sm"
-                        className="text-red-300 border-red-300/30 hover:bg-red-500/20 hover:border-red-300/50"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </Button>
-                    </>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={handleCancelEdit}
-                        variant="outline"
-                        size="sm"
-                        className="text-white border-white/30 hover:bg-white/10"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleSaveEdit}
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        Save Changes
-                      </Button>
-                    </div>
-                  )}
+                <div>
+                  <DialogTitle className="text-2xl font-bold tracking-tight" style={{ color: 'white' }}>
+                    Order Details
+                  </DialogTitle>
+                  <p className="text-slate-300 dark:text-slate-400 text-sm mt-1 font-medium">
+                    View and manage order information
+                  </p>
                 </div>
               </div>
             </DialogHeader>
           </div>
           {selectedOrder && (
-            <div className="overflow-y-auto max-h-[calc(90vh-140px)] px-8 py-6">
+            <>
+            <div className="overflow-y-auto flex-1 px-8 py-6">
               <div className="space-y-6">
                 {/* Customer Information Card */}
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-blue-600 rounded-lg">
+                    <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                       <User className="h-5 w-5 text-white" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -1997,9 +1947,9 @@ export default function TrackOrdersPage() {
                 </div>
 
                 {/* Order Information Card */}
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-6 border border-emerald-100 dark:border-emerald-800">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-emerald-600 rounded-lg">
+                    <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                       <Package className="h-5 w-5 text-white" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -2095,9 +2045,9 @@ export default function TrackOrdersPage() {
 
               {/* Tracking Information Card */}
               {(selectedOrder.courier || selectedOrder.trackingNumber || isEditMode) && (
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-purple-600 rounded-lg">
+                    <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                       <Truck className="h-5 w-5 text-white" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -2226,33 +2176,152 @@ export default function TrackOrdersPage() {
               )}
               </div>
             </div>
+
+            {/* Action Buttons - Bottom, side by side, right aligned */}
+            <div className="flex-shrink-0 px-8 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+              <div className="flex justify-end gap-3">
+                {!isEditMode ? (
+                  <>
+                    <Button
+                      onClick={() => {
+                        if (selectedOrder) {
+                          setShowDetailsModal(false)
+                          openDeleteDialog(selectedOrder.id)
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-600/50 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-400 dark:hover:border-red-500/70"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Order
+                    </Button>
+                    <Button
+                      onClick={handleEditMode}
+                      size="sm"
+                      className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900"
+                    >
+                      <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit Order
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      onClick={handleCancelEdit}
+                      variant="outline"
+                      size="sm"
+                      className="border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSaveEdit}
+                      size="sm"
+                      className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900"
+                    >
+                      Save Changes
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog - Enterprise Grade */}
+      {/* Delete Confirmation Dialog - Professional Red Theme */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="max-w-md bg-white dark:bg-slate-900 border-0 shadow-2xl">
-          <AlertDialogHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 rounded-full bg-red-100 dark:bg-red-900/30">
-                <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
-              </div>
-              <AlertDialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
-                Delete Order
-              </AlertDialogTitle>
+        <AlertDialogContent className="max-w-md p-0 gap-0 bg-white dark:bg-slate-900 border-0 shadow-2xl overflow-hidden">
+          <AlertDialogTitle className="sr-only">Delete Order Confirmation</AlertDialogTitle>
+          <AlertDialogDescription className="sr-only">
+            Confirm deletion of order. This action is permanent and cannot be undone.
+          </AlertDialogDescription>
+          
+          {/* Red Header */}
+          <div className="bg-red-600 dark:bg-red-700 px-6 py-8 text-center relative">
+            <div className="absolute top-4 right-4">
+              <button 
+                onClick={() => {
+                  setShowDeleteDialog(false)
+                  setOrderToDelete(null)
+                }}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            <AlertDialogDescription className="text-base text-slate-600 dark:text-slate-400 leading-relaxed pt-2">
-              Are you sure you want to delete this order? This action cannot be undone and will permanently remove the order from the system.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-2 mt-6">
+            <div className="flex justify-center mb-4">
+              <div className="p-4 rounded-full bg-white/20 backdrop-blur-sm">
+                <Trash2 className="h-12 w-12 text-white" strokeWidth={2} />
+              </div>
+            </div>
+            <h2 className="text-3xl font-bold !text-white mb-2">Delete Order</h2>
+            <p className="!text-white text-sm font-medium">This action is permanent and cannot be undone</p>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-4">
+            <p className="text-center text-slate-700 dark:text-slate-300 text-base font-medium">
+              Are you sure you want to delete this order?
+            </p>
+
+            {/* Order Details Box */}
+            {orderToDelete && (() => {
+              const order = orders.find(o => o.id === orderToDelete)
+              return order ? (
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 space-y-3">
+                  <div className="text-center">
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                      Waybill Number
+                    </p>
+                    <p className="text-lg font-bold text-slate-900 dark:text-white">
+                      {order.trackingNumber || 'N/A'}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                      Product
+                    </p>
+                    <p className="text-base font-bold text-slate-900 dark:text-white">
+                      {order.productName}
+                    </p>
+                  </div>
+                </div>
+              ) : null
+            })()}
+
+            {/* Warning Box */}
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex gap-3">
+                <div className="flex-shrink-0">
+                  <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-red-900 dark:text-red-300 mb-1">
+                    Warning: Permanent Action
+                  </p>
+                  <p className="text-sm text-red-700 dark:text-red-400 leading-relaxed">
+                    All order data and associated records will be permanently removed from the system.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer Buttons */}
+          <div className="flex gap-3 p-6 pt-0">
             <AlertDialogCancel 
               onClick={() => {
                 setShowDeleteDialog(false)
                 setOrderToDelete(null)
               }}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white border-0 font-semibold"
+              className="flex-1 h-12 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-white border-0 font-semibold rounded-full"
             >
               Cancel
             </AlertDialogCancel>
@@ -2262,12 +2331,12 @@ export default function TrackOrdersPage() {
                   handleDeleteOrder(orderToDelete)
                 }
               }}
-              className="bg-red-600 hover:bg-red-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex-1 h-12 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete Order
             </AlertDialogAction>
-          </AlertDialogFooter>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
     </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -56,6 +56,11 @@ export default function TrackerDashboardPage() {
   const [showReturnConfirm, setShowReturnConfirm] = useState(false)
   const [returnReason, setReturnReason] = useState('')
   const [returning, setReturning] = useState(false)
+  
+  // Memoize textarea onChange handler to prevent re-renders
+  const handleReturnReasonChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setReturnReason(e.target.value)
+  }, [])
 
   useEffect(() => {
     fetchOrders()
@@ -202,6 +207,16 @@ export default function TrackerDashboardPage() {
       return
     }
 
+    // Check if user is logged in
+    const username = localStorage.getItem('username')
+    const userRole = localStorage.getItem('userRole')
+    
+    if (!username || !userRole) {
+      toast.error('Authentication required. Please login again.')
+      window.location.href = '/'
+      return
+    }
+
     try {
       setReturning(true)
 
@@ -209,10 +224,12 @@ export default function TrackerDashboardPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-username': username,
+          'x-user-role': userRole,
         },
         body: JSON.stringify({
           reason: returnReason,
-          returnedBy: 'Tracker' // You can get actual user name from auth
+          returnedBy: localStorage.getItem('displayName') || username
         }),
       })
 
@@ -363,8 +380,8 @@ export default function TrackerDashboardPage() {
       {/* KPI Cards - Mobile Optimized */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
         {/* Total Orders */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+        <Card className="relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-slate-100 dark:bg-slate-800 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 opacity-50" />
           <CardHeader className="pb-2 sm:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
               <div className="p-1.5 sm:p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
@@ -384,8 +401,8 @@ export default function TrackerDashboardPage() {
         </Card>
 
         {/* Delivered */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+        <Card className="relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-slate-100 dark:bg-slate-800 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 opacity-50" />
           <CardHeader className="pb-2 sm:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
               <div className="p-1.5 sm:p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
@@ -405,8 +422,8 @@ export default function TrackerDashboardPage() {
         </Card>
 
         {/* Returned */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-orange-500/10 to-red-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+        <Card className="relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-slate-100 dark:bg-slate-800 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 opacity-50" />
           <CardHeader className="pb-2 sm:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
             <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
               <div className="p-1.5 sm:p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
@@ -489,8 +506,8 @@ export default function TrackerDashboardPage() {
       </Card>
 
       {/* Orders Table */}
-      <Card className="shadow-lg overflow-hidden">
-        <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-3 sm:p-6">
+      <Card className="shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <CardHeader className="border-b bg-white dark:bg-slate-900 p-3 sm:p-6">
           <div className="flex flex-col gap-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
@@ -537,9 +554,9 @@ export default function TrackerDashboardPage() {
           ) : (
             <>
               {/* Mobile Scroll Hint */}
-              <div className="md:hidden px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-100 dark:border-blue-800">
-                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2 font-medium">
-                  <span className="text-blue-500">←</span>
+              <div className="md:hidden px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                <p className="text-xs text-slate-600 dark:text-slate-400 flex items-center justify-center gap-2 font-medium">
+                  <span className="text-slate-500">←</span>
                   <span>Swipe to see all columns • Tap row to highlight</span>
                   <span className="text-blue-500">→</span>
                 </p>
@@ -549,7 +566,7 @@ export default function TrackerDashboardPage() {
                 <table className="w-full">
                   {/* Desktop Header - Hidden on Mobile */}
                   <thead className="sticky top-0 z-10 hidden md:table-header-group">
-                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                    <tr className="bg-slate-900 dark:bg-slate-950 border-b border-slate-700">
                       <th className="text-left py-4 px-2 text-[11px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '8%' }}>
                         Date
                       </th>
@@ -585,7 +602,7 @@ export default function TrackerDashboardPage() {
 
                   {/* Mobile Header - Only Date, Waybill, Parcel Status, Action */}
                   <thead className="sticky top-0 z-10 md:hidden">
-                    <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                    <tr className="bg-slate-900 dark:bg-slate-950 border-b border-slate-700">
                       <th className="text-left py-3 px-2 text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50" style={{ width: '15%' }}>
                         Date
                       </th>
@@ -790,8 +807,8 @@ export default function TrackerDashboardPage() {
       {/* Order Details Modal - Professional Design */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0">
-          {/* Modal Header with Gradient */}
-          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600">
+          {/* Modal Header */}
+          <div className="bg-slate-900 dark:bg-slate-950 px-8 py-6 border-b border-slate-700 dark:border-slate-800">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
                 <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
@@ -809,9 +826,9 @@ export default function TrackerDashboardPage() {
             <div className="overflow-y-auto max-h-[calc(90vh-140px)] px-8 py-6">
               <div className="space-y-6">
                 {/* Customer Information Card */}
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-blue-600 rounded-lg">
+                    <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                       <User className="h-5 w-5 text-white" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -857,9 +874,9 @@ export default function TrackerDashboardPage() {
                 </div>
 
                 {/* Order Information Card */}
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-6 border border-emerald-100 dark:border-emerald-800">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-emerald-600 rounded-lg">
+                    <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                       <Package className="h-5 w-5 text-white" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -915,7 +932,7 @@ export default function TrackerDashboardPage() {
                       <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                         Sales Channel
                       </p>
-                      <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-sm font-semibold px-3 py-1.5">
+                      <Badge className="bg-slate-700 dark:bg-slate-600 text-white border-0 text-sm font-semibold px-3 py-1.5">
                         {selectedOrder.department || 'N/A'}
                       </Badge>
                     </div>
@@ -923,9 +940,9 @@ export default function TrackerDashboardPage() {
                 </div>
 
                 {/* Tracking Information Card */}
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-purple-600 rounded-lg">
+                    <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                       <Truck className="h-5 w-5 text-white" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -953,9 +970,9 @@ export default function TrackerDashboardPage() {
                 </div>
 
                 {/* Timeline Section */}
-                <div className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-6 border border-amber-100 dark:border-amber-800">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-amber-600 rounded-lg">
+                    <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                       <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -1025,7 +1042,7 @@ export default function TrackerDashboardPage() {
                 </div>
 
                 {/* Update Status Section */}
-                <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 tracking-tight">
                     Update Parcel Status
                   </h3>
@@ -1040,19 +1057,19 @@ export default function TrackerDashboardPage() {
                           setSelectedOrder({ ...selectedOrder, parcelStatus: value as any })
                         }}
                       >
-                        <SelectTrigger id="status" className="h-12 text-base font-medium border-2 border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                        <SelectTrigger id="status" className="h-12 text-base font-medium border-2 border-slate-300 dark:border-slate-600 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="PENDING" className="text-base">📦 Pending</SelectItem>
-                          <SelectItem value="IN TRANSIT" className="text-base">🚚 In Transit</SelectItem>
-                          <SelectItem value="ON DELIVERY" className="text-base">🚛 On Delivery</SelectItem>
-                          <SelectItem value="PICKUP" className="text-base">📍 Pickup</SelectItem>
-                          <SelectItem value="DELIVERED" className="text-base">✅ Delivered</SelectItem>
-                          <SelectItem value="CANCELLED" className="text-base">❌ Cancelled</SelectItem>
-                          <SelectItem value="DETAINED" className="text-base">⚠️ Detained</SelectItem>
-                          <SelectItem value="PROBLEMATIC" className="text-base">🔴 Problematic</SelectItem>
-                          <SelectItem value="RETURNED" className="text-base">↩️ Returned</SelectItem>
+                          <SelectItem value="PENDING" className="text-base">Pending</SelectItem>
+                          <SelectItem value="IN TRANSIT" className="text-base">In Transit</SelectItem>
+                          <SelectItem value="ON DELIVERY" className="text-base">On Delivery</SelectItem>
+                          <SelectItem value="PICKUP" className="text-base">Pickup</SelectItem>
+                          <SelectItem value="DELIVERED" className="text-base">Delivered</SelectItem>
+                          <SelectItem value="CANCELLED" className="text-base">Cancelled</SelectItem>
+                          <SelectItem value="DETAINED" className="text-base">Detained</SelectItem>
+                          <SelectItem value="PROBLEMATIC" className="text-base">Problematic</SelectItem>
+                          <SelectItem value="RETURNED" className="text-base">Returned</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1076,32 +1093,34 @@ export default function TrackerDashboardPage() {
                         </p>
                       </div>
                     )}
-
-                    <button
-                      onClick={() => {
-                        updateOrderStatus(
-                          selectedOrder.id, 
-                          selectedOrder.parcelStatus,
-                          ['CANCELLED', 'RETURNED', 'PROBLEMATIC'].includes(selectedOrder.parcelStatus) 
-                            ? selectedOrder.reason 
-                            : undefined
-                        )
-                        setShowDetailsModal(false)
-                      }}
-                      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] text-base"
-                    >
-                      Update Status
-                    </button>
-
-                    {/* Return to Queue Button */}
-                    <button
-                      onClick={() => setShowReturnConfirm(true)}
-                      className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] text-base flex items-center justify-center gap-2"
-                    >
-                      <RotateCcw className="h-5 w-5" />
-                      Return to Packing Queue
-                    </button>
                   </div>
+                </div>
+
+                {/* Action Buttons - Outside card, side by side, right aligned */}
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowReturnConfirm(true)}
+                    className="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-semibold py-2.5 px-4 rounded-lg transition-colors duration-200 text-sm border border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 flex items-center justify-center gap-2"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    Return to Queue
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      updateOrderStatus(
+                        selectedOrder.id, 
+                        selectedOrder.parcelStatus,
+                        ['CANCELLED', 'RETURNED', 'PROBLEMATIC'].includes(selectedOrder.parcelStatus) 
+                          ? selectedOrder.reason 
+                          : undefined
+                      )
+                      setShowDetailsModal(false)
+                    }}
+                    className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold py-2.5 px-4 rounded-lg transition-colors duration-200 text-sm border border-transparent hover:border-slate-700 dark:hover:border-slate-200"
+                  >
+                    Update Status
+                  </button>
                 </div>
               </div>
             </div>
@@ -1119,15 +1138,17 @@ export default function TrackerDashboardPage() {
               </div>
               <AlertDialogTitle className="text-xl font-bold">Return to Packing Queue?</AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="text-base text-slate-600 dark:text-slate-400">
-              This action will:
-              <ul className="list-disc list-inside mt-3 space-y-2 text-sm">
-                <li>Change order status from <strong>Packed</strong> to <strong>Pending</strong></li>
-                <li>Restore inventory quantity</li>
-                <li>Remove from sales calculations</li>
-                <li>Clear packing information</li>
-                <li>Update all dashboard metrics</li>
-              </ul>
+            <AlertDialogDescription asChild>
+              <div className="text-base text-slate-600 dark:text-slate-400">
+                <p className="mb-3">This action will:</p>
+                <ul className="list-disc list-inside space-y-2 text-sm">
+                  <li>Change order status from <strong>Packed</strong> to <strong>Pending</strong></li>
+                  <li>Restore inventory quantity</li>
+                  <li>Remove from sales calculations</li>
+                  <li>Clear packing information</li>
+                  <li>Update all dashboard metrics</li>
+                </ul>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -1139,9 +1160,11 @@ export default function TrackerDashboardPage() {
               id="return-reason"
               placeholder="e.g., Wrong item packed, damaged product, customer request..."
               value={returnReason}
-              onChange={(e) => setReturnReason(e.target.value)}
+              onChange={handleReturnReasonChange}
               rows={4}
               className="text-sm border-2 border-slate-300 dark:border-slate-600 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 resize-none"
+              autoComplete="off"
+              spellCheck={false}
             />
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
               This will be recorded in activity logs for accountability
@@ -1158,7 +1181,7 @@ export default function TrackerDashboardPage() {
             <AlertDialogAction
               onClick={handleReturnToQueue}
               disabled={returning || !returnReason.trim()}
-              className="px-6 py-3 text-base font-bold bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
+              className="px-6 py-3 text-base font-semibold bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900"
             >
               {returning ? (
                 <>

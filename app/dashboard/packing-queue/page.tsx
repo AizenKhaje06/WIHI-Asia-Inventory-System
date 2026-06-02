@@ -873,20 +873,20 @@ export default function PackingQueuePage() {
           )}
       </div>
 
-      {/* Order Details Modal - Professional Design matching Tracker/Packer */}
+      {/* Order Details Modal - Professional Design */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0 flex flex-col">
-          {/* Modal Header with Gradient */}
-          <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-6 border-b border-slate-600 flex-shrink-0">
+          {/* Modal Header */}
+          <div className="bg-slate-900 dark:bg-slate-950 px-8 py-6 border-b border-slate-700 dark:border-slate-800 flex-shrink-0">
             <div className="flex items-start justify-between gap-4 pr-8">
               <DialogHeader className="flex-1">
                 <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
-                  <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                  <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                     <Package className="h-6 w-6 text-white" />
                   </div>
                   <span className="text-white">Order Details</span>
                 </DialogTitle>
-                <p className="text-slate-200 text-sm mt-2 font-medium">
+                <p className="text-slate-300 dark:text-slate-400 text-sm mt-2 font-medium">
                   Review and manage order information
                 </p>
               </DialogHeader>
@@ -894,12 +894,12 @@ export default function PackingQueuePage() {
                 <Button
                   variant="outline"
                   onClick={handleEditMode}
-                  className="h-12 px-8 rounded-xl font-semibold bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 transition-all flex-shrink-0"
+                  className="h-10 px-6 rounded-lg font-semibold bg-white/10 border-slate-600 text-white hover:bg-white/20 hover:border-slate-500 transition-colors flex-shrink-0"
                 >
-                  <svg className="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
-                  EDIT ORDER
+                  Edit Order
                 </Button>
               )}
             </div>
@@ -911,9 +911,9 @@ export default function PackingQueuePage() {
               <div className="overflow-y-auto flex-1 px-8 py-6">
                 <div className="space-y-6">
                   {/* Customer Information Card */}
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
+                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-blue-600 rounded-lg">
+                      <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                         <User className="h-5 w-5 text-white" />
                       </div>
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -1008,9 +1008,9 @@ export default function PackingQueuePage() {
                   </div>
 
                   {/* Order Information Card */}
-                  <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-6 border border-emerald-100 dark:border-emerald-800">
+                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-emerald-600 rounded-lg">
+                      <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                         <Package className="h-5 w-5 text-white" />
                       </div>
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -1115,9 +1115,9 @@ export default function PackingQueuePage() {
                   </div>
 
                   {/* Tracking Information Card */}
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
+                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-purple-600 rounded-lg">
+                      <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                         <Truck className="h-5 w-5 text-white" />
                       </div>
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -1171,9 +1171,9 @@ export default function PackingQueuePage() {
 
                   {/* Timeline - Dispatch Information */}
                   {selectedOrder.dispatched_by && (
-                    <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-slate-600 rounded-lg">
+                        <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                           <Clock className="h-5 w-5 text-white" />
                         </div>
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">

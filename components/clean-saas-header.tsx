@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { usePathname } from "next/navigation"
-import { Menu, Bell, Search, Plus, User, LogOut } from "lucide-react"
+import { Menu, Bell, Search, Plus, User, LogOut, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,6 +13,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { useRouter } from "next/navigation"
 
 interface CleanSaaSHeaderProps {
@@ -38,6 +48,7 @@ export function CleanSaaSHeader({ sidebarCollapsed, onMobileMenuToggle }: CleanS
   const pathname = usePathname()
   const router = useRouter()
   const [username, setUsername] = useState("")
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
 
   // Get page title
   const pageTitle = pageTitles[pathname] || "Dashboard"
@@ -153,7 +164,7 @@ export function CleanSaaSHeader({ sidebarCollapsed, onMobileMenuToggle }: CleanS
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+              <DropdownMenuItem onClick={() => setShowLogoutDialog(true)} className="text-red-600">
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </DropdownMenuItem>
@@ -161,6 +172,36 @@ export function CleanSaaSHeader({ sidebarCollapsed, onMobileMenuToggle }: CleanS
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Professional Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent className="max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl">
+          <AlertDialogHeader className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+              </div>
+              <AlertDialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+                Confirm Sign Out
+              </AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              You are about to sign out of your account. Any unsaved changes may be lost. Are you sure you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-2">
+            <AlertDialogCancel className="mt-0 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white dark:bg-red-600 dark:hover:bg-red-700"
+            >
+              Sign Out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   )
 }

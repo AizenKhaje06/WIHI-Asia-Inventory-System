@@ -32,6 +32,7 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
@@ -339,8 +340,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           "lg:left-0 lg:top-0 lg:h-screen",
           // Mobile: full screen
           "left-0 top-0 h-screen",
-          // Light mode - dark slate gradient (matching modal headers)
-          "bg-gradient-to-b from-slate-800 via-slate-700 to-slate-800 border-r border-slate-600/30",
+          // Light mode - gradient matching track-orders table header
+          "bg-gradient-to-b from-slate-800 to-slate-900 border-r border-slate-700/50",
           // Dark mode - pure black with subtle border
           "dark:bg-none dark:bg-black dark:border-slate-800/60"
         )}
@@ -635,26 +636,33 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         </div>
       </aside>
 
-      {/* Logout Confirmation Modal */}
+      {/* Professional Logout Confirmation Modal */}
       <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
-        <AlertDialogContent className="bg-white dark:bg-black border-slate-200 dark:border-slate-800">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-slate-900 dark:text-white">Confirm Logout</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-600 dark:text-slate-400">
-              Are you sure you want to log out? You'll need to sign in again to access your account.
+        <AlertDialogContent className="max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl">
+          <AlertDialogHeader className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+              </div>
+              <AlertDialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+                Confirm Sign Out
+              </AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              You are about to sign out of your account. Any unsaved changes may be lost. Are you sure you want to continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="flex gap-3 justify-end">
-            <AlertDialogCancel className="bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-white border-0">
+          <AlertDialogFooter className="gap-2 sm:gap-2">
+            <AlertDialogCancel className="mt-0 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white border-0"
+              className="bg-red-600 hover:bg-red-700 text-white dark:bg-red-600 dark:hover:bg-red-700"
             >
-              Logout
+              Sign Out
             </AlertDialogAction>
-          </div>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>

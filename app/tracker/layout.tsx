@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { LogOut, RefreshCw } from 'lucide-react'
+import { LogOut, RefreshCw, AlertTriangle } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -141,18 +141,30 @@ export default function TrackerLayout({
         {children}
       </main>
 
-      {/* Logout Dialog */}
+      {/* Professional Logout Confirmation Dialog */}
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-semibold">Sign Out</AlertDialogTitle>
-            <AlertDialogDescription className="text-sm">
-              Are you sure you want to sign out from Tracker Dashboard?
+        <AlertDialogContent className="max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl">
+          <AlertDialogHeader className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+              </div>
+              <AlertDialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+                Confirm Sign Out
+              </AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              You are about to sign out of your Tracker account. Any unsaved changes may be lost. Are you sure you want to continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="text-sm">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLogout} className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm">
+          <AlertDialogFooter className="gap-2 sm:gap-2">
+            <AlertDialogCancel className="mt-0 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleLogout} 
+              className="bg-red-600 hover:bg-red-700 text-white dark:bg-red-600 dark:hover:bg-red-700"
+            >
               Sign Out
             </AlertDialogAction>
           </AlertDialogFooter>
