@@ -143,6 +143,43 @@ export async function GET(
     const returnedData = getStatusData('RETURNED')
     const problematicData = getStatusData('PROBLEMATIC')
 
+    // Calculate cancelled orders separately for Packing Queue vs Track Orders
+    // Packing Queue: Query orders with status='Pending' AND is_cancelled=true
+    const { data: cancelledPackingQueueOrders, error: packingQueueError } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('sales_channel', departmentName)
+      .eq('status', 'Pending')
+      .eq('is_cancelled', true)
+
+    if (packingQueueError) {
+      console.error('[Sales Channel API] Error fetching cancelled packing queue:', packingQueueError)
+    }
+
+    // Apply date filter to cancelled packing queue orders
+    let cancelledPackingQueue = cancelledPackingQueueOrders || []
+    if (startDateObj || endDateObj) {
+      cancelledPackingQueue = cancelledPackingQueue.filter(order => {
+        const orderDate = new Date(order.created_at)
+        const orderTimestamp = orderDate.getTime()
+        
+        if (startDateObj && orderTimestamp < startDateObj.getTime()) return false
+        if (endDateObj && orderTimestamp > endDateObj.getTime()) return false
+        return true
+      })
+    }
+
+    const cancelledPackingQueueData = {
+      count: cancelledPackingQueue.length,
+      amount: cancelledPackingQueue.reduce((sum, o) => sum + (o.total || 0), 0)
+    }
+
+    // Track Orders cancelled: Already in the orders list (status='Packed' AND parcel_status='CANCELLED')
+    const cancelledTrackOrdersData = {
+      count: cancelledData.count,
+      amount: cancelledData.amount
+    }
+
     // Calculate undelivered (IN TRANSIT + ON DELIVERY + PICKUP + DETAINED only, exclude PENDING)
     const undeliveredOrders = orders.filter(o => 
       ['IN TRANSIT', 'ON DELIVERY', 'PICKUP', 'DETAINED'].includes(o.parcel_status)
@@ -152,16 +189,18 @@ export async function GET(
       amount: undeliveredOrders.reduce((sum, o) => sum + (o.total || 0), 0)
     }
 
-    // Calculate loss revenue (RETURNED + CANCELLED + PROBLEMATIC)
+    // Calculate loss revenue (RETURNED + CANCELLED + PROBLEMATIC + DETAINED + Cancelled Packing Queue)
     const lossRevenueOrders = orders.filter(o => 
-      ['RETURNED', 'CANCELLED', 'PROBLEMATIC'].includes(o.parcel_status)
+      ['RETURNED', 'CANCELLED', 'PROBLEMATIC', 'DETAINED'].includes(o.parcel_status)
     )
+    
+    // Add cancelled packing queue to loss revenue
     const lossRevenueData = {
-      count: lossRevenueOrders.length,
-      amount: lossRevenueOrders.reduce((sum, o) => sum + (o.total || 0), 0)
+      count: lossRevenueOrders.length + cancelledPackingQueueData.count,
+      amount: lossRevenueOrders.reduce((sum, o) => sum + (o.total || 0), 0) + cancelledPackingQueueData.amount
     }
 
-    const totalOrders = orders.length
+    const totalOrders = orders.length + cancelledPackingQueueData.count // Include cancelled packing queue in total
 
     const parcelStatusCounts = {
       pending: pendingData.count,
@@ -180,24 +219,39 @@ export async function GET(
       lossRevenueAmount: lossRevenueData.amount,
       lossRevenuePercentage: totalOrders > 0 ? (lossRevenueData.count / totalOrders) * 100 : 0,
       
-      // Breakdown for loss revenue card
+      // Breakdown for loss revenue card (ordered logically)
+      // 1. Cancelled before packing
+      cancelledPackingQueue: cancelledPackingQueueData.count,
+      cancelledPackingQueueAmount: cancelledPackingQueueData.amount,
+      
+      // 2. Cancelled after packing
+      cancelledTrackOrders: cancelledTrackOrdersData.count,
+      cancelledTrackOrdersAmount: cancelledTrackOrdersData.amount,
+      
+      // 3. Returned
       returned: returnedData.count,
       returnedAmount: returnedData.amount,
       returnedPercentage: totalOrders > 0 ? (returnedData.count / totalOrders) * 100 : 0,
       
-      cancelled: cancelledData.count,
-      cancelledAmount: cancelledData.amount,
-      cancelledPercentage: totalOrders > 0 ? (cancelledData.count / totalOrders) * 100 : 0,
+      // 4. Detained
+      detained: detainedData.count,
+      detainedAmount: detainedData.amount,
+      detainedPercentage: totalOrders > 0 ? (detainedData.count / totalOrders) * 100 : 0,
       
+      // 5. Problematic
       problematic: problematicData.count,
       problematicAmount: problematicData.amount,
       problematicPercentage: totalOrders > 0 ? (problematicData.count / totalOrders) * 100 : 0,
+      
+      // Legacy/compatibility fields
+      cancelled: cancelledData.count,
+      cancelledAmount: cancelledData.amount,
+      cancelledPercentage: totalOrders > 0 ? (cancelledData.count / totalOrders) * 100 : 0,
       
       // Legacy fields (for backward compatibility)
       inTransit: inTransitData.count,
       onDelivery: onDeliveryData.count,
       pickup: pickupData.count,
-      detained: detainedData.count,
       total: orders.length,
       deliveryRate: orders.length > 0 
         ? (deliveredData.count / orders.length) * 100 

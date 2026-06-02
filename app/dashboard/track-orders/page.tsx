@@ -40,6 +40,7 @@ interface Order {
   itemName: string
   quantity: number
   totalAmount: number
+  cogs?: number // ACTUAL cost of goods sold from database
   orderStatus: 'Pending' | 'Packed'
   parcelStatus: 'PENDING' | 'DELIVERED' | 'ON DELIVERY' | 'PICKUP' | 'IN TRANSIT' | 'CANCELLED' | 'DETAINED' | 'PROBLEMATIC' | 'RETURNED'
   paymentStatus: 'pending' | 'paid' | 'cod' | 'refunded'
@@ -135,6 +136,7 @@ export default function TrackOrdersPage() {
           itemName: order.itemName,
           quantity: order.quantity,
           totalAmount: order.totalAmount,
+          cogs: order.cogs || 0, // ACTUAL COGS from database
           orderStatus: order.orderStatus === 'pending' ? 'Pending' : 'Packed',
           parcelStatus: (order.parcelStatus || order.parcel_status || 'PENDING') as any, // Use parcelStatus from API
           paymentStatus: order.paymentStatus as any,
@@ -169,6 +171,7 @@ export default function TrackOrdersPage() {
         itemName: order.product ? order.product.replace(/\s*\(\d+\)\s*$/, '') : 'N/A', // Product name - remove (quantity) suffix
         quantity: order.qty || 0,
         totalAmount: order.total || 0,
+        cogs: order.cogs || 0, // ACTUAL COGS from database
         orderStatus: order.status as 'Pending' | 'Packed',
         parcelStatus: (order.parcel_status || 'PENDING') as any,
         paymentStatus: (order.payment_status || 'pending') as any,
@@ -266,18 +269,18 @@ export default function TrackOrdersPage() {
 
   const exportToExcel = () => {
     try {
-      // Calculate financial totals
+      // Calculate financial totals using ACTUAL COGS from orders
       const totalQuantity = filteredOrders.reduce((sum, order) => sum + order.quantity, 0)
       const totalAmount = filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0)
-      const totalCOGS = filteredOrders.reduce((sum, order) => sum + (order.totalAmount * 0.6), 0)
+      const totalCOGS = filteredOrders.reduce((sum, order) => sum + (order.cogs || 0), 0) // Use actual COGS
       const totalProfit = totalAmount - totalCOGS
       const totalProfitMargin = totalAmount > 0 ? ((totalProfit / totalAmount) * 100) : 0
 
-      // Calculate per-status financials
+      // Calculate per-status financials using ACTUAL COGS
       const getStatusFinancials = (statusOrders: Order[]) => {
         const qty = statusOrders.reduce((sum, o) => sum + o.quantity, 0)
         const amt = statusOrders.reduce((sum, o) => sum + o.totalAmount, 0)
-        const cogs = amt * 0.6
+        const cogs = statusOrders.reduce((sum, o) => sum + (o.cogs || 0), 0) // Use actual COGS
         const profit = amt - cogs
         const margin = amt > 0 ? ((profit / amt) * 100) : 0
         return { qty, amt, cogs, profit, margin }
@@ -462,18 +465,19 @@ export default function TrackOrdersPage() {
 
   const exportToPDF = () => {
     try {
-      // Calculate financial totals
+      // Calculate financial totals using ACTUAL COGS from orders
       const totalQuantity = filteredOrders.reduce((sum, order) => sum + order.quantity, 0)
       const totalAmount = filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0)
-      const totalCOGS = filteredOrders.reduce((sum, order) => sum + (order.totalAmount * 0.6), 0)
+      const totalCOGS = filteredOrders.reduce((sum, order) => sum + (order.cogs || 0), 0) // Use actual COGS
       const totalProfit = totalAmount - totalCOGS
       const totalProfitMargin = totalAmount > 0 ? ((totalProfit / totalAmount) * 100) : 0
 
-      // Calculate per-status financials
+      // Calculate per-status financials using ACTUAL COGS
       const getStatusFinancials = (statusOrders: Order[]) => {
         const qty = statusOrders.reduce((sum, o) => sum + o.quantity, 0)
         const amt = statusOrders.reduce((sum, o) => sum + o.totalAmount, 0)
-        const profit = amt - (amt * 0.6)
+        const cogs = statusOrders.reduce((sum, o) => sum + (o.cogs || 0), 0) // Use actual COGS
+        const profit = amt - cogs
         const margin = amt > 0 ? ((profit / amt) * 100) : 0
         return { qty, amt, profit, margin }
       }

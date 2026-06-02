@@ -11,12 +11,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { LoadingOverlay } from '@/components/ui/loading-overlay'
-import { Search, Package, RefreshCw, CheckCircle, ShoppingCart, TrendingUp, Eye, User, Phone, MapPin, Clock, Truck, Trash2 } from 'lucide-react'
+import { Search, Package, RefreshCw, CheckCircle, ShoppingCart, TrendingUp, Eye, User, Phone, MapPin, Clock, Truck, Trash2, XCircle } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { toast } from 'sonner'
 import { apiGet, apiPost } from '@/lib/api-client'
 import { getCurrentUser } from '@/lib/auth'
 import { getCurrentUserRole, getAuthHeaders } from '@/lib/role-utils'
+import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
 
 interface Order {
   id: string
@@ -65,6 +66,8 @@ export default function PackingQueuePage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [salesChannelFilter, setChannelFilter] = useState<string>('all')
   const [cancellationFilter, setCancellationFilter] = useState<string>('all')
+  const [startDate, setStartDate] = useState<Date | null>(null)
+  const [endDate, setEndDate] = useState<Date | null>(null)
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [packing, setPacking] = useState<string | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -156,7 +159,7 @@ export default function PackingQueuePage() {
 
   useEffect(() => {
     filterOrders()
-  }, [searchTerm, salesChannelFilter, cancellationFilter, orders])
+  }, [searchTerm, salesChannelFilter, cancellationFilter, startDate, endDate, orders])
 
   const fetchOrders = async () => {
     try {
@@ -277,6 +280,23 @@ export default function PackingQueuePage() {
       filtered = filtered.filter(order => order.is_cancelled === true)
     } else if (cancellationFilter === 'active') {
       filtered = filtered.filter(order => !order.is_cancelled)
+    }
+    
+    // Date range filter
+    if (startDate) {
+      filtered = filtered.filter(order => {
+        const orderDate = parseAsPhilippineTime(order.created_at || order.orderDate || order.date || '')
+        return orderDate >= startDate
+      })
+    }
+    if (endDate) {
+      filtered = filtered.filter(order => {
+        const orderDate = parseAsPhilippineTime(order.created_at || order.orderDate || order.date || '')
+        // Set end date to end of day (23:59:59)
+        const endOfDay = new Date(endDate)
+        endOfDay.setHours(23, 59, 59, 999)
+        return orderDate <= endOfDay
+      })
     }
     
     setFilteredOrders(filtered)
@@ -603,16 +623,145 @@ export default function PackingQueuePage() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Header - Professional Style */}
-      <div className="mb-8">
-        <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Packing Queue Overview</h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          {isTeamLeader 
-            ? 'Orders waiting to be packed for your channel'
-            : 'Orders waiting to be packed and dispatched'
-          }
-        </p>
+      {/* Header with Title and Date Filter */}
+      <div className="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Packing Queue Overview</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {isTeamLeader 
+              ? 'Orders waiting to be packed for your channel'
+              : 'Orders waiting to be packed and dispatched'
+            }
+          </p>
+        </div>
+        
+        {/* Date Filter - Right Corner */}
+        <div className="flex items-center gap-3">
+          <EnterpriseDateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onDateChange={(start, end) => {
+              setStartDate(start)
+              setEndDate(end)
+            }}
+          />
+        </div>
       </div>
+
+      {/* Department Overview Cards - For Admin Only */}
+      {userRole === 'admin' && (
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+          {(() => {
+            // Calculate stats for each department
+            const departments = [
+              { name: 'Shopee', logo: '/Shopee.png', color: 'orange' },
+              { name: 'Lazada', logo: '/Lazada.png', color: 'blue' },
+              { name: 'TikTok', logo: '/tiktok.png', color: 'black' },
+              { name: 'Facebook', logo: '/facebook.png', color: 'blue-facebook' },
+              { name: 'Physical Store', logo: '/Physical Store.png', color: 'green' }
+            ]
+            
+            return departments.map((dept) => {
+              const deptOrders = filteredOrders.filter(o => (o.sales_channel || o.channel) === dept.name)
+              const cancelledOrders = deptOrders.filter(o => o.is_cancelled === true)
+              const activeOrders = deptOrders.filter(o => !o.is_cancelled)
+              
+              const cancelledCount = cancelledOrders.length
+              const activeCount = activeOrders.length
+              const cancelledAmount = cancelledOrders.reduce((sum, o) => sum + (o.total || o.totalAmount || 0), 0)
+              const activeAmount = activeOrders.reduce((sum, o) => sum + (o.total || o.totalAmount || 0), 0)
+              
+              // Determine color scheme based on department
+              let colorScheme = {
+                gradient: 'from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-900/10',
+                text: 'text-orange-900 dark:text-orange-100',
+                subtext: 'text-orange-700 dark:text-orange-400'
+              }
+              
+              if (dept.color === 'blue') {
+                colorScheme = {
+                  gradient: 'from-indigo-50 to-indigo-100/50 dark:from-indigo-900/20 dark:to-indigo-900/10',
+                  text: 'text-indigo-900 dark:text-indigo-100',
+                  subtext: 'text-indigo-700 dark:text-indigo-400'
+                }
+              } else if (dept.color === 'black') {
+                colorScheme = {
+                  gradient: 'from-slate-50 to-slate-100/50 dark:from-slate-900/20 dark:to-slate-900/10',
+                  text: 'text-slate-900 dark:text-slate-100',
+                  subtext: 'text-slate-700 dark:text-slate-400'
+                }
+              } else if (dept.color === 'blue-facebook') {
+                colorScheme = {
+                  gradient: 'from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10',
+                  text: 'text-blue-900 dark:text-blue-100',
+                  subtext: 'text-blue-700 dark:text-blue-400'
+                }
+              } else if (dept.color === 'green') {
+                colorScheme = {
+                  gradient: 'from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-900/10',
+                  text: 'text-emerald-900 dark:text-emerald-100',
+                  subtext: 'text-emerald-700 dark:text-emerald-400'
+                }
+              }
+              
+              return (
+                <Card key={dept.name} className={`p-3 border-0 shadow-md bg-gradient-to-br ${colorScheme.gradient}`}>
+                  <div className="space-y-3">
+                    {/* Department Header with Logo */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center p-1">
+                        <img 
+                          src={dept.logo} 
+                          alt={dept.name}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <p className={`text-[9px] font-bold ${colorScheme.subtext} uppercase tracking-wider leading-tight flex-1`}>
+                        {dept.name}
+                      </p>
+                    </div>
+                    
+                    {/* Cancelled and Active - Horizontal Layout */}
+                    <div className="flex items-center justify-between gap-2 divide-x divide-slate-300 dark:divide-slate-600">
+                      {/* Cancelled Orders - Left Side */}
+                      <div className="flex-1 pr-2">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-[8px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide flex items-center gap-1">
+                            <XCircle className="h-2.5 w-2.5 text-red-500" />
+                            <span className="hidden sm:inline">Cancelled</span>
+                          </span>
+                          <span className={`text-sm font-bold ${colorScheme.text} tabular-nums`}>
+                            {cancelledCount}
+                          </span>
+                        </div>
+                        <p className="text-[9px] font-semibold text-red-600 dark:text-red-400 tabular-nums text-right">
+                          {formatCurrency(cancelledAmount)}
+                        </p>
+                      </div>
+                      
+                      {/* Active Orders - Right Side */}
+                      <div className="flex-1 pl-2">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-[8px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide flex items-center gap-1">
+                            <CheckCircle className="h-2.5 w-2.5 text-green-500" />
+                            <span className="hidden sm:inline">Active</span>
+                          </span>
+                          <span className={`text-sm font-bold ${colorScheme.text} tabular-nums`}>
+                            {activeCount}
+                          </span>
+                        </div>
+                        <p className={`text-[9px] font-semibold ${colorScheme.subtext} tabular-nums text-right`}>
+                          {formatCurrency(activeAmount)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )
+            })
+          })()}
+        </div>
+      )}
 
       {/* Stats Cards - Professional Corporate Design */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">

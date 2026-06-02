@@ -73,6 +73,13 @@ interface DepartmentDetail {
     cancelled?: number
     cancelledAmount?: number
     cancelledPercentage?: number
+    cancelledPackingQueue?: number
+    cancelledPackingQueueAmount?: number
+    cancelledTrackOrders?: number
+    cancelledTrackOrdersAmount?: number
+    detained?: number
+    detainedAmount?: number
+    detainedPercentage?: number
     problematic?: number
     problematicAmount?: number
     problematicPercentage?: number
@@ -594,7 +601,7 @@ export default function SalesChannelDetailPage() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden pt-2">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Page Header */}
       <div className="mb-6 animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <Button 
@@ -901,6 +908,20 @@ export default function SalesChannelDetailPage() {
                   {/* Breakdown */}
                   <div className="mt-2 pt-2 border-t border-red-300 dark:border-red-700 space-y-1">
                     <div className="flex items-center justify-between text-[9px]">
+                      <span className="text-red-600 dark:text-red-400">Cancelled (Packing Queue):</span>
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium text-red-800 dark:text-red-200">{data.parcelStatusCounts.cancelledPackingQueue || 0}</span>
+                        <span className="text-red-700 dark:text-red-300">₱{formatNumber(data.parcelStatusCounts.cancelledPackingQueueAmount || 0)}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[9px]">
+                      <span className="text-red-600 dark:text-red-400">Cancelled (Track Orders):</span>
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium text-red-800 dark:text-red-200">{data.parcelStatusCounts.cancelledTrackOrders || 0}</span>
+                        <span className="text-red-700 dark:text-red-300">₱{formatNumber(data.parcelStatusCounts.cancelledTrackOrdersAmount || 0)}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[9px]">
                       <span className="text-red-600 dark:text-red-400">Returned:</span>
                       <div className="flex items-center gap-1">
                         <span className="font-medium text-red-800 dark:text-red-200">{data.parcelStatusCounts.returned}</span>
@@ -909,11 +930,11 @@ export default function SalesChannelDetailPage() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-[9px]">
-                      <span className="text-red-600 dark:text-red-400">Cancelled:</span>
+                      <span className="text-red-600 dark:text-red-400">Detained:</span>
                       <div className="flex items-center gap-1">
-                        <span className="font-medium text-red-800 dark:text-red-200">{data.parcelStatusCounts.cancelled}</span>
-                        <span className="text-red-700 dark:text-red-300">₱{formatNumber(data.parcelStatusCounts.cancelledAmount || 0)}</span>
-                        <span className="text-red-600 dark:text-red-400">({(data.parcelStatusCounts.cancelledPercentage || 0).toFixed(1)}%)</span>
+                        <span className="font-medium text-red-800 dark:text-red-200">{data.parcelStatusCounts.detained || 0}</span>
+                        <span className="text-red-700 dark:text-red-300">₱{formatNumber(data.parcelStatusCounts.detainedAmount || 0)}</span>
+                        <span className="text-red-600 dark:text-red-400">({(data.parcelStatusCounts.detainedPercentage || 0).toFixed(1)}%)</span>
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-[9px]">
@@ -1005,9 +1026,10 @@ export default function SalesChannelDetailPage() {
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={formatXAxisDate}
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
+                    angle={0}
+                    textAnchor="middle"
+                    height={40}
+                    interval="preserveStartEnd"
                   />
                   <YAxis 
                     fontSize={10}
@@ -1164,13 +1186,13 @@ export default function SalesChannelDetailPage() {
           </CardHeader>
           <CardContent className="px-2 md:px-6">
             <div className="w-full overflow-x-auto">
-              <div className="min-w-[300px]">
+              <div className="min-w-[400px]">
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={data.topProducts} layout="vertical">
+                  <BarChart data={data.topProducts.slice(0, 5)} layout="vertical" margin={{ left: 20, right: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" opacity={0.3} horizontal={false} />
                     <XAxis 
                       type="number"
-                      fontSize={10}
+                      fontSize={11}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
@@ -1178,13 +1200,32 @@ export default function SalesChannelDetailPage() {
                     <YAxis 
                       type="category"
                       dataKey="name" 
-                      fontSize={10}
+                      fontSize={11}
                       tickLine={false}
                       axisLine={false}
-                      width={100}
+                      width={140}
+                      tick={(props) => {
+                        const { x, y, payload } = props
+                        const name = payload.value
+                        // Truncate long names
+                        const truncated = name.length > 25 ? name.substring(0, 25) + '...' : name
+                        return (
+                          <text 
+                            x={x} 
+                            y={y} 
+                            dy={4} 
+                            textAnchor="end" 
+                            fill="#64748b"
+                            fontSize={11}
+                          >
+                            {truncated}
+                          </text>
+                        )
+                      }}
                     />
                     <Tooltip 
                       formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+                      labelFormatter={(name) => name}
                       contentStyle={{ 
                         backgroundColor: 'rgba(255, 255, 255, 0.95)',
                         border: '1px solid #e2e8f0',
@@ -1210,7 +1251,10 @@ export default function SalesChannelDetailPage() {
           <CardContent className="px-4 md:px-6">
             <div className="space-y-2.5">
               {data.storeBreakdown.length > 0 ? (
-                data.storeBreakdown.map((store, index) => {
+                data.storeBreakdown
+                  .sort((a, b) => b.revenue - a.revenue) // Sort by revenue descending
+                  .slice(0, 5) // Take top 5
+                  .map((store, index) => {
                   const avgRevenuePerTransaction = store.transactions > 0 ? store.revenue / store.transactions : 0
                   const avgProfitPerTransaction = store.transactions > 0 ? store.profit / store.transactions : 0
                   const profitMargin = store.revenue > 0 ? (store.profit / store.revenue) * 100 : 0

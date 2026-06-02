@@ -41,8 +41,9 @@ export interface FinancialMetrics {
  * CANCELLED - Order was cancelled, no revenue
  * RETURNED - Order was returned, revenue reversed
  * PROBLEMATIC - Order has issues, excluded from revenue
+ * DETAINED - Order detained by carrier, excluded from revenue
  */
-export const EXCLUDED_STATUSES = ['CANCELLED', 'RETURNED', 'PROBLEMATIC']
+export const EXCLUDED_STATUSES = ['CANCELLED', 'RETURNED', 'PROBLEMATIC', 'DETAINED']
 
 /**
  * Parcel statuses that represent confirmed revenue
@@ -54,14 +55,14 @@ export const CONFIRMED_REVENUE_STATUSES = ['DELIVERED']
  * PENDING is included here because if order is in Track Orders (status='Packed'),
  * it means it's packed and ready, so it counts as revenue
  */
-export const PENDING_REVENUE_STATUSES = ['PENDING', 'IN TRANSIT', 'ON DELIVERY', 'PICKUP', 'DETAINED']
+export const PENDING_REVENUE_STATUSES = ['PENDING', 'IN TRANSIT', 'ON DELIVERY', 'PICKUP']
 
 /**
  * Parcel statuses that may need special handling
- * DETAINED is now INCLUDED in revenue (counted as pending revenue)
+ * DETAINED is EXCLUDED from revenue (uncertain delivery outcome)
  * PROBLEMATIC is EXCLUDED from revenue
  */
-export const PROBLEMATIC_STATUSES = ['PROBLEMATIC'] // Excluded from revenue
+export const PROBLEMATIC_STATUSES = ['PROBLEMATIC', 'DETAINED'] // Both excluded from revenue
 
 /**
  * Filter orders to only include those that should count toward revenue
