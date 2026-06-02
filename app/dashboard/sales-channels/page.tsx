@@ -166,8 +166,9 @@ export default function SalesChannelsPage() {
     ]
 
     const columns = [
-      { header: 'Sales Channel', key: 'name', width: 30 },
+      { header: 'Sales Channel', key: 'name', width: 25 },
       { header: 'Revenue', key: 'revenue', width: 15, format: formatCurrencyForExport },
+      { header: '% of Total', key: 'revenuePercentage', width: 10, format: formatPercentageForExport },
       { header: 'Cost', key: 'cost', width: 15, format: formatCurrencyForExport },
       { header: 'Profit', key: 'profit', width: 15, format: formatCurrencyForExport },
       { 
@@ -182,7 +183,8 @@ export default function SalesChannelsPage() {
 
     const channelsWithMargin = data.departments.map(d => ({
       ...d,
-      profitMargin: d.revenue > 0 ? (d.profit / d.revenue) * 100 : 0
+      profitMargin: d.revenue > 0 ? (d.profit / d.revenue) * 100 : 0,
+      revenuePercentage: data.totals.revenue > 0 ? (d.revenue / data.totals.revenue) * 100 : 0
     }))
 
     const toastId = toast.loading(`Generating ${format.toUpperCase()} report...`)
@@ -248,6 +250,7 @@ export default function SalesChannelsPage() {
         // Title
         doc.setFontSize(18)
         doc.setFont('helvetica', 'bold')
+        doc.setTextColor(0, 0, 0)
         doc.text('All Sales Channels Report', 14, yPosition)
         yPosition += 10
 
@@ -350,70 +353,56 @@ export default function SalesChannelsPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Page Header - Professional */}
-      <div className="flex items-start justify-between">
+      {/* Page Header - Professional Shopify Style */}
+      <div className="flex items-center justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text [-webkit-text-fill-color:transparent]">
+          <h2 className="text-2xl sm:text-3xl font-bold gradient-text">
             Sales Channels Overview
           </h2>
-          <p className="text-xs text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             Performance analytics and insights per sales channel
           </p>
         </div>
         
-        {/* Export Buttons - Admin only */}
-        {!isTeamLeader && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                disabled={loading || !data}
-                variant="outline"
-                className="h-10 gap-2 border-slate-200 dark:border-slate-700 flex-shrink-0"
-              >
-                <FileDown className="h-4 w-4" />
-                Export
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => handleExportAllChannels('pdf')}>
-                <FileDown className="h-4 w-4 mr-2" />
-                <span>Export as PDF</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExportAllChannels('excel')}>
-                <FileSpreadsheet className="h-4 w-4 mr-2" />
-                <span>Export as Excel</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
+        {/* Actions - Shopify Style with Date Picker and Export */}
+        <div className="flex items-center gap-3">
+          {/* Date Range Picker - No wrapper, direct component */}
+          <EnterpriseDateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onDateChange={(start, end) => {
+              setStartDate(start)
+              setEndDate(end)
+            }}
+          />
 
-      {/* Date Filter - Professional Style */}
-      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
-                Date Range
-              </Label>
-              <EnterpriseDateRangePicker
-                startDate={startDate}
-                endDate={endDate}
-                onDateChange={(start, end) => {
-                  setStartDate(start)
-                  setEndDate(end)
-                  // Auto-fetch when dates change
-                  if (start && end) {
-                    fetchData()
-                  }
-                }}
-                className="w-full"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          {/* Export Button - Square corners, same height as date picker - Admin only */}
+          {!isTeamLeader && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  disabled={loading || !data}
+                  variant="outline"
+                  className="h-10 px-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-sm transition-all duration-200 rounded-md font-normal"
+                >
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Export Data
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => handleExportAllChannels('pdf')}>
+                  <FileDown className="h-4 w-4 mr-2" />
+                  <span>Export as PDF</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExportAllChannels('excel')}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  <span>Export as Excel</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+      </div>
 
       {/* Summary Cards - Professional Design */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

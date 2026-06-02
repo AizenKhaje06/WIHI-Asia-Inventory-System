@@ -445,7 +445,7 @@ export default function InsightsPage() {
               role="tab"
               aria-selected={activeTab === 'abc'}
               aria-controls="abc-panel"
-              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              className="enterprise-tab relative data-[state=active]:bg-blue-100 dark:data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:font-semibold data-[state=active]:shadow-[0_0_20px_rgba(37,99,235,0.3)] rounded-lg px-6 md:px-8 py-3 font-medium text-base whitespace-nowrap transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
               style={{ scrollSnapAlign: 'start' }}
             >
               ABC Analysis
@@ -455,7 +455,7 @@ export default function InsightsPage() {
               role="tab"
               aria-selected={activeTab === 'turnover'}
               aria-controls="turnover-panel"
-              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              className="enterprise-tab relative data-[state=active]:bg-blue-100 dark:data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:font-semibold data-[state=active]:shadow-[0_0_20px_rgba(37,99,235,0.3)] rounded-lg px-6 md:px-8 py-3 font-medium text-base whitespace-nowrap transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
               style={{ scrollSnapAlign: 'start' }}
             >
               Turnover
@@ -465,7 +465,7 @@ export default function InsightsPage() {
               role="tab"
               aria-selected={activeTab === 'forecast'}
               aria-controls="forecast-panel"
-              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              className="enterprise-tab relative data-[state=active]:bg-blue-100 dark:data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:font-semibold data-[state=active]:shadow-[0_0_20px_rgba(37,99,235,0.3)] rounded-lg px-6 md:px-8 py-3 font-medium text-base whitespace-nowrap transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
               style={{ scrollSnapAlign: 'start' }}
             >
               Forecast
@@ -475,7 +475,7 @@ export default function InsightsPage() {
               role="tab"
               aria-selected={activeTab === 'profit'}
               aria-controls="profit-panel"
-              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              className="enterprise-tab relative data-[state=active]:bg-blue-100 dark:data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:font-semibold data-[state=active]:shadow-[0_0_20px_rgba(37,99,235,0.3)] rounded-lg px-6 md:px-8 py-3 font-medium text-base whitespace-nowrap transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
               style={{ scrollSnapAlign: 'start' }}
             >
               Profit
@@ -485,7 +485,7 @@ export default function InsightsPage() {
               role="tab"
               aria-selected={activeTab === 'fast-moving'}
               aria-controls="fast-moving-panel"
-              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-green-600 dark:data-[state=active]:border-green-400 data-[state=active]:text-green-600 dark:data-[state=active]:text-green-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              className="enterprise-tab relative data-[state=active]:bg-green-100 dark:data-[state=active]:bg-green-900/30 data-[state=active]:text-green-700 dark:data-[state=active]:text-green-300 data-[state=active]:font-semibold data-[state=active]:shadow-[0_0_20px_rgba(34,197,94,0.3)] rounded-lg px-6 md:px-8 py-3 font-medium text-base whitespace-nowrap transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
               style={{ scrollSnapAlign: 'start' }}
             >
               Fast Moving
@@ -495,7 +495,7 @@ export default function InsightsPage() {
               role="tab"
               aria-selected={activeTab === 'slow-moving'}
               aria-controls="slow-moving-panel"
-              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 dark:data-[state=active]:border-amber-400 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              className="enterprise-tab relative data-[state=active]:bg-amber-100 dark:data-[state=active]:bg-amber-900/30 data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-300 data-[state=active]:font-semibold data-[state=active]:shadow-[0_0_20px_rgba(245,158,11,0.3)] rounded-lg px-6 md:px-8 py-3 font-medium text-base whitespace-nowrap transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
               style={{ scrollSnapAlign: 'start' }}
             >
               Slow Moving
@@ -505,7 +505,7 @@ export default function InsightsPage() {
               role="tab"
               aria-selected={activeTab === 'deadstock'}
               aria-controls="deadstock-panel"
-              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 dark:data-[state=active]:border-red-400 data-[state=active]:text-red-600 dark:data-[state=active]:text-red-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              className="enterprise-tab relative data-[state=active]:bg-red-100 dark:data-[state=active]:bg-red-900/30 data-[state=active]:text-red-700 dark:data-[state=active]:text-red-300 data-[state=active]:font-semibold data-[state=active]:shadow-[0_0_20px_rgba(239,68,68,0.3)] rounded-lg px-6 md:px-8 py-3 font-medium text-base whitespace-nowrap transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
               style={{ scrollSnapAlign: 'start' }}
             >
               Dead Stock
@@ -515,7 +515,7 @@ export default function InsightsPage() {
               role="tab"
               aria-selected={activeTab === 'returns'}
               aria-controls="returns-panel"
-              className="enterprise-tab data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 dark:data-[state=active]:border-purple-400 data-[state=active]:text-purple-600 dark:data-[state=active]:text-purple-400 rounded-none px-6 md:px-8 py-4 font-medium text-sm whitespace-nowrap transition-colors duration-200"
+              className="enterprise-tab relative data-[state=active]:bg-purple-100 dark:data-[state=active]:bg-purple-900/30 data-[state=active]:text-purple-700 dark:data-[state=active]:text-purple-300 data-[state=active]:font-semibold data-[state=active]:shadow-[0_0_20px_rgba(168,85,247,0.3)] rounded-lg px-6 md:px-8 py-3 font-medium text-base whitespace-nowrap transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
               style={{ scrollSnapAlign: 'start' }}
             >
               Returns

@@ -514,6 +514,37 @@ export async function GET(request: Request) {
       { reason: 'Other', count: Math.floor(totalCancelledOrders * 0.1) },
     ].filter(r => r.count > 0)
 
+    // NEW: Cancelled orders in Packing Queue (status='Pending' AND is_cancelled=true)
+    // These are orders cancelled BEFORE packing started
+    let cancelledPackingQueueQuery = supabase
+      .from('orders')
+      .select('id', { count: 'exact' })
+      .eq('status', 'Pending')
+      .eq('is_cancelled', true)
+
+    // Apply department filtering for operations users
+    if (userRole === 'operations' && assignedChannel) {
+      cancelledPackingQueueQuery = cancelledPackingQueueQuery.eq('sales_channel', assignedChannel)
+    }
+
+    // Apply date filters if set
+    if (startDate) {
+      const startOfDay = new Date(startDate)
+      startOfDay.setHours(0, 0, 0, 0)
+      cancelledPackingQueueQuery = cancelledPackingQueueQuery.gte('created_at', startOfDay.toISOString())
+    }
+    if (endDate) {
+      const endOfDay = new Date(endDate)
+      endOfDay.setHours(23, 59, 59, 999)
+      cancelledPackingQueueQuery = cancelledPackingQueueQuery.lte('created_at', endOfDay.toISOString())
+    }
+
+    const { count: cancelledPackingQueueCount } = await cancelledPackingQueueQuery
+
+    // NEW: Cancelled orders in Track Orders (status='Packed' AND parcel_status='CANCELLED')
+    // These are orders cancelled AFTER packing (already in Track Orders)
+    const cancelledTrackOrders = cancelledOrders.length
+
     // Return Count by Sales Channel (for KPI cards)
     const returnedOrdersByChannel = returnedOrders.reduce((acc: { [key: string]: { count: number; value: number } }, order) => {
       const channel = order.sales_channel || 'Unknown'
@@ -634,6 +665,8 @@ export async function GET(request: Request) {
       cancellationRate,
       topCancellationReasons,
       cancelledOrdersByChannel: returnedOrdersByChannel, // Return Count by Sales Channel
+      cancelledPackingQueue: cancelledPackingQueueCount || 0,
+      cancelledTrackOrders: cancelledTrackOrders,
     }
 
     console.log('[Dashboard API] Financial Metrics Summary:', {

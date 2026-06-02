@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart2, ShoppingCart, Activity, ArrowUpRight, ArrowDownRight, Percent, Plus, FileText, AlertCircle, PackageX, PackageOpen, RotateCcw } from "lucide-react"
+import { Package, AlertTriangle, DollarSign, TrendingUp, BarChart2, ShoppingCart, Activity, ArrowUpRight, ArrowDownRight, Percent, Plus, FileText, AlertCircle, PackageX, PackageOpen, RotateCcw, Download, Calendar } from "lucide-react"
 import {
   XAxis,
   YAxis,
@@ -136,13 +136,16 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Page Header - Professional with Date Picker */}
-      <div className="flex items-start justify-between gap-4 mb-8">
+      {/* Page Header - Professional Shopify Style */}
+      <div className="flex items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Dashboard Overview</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Welcome back! Here's what's happening with your inventory.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Welcome back! Here's what's happening with your inventory.</p>
         </div>
-        <div className="flex-shrink-0">
+        
+        {/* Actions - Date Picker Only */}
+        <div className="flex items-center gap-3">
+          {/* Date Range Picker - No wrapper, direct component */}
           <EnterpriseDateRangePicker
             startDate={startDate}
             endDate={endDate}
@@ -154,96 +157,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Key Metrics - 5 Primary KPIs - Professional Corporate Design */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {/* Total Revenue */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30">
-              <TrendingUp className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div className="flex-1">
-              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Total Revenue</p>
-              <div className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
-                ₱<AnimatedNumber value={stats?.totalRevenue || 0} duration={1500} />
-              </div>
-            </div>
-          </div>
-            {startDate || endDate ? (
-              // When date filter is active, show filtered period info
-              stats?.totalRevenue && stats.totalRevenue > 0 ? (
-                <div className="flex items-center gap-1">
-                  <ArrowUpRight className="h-3 w-3 text-green-600 dark:text-green-400" />
-                  <span className="text-xs text-green-600 dark:text-green-400 font-semibold">
-                    Filtered period
-                  </span>
-                </div>
-              ) : (
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  No sales in period
-                </div>
-              )
-            ) : (
-              // When no date filter, show today's revenue
-              stats?.revenueToday !== undefined && stats.revenueToday > 0 ? (
-                <div className="flex items-center gap-1">
-                  <ArrowUpRight className="h-3 w-3 text-green-600 dark:text-green-400" />
-                  <span className="text-xs text-green-600 dark:text-green-400 font-semibold">
-                    ₱{formatNumber(stats.revenueToday)} today
-                  </span>
-                </div>
-              ) : (
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  No sales today yet
-                </div>
-              )
-            )}
-          </Card>
-
-        {/* Net Profit (after returns) */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
-              <DollarSign className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div className="flex-1">
-              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Net Profit</p>
-              <div className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
-                ₱<AnimatedNumber value={netProfit} duration={1500} />
-              </div>
-            </div>
-          </div>
-            {startDate || endDate ? (
-              // When date filter is active
-              stats?.returnValue !== undefined && stats.returnValue > 0 ? (
-                <div className="flex items-center gap-1">
-                  <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />
-                  <span className="text-xs text-red-600 dark:text-red-400 font-semibold">
-                    ₱{formatNumber(stats.returnValue)} returns
-                  </span>
-                </div>
-              ) : (
-                <div className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
-                  No returns
-                </div>
-              )
-            ) : (
-              // When no date filter
-              stats?.returnValue !== undefined && stats.returnValue > 0 ? (
-                <div className="flex items-center gap-1">
-                  <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />
-                  <span className="text-xs text-red-600 dark:text-red-400 font-semibold">
-                    ₱{formatNumber(stats.returnValue)} returns
-                  </span>
-                </div>
-              ) : (
-                <div className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
-                  No returns
-                </div>
-              )
-            )}
-          </Card>
-
+      {/* Redesigned KPI Cards - 2 Rows Only */}
+      
+      {/* Row 1: Financial Metrics (4 cards) */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Sold */}
         <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
           <div className="flex items-center gap-3 mb-3">
@@ -262,6 +179,90 @@ export default function DashboardPage() {
               All-time quantity
             </span>
           </div>
+        </Card>
+
+        {/* Total Revenue */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30">
+              <TrendingUp className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Total Revenue</p>
+              <div className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
+                ₱<AnimatedNumber value={stats?.totalRevenue || 0} duration={1500} />
+              </div>
+            </div>
+          </div>
+          {startDate || endDate ? (
+            stats?.totalRevenue && stats.totalRevenue > 0 ? (
+              <div className="flex items-center gap-1">
+                <ArrowUpRight className="h-3 w-3 text-green-600 dark:text-green-400" />
+                <span className="text-xs text-green-600 dark:text-green-400 font-semibold">
+                  Filtered period
+                </span>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                No sales in period
+              </div>
+            )
+          ) : (
+            stats?.revenueToday !== undefined && stats.revenueToday > 0 ? (
+              <div className="flex items-center gap-1">
+                <ArrowUpRight className="h-3 w-3 text-green-600 dark:text-green-400" />
+                <span className="text-xs text-green-600 dark:text-green-400 font-semibold">
+                  ₱{formatNumber(stats.revenueToday)} today
+                </span>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                No sales today yet
+              </div>
+            )
+          )}
+        </Card>
+
+        {/* Net Profit */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
+              <DollarSign className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Net Profit</p>
+              <div className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
+                ₱<AnimatedNumber value={netProfit} duration={1500} />
+              </div>
+            </div>
+          </div>
+          {startDate || endDate ? (
+            stats?.returnValue !== undefined && stats.returnValue > 0 ? (
+              <div className="flex items-center gap-1">
+                <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />
+                <span className="text-xs text-red-600 dark:text-red-400 font-semibold">
+                  ₱{formatNumber(stats.returnValue)} returns
+                </span>
+              </div>
+            ) : (
+              <div className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
+                No returns
+              </div>
+            )
+          ) : (
+            stats?.returnValue !== undefined && stats.returnValue > 0 ? (
+              <div className="flex items-center gap-1">
+                <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />
+                <span className="text-xs text-red-600 dark:text-red-400 font-semibold">
+                  ₱{formatNumber(stats.returnValue)} returns
+                </span>
+              </div>
+            ) : (
+              <div className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
+                No returns
+              </div>
+            )
+          )}
         </Card>
 
         {/* Profit Margin */}
@@ -287,92 +288,70 @@ export default function DashboardPage() {
             )}
           </div>
         </Card>
+      </div>
 
-        {/* Inventory Value */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-900/20 dark:to-indigo-900/10">
+      {/* Row 2: Order Status Metrics (3 cards) */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+        {/* Cancelled (Packing Queue) */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-rose-50 to-rose-100/50 dark:from-rose-900/20 dark:to-rose-900/10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/30">
-              <Package className="h-4 w-4 text-white" strokeWidth={2.5} />
+            <div className="p-2.5 rounded-xl bg-rose-600 shadow-lg shadow-rose-500/30">
+              <PackageX className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div className="flex-1">
-              <p className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Inventory Value</p>
-              <div className="text-2xl font-bold text-indigo-900 dark:text-indigo-100 tabular-nums">
-                ₱<AnimatedNumber value={stats?.totalValue || 0} duration={1500} />
+              <p className="text-[10px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">Cancelled (Packing)</p>
+              <div className="text-2xl font-bold text-rose-900 dark:text-rose-100 tabular-nums">
+                <AnimatedNumber value={stats?.cancelledPackingQueue || 0} duration={1500} />
               </div>
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <Package className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
-            <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
-              {stats?.totalItems || 0} items
+            <span className="text-xs text-rose-600 dark:text-rose-400 font-semibold">
+              Before packing
             </span>
           </div>
         </Card>
-      </div>
 
-      {/* Secondary Metrics - 4 Cards - Professional Design */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {/* Total Products */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
-              <Package className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Total Products</p>
-              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">
-                <AnimatedNumber value={stats?.totalItems || 0} duration={1000} />
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Low Stock */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-900/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-amber-600 shadow-lg shadow-amber-500/30">
-              <AlertTriangle className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Low Stock</p>
-              <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">
-                <AnimatedNumber value={lowStockCount} duration={1000} />
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Out of Stock */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-900/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-red-600 shadow-lg shadow-red-500/30">
+        {/* Cancelled (Track Orders) */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-pink-50 to-pink-100/50 dark:from-pink-900/20 dark:to-pink-900/10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 rounded-xl bg-pink-600 shadow-lg shadow-pink-500/30">
               <PackageX className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
-            <div>
-              <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Out of Stock</p>
-              <p className="text-2xl font-bold text-red-900 dark:text-red-100 tabular-nums">
-                <AnimatedNumber value={outOfStockCount} duration={1000} />
-              </p>
+            <div className="flex-1">
+              <p className="text-[10px] font-bold text-pink-700 dark:text-pink-400 uppercase tracking-wider">Cancelled (Tracked)</p>
+              <div className="text-2xl font-bold text-pink-900 dark:text-pink-100 tabular-nums">
+                <AnimatedNumber value={stats?.cancelledTrackOrders || 0} duration={1500} />
+              </div>
             </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-pink-600 dark:text-pink-400 font-semibold">
+              After packing
+            </span>
           </div>
         </Card>
 
         {/* Total Returns */}
         <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-900/10">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3 mb-3">
             <div className="p-2.5 rounded-xl bg-orange-600 shadow-lg shadow-orange-500/30">
               <RotateCcw className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">Total Returns</p>
-              <p className="text-2xl font-bold text-orange-900 dark:text-orange-100 tabular-nums">
-                <AnimatedNumber value={stats?.totalReturns || 0} duration={1000} />
-              </p>
+              <div className="text-2xl font-bold text-orange-900 dark:text-orange-100 tabular-nums">
+                <AnimatedNumber value={stats?.totalReturns || 0} duration={1500} />
+              </div>
             </div>
           </div>
-          {stats?.returnValue !== undefined && stats.returnValue > 0 && (
+          {stats?.returnValue !== undefined && stats.returnValue > 0 ? (
             <div className="text-xs text-orange-600 dark:text-orange-400 font-semibold">
               ₱{formatNumber(stats.returnValue)} • {stats.returnRate.toFixed(1)}% rate
+            </div>
+          ) : (
+            <div className="text-xs text-orange-600 dark:text-orange-400 font-semibold">
+              No returns yet
             </div>
           )}
         </Card>

@@ -173,6 +173,8 @@ export interface DashboardStats {
   cancellationRate?: number
   topCancellationReasons?: { reason: string; count: number }[]
   cancelledOrdersByChannel?: { channel: string; count: number; value: number }[]
+  cancelledPackingQueue?: number // Cancelled in packing queue (before packing)
+  cancelledTrackOrders?: number // Cancelled in track orders (after packing)
 }
 
 export interface Log {
