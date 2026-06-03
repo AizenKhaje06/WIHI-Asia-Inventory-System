@@ -19,6 +19,24 @@ interface CreateBundleDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
+  editMode?: boolean
+  bundleId?: string
+  initialData?: {
+    name: string
+    description?: string
+    bundlePrice: number
+    badge?: string
+    salesChannel?: string
+    store?: string
+    imageUrl?: string
+    bundleItems?: Array<{
+      itemId: string
+      itemName: string
+      quantity: number
+      unitPrice: number
+      unitCost: number
+    }>
+  }
 }
 
 interface BundleItem {
@@ -29,7 +47,7 @@ interface BundleItem {
   unitCost: number
 }
 
-export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBundleDialogProps) {
+export function CreateBundleDialog({ open, onOpenChange, onSuccess, editMode = false, bundleId, initialData }: CreateBundleDialogProps) {
   const [loading, setLoading] = useState(false)
   const [items, setItems] = useState<InventoryItem[]>([])
   const [bundleItems, setBundleItems] = useState<BundleItem[]>([])
@@ -73,10 +91,27 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
   useEffect(() => {
     if (open) {
       fetchItems()
-      resetForm()
-      setImageUrl(null)
+      
+      // If edit mode and has initial data, pre-fill everything
+      if (editMode && initialData) {
+        console.log('[CreateBundleDialog] Edit mode - Loading initial data:', initialData)
+        setFormData({
+          name: initialData.name || '',
+          description: initialData.description || '',
+          bundlePrice: initialData.bundlePrice || 0,
+          badge: initialData.badge || '',
+          salesChannel: initialData.salesChannel || 'Physical Store',
+          store: initialData.store || 'Main Store',
+        })
+        setImageUrl(initialData.imageUrl || null)
+        setBundleItems(initialData.bundleItems || [])
+      } else {
+        // Create mode - reset form
+        resetForm()
+        setImageUrl(null)
+      }
     }
-  }, [open])
+  }, [open, editMode, initialData])
 
   const fetchItems = async () => {
     try {
@@ -193,26 +228,12 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
     try {
       const virtualStock = totals.virtualStock
       
-      console.log('[Create Bundle] ===== DEBUG START =====')
-      console.log('[Create Bundle] totals object:', totals)
-      console.log('[Create Bundle] virtualStock value:', virtualStock)
-      console.log('[Create Bundle] virtualStock type:', typeof virtualStock)
-      console.log('[Create Bundle] virtualStock is undefined?', virtualStock === undefined)
-      console.log('[Create Bundle] virtualStock is null?', virtualStock === null)
-      console.log('[Create Bundle] ===== DEBUG END =====')
+      console.log('[CreateBundleDialog] ===== SUBMIT START =====')
+      console.log('[CreateBundleDialog] Mode:', editMode ? 'EDIT' : 'CREATE')
+      console.log('[CreateBundleDialog] Bundle ID:', bundleId)
+      console.log('[CreateBundleDialog] Virtual stock:', virtualStock)
       
-      console.log('[Create Bundle] Virtual stock calculated:', virtualStock)
-      console.log('[Create Bundle] Bundle items:', bundleItems.map(bi => {
-        const item = items.find(i => i.id === bi.itemId)
-        return {
-          name: bi.itemName,
-          quantity: bi.quantity,
-          availableStock: item?.quantity || 0,
-          canMake: item ? Math.floor(item.quantity / bi.quantity) : 0
-        }
-      }))
-      
-      console.log('Creating bundle with data:', {
+      const bundleData = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         store: formData.store,
@@ -223,55 +244,49 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
           itemId: bi.itemId,
           quantity: bi.quantity
         })),
-        badge: formData.badge.trim() || null
-      })
-
-      const response = await apiPost('/api/bundles', {
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        store: formData.store,
-        salesChannel: formData.salesChannel || null,
-        bundlePrice: formData.bundlePrice,
-        quantity: virtualStock,
-        items: bundleItems.map(bi => ({
-          itemId: bi.itemId,
-          quantity: bi.quantity
-        })),
-        badge: formData.badge.trim() || null
-      }) as any
-
-      console.log('[Create Bundle] Bundle created successfully:', response)
-
-      // If image was uploaded, save the URL to the bundle
-      if (imageUrl && response?.id) {
-        console.log('[Create Bundle] Updating bundle with image:', imageUrl)
-        console.log('[Create Bundle] Bundle ID:', response.id)
-        try {
-          const updateResult = await apiPut(`/api/bundles/${response.id}`, { imageUrl })
-          console.log('[Create Bundle] Image URL update result:', updateResult)
-          console.log('[Create Bundle] Image URL saved successfully')
-        } catch (imageError: any) {
-          console.error('[Create Bundle] Failed to save image URL:', imageError)
-          console.error('[Create Bundle] Error message:', imageError.message)
-          console.error('[Create Bundle] Error details:', imageError)
-          // Don't fail the whole operation if image save fails
-          toast.warning(`Bundle created but image save failed: ${imageError.message || 'Unknown error'}`)
-        }
+        badge: formData.badge.trim() || null,
+        imageUrl: imageUrl || null
       }
 
-      toast.success('Bundle created successfully!')
+      console.log('[CreateBundleDialog] Payload:', bundleData)
+
+      let response: any
+
+      if (editMode && bundleId) {
+        // UPDATE existing bundle
+        console.log('[CreateBundleDialog] Updating bundle:', bundleId)
+        response = await apiPut(`/api/bundles/${bundleId}`, bundleData)
+        console.log('[CreateBundleDialog] Update response:', response)
+        toast.success('Bundle updated successfully!')
+      } else {
+        // CREATE new bundle
+        console.log('[CreateBundleDialog] Creating new bundle')
+        response = await apiPost('/api/bundles', bundleData)
+        console.log('[CreateBundleDialog] Create response:', response)
+        
+        // If image was uploaded, update the bundle with image
+        if (imageUrl && response?.id) {
+          console.log('[CreateBundleDialog] Saving image to new bundle:', response.id)
+          try {
+            await apiPut(`/api/bundles/${response.id}`, { imageUrl })
+            console.log('[CreateBundleDialog] Image saved successfully')
+          } catch (imageError: any) {
+            console.error('[CreateBundleDialog] Failed to save image:', imageError)
+            toast.warning('Bundle created but image save failed')
+          }
+        }
+        
+        toast.success('Bundle created successfully!')
+      }
+
+      console.log('[CreateBundleDialog] ===== SUBMIT SUCCESS =====')
       resetForm()
       onOpenChange(false)
       onSuccess?.()
     } catch (error: any) {
-      console.error('Error creating bundle:', error)
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        bundleItems,
-        formData
-      })
-      toast.error(error.message || 'Failed to create bundle. Please try again.')
+      console.error('[CreateBundleDialog] ===== SUBMIT ERROR =====')
+      console.error('[CreateBundleDialog] Error:', error)
+      toast.error(error.message || `Failed to ${editMode ? 'update' : 'create'} bundle`)
     } finally {
       setLoading(false)
     }
@@ -313,10 +328,13 @@ export function CreateBundleDialog({ open, onOpenChange, onSuccess }: CreateBund
               <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
                 <Package className="h-6 w-6 text-white" />
               </div>
-              <span className="text-white">Create Product Bundle</span>
+              <span className="text-white">{editMode ? 'Edit' : 'Create'} Product Bundle</span>
             </DialogTitle>
             <DialogDescription className="text-slate-200 text-sm mt-2 font-medium">
-              Create a bundle of products with special pricing to increase sales
+              {editMode 
+                ? 'Update bundle details, items, and pricing'
+                : 'Create a bundle of products with special pricing to increase sales'
+              }
             </DialogDescription>
           </DialogHeader>
         </div>

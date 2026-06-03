@@ -294,7 +294,7 @@ export default function InventoryPage() {
     try {
       // Fetch from inventory table only (NOT bundles)
       // Bundles are virtual products - their items are already in inventory
-      const data = await apiGet<InventoryItem[]>("/api/items")
+      const data = await apiGet<InventoryItem[]>(`/api/items?t=${Date.now()}`)
       console.log('[Inventory] RAW API Response:', data)
       
       let itemsArray = Array.isArray(data) ? data : []
@@ -393,9 +393,63 @@ export default function InventoryPage() {
     setDeleteDialogOpen(true)
   }
 
-  function handleEdit(item: InventoryItem) {
-    setSelectedItem(item)
-    setEditDialogOpen(true)
+  async function handleEdit(item: InventoryItem) {
+    const isBundle = (item as any).productType === 'bundle' || (item as any).product_type === 'bundle'
+    
+    if (isBundle) {
+      // Bundle - Open CreateBundleDialog in edit mode
+      console.log('[Inventory] Opening bundle edit modal for:', item.id)
+      
+      try {
+        // Fetch full bundle details including components
+        const bundleData = await apiGet<any>(`/api/bundles/${item.id}`)
+        console.log('[Inventory] Bundle data loaded:', bundleData)
+        
+        // Transform bundle_components to bundleItems format
+        const bundleItems = bundleData.bundle_components?.map((comp: any) => {
+          // Find the item details from items list
+          const itemDetails = items.find(i => i.id === comp.item_id)
+          console.log('[Inventory] Mapping bundle component:', {
+            comp,
+            itemDetails: itemDetails ? { id: itemDetails.id, name: itemDetails.name } : null
+          })
+          return {
+            itemId: comp.item_id,
+            itemName: itemDetails?.name || 'Unknown Item',
+            quantity: comp.quantity,
+            unitPrice: itemDetails?.sellingPrice || 0,
+            unitCost: itemDetails?.costPrice || 0
+          }
+        }) || []
+        
+        console.log('[Inventory] Transformed bundleItems:', bundleItems)
+        console.log('[Inventory] Setting selectedItem with bundle data')
+        
+        // Set selected item with ALL bundle data
+        const itemWithBundleData = {
+          ...item,
+          bundleId: item.id,
+          bundleItems,
+          bundleData
+        }
+        
+        console.log('[Inventory] Complete item data:', itemWithBundleData)
+        setSelectedItem(itemWithBundleData as any)
+        
+        // Small delay to ensure state is updated before opening modal
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        console.log('[Inventory] Opening CreateBundleDialog')
+        setCreateBundleOpen(true)
+      } catch (error) {
+        console.error('[Inventory] Failed to load bundle data:', error)
+        toast.error('Failed to load bundle details')
+      }
+    } else {
+      // Regular item - Open EditItemDialog
+      setSelectedItem(item)
+      setEditDialogOpen(true)
+    }
   }
 
   function handleRestock(item: InventoryItem) {
@@ -1518,7 +1572,29 @@ export default function InventoryPage() {
 
       <AddItemDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} onSuccess={fetchItems} />
 
-      <CreateBundleDialog open={createBundleOpen} onOpenChange={setCreateBundleOpen} onSuccess={fetchItems} />
+      <CreateBundleDialog 
+        open={createBundleOpen} 
+        onOpenChange={(open) => {
+          setCreateBundleOpen(open)
+          // Clear selectedItem when closing modal to ensure fresh state for next open
+          if (!open) {
+            setSelectedItem(null)
+          }
+        }}
+        onSuccess={fetchItems}
+        editMode={!!(selectedItem as any)?.bundleId}
+        bundleId={(selectedItem as any)?.bundleId}
+        initialData={(selectedItem as any)?.bundleId ? {
+          name: selectedItem?.name || '',
+          description: (selectedItem as any)?.bundleData?.description || '',
+          bundlePrice: selectedItem?.sellingPrice || 0,
+          badge: (selectedItem as any)?.bundleData?.badge || '',
+          salesChannel: selectedItem?.salesChannel || 'Physical Store',
+          store: selectedItem?.store || 'Main Store',
+          imageUrl: selectedItem?.imageUrl || null,
+          bundleItems: (selectedItem as any)?.bundleItems || []
+        } : undefined}
+      />
 
       {selectedItem && (
         <EditItemDialog

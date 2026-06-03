@@ -82,13 +82,67 @@ export async function PUT(
     if (body.salesChannel !== undefined) updateData.sales_channel = body.salesChannel
     if (body.quantity !== undefined) updateData.quantity = body.quantity
     if (body.costPrice !== undefined) updateData.bundle_cost = body.costPrice
+    if (body.bundlePrice !== undefined) updateData.bundle_price = body.bundlePrice
     if (body.sellingPrice !== undefined) updateData.bundle_price = body.sellingPrice
     if (body.reorderLevel !== undefined) updateData.reorder_level = body.reorderLevel
+    if (body.description !== undefined) updateData.description = body.description
+    if (body.badge !== undefined) updateData.badge = body.badge
     if (body.imageUrl !== undefined) {
       console.log('[Bundles API PUT] ✅ imageUrl found in body, setting to:', body.imageUrl)
       updateData.image_url = body.imageUrl
     } else {
       console.log('[Bundles API PUT] ❌ imageUrl NOT found in body')
+    }
+    
+    // Handle bundle items update if provided
+    if (body.items && Array.isArray(body.items)) {
+      console.log('[Bundles API PUT] Bundle items provided, updating components')
+      console.log('[Bundles API PUT] Items to update:', JSON.stringify(body.items, null, 2))
+      
+      // Delete existing bundle items
+      const { error: deleteError } = await supabase
+        .from('bundle_items')
+        .delete()
+        .eq('bundle_id', id)
+      
+      if (deleteError) {
+        console.error('[Bundles API PUT] Error deleting old bundle items:', deleteError)
+        console.error('[Bundles API PUT] Delete error details:', JSON.stringify(deleteError, null, 2))
+        return NextResponse.json({ 
+          error: 'Failed to delete old bundle items', 
+          details: deleteError.message 
+        }, { status: 500 })
+      }
+      
+      console.log('[Bundles API PUT] Old bundle items deleted successfully')
+      
+      // Insert new bundle items with generated IDs
+      const bundleItems = body.items.map((item: any) => ({
+        id: `BUNDLE_ITEM-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        bundle_id: id,
+        item_id: item.itemId,
+        quantity: item.quantity
+      }))
+      
+      console.log('[Bundles API PUT] Prepared bundle items for insert:', JSON.stringify(bundleItems, null, 2))
+      
+      const { error: insertError } = await supabase
+        .from('bundle_items')
+        .insert(bundleItems)
+      
+      if (insertError) {
+        console.error('[Bundles API PUT] Error inserting new bundle items:', insertError)
+        console.error('[Bundles API PUT] Insert error details:', JSON.stringify(insertError, null, 2))
+        console.error('[Bundles API PUT] Insert error code:', insertError.code)
+        console.error('[Bundles API PUT] Insert error message:', insertError.message)
+        return NextResponse.json({ 
+          error: 'Failed to insert new bundle items', 
+          details: insertError.message,
+          code: insertError.code
+        }, { status: 500 })
+      }
+      
+      console.log('[Bundles API PUT] Bundle items updated successfully')
     }
     
     console.log('[Bundles API PUT] Final update data:', JSON.stringify(updateData, null, 2))

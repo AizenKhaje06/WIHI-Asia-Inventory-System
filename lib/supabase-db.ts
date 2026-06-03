@@ -56,6 +56,7 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
     reorderLevel: item.reorderLevel,
     lastUpdated: item.lastUpdated,
     imageUrl: item.imageUrl || null,  // FIXED: Use camelCase to match view alias
+    productType: item.productType,  // ADDED: Include productType to detect bundles
   }))
 }
 

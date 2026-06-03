@@ -2625,14 +2625,14 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"Updated Gaming Bundle\",\n  \"bundlePrice\": 5500,\n  \"imageUrl\": \"https://example.com/updated-image.jpg\"\n}"
+                  "raw": "{\n  \"name\": \"Updated Gaming Bundle\",\n  \"bundlePrice\": 5500,\n  \"description\": \"Complete gaming setup with accessories\",\n  \"badge\": \"BESTSELLER\",\n  \"imageUrl\": \"https://example.com/updated-image.jpg\"\n}"
                 },
                 "url": {
                   "raw": "{{baseUrl}}/api/bundles/{{bundleId}}",
                   "host": ["{{baseUrl}}"],
                   "path": ["api", "bundles", "{{bundleId}}"]
                 },
-                "description": "Update existing bundle (name, price, or image)"
+                "description": "Update existing bundle (name, price, description, badge, or image)"
               },
               "event": [
                 {
@@ -2669,13 +2669,97 @@
                       "    pm.expect(jsonData.bundle_price).to.equal(5500);",
                       "});",
                       "",
-                      "// Test 6: Image URL was updated",
+                      "// Test 6: Description was updated",
+                      "pm.test('Bundle description was updated', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.description).to.equal('Complete gaming setup with accessories');",
+                      "});",
+                      "",
+                      "// Test 7: Badge was updated",
+                      "pm.test('Bundle badge was updated', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.badge).to.equal('BESTSELLER');",
+                      "});",
+                      "",
+                      "// Test 8: Image URL was updated",
                       "pm.test('Image URL was updated', function () {",
                       "    const jsonData = pm.response.json();",
                       "    pm.expect(jsonData.image_url).to.equal('https://example.com/updated-image.jpg');",
                       "});",
                       "",
-                      "// Test 7: Response time is acceptable",
+                      "// Test 9: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Update Bundle Components",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Gaming Bundle Pro\",\n  \"bundlePrice\": 6000,\n  \"items\": [\n    {\n      \"itemId\": \"ITEM-123\",\n      \"quantity\": 2\n    },\n    {\n      \"itemId\": \"ITEM-456\",\n      \"quantity\": 1\n    },\n    {\n      \"itemId\": \"ITEM-789\",\n      \"quantity\": 3\n    }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/bundles/{{bundleId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bundles", "{{bundleId}}"]
+                },
+                "description": "Update bundle including its component items. This will delete old bundle_items and insert new ones."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: Response has required fields",
+                      "pm.test('Response has required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('id');",
+                      "    pm.expect(jsonData).to.have.property('name');",
+                      "    pm.expect(jsonData).to.have.property('bundle_price');",
+                      "});",
+                      "",
+                      "// Test 4: Name was updated",
+                      "pm.test('Bundle name was updated', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.name).to.equal('Gaming Bundle Pro');",
+                      "});",
+                      "",
+                      "// Test 5: Price was updated",
+                      "pm.test('Bundle price was updated', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.bundle_price).to.equal(6000);",
+                      "});",
+                      "",
+                      "// Test 6: Response time is acceptable",
                       "pm.test('Response time is acceptable', function () {",
                       "    pm.expect(pm.response.responseTime).to.be.below(2000);",
                       "});"
