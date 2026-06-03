@@ -578,7 +578,7 @@ export async function GET(request: Request) {
     const totalDelivered = deliveredOrdersData?.reduce((sum, o) => sum + (o.qty || 0), 0) || 0
     
     // Calculate delivered percentage (total delivered / total orders)
-    const totalOrdersCount = filteredOrdersForKPIs.length
+    // totalOrdersCount already declared earlier in the code
     const deliveredPercentage = totalOrdersCount > 0 ? (deliveredOrdersCount || 0) / totalOrdersCount * 100 : 0
 
     // Update return rate calculation to use (returns / delivered * 100)
