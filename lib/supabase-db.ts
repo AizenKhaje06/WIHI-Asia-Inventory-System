@@ -242,6 +242,8 @@ export interface Order {
   cogs: number
   total: number
   product: string
+  productName?: string  // Added for display purposes
+  orderNumber?: string  // Added for packer dashboard
   status: string
   parcel_status: string
   dispatched_by: string
@@ -567,6 +569,7 @@ export interface Account {
   email?: string
   phone?: string
   assignedChannel?: string
+  profileImage?: string | null  // Added for profile image feature
   createdAt: string
 }
 

@@ -16,6 +16,7 @@ import { cn, formatCurrency, formatNumber } from "@/lib/utils"
 import { EditItemDialog } from "@/components/edit-item-dialog"
 import { apiGet, apiPost, apiDelete } from "@/lib/api-client"
 import { getCurrentUser } from "@/lib/auth"
+import { toast } from "sonner"
 
 export default function OutOfStockPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -168,10 +169,10 @@ export default function OutOfStockPage() {
       setSelectedRestockItem(null)
       setRestockReason("")
       fetchItems()
-      showSuccess("Item restocked successfully!")
+      toast.success("Item restocked successfully!")
     } catch (error) {
       console.error("Error restocking item:", error)
-      showError("Failed to restock item")
+      toast.error("Failed to restock item")
     }
   }
 

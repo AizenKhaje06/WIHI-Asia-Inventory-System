@@ -13,6 +13,7 @@ import { AddItemDialog } from "@/components/add-item-dialog"
 import { cn } from "@/lib/utils"
 import { EditItemDialog } from "@/components/edit-item-dialog"
 import { apiGet, apiPost, apiDelete } from "@/lib/api-client"
+import { toast } from "sonner"
 
 export default function ProductEditPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -97,10 +98,10 @@ export default function ProductEditPage() {
       setRestockDialogOpen(false)
       setSelectedRestockItem(null)
       fetchItems()
-      showSuccess("Item restocked successfully!")
+      toast.success("Item restocked successfully!")
     } catch (error) {
       console.error("[v0] Error restocking item:", error)
-      alert("Failed to restock item")
+      toast.error("Failed to restock item")
     }
   }
 

@@ -9,6 +9,7 @@ export interface User {
   email?: string
   phone?: string
   assignedChannel?: string // NEW: Department/channel for operations users
+  profileImage?: string | null // Added for profile image feature
 }
 
 // Role definitions with better names
