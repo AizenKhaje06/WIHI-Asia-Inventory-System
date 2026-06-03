@@ -290,8 +290,8 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Row 2: Order Status Metrics (3 cards) */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+      {/* Row 2: Order Status Metrics (4 cards) */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Cancelled (Packing Queue) */}
         <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-rose-50 to-rose-100/50 dark:from-rose-900/20 dark:to-rose-900/10">
           <div className="flex items-center gap-3 mb-3">
@@ -332,6 +332,30 @@ export default function DashboardPage() {
           </div>
         </Card>
 
+        {/* Total Delivered */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-900/10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 rounded-xl bg-emerald-600 shadow-lg shadow-emerald-500/30">
+              <CheckCircle className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Total Delivered</p>
+              <div className="text-2xl font-bold text-emerald-900 dark:text-emerald-100 tabular-nums">
+                <AnimatedNumber value={stats?.totalDelivered || 0} duration={1500} />
+              </div>
+            </div>
+          </div>
+          {stats?.deliveredPercentage !== undefined ? (
+            <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+              <AnimatedNumber value={stats.deliveredPercentage} decimals={1} duration={1500} />% of total orders
+            </div>
+          ) : (
+            <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+              No deliveries yet
+            </div>
+          )}
+        </Card>
+
         {/* Total Returns */}
         <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-900/10">
           <div className="flex items-center gap-3 mb-3">
@@ -345,9 +369,9 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-          {stats?.returnValue !== undefined && stats.returnValue > 0 ? (
+          {stats?.returnRate !== undefined && stats.returnRate > 0 ? (
             <div className="text-xs text-orange-600 dark:text-orange-400 font-semibold">
-              ₱{formatNumber(stats.returnValue)} • {stats.returnRate.toFixed(1)}% rate
+              <AnimatedNumber value={stats.returnRate} decimals={1} duration={1500} />% of delivered
             </div>
           ) : (
             <div className="text-xs text-orange-600 dark:text-orange-400 font-semibold">

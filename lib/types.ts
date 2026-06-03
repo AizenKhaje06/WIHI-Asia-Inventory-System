@@ -175,6 +175,8 @@ export interface DashboardStats {
   cancelledOrdersByChannel?: { channel: string; count: number; value: number }[]
   cancelledPackingQueue?: number // Cancelled in packing queue (before packing)
   cancelledTrackOrders?: number // Cancelled in track orders (after packing)
+  totalDelivered?: number // Total orders with status 'delivered'
+  deliveredPercentage?: number // Percentage of delivered orders out of total orders
 }
 
 export interface Log {

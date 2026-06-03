@@ -61,6 +61,10 @@ function emptyDashboardStats(): DashboardStats {
     cancelledOrdersValue: 0,
     cancellationRate: 0,
     topCancellationReasons: [],
+    cancelledPackingQueue: 0,
+    cancelledTrackOrders: 0,
+    totalDelivered: 0,
+    deliveredPercentage: 0,
   }
 }
 
@@ -545,6 +549,41 @@ export async function GET(request: Request) {
     // These are orders cancelled AFTER packing (already in Track Orders)
     const cancelledTrackOrders = cancelledOrders.length
 
+    // NEW: Total Delivered orders (status='Packed' AND parcel_status='DELIVERED')
+    // Count all delivered orders
+    let deliveredOrdersQuery = supabase
+      .from('orders')
+      .select('id, qty', { count: 'exact' })
+      .eq('status', 'Packed')
+      .eq('parcel_status', 'DELIVERED')
+
+    // Apply department filtering for operations users
+    if (userRole === 'operations' && assignedChannel) {
+      deliveredOrdersQuery = deliveredOrdersQuery.eq('sales_channel', assignedChannel)
+    }
+
+    // Apply date filters if set
+    if (startDate) {
+      const startOfDay = new Date(startDate)
+      startOfDay.setHours(0, 0, 0, 0)
+      deliveredOrdersQuery = deliveredOrdersQuery.gte('created_at', startOfDay.toISOString())
+    }
+    if (endDate) {
+      const endOfDay = new Date(endDate)
+      endOfDay.setHours(23, 59, 59, 999)
+      deliveredOrdersQuery = deliveredOrdersQuery.lte('created_at', endOfDay.toISOString())
+    }
+
+    const { data: deliveredOrdersData, count: deliveredOrdersCount } = await deliveredOrdersQuery
+    const totalDelivered = deliveredOrdersData?.reduce((sum, o) => sum + (o.qty || 0), 0) || 0
+    
+    // Calculate delivered percentage (total delivered / total orders)
+    const totalOrdersCount = filteredOrdersForKPIs.length
+    const deliveredPercentage = totalOrdersCount > 0 ? (deliveredOrdersCount || 0) / totalOrdersCount * 100 : 0
+
+    // Update return rate calculation to use (returns / delivered * 100)
+    const returnRateByDelivered = totalDelivered > 0 ? (totalReturns / totalDelivered) * 100 : 0
+
     // Return Count by Sales Channel (for KPI cards)
     const returnedOrdersByChannel = returnedOrders.reduce((acc: { [key: string]: { count: number; value: number } }, order) => {
       const channel = order.sales_channel || 'Unknown'
@@ -640,7 +679,7 @@ export async function GET(request: Request) {
       stocksCountByStore: stocksCountByStoreSorted,
       storePerformance: storePerformanceSorted,
       totalSales: financialMetrics.totalQuantity,
-      returnRate: Math.round(returnRate * 100) / 100,
+      returnRate: Math.round(returnRateByDelivered * 100) / 100, // Updated to use returns/delivered calculation
       damagedReturnRate: Math.round(damagedReturnRate * 100) / 100,
       supplierReturnRate: Math.round(supplierReturnRate * 100) / 100,
       totalReturns,
@@ -667,6 +706,8 @@ export async function GET(request: Request) {
       cancelledOrdersByChannel: returnedOrdersByChannel, // Return Count by Sales Channel
       cancelledPackingQueue: cancelledPackingQueueCount || 0,
       cancelledTrackOrders: cancelledTrackOrders,
+      totalDelivered: totalDelivered,
+      deliveredPercentage: Math.round(deliveredPercentage * 100) / 100,
     }
 
     console.log('[Dashboard API] Financial Metrics Summary:', {
