@@ -57,6 +57,13 @@ export default function LogisticsTrackOrdersPage() {
 
   useEffect(() => {
     fetchOrders()
+    
+    // Set up polling to refresh orders every 30 seconds for real-time sync
+    const pollInterval = setInterval(() => {
+      fetchOrders()
+    }, 30000)
+    
+    return () => clearInterval(pollInterval)
   }, [])
 
   useEffect(() => {
@@ -139,6 +146,55 @@ export default function LogisticsTrackOrdersPage() {
     }
 
     setFilteredOrders(filtered)
+  }
+
+  const updateOrderStatus = async (orderId: string, status?: string, parcelStatus?: string, paymentStatus?: string) => {
+    try {
+      // Optimistic update - update UI immediately
+      if (parcelStatus) {
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order.id === orderId 
+              ? { ...order, parcelStatus: parcelStatus as any }
+              : order
+          )
+        )
+      }
+
+      if (paymentStatus) {
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order.id === orderId 
+              ? { ...order, paymentStatus: paymentStatus as any }
+              : order
+          )
+        )
+      }
+
+      // Update in backend
+      const response = await fetch(`/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status,
+          parcel_status: parcelStatus,
+          payment_status: paymentStatus
+        }),
+      })
+
+      if (!response.ok) {
+        // Revert optimistic update on error
+        await fetchOrders()
+        throw new Error('Failed to update status')
+      }
+
+      toast.success('Status updated successfully')
+    } catch (error) {
+      console.error('Error updating status:', error)
+      toast.error('Failed to update status')
+    }
   }
 
   const getStatusBadge = (status: string) => {
@@ -238,7 +294,7 @@ export default function LogisticsTrackOrdersPage() {
 
   if (loading) {
     return (
-      <div className="py-6 px-6">
+      <div className="max-w-[1600px] mx-auto px-3 py-6">
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <BrandLoader size="lg" />
@@ -250,7 +306,7 @@ export default function LogisticsTrackOrdersPage() {
   }
 
   return (
-    <div className="py-6 space-y-6">
+    <div className="max-w-[1600px] mx-auto px-3 py-6 space-y-6">
       {/* Header */}
       <div className="mb-8">
         <div>
@@ -260,7 +316,6 @@ export default function LogisticsTrackOrdersPage() {
       </div>
 
       {/* Filters */}
-      <div className="px-6">
       <Card className="mb-6 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-5">
@@ -328,7 +383,6 @@ export default function LogisticsTrackOrdersPage() {
           </div>
         </CardContent>
       </Card>
-      </div>
 
       {/* Orders Table */}
       <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
@@ -351,52 +405,92 @@ export default function LogisticsTrackOrdersPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm table-fixed">
+              <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-900 dark:bg-black border-b-2 border-slate-700">
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[8%]">Order #</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[8%]">Date</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[8%]">Channel</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[12%]">Customer</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[15%]">Product</th>
-                    <th className="py-4 px-6 text-center font-bold text-xs text-white uppercase tracking-wider w-[5%]">Qty</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[10%]">Amount</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[8%]">Courier</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[13%]">Waybill</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[8%]">Payment</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[10%]">Status</th>
-                    <th className="py-4 px-6 text-center font-bold text-xs text-white uppercase tracking-wider w-[5%]">Actions</th>
+                    <th className="py-2.5 px-3 text-left font-bold text-[10px] text-white uppercase tracking-wider">Date</th>
+                    <th className="py-2.5 px-3 text-left font-bold text-[10px] text-white uppercase tracking-wider">Name</th>
+                    <th className="py-2.5 px-3 text-left font-bold text-[10px] text-white uppercase tracking-wider">Address</th>
+                    <th className="py-2.5 px-3 text-left font-bold text-[10px] text-white uppercase tracking-wider">Contact No.</th>
+                    <th className="py-2.5 px-3 text-left font-bold text-[10px] text-white uppercase tracking-wider">Price</th>
+                    <th className="py-2.5 px-3 text-left font-bold text-[10px] text-white uppercase tracking-wider">Items</th>
+                    <th className="py-2.5 px-3 text-left font-bold text-[10px] text-white uppercase tracking-wider">Tracking</th>
+                    <th className="py-2.5 px-3 text-left font-bold text-[10px] text-white uppercase tracking-wider">Payment</th>
+                    <th className="py-2.5 px-3 text-left font-bold text-[10px] text-white uppercase tracking-wider">Status</th>
+                    <th className="py-2.5 px-3 text-center font-bold text-[10px] text-white uppercase tracking-wider">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors duration-150">
-                      <td className="py-4 px-6 font-mono text-xs font-semibold text-slate-900 dark:text-slate-100">#{order.id.slice(-6)}</td>
-                      <td className="py-4 px-6 text-xs text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap">
-                        {new Date(order.orderDate).toLocaleDateString('en-US', { 
-                          month: '2-digit', 
-                          day: '2-digit', 
-                          year: '2-digit'
-                        })}
+                    <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors duration-150 h-14">
+                      <td className="py-2 px-3 text-[11px] text-slate-600 dark:text-slate-400 font-medium">
+                        <div className="whitespace-nowrap">
+                          {new Date(order.orderDate).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: '2-digit', 
+                            year: 'numeric'
+                          })}
+                        </div>
+                        <div className="text-[10px] text-slate-500">{new Date(order.orderDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
                       </td>
-                      <td className="py-4 px-6 text-xs font-medium text-slate-700 dark:text-slate-300">{order.department}</td>
-                      <td className="py-4 px-6 text-sm font-medium text-slate-900 dark:text-slate-100">
-                        <div className="truncate" title={order.customerName}>
-                          {order.customerName}
+                      <td className="py-2 px-3 text-[11px] font-medium text-slate-900 dark:text-slate-100">
+                        <div className="max-w-[120px] truncate" title={order.customerName}>{order.customerName}</div>
+                      </td>
+                      <td className="py-2 px-3 text-[11px] text-slate-700 dark:text-slate-300">
+                        <div className="max-w-[180px] truncate" title={order.customerAddress}>{order.customerAddress}</div>
+                      </td>
+                      <td className="py-2 px-3 text-[11px] text-slate-600 dark:text-slate-400">
+                        <div className="max-w-[110px] truncate" title={order.customerPhone}>{order.customerPhone}</div>
+                      </td>
+                      <td className="py-2 px-3 text-[11px] font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">{formatCurrency(order.totalAmount)}</td>
+                      <td className="py-2 px-3 text-[11px] text-slate-700 dark:text-slate-300">
+                        <div className="max-w-[150px]">
+                          <div className="truncate font-medium" title={order.itemName}>{order.itemName}</div>
+                          <div className="text-[10px] text-slate-500">Qty: {order.quantity}</div>
                         </div>
                       </td>
-                      <td className="py-4 px-6 text-sm text-slate-700 dark:text-slate-300">
-                        <div className="truncate" title={order.itemName}>
-                          {order.itemName}
-                        </div>
+                      <td className="py-2 px-3 text-[10px] text-blue-600 dark:text-blue-400 font-mono">
+                        <div className="max-w-[100px] truncate" title={order.trackingNumber}>{order.trackingNumber}</div>
+                        <div className="text-[9px] text-slate-500 mt-0.5 truncate">{order.courier || 'Flash'}</div>
                       </td>
-                      <td className="py-4 px-6 text-center text-sm font-bold text-slate-900 dark:text-slate-100">{order.quantity}</td>
-                      <td className="py-4 px-6 text-sm font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">{formatCurrency(order.totalAmount)}</td>
-                      <td className="py-4 px-6 text-xs font-medium text-slate-600 dark:text-slate-400">{order.courier}</td>
-                      <td className="py-4 px-6 font-mono text-xs text-slate-600 dark:text-slate-400 break-words">{order.trackingNumber}</td>
-                      <td className="py-4 px-6">{getPaymentBadge(order.paymentStatus)}</td>
-                      <td className="py-4 px-6">{getStatusBadge(order.parcelStatus)}</td>
-                      <td className="py-4 px-6 text-center">
+                      <td className="py-2 px-3">
+                        <Select 
+                          value={order.paymentStatus} 
+                          onValueChange={(value) => updateOrderStatus(order.id, undefined, undefined, value)}
+                        >
+                          <SelectTrigger className="h-7 w-[85px] text-[10px] border-slate-200 dark:border-slate-700">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="paid">Paid</SelectItem>
+                            <SelectItem value="cod">COD</SelectItem>
+                            <SelectItem value="refunded">Refunded</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="py-2 px-3">
+                        <Select 
+                          value={order.parcelStatus} 
+                          onValueChange={(value) => updateOrderStatus(order.id, undefined, value, undefined)}
+                        >
+                          <SelectTrigger className="h-7 w-[100px] text-[10px] border-slate-200 dark:border-slate-700">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="PENDING">Pending</SelectItem>
+                            <SelectItem value="IN TRANSIT">In Transit</SelectItem>
+                            <SelectItem value="ON DELIVERY">On Delivery</SelectItem>
+                            <SelectItem value="PICKUP">Pickup</SelectItem>
+                            <SelectItem value="DELIVERED">Delivered</SelectItem>
+                            <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                            <SelectItem value="DETAINED">Detained</SelectItem>
+                            <SelectItem value="PROBLEMATIC">Problematic</SelectItem>
+                            <SelectItem value="RETURNED">Returned</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="py-2 px-3 text-center">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -404,9 +498,9 @@ export default function LogisticsTrackOrdersPage() {
                             setSelectedOrder(order)
                             setShowDetailsModal(true)
                           }}
-                          className="h-8 w-8 p-0 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-300"
+                          className="h-7 px-3 text-[10px] hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-300"
                         >
-                          <Eye className="h-4 w-4" />
+                          👁️ View Details
                         </Button>
                       </td>
                     </tr>

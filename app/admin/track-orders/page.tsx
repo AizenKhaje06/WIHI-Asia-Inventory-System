@@ -46,6 +46,13 @@ export default function TrackOrdersPage() {
 
   useEffect(() => {
     fetchOrders()
+    
+    // Set up polling to refresh orders every 30 seconds for real-time sync
+    const pollInterval = setInterval(() => {
+      fetchOrders()
+    }, 30000)
+    
+    return () => clearInterval(pollInterval)
   }, [])
 
   useEffect(() => {

@@ -265,15 +265,15 @@ export default function LogisticsProductsPage() {
               <table className="w-full text-sm table-fixed">
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
-                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[50px]">Image</th>
-                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[19%]">Product</th>
-                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[12%]">Category</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[40px]">Image</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[22%]">Product</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[13%]">Category</th>
                     <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[7%]">Status</th>
-                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[10%]">Stock</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[11%]">Stock</th>
                     <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[9%]">Cost</th>
                     <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[9%]">Price</th>
-                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[8%]">Margin</th>
-                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[10%]">Actions</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[7%]">Margin</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[11%]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
