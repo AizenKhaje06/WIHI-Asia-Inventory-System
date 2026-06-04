@@ -525,6 +525,45 @@ export default function InsightsPage() {
 
         {/* ABC Analysis */}
         <TabsContent value="abc" id="abc-panel" role="tabpanel" aria-labelledby="abc-tab" className="space-y-4 mt-4">
+
+          {/* How ABC Analysis works */}
+          <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex-shrink-0 mt-0.5">
+                  <Target className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-0.5">How is ABC Analysis calculated?</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Ranks products by their contribution to total revenue. Based on all active sales orders.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
+                  <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Category A — Top 20%</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">~80% of total revenue</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">High-value products — prioritize stock, never let these run out</p>
+                </div>
+                <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30">
+                  <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider mb-1">Category B — Middle 30%</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">~15% of total revenue</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Medium-value products — maintain standard stock levels</p>
+                </div>
+                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">
+                  <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-1">Category C — Bottom 50%</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">~5% of total revenue</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Low-value products — keep minimal stock, review regularly</p>
+                </div>
+              </div>
+              <div className="mt-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-start gap-2">
+                <span className="text-blue-500 text-sm font-bold flex-shrink-0">ℹ</span>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Formula: Each product's cumulative revenue share is computed. Top 80% = A, next 15% = B, remaining 5% = C. Products with no sales are automatically classified as C.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid gap-4 md:grid-cols-2">
             <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
               <CardHeader className="pb-4">
@@ -703,6 +742,50 @@ export default function InsightsPage() {
 
         {/* Inventory Turnover */}
         <TabsContent value="turnover" className="space-y-4 mt-4">
+
+          {/* How Inventory Turnover works */}
+          <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="p-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex-shrink-0 mt-0.5">
+                  <BarChart3 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-0.5">How is Inventory Turnover calculated?</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Measures how fast each product sells relative to its inventory value. Uses last 90 days of sales.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/30">
+                  <p className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider mb-1">Turnover Ratio</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">COGS Sold ÷ Inventory Value</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Higher = product sells faster</p>
+                </div>
+                <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
+                  <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Fast Moving</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">Days to Sell &lt; 90</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Sells out in under 3 months</p>
+                </div>
+                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">
+                  <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-1">Slow Moving</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">90 ≤ Days &lt; 180</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Takes 3–6 months to sell</p>
+                </div>
+                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
+                  <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">Dead Stock</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">Days ≥ 180</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">180+ days — urgent action needed</p>
+                </div>
+              </div>
+              <div className="mt-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-start gap-2">
+                <span className="text-indigo-500 text-sm font-bold flex-shrink-0">ℹ</span>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Days to Sell = 90 ÷ Turnover Ratio. If no sales in 90 days, uses days since last sale instead. Products with no sales history are marked Normal.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid gap-4 md:grid-cols-2">
             <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
               <CardHeader className="pb-4">
@@ -866,6 +949,44 @@ export default function InsightsPage() {
 
         {/* Sales Forecast */}
         <TabsContent value="forecast" className="space-y-4 mt-4">
+          {/* How Forecast works */}
+          <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex-shrink-0 mt-0.5">
+                  <BarChart3 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-0.5">How is Sales Forecast calculated?</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Uses linear regression on historical sales data to predict future demand per product.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-900/30">
+                  <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider mb-1">Trend Direction</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">Slope of sales over time</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Increasing / Stable / Decreasing — based on recent sales pattern</p>
+                </div>
+                <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-900/30">
+                  <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider mb-1">Predicted Next Month</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">Avg daily sales × 30</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Estimated units to sell in the next 30 days</p>
+                </div>
+                <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-900/30">
+                  <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider mb-1">Restock Needed?</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">Forecast &gt; Current Stock</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">If predicted demand exceeds current stock — reorder recommended</p>
+                </div>
+              </div>
+              <div className="mt-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-start gap-2">
+                <span className="text-purple-500 text-sm font-bold flex-shrink-0">ℹ</span>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Requires at least 2 data points (sales transactions) per product to generate a forecast. Products with no sales history will not appear here.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Filters */}
           <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
             <CardContent className="p-4">
@@ -985,6 +1106,44 @@ export default function InsightsPage() {
 
         {/* Profit Margins */}
         <TabsContent value="profit" className="space-y-4 mt-4">
+          {/* How Profit Margin works */}
+          <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex-shrink-0 mt-0.5">
+                  <Percent className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-0.5">How is Profit Margin calculated?</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Gross profit percentage per product category, based on all active sales orders.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30">
+                  <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-1">Gross Profit</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">Revenue − COGS</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Revenue from orders minus actual cost of goods sold</p>
+                </div>
+                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30">
+                  <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-1">Profit Margin %</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">(Gross Profit ÷ Revenue) × 100</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">How much of each peso earned is actual profit</p>
+                </div>
+                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30">
+                  <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-1">Benchmark</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300">≥ 30% Excellent · 15–29% Good · &lt; 15% Review pricing</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Grouped by product category for easy comparison</p>
+                </div>
+              </div>
+              <div className="mt-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-start gap-2">
+                <span className="text-emerald-500 text-sm font-bold flex-shrink-0">ℹ</span>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Example: Category earns ₱50,000 revenue with ₱30,000 COGS → Gross Profit = ₱20,000 → Margin = 40% → <span className="text-emerald-600 font-semibold">Excellent ✓</span>. CANCELLED and RETURNED orders are excluded.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Filters */}
           <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
             <CardContent className="p-4">
@@ -1594,6 +1753,44 @@ export default function InsightsPage() {
 
         {/* Returns Analytics */}
         <TabsContent value="returns" className="space-y-4 mt-4">
+          {/* How Returns Analytics works */}
+          <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 flex-shrink-0 mt-0.5">
+                  <RotateCcw className="h-4 w-4 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-0.5">How is Returns Analytics calculated?</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Tracks all orders marked as RETURNED in Track Orders. Measures return volume, value, and rate.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
+                  <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">Total Returns</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">Count of returned order quantities</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Sum of qty from all orders where parcel_status = RETURNED</p>
+                </div>
+                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
+                  <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">Return Rate %</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">(Returns ÷ Delivered) × 100</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Percentage of delivered orders that were returned by customers</p>
+                </div>
+                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
+                  <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">Return Value</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">Sum of total from returned orders</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Total revenue lost due to returns — excluded from gross profit</p>
+                </div>
+              </div>
+              <div className="mt-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-start gap-2">
+                <span className="text-red-500 text-sm font-bold flex-shrink-0">ℹ</span>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Example: 100 delivered orders, 5 returned → Return Rate = 5%. A rate above 10% is a warning sign — check product quality or packaging. Returned orders are fully excluded from revenue calculations.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Key Metrics */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card className="border-0 shadow-md bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20">
