@@ -367,7 +367,7 @@ export default function LogPage() {
       </div>
 
       {/* Statistics Cards - Professional Corporate Design */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         {/* Total Logs - Blue */}
         <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
           <div className="flex items-center gap-3">
@@ -429,19 +429,6 @@ export default function LogPage() {
             <div>
               <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Deletes</p>
               <p className="text-2xl font-bold text-red-900 dark:text-red-100 tabular-nums">{stats.deletes}</p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Cancelled - Amber */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-900/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-amber-600 shadow-lg shadow-amber-500/30">
-              <X className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Cancelled</p>
-              <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">{stats.cancelled}</p>
             </div>
           </div>
         </Card>
@@ -507,8 +494,8 @@ export default function LogPage() {
               <SelectItem value="restock">Restock</SelectItem>
               <SelectItem value="sale">Sale</SelectItem>
               <SelectItem value="to-be-packed">To Be Packed</SelectItem>
-              <SelectItem value="cancel">Cancelled Orders</SelectItem>
-              <SelectItem value="uncancel">Uncancelled Orders</SelectItem>
+              {!isDepartment && <SelectItem value="cancel">Cancelled Orders</SelectItem>}
+              {!isDepartment && <SelectItem value="uncancel">Uncancelled Orders</SelectItem>}
               <SelectItem value="internal-usage">Internal Usage</SelectItem>
               <SelectItem value="demo-display">Demo/Display</SelectItem>
               <SelectItem value="warehouse">Warehouse</SelectItem>
