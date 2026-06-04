@@ -764,7 +764,7 @@ export default function PackingQueuePage() {
       )}
 
       {/* Stats Cards - Professional Corporate Design */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 lg:grid-cols-5">
         {/* Total Orders - Blue */}
         <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
           <div className="flex items-center gap-3">
@@ -803,6 +803,42 @@ export default function PackingQueuePage() {
               <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Total Value</p>
               <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
                 {formatCurrency(filteredOrders.reduce((sum, order) => sum + (order.total || order.totalAmount || 0), 0))}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Active Orders - Emerald */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-900/10">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-600 shadow-lg shadow-emerald-500/30 flex-shrink-0">
+              <CheckCircle className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Active Orders</p>
+              <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100 tabular-nums">
+                {filteredOrders.filter(o => !o.is_cancelled).length}
+              </p>
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                {formatCurrency(filteredOrders.filter(o => !o.is_cancelled).reduce((sum, o) => sum + (o.total || o.totalAmount || 0), 0))}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Cancelled Orders - Rose */}
+        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-rose-50 to-rose-100/50 dark:from-rose-900/20 dark:to-rose-900/10">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-rose-600 shadow-lg shadow-rose-500/30 flex-shrink-0">
+              <XCircle className="h-4 w-4 text-white" strokeWidth={2.5} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">Cancelled</p>
+              <p className="text-2xl font-bold text-rose-900 dark:text-rose-100 tabular-nums">
+                {filteredOrders.filter(o => o.is_cancelled).length}
+              </p>
+              <p className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold">
+                {formatCurrency(filteredOrders.filter(o => o.is_cancelled).reduce((sum, o) => sum + (o.total || o.totalAmount || 0), 0))}
               </p>
             </div>
           </div>
