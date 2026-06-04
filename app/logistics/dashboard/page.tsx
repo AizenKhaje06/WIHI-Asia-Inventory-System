@@ -27,6 +27,7 @@ interface PackingQueueOrder {
   quantity: number
   channel: string
   orderDate: string
+  is_cancelled?: boolean
 }
 
 interface PackedOrder {
@@ -147,6 +148,10 @@ export default function LogisticsAdminDashboard() {
     (statusCounts['ON DELIVERY'] || 0) + (statusCounts['IN TRANSIT'] || 0) + (statusCounts['PICKUP'] || 0)
   , [statusCounts])
 
+  const cancelledQueueCount = useMemo(() =>
+    filteredQueue.filter(o => o.is_cancelled === true).length
+  , [filteredQueue])
+
   const problematicCount = useMemo(() =>
     (statusCounts['CANCELLED'] || 0) + (statusCounts['RETURNED'] || 0) +
     (statusCounts['PROBLEMATIC'] || 0) + (statusCounts['DETAINED'] || 0)
@@ -247,12 +252,11 @@ export default function LogisticsAdminDashboard() {
         </div>
 
         {/* STATS */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { label: 'Packing Queue',  value: filteredQueue.length,         sub: filteredQueue.length === 0 ? 'All caught up' : `${filteredQueue.length} awaiting`, icon: Package,      from: 'from-orange-500', to: 'to-amber-500',   bg: 'bg-orange-50 dark:bg-orange-900/20',   ic: 'text-orange-600 dark:text-orange-400',   ring: 'ring-orange-200 dark:ring-orange-800' },
-            { label: 'Packed (Period)',value: packedInPeriod.length,         sub: `${packedInPeriod.length} completed`,                                            icon: PackageCheck, from: 'from-emerald-500',to: 'to-green-500',   bg: 'bg-emerald-50 dark:bg-emerald-900/20', ic: 'text-emerald-600 dark:text-emerald-400', ring: 'ring-emerald-200 dark:ring-emerald-800' },
-            { label: 'In Transit',     value: inTransitCount,               sub: 'On the way',                                                                    icon: Truck,        from: 'from-blue-500',   to: 'to-indigo-500',  bg: 'bg-blue-50 dark:bg-blue-900/20',       ic: 'text-blue-600 dark:text-blue-400',       ring: 'ring-blue-200 dark:ring-blue-800' },
-            { label: 'Delivered',      value: statusCounts['DELIVERED'] || 0,sub: `${deliveryRate}% delivery rate`,                                               icon: CheckCircle,  from: 'from-purple-500', to: 'to-violet-500',  bg: 'bg-purple-50 dark:bg-purple-900/20',   ic: 'text-purple-600 dark:text-purple-400',   ring: 'ring-purple-200 dark:ring-purple-800' },
+            { label: 'Packing Queue',         value: filteredQueue.length,         sub: filteredQueue.length === 0 ? 'All caught up' : `${filteredQueue.length} awaiting`,     icon: Package,    from: 'from-orange-500', to: 'to-amber-500',  bg: 'bg-orange-50 dark:bg-orange-900/20',   ic: 'text-orange-600 dark:text-orange-400',   ring: 'ring-orange-200 dark:ring-orange-800' },
+            { label: 'Packed (Period)',        value: packedInPeriod.length,        sub: `${packedInPeriod.length} completed`,                                                   icon: PackageCheck,from: 'from-emerald-500',to: 'to-green-500',  bg: 'bg-emerald-50 dark:bg-emerald-900/20', ic: 'text-emerald-600 dark:text-emerald-400', ring: 'ring-emerald-200 dark:ring-emerald-800' },
+            { label: 'Cancelled (Packing)',   value: cancelledQueueCount,          sub: cancelledQueueCount === 0 ? 'No cancellations' : `${cancelledQueueCount} cancelled`,    icon: XCircle,    from: 'from-rose-500',   to: 'to-red-500',    bg: 'bg-rose-50 dark:bg-rose-900/20',       ic: 'text-rose-600 dark:text-rose-400',       ring: 'ring-rose-200 dark:ring-rose-800' },
           ].map(s => (
             <Card key={s.label} className="border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-5">

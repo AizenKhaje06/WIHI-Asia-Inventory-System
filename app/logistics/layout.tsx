@@ -62,8 +62,7 @@ export default function LogisticsLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Enterprise Header - Fixed, always visible */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-[1920px] mx-auto px-6">
-          <div className="flex items-center justify-between h-14">
+        <div className="flex items-center justify-between h-14 px-6">
             {/* Left: Brand + Navigation */}
             <div className="flex items-center gap-8">
               {/* Brand */}
@@ -131,7 +130,6 @@ export default function LogisticsLayout({ children }: { children: React.ReactNod
               </div>
             </div>
           </div>
-        </div>
       </header>
 
       {/* Main Content */}

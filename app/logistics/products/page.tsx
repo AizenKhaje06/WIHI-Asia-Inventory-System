@@ -1,60 +1,73 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, Pencil, Trash2, PackagePlus, Package, Filter, X, AlertCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Search, Package, TrendingUp, Eye, Pencil, Trash2, PackagePlus } from "lucide-react"
 import type { InventoryItem } from "@/lib/types"
-import { AddItemDialog } from "@/components/add-item-dialog"
-import { EditItemDialog } from "@/components/edit-item-dialog"
 import { formatNumber, formatCurrency, cn } from "@/lib/utils"
-import { showSuccess, showError } from "@/lib/toast-utils"
-import { apiGet, apiDelete } from "@/lib/api-client"
+import { apiGet, apiDelete, apiPost } from "@/lib/api-client"
 import { BrandLoader } from '@/components/ui/brand-loader'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { EditItemDialog } from "@/components/edit-item-dialog"
+import { toast } from "sonner"
+import { Label } from "@/components/ui/label"
 
 export default function LogisticsProductsPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
   const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
   const [search, setSearch] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
   const [loading, setLoading] = useState(true)
-  const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [viewItem, setViewItem] = useState<InventoryItem | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [itemToDelete, setItemToDelete] = useState<{id: string, name: string} | null>(null)
+  const [restockDialogOpen, setRestockDialogOpen] = useState(false)
+  const [selectedRestockItem, setSelectedRestockItem] = useState<InventoryItem | null>(null)
+  const [restockAmount, setRestockAmount] = useState(0)
 
   useEffect(() => {
     fetchItems()
   }, [])
 
   useEffect(() => {
-    let filtered = items
+    let filtered = items.filter(i => (i as any).productType !== 'bundle')
 
     if (search) {
-      const searchLower = search.toLowerCase()
-      filtered = filtered.filter(
-        (item) =>
-          item.name.toLowerCase().includes(searchLower) ||
-          item.category.toLowerCase().includes(searchLower) ||
-          item.sku?.toLowerCase().includes(searchLower)
+      const q = search.toLowerCase()
+      filtered = filtered.filter(i =>
+        i.name.toLowerCase().includes(q) ||
+        i.category.toLowerCase().includes(q) ||
+        i.sku?.toLowerCase().includes(q)
       )
     }
 
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter(i => i.category === categoryFilter)
+    }
+
+    if (statusFilter === "in-stock") {
+      filtered = filtered.filter(i => i.quantity > i.reorderLevel)
+    } else if (statusFilter === "low-stock") {
+      filtered = filtered.filter(i => i.quantity > 0 && i.quantity <= i.reorderLevel)
+    } else if (statusFilter === "out-of-stock") {
+      filtered = filtered.filter(i => i.quantity === 0)
+    }
+
     setFilteredItems(filtered)
-  }, [search, items])
+  }, [search, categoryFilter, statusFilter, items])
 
   async function fetchItems() {
     try {
-      // Force fresh data - add timestamp to bypass cache
       const data = await apiGet<InventoryItem[]>("/api/items?t=" + Date.now())
-      const itemsArray = Array.isArray(data) ? data : []
-      setItems(itemsArray)
-      setFilteredItems(itemsArray)
-    } catch (error) {
-      console.error("Error fetching items:", error)
+      const arr = Array.isArray(data) ? data : []
+      setItems(arr)
+      setFilteredItems(arr.filter(i => (i as any).productType !== 'bundle'))
+    } catch {
       setItems([])
       setFilteredItems([])
     } finally {
@@ -62,66 +75,54 @@ export default function LogisticsProductsPage() {
     }
   }
 
-  async function handleDelete(id: string) {
-    try {
-      const isBundle = id.startsWith('BUNDLE-')
-      const endpoint = isBundle ? `/api/bundles/${id}` : `/api/items/${id}`
-      
-      const headers = new Headers({
-        'Content-Type': 'application/json'
-      })
-      
-      const username = localStorage.getItem('username')
-      const role = localStorage.getItem('userRole')
-      const displayName = localStorage.getItem('displayName')
-      
-      if (username) headers.set('x-user-username', username)
-      if (role) headers.set('x-user-role', role)
-      if (displayName) headers.set('x-user-display-name', displayName)
-      
-      const response = await fetch(endpoint, { 
-        method: "DELETE",
-        headers 
-      })
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to delete product' }))
-        throw new Error(errorData.error || 'Failed to delete product')
-      }
-      
-      await fetchItems()
-      setDeleteDialogOpen(false)
-      setItemToDelete(null)
-      showSuccess("Product deleted successfully")
-    } catch (error) {
-      console.error("Error deleting item:", error)
-      showError(error instanceof Error ? error.message : "Failed to delete product")
-    }
-  }
-  
-  function openDeleteDialog(id: string, name: string) {
-    setItemToDelete({ id, name })
-    setDeleteDialogOpen(true)
-  }
+  const regularItems = items.filter(i => (i as any).productType !== 'bundle')
+  const inStockCount = regularItems.filter(i => i.quantity > i.reorderLevel).length
+  const lowStockCount = regularItems.filter(i => i.quantity > 0 && i.quantity <= i.reorderLevel).length
+  const outOfStockCount = regularItems.filter(i => i.quantity === 0).length
+  const categories = Array.from(new Set(regularItems.map(i => i.category))).sort()
 
-  function handleEdit(item: InventoryItem) {
+  const handleEdit = (item: InventoryItem) => {
     setSelectedItem(item)
     setEditDialogOpen(true)
   }
 
-  const getStockStatus = (item: InventoryItem) => {
-    if (item.quantity === 0) {
-      return { label: 'Out of Stock', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' }
-    } else if (item.quantity <= item.reorderLevel) {
-      return { label: 'Low Stock', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' }
-    } else {
-      return { label: 'In Stock', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' }
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this product?")) return
+
+    try {
+      await apiDelete(`/api/items/${id}`)
+      toast.success("Product deleted successfully")
+      fetchItems()
+    } catch (error) {
+      console.error("[Logistics Products] Error deleting item:", error)
+      toast.error("Failed to delete product")
+    }
+  }
+
+  const handleRestock = (item: InventoryItem) => {
+    setSelectedRestockItem(item)
+    setRestockAmount(0)
+    setRestockDialogOpen(true)
+  }
+
+  const handleRestockSubmit = async () => {
+    if (!selectedRestockItem || restockAmount <= 0) return
+
+    try {
+      await apiPost(`/api/items/${selectedRestockItem.id}/restock`, { amount: restockAmount })
+      setRestockDialogOpen(false)
+      setSelectedRestockItem(null)
+      fetchItems()
+      toast.success("Item restocked successfully!")
+    } catch (error) {
+      console.error("[Logistics Products] Error restocking item:", error)
+      toast.error("Failed to restock item")
     }
   }
 
   if (loading) {
     return (
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 py-6">
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <BrandLoader size="lg" />
@@ -133,191 +134,293 @@ export default function LogisticsProductsPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Products Overview</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage inventory and product catalog</p>
-          </div>
-          <Button onClick={() => setAddDialogOpen(true)} className="gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/30">
-            <Plus className="h-4 w-4" strokeWidth={2.5} />
-            Add Product
-          </Button>
-        </div>
+      <div>
+        <h2 className="text-2xl sm:text-3xl font-bold gradient-text mb-1">Product Inventory</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Read-only view of all products and stock levels</p>
       </div>
 
-      {/* Search & Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card className="md:col-span-1 p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
-              <Package className="h-4 w-4 text-white" strokeWidth={2.5} />
+      {/* Stats Cards */}
+      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-600 shadow-sm">
+                <Package className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-slate-900 dark:text-white">Product Inventory</span>
             </div>
-            <div>
-              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Total Products</p>
-              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">{items.length}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="md:col-span-1 p-5 border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30">
-              <PackagePlus className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">In Stock</p>
-              <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
-                {items.filter(i => i.quantity > i.reorderLevel).length}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="md:col-span-1 p-5 border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100/50 dark:from-yellow-900/20 dark:to-yellow-900/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-yellow-600 shadow-lg shadow-yellow-500/30">
-              <AlertCircle className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-yellow-700 dark:text-yellow-400 uppercase tracking-wider">Low Stock</p>
-              <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100 tabular-nums">
-                {items.filter(i => i.quantity > 0 && i.quantity <= i.reorderLevel).length}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="md:col-span-1 p-5 border-0 shadow-lg bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-900/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-red-600 shadow-lg shadow-red-500/30">
-              <X className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Out of Stock</p>
-              <p className="text-2xl font-bold text-red-900 dark:text-red-100 tabular-nums">
-                {items.filter(i => i.quantity === 0).length}
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Search */}
-      <Card className="mb-6 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 mb-5">
-            <Search className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">Search Products</h3>
-          </div>
-          
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Search by name, category, or SKU..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-10 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-emerald-500/20"
-            />
+            <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-0 text-sm px-3 py-1 font-bold">
+              {filteredItems.length} items
+            </Badge>
           </div>
 
-          <div className="mt-4 flex items-center justify-between">
-            <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-              Showing <span className="font-bold text-slate-900 dark:text-white">{filteredItems.length}</span> of <span className="font-bold text-slate-900 dark:text-white">{items.length}</span> products
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            {/* Total Items */}
+            <div className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-700">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 rounded-full -mr-12 -mt-12" />
+              <div className="relative">
+                <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 inline-block mb-2">
+                  <Package className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1">Total Items</p>
+                <p className="text-2xl font-bold bg-gradient-to-br from-indigo-600 to-indigo-700 bg-clip-text text-transparent tabular-nums">
+                  {formatNumber(regularItems.length)}
+                </p>
+              </div>
+            </div>
+            {/* In Stock */}
+            <div className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-700">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-12 -mt-12" />
+              <div className="relative">
+                <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30 inline-block mb-2">
+                  <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                </div>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1">In Stock</p>
+                <p className="text-2xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent tabular-nums">{formatNumber(inStockCount)}</p>
+              </div>
+            </div>
+            {/* Low Stock */}
+            <div className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-700">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-12 -mt-12" />
+              <div className="relative">
+                <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 inline-block mb-2">
+                  <Package className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                </div>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1">Low Stock</p>
+                <p className="text-2xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent tabular-nums">{formatNumber(lowStockCount)}</p>
+              </div>
+            </div>
+            {/* Out of Stock */}
+            <div className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 p-4 rounded-xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-700">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-full -mr-12 -mt-12" />
+              <div className="relative">
+                <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 inline-block mb-2">
+                  <Package className="h-4 w-4 text-red-600 dark:text-red-400" />
+                </div>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1">Out of Stock</p>
+                <p className="text-2xl font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent tabular-nums">{formatNumber(outOfStockCount)}</p>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Products Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {filteredItems.map((item) => {
-          const status = getStockStatus(item)
-          const profitMargin = item.sellingPrice > 0 
-            ? ((item.sellingPrice - item.costPrice) / item.sellingPrice * 100).toFixed(1)
-            : '0.0'
-
-          return (
-            <Card key={item.id} className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm hover:shadow-xl transition-all duration-200">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-base font-bold text-slate-900 dark:text-white mb-1 line-clamp-2">
-                      {item.name}
-                    </CardTitle>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">{item.category}</p>
-                  </div>
-                  <Badge className={cn("ml-2 font-semibold text-xs", status.color)}>
-                    {status.label}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
-                    <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">Stock</p>
-                    <p className="text-xl font-bold text-slate-900 dark:text-white tabular-nums">{formatNumber(item.quantity)}</p>
-                  </div>
-                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
-                    <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">Price</p>
-                    <p className="text-xl font-bold text-slate-900 dark:text-white">{formatCurrency(item.sellingPrice)}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-600 dark:text-slate-400 font-medium">Cost: {formatCurrency(item.costPrice)}</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{profitMargin}% margin</span>
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(item)}
-                    className="flex-1 h-9 font-semibold border-slate-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
-                  >
-                    <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => openDeleteDialog(item.id, item.name)}
-                    className="flex-1 h-9 font-semibold border-red-200 dark:border-red-800/50 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
-                  >
-                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                    Delete
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      {filteredItems.length === 0 && (
-        <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-          <CardContent className="py-16">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
-                <Package className="h-8 w-8 text-slate-400" />
-              </div>
-              <p className="text-slate-600 dark:text-slate-400 font-medium">No products found</p>
-              <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">Try adjusting your search</p>
+      {/* Filters */}
+      <Card className="border-0 shadow-md bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Search by name, category, or SKU..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-9 h-10 border-slate-200 dark:border-slate-700"
+              />
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="h-10 w-[180px] bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="h-10 w-[160px] bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="in-stock">In Stock</SelectItem>
+                <SelectItem value="low-stock">Low Stock</SelectItem>
+                <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-sm text-slate-500 dark:text-slate-400 ml-auto">
+              Showing <strong className="text-slate-900 dark:text-white">{filteredItems.length}</strong> of <strong className="text-slate-900 dark:text-white">{regularItems.length}</strong>
+            </span>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Dialogs */}
-      <AddItemDialog
-        open={addDialogOpen}
-        onOpenChange={setAddDialogOpen}
-        onSuccess={fetchItems}
-      />
+      {/* Table */}
+      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+        <CardContent className="p-0">
+          {filteredItems.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-16">
+              <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-800">
+                <Package className="h-12 w-12 text-slate-400 dark:text-slate-600" />
+              </div>
+              <p className="text-slate-500 dark:text-slate-400 font-medium">No products found</p>
+              <p className="text-sm text-slate-400 dark:text-slate-500">Try adjusting your search or filters</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm table-fixed">
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black">
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[50px]">Image</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[19%]">Product</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[12%]">Category</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[7%]">Status</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[10%]">Stock</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[9%]">Cost</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[9%]">Price</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50 w-[8%]">Margin</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[10%]">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                  {filteredItems.map(item => {
+                    const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
+                    const isOutOfStock = item.quantity === 0
+                    const stockPercentage = Math.min((item.quantity / Math.max(item.reorderLevel * 2, 1)) * 100, 100)
+                    const profitMargin = item.sellingPrice > 0
+                      ? ((item.sellingPrice - item.costPrice) / item.sellingPrice * 100)
+                      : 0
 
+                    return (
+                      <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-all duration-200">
+                        {/* Image */}
+                        <td className="py-2 px-2">
+                          <div className="flex items-center justify-center">
+                            {item.imageUrl ? (
+                              <div className="w-8 h-8 rounded overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
+                                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
+                                <Package className="h-4 w-4 text-slate-400" />
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Product Name */}
+                        <td className="py-2 px-2">
+                          <p className="text-xs font-semibold text-slate-900 dark:text-white break-words line-clamp-2" title={item.name}>
+                            {item.name}
+                          </p>
+                          {item.sku && (
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{item.sku}</p>
+                          )}
+                        </td>
+
+                        {/* Category */}
+                        <td className="py-2 px-2">
+                          <span className="text-xs text-slate-600 dark:text-slate-400 break-words" title={item.category}>
+                            {item.category}
+                          </span>
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-2 px-2">
+                          {isOutOfStock ? (
+                            <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800 text-xs px-1.5 py-0.5">Out</Badge>
+                          ) : isLowStock ? (
+                            <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800 text-xs px-1.5 py-0.5">Low</Badge>
+                          ) : (
+                            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800 text-xs px-1.5 py-0.5">OK</Badge>
+                          )}
+                        </td>
+
+                        {/* Stock with progress */}
+                        <td className="py-2 px-2">
+                          <div className="space-y-1">
+                            <span className={cn(
+                              "text-xs font-semibold tabular-nums",
+                              isOutOfStock ? "text-red-600 dark:text-red-400"
+                                : isLowStock ? "text-amber-600 dark:text-amber-400"
+                                : "text-slate-900 dark:text-white"
+                            )}>
+                              {formatNumber(item.quantity)}
+                            </span>
+                            <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1">
+                              <div
+                                className={cn(
+                                  "h-1 rounded-full transition-all",
+                                  isOutOfStock ? "bg-red-500" : isLowStock ? "bg-amber-500" : "bg-green-500"
+                                )}
+                                style={{ width: `${stockPercentage}%` }}
+                              />
+                            </div>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500">Min: {item.reorderLevel}</p>
+                          </div>
+                        </td>
+
+                        {/* Cost */}
+                        <td className="py-2 px-2">
+                          <span className="text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
+                            {formatCurrency(item.costPrice)}
+                          </span>
+                        </td>
+
+                        {/* Price */}
+                        <td className="py-2 px-2">
+                          <span className="text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
+                            {formatCurrency(item.sellingPrice)}
+                          </span>
+                        </td>
+
+                        {/* Margin */}
+                        <td className="py-2 px-2">
+                          <span className={cn(
+                            "text-xs font-bold tabular-nums",
+                            profitMargin >= 30 ? "text-green-600" : profitMargin >= 15 ? "text-amber-600" : "text-red-600"
+                          )}>
+                            {profitMargin.toFixed(1)}%
+                          </span>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-2 px-2">
+                          <div className="flex justify-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRestock(item)}
+                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-8 w-8 p-0"
+                              title="Restock"
+                            >
+                              <PackagePlus className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(item)}
+                              className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 h-8 w-8 p-0"
+                              title="Edit Product"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(item.id)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 h-8 w-8 p-0"
+                              title="Delete Product"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Edit Item Dialog */}
       {selectedItem && (
         <EditItemDialog
           open={editDialogOpen}
@@ -327,25 +430,50 @@ export default function LogisticsProductsPage() {
         />
       )}
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Product</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete <strong>{itemToDelete?.name}</strong>? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => itemToDelete && handleDelete(itemToDelete.id)}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Restock Dialog */}
+      {selectedRestockItem && (
+        <Dialog open={restockDialogOpen} onOpenChange={setRestockDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Restock {selectedRestockItem.name}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Current Stock:</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{selectedRestockItem.quantity}</p>
+              </div>
+              <div>
+                <Label htmlFor="restock-amount">Amount to Add</Label>
+                <Input
+                  id="restock-amount"
+                  type="number"
+                  min="1"
+                  value={restockAmount}
+                  onChange={(e) => setRestockAmount(Number.parseInt(e.target.value) || 0)}
+                  placeholder="Enter amount"
+                  className="mt-2"
+                />
+              </div>
+              {restockAmount > 0 && (
+                <div className="p-4 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-200 dark:border-green-800">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">New Stock:</p>
+                  <p className="text-xl font-bold text-green-600 dark:text-green-400">
+                    {selectedRestockItem.quantity + restockAmount}
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <Button variant="outline" onClick={() => setRestockDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleRestockSubmit} disabled={restockAmount <= 0}>
+                Restock Item
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }

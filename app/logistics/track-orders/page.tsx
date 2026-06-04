@@ -238,7 +238,7 @@ export default function LogisticsTrackOrdersPage() {
 
   if (loading) {
     return (
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="py-6 px-6">
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <BrandLoader size="lg" />
@@ -250,7 +250,7 @@ export default function LogisticsTrackOrdersPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="py-6 space-y-6">
       {/* Header */}
       <div className="mb-8">
         <div>
@@ -260,6 +260,7 @@ export default function LogisticsTrackOrdersPage() {
       </div>
 
       {/* Filters */}
+      <div className="px-6">
       <Card className="mb-6 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-5">
@@ -327,6 +328,7 @@ export default function LogisticsTrackOrdersPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
 
       {/* Orders Table */}
       <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
@@ -349,21 +351,21 @@ export default function LogisticsTrackOrdersPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm table-fixed">
                 <thead>
                   <tr className="bg-slate-900 dark:bg-black border-b-2 border-slate-700">
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider">Order #</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider">Date</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider">Channel</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider">Customer</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider">Product</th>
-                    <th className="py-4 px-6 text-center font-bold text-xs text-white uppercase tracking-wider">Qty</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider">Amount</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider">Courier</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider">Waybill</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider">Payment</th>
-                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider">Status</th>
-                    <th className="py-4 px-6 text-center font-bold text-xs text-white uppercase tracking-wider">Actions</th>
+                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[8%]">Order #</th>
+                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[8%]">Date</th>
+                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[8%]">Channel</th>
+                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[12%]">Customer</th>
+                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[15%]">Product</th>
+                    <th className="py-4 px-6 text-center font-bold text-xs text-white uppercase tracking-wider w-[5%]">Qty</th>
+                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[10%]">Amount</th>
+                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[8%]">Courier</th>
+                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[13%]">Waybill</th>
+                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[8%]">Payment</th>
+                    <th className="py-4 px-6 text-left font-bold text-xs text-white uppercase tracking-wider w-[10%]">Status</th>
+                    <th className="py-4 px-6 text-center font-bold text-xs text-white uppercase tracking-wider w-[5%]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -379,19 +381,19 @@ export default function LogisticsTrackOrdersPage() {
                       </td>
                       <td className="py-4 px-6 text-xs font-medium text-slate-700 dark:text-slate-300">{order.department}</td>
                       <td className="py-4 px-6 text-sm font-medium text-slate-900 dark:text-slate-100">
-                        <div className="max-w-[200px] truncate" title={order.customerName}>
+                        <div className="truncate" title={order.customerName}>
                           {order.customerName}
                         </div>
                       </td>
                       <td className="py-4 px-6 text-sm text-slate-700 dark:text-slate-300">
-                        <div className="max-w-[250px] truncate" title={order.itemName}>
+                        <div className="truncate" title={order.itemName}>
                           {order.itemName}
                         </div>
                       </td>
                       <td className="py-4 px-6 text-center text-sm font-bold text-slate-900 dark:text-slate-100">{order.quantity}</td>
                       <td className="py-4 px-6 text-sm font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">{formatCurrency(order.totalAmount)}</td>
                       <td className="py-4 px-6 text-xs font-medium text-slate-600 dark:text-slate-400">{order.courier}</td>
-                      <td className="py-4 px-6 font-mono text-xs text-slate-600 dark:text-slate-400 whitespace-normal break-all">{order.trackingNumber}</td>
+                      <td className="py-4 px-6 font-mono text-xs text-slate-600 dark:text-slate-400 break-words">{order.trackingNumber}</td>
                       <td className="py-4 px-6">{getPaymentBadge(order.paymentStatus)}</td>
                       <td className="py-4 px-6">{getStatusBadge(order.parcelStatus)}</td>
                       <td className="py-4 px-6 text-center">
