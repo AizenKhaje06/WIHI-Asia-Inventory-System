@@ -421,14 +421,14 @@ export default function SalesChannelsPage() {
           </div>
         </Card>
 
-        {/* Net Profit */}
+        {/* Gross Profit */}
         <Card className="p-5 border-0 shadow-lg">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30 flex-shrink-0">
               <TrendingUp className="h-5 w-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Net Profit</p>
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Gross Profit</p>
               <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
                 {formatCurrency(data?.totals.profit || 0)}
               </p>

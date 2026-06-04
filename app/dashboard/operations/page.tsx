@@ -191,7 +191,7 @@ export default function OperationsDashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Net Profit */}
+        {/* Gross Profit */}
         <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
           <CardContent className="p-3 sm:p-4 relative">
@@ -203,7 +203,7 @@ export default function OperationsDashboardPage() {
             <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent mb-2">
               ₱<AnimatedNumber value={netProfit} duration={1500} />
             </div>
-            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Net Profit</div>
+            <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Gross Profit</div>
             {returnedAmount > 0 ? (
               <div className="flex items-center gap-1">
                 <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />

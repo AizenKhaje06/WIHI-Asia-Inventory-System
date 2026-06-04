@@ -60,8 +60,8 @@ const commandItems: CommandItem[] = [
     keywords: ['products', 'items', 'stock'],
   },
   {
-    id: 'warehouse-dispatch',
-    title: 'Warehouse Dispatch',
+    id: 'pos',
+    title: 'Point of Sale (POS)',
     description: 'Create transactions and sales',
     icon: ShoppingCart,
     href: '/dashboard/pos',

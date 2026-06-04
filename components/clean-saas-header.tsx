@@ -36,7 +36,7 @@ const pageTitles: Record<string, string> = {
   "/dashboard/inventory/create": "Add New Item",
   "/dashboard/inventory/low-stock": "Low Stock Items",
   "/dashboard/inventory/out-of-stock": "Out of Stock",
-  "/dashboard/pos": "Warehouse Dispatch",
+  "/dashboard/pos": "Point of Sale (POS)",
   "/dashboard/sales": "Sales Analytics",
   "/dashboard/analytics": "Analytics",
   "/dashboard/customers": "Customers",

@@ -2198,7 +2198,7 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
         workflow: [
           'Open dashboard to see today\'s summary.',
           'Use the date range picker (top-right) to filter all KPI cards by period.',
-          'Check Row 1 cards: Total Sold, Revenue, Net Profit, Profit Margin.',
+          'Check Row 1 cards: Total Sold, Revenue, Gross Profit, Profit Margin.',
           'Check Row 2 cards: Cancelled (Packing), Cancelled (Tracked), Total Delivered, Total Returns.',
           'Review Inventory Alerts for low stock or out-of-stock items.',
           'Use Quick Actions to navigate to common tasks.',
@@ -2209,8 +2209,8 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
           'Return Rate % = returns ÷ delivered × 100.',
           'Cancelled (Packing) = orders cancelled BEFORE packing.',
           'Cancelled (Tracked) = orders cancelled AFTER packing.',
-          'Revenue excludes CANCELLED and RETURNED orders.',
-          'Net Profit = Revenue − Cost of Goods Sold (COGS).',
+          'Revenue excludes CANCELLED, RETURNED, PROBLEMATIC, and DETAINED orders.',
+          'Gross Profit = Revenue − Cost of Goods Sold (COGS).',
         ],
         notes: [
           'Charts use Day/Week/Month tabs independently from the date filter.',

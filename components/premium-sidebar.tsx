@@ -58,7 +58,7 @@ const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0): 
     items: [
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, // Admin only
       { name: "Operations Dashboard", href: "/dashboard/operations", icon: LayoutDashboard }, // Operations only
-      { name: "Order Dispatch", href: "/dashboard/pos", icon: ShoppingCart },
+      { name: "Point of Sale (POS)", href: "/dashboard/pos", icon: ShoppingCart },
       { name: "Packing Queue", href: "/dashboard/packing-queue", icon: Package },
       { name: "Track Orders", href: "/dashboard/track-orders", icon: ShoppingCart },
       { name: "Internal Usage", href: "/dashboard/internal-usage", icon: Users },

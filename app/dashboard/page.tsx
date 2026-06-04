@@ -223,14 +223,14 @@ export default function DashboardPage() {
           )}
         </Card>
 
-        {/* Net Profit */}
+        {/* Gross Profit */}
         <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
               <DollarSign className="h-4 w-4 text-white" strokeWidth={2.5} />
             </div>
             <div className="flex-1">
-              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Net Profit</p>
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Gross Profit</p>
               <div className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
                 ₱<AnimatedNumber value={netProfit} duration={1500} />
               </div>

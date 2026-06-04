@@ -19,7 +19,7 @@ const routeLabels: Record<string, string> = {
   create: 'Create',
   'low-stock': 'Low Stock',
   'out-of-stock': 'Out of Stock',
-  pos: 'Warehouse Dispatch',
+  pos: 'Point of Sale (POS)',
   sales: 'Sales',
   analytics: 'Sales Analytics',
   insights: 'Business Insights',
