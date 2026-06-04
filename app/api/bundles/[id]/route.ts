@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabase'
+import { requireRole } from '@/lib/api-helpers'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'

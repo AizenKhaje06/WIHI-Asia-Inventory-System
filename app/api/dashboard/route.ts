@@ -510,13 +510,16 @@ export async function GET(request: Request) {
     const totalOrdersCount = filteredOrdersForKPIs.length
     const cancellationRate = totalOrdersCount > 0 ? (totalCancelledOrders / totalOrdersCount) * 100 : 0
 
-    // Cancellation reasons (if available in notes)
-    const topCancellationReasons = [
-      { reason: 'Customer Request', count: Math.floor(totalCancelledOrders * 0.4) },
-      { reason: 'Out of Stock', count: Math.floor(totalCancelledOrders * 0.3) },
-      { reason: 'Payment Issues', count: Math.floor(totalCancelledOrders * 0.2) },
-      { reason: 'Other', count: Math.floor(totalCancelledOrders * 0.1) },
-    ].filter(r => r.count > 0)
+    // Cancellation reasons - use actual cancellation_reason field from orders
+    const cancellationReasonMap = cancelledOrders.reduce((acc: { [key: string]: number }, order) => {
+      const reason = order.cancellation_reason || 'Unknown'
+      acc[reason] = (acc[reason] || 0) + 1
+      return acc
+    }, {})
+    const topCancellationReasons = Object.entries(cancellationReasonMap)
+      .map(([reason, count]) => ({ reason, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
 
     // NEW: Cancelled orders in Packing Queue (status='Pending' AND is_cancelled=true)
     // These are orders cancelled BEFORE packing started

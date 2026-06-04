@@ -19,6 +19,7 @@ export interface Order {
   qty: number
   total: number
   cogs?: number // ACTUAL cost of goods sold (not calculated)
+  product?: string // Product/item name
   parcel_status: string
   payment_status: string
   sales_channel?: string

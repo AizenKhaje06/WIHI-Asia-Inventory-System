@@ -349,7 +349,7 @@ export default function TrackOrdersPage() {
       wsData.push(['No.', 'Order #', 'Date', 'Sales Channel', 'Store', 'Product', 'Qty', 'Amount', 'COGS', 'Profit', 'Margin', 'Courier', 'Waybill', 'Payment Status', 'Parcel Status'])
       
       filteredOrders.forEach((order, index) => {
-        const cogs = order.totalAmount * 0.6
+        const cogs = order.cogs || 0  // Use ACTUAL COGS from database, not estimate
         const profit = order.totalAmount - cogs
         const margin = order.totalAmount > 0 ? ((profit / order.totalAmount) * 100) : 0
         
@@ -906,7 +906,7 @@ export default function TrackOrdersPage() {
                   <td style="font-weight: 500; color: #0f172a;">${order.itemName}</td>
                   <td style="text-align: center; font-weight: 700; color: #0f172a;">${order.quantity}</td>
                   <td style="text-align: right; font-weight: 600; color: #059669;">₱${order.totalAmount.toLocaleString()}</td>
-                  <td style="text-align: right; font-weight: 500; color: #64748b;">₱${(order.totalAmount * 0.6).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                  <td style="text-align: right; font-weight: 500; color: #64748b;">₱${(order.cogs || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                   <td style="color: #475569;">${order.courier || '-'}</td>
                   <td style="font-family: 'Courier New', monospace; font-size: 10px; color: #64748b;">${order.trackingNumber || '-'}</td>
                   <td style="font-weight: 600; color: #0f172a;">${order.paymentStatus.toUpperCase()}</td>
@@ -1180,7 +1180,7 @@ export default function TrackOrdersPage() {
   const getStatusFinancials = (orders: Order[]) => {
     const qty = orders.reduce((sum, o) => sum + o.quantity, 0)
     const amt = orders.reduce((sum, o) => sum + o.totalAmount, 0)
-    const cogs = amt * 0.6
+    const cogs = orders.reduce((sum, o) => sum + (o.cogs || 0), 0)  // Use ACTUAL COGS from database
     const profit = amt - cogs
     return { qty, amt, cogs, profit }
   }
@@ -2293,7 +2293,7 @@ export default function TrackOrdersPage() {
                       Product
                     </p>
                     <p className="text-base font-bold text-slate-900 dark:text-white">
-                      {order.productName}
+                      {order.itemName}
                     </p>
                   </div>
                 </div>

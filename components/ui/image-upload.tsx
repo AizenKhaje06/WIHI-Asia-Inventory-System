@@ -61,8 +61,13 @@ export function ImageUpload({
       setUploading(true)
       console.log('[ImageUpload] Starting compression...')
 
+      // Ensure file is a File object (not Blob)
+      const fileToCompress = file instanceof File 
+        ? file 
+        : new File([file], 'image.jpg', { type: file.type })
+
       // Auto-compress image
-      const compressed = await imageCompression(file, {
+      const compressed = await imageCompression(fileToCompress, {
         maxSizeMB: 0.3,        // Max 300KB
         maxWidthOrHeight: 800, // Max 800px
         useWebWorker: true,

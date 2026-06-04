@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { apiGet } from '@/lib/api-client'
 import { BrandLoader } from '@/components/ui/brand-loader'
 import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
+import * as XLSX from 'xlsx'
 
 interface Order {
   id: string

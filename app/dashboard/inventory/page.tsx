@@ -401,21 +401,34 @@ export default function InventoryPage() {
       console.log('[Inventory] Opening bundle edit modal for:', item.id)
       
       try {
-        // Fetch full bundle details including components
-        const bundleData = await apiGet<any>(`/api/bundles/${item.id}`)
+        // Fetch full bundle details AND fresh items in parallel to ensure item data is available
+        const [bundleData, freshItems] = await Promise.all([
+          apiGet<any>(`/api/bundles/${item.id}`),
+          items.length === 0 ? apiGet<InventoryItem[]>(`/api/items?t=${Date.now()}`) : Promise.resolve(items)
+        ])
+        
+        // Use freshItems if current items state is empty
+        const itemsSource = items.length > 0 ? items : (freshItems as InventoryItem[])
+        
         console.log('[Inventory] Bundle data loaded:', bundleData)
+        console.log('[Inventory] Items available for mapping:', itemsSource.length)
         
         // Transform bundle_components to bundleItems format
         const bundleItems = bundleData.bundle_components?.map((comp: any) => {
           // Find the item details from items list
-          const itemDetails = items.find(i => i.id === comp.item_id)
+          const itemDetails = itemsSource.find((i: InventoryItem) => i.id === comp.item_id)
           console.log('[Inventory] Mapping bundle component:', {
             comp,
             itemDetails: itemDetails ? { id: itemDetails.id, name: itemDetails.name } : null
           })
+          
+          if (!itemDetails) {
+            console.warn('[Inventory] ⚠️ Item not found in inventory list:', comp.item_id)
+          }
+          
           return {
             itemId: comp.item_id,
-            itemName: itemDetails?.name || 'Unknown Item',
+            itemName: itemDetails?.name || `Item ${comp.item_id.slice(-6)}`,
             quantity: comp.quantity,
             unitPrice: itemDetails?.sellingPrice || 0,
             unitCost: itemDetails?.costPrice || 0

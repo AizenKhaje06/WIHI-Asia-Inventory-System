@@ -72,17 +72,20 @@ export function withRoles(
   allowedRoles: UserRole[],
   handler: (
     request: NextRequest,
-    context: { user: { username: string; role: UserRole; displayName: string; assignedChannel?: string } }
+    context: { 
+      user: { username: string; role: UserRole; displayName: string; assignedChannel?: string };
+      params?: any  // Added for dynamic routes with params
+    }
   ) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest) => {
+  return async (request: NextRequest, context?: { params: any }) => {
     const authResult = requireRole(request, allowedRoles)
 
     if (authResult instanceof NextResponse) {
       return authResult
     }
 
-    return handler(request, authResult)
+    return handler(request, { ...authResult, params: context?.params })
   }
 }
 

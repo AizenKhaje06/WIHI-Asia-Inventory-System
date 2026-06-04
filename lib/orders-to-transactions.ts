@@ -31,43 +31,97 @@ export function transformOrdersToTransactions(orders: Order[], items?: any[]): T
       const excludedStatuses = ['CANCELLED', 'RETURNED']
       return !excludedStatuses.includes(order.parcel_status?.toUpperCase())
     })
-    .map(order => {
+    .flatMap(order => {
       const quantity = order.qty || 1
-      const costPrice = order.cogs / quantity
-      const sellingPrice = order.total / quantity
-      const profit = order.total - order.cogs
+      const costPerUnit = (order.cogs || 0) / quantity
+      const sellPerUnit = (order.total || 0) / quantity
+      const profit = (order.total || 0) - (order.cogs || 0)
 
-      // Try to match to an inventory item by product name
-      const normalizedProduct = normalizeProductName(order.product || '')
-      let matchedItemId = order.id // fallback to order ID
-      
-      if (items && items.length > 0) {
-        const matched = items.find(item => 
-          item.name && normalizeProductName(item.name).toLowerCase() === normalizedProduct.toLowerCase()
-        )
-        if (matched) {
-          matchedItemId = matched.id
-        }
+      // If no items list, fallback to a single transaction with order ID
+      if (!items || items.length === 0) {
+        const normalizedProduct = normalizeProductName(order.product || '')
+        return [{
+          id: order.id,
+          itemId: order.id,
+          itemName: normalizedProduct || order.product,
+          quantity,
+          costPrice: costPerUnit,
+          sellingPrice: sellPerUnit,
+          totalCost: order.cogs || 0,
+          totalRevenue: order.total || 0,
+          profit,
+          timestamp: order.date,
+          type: 'sale' as const,
+          transactionType: 'sale' as const,
+          department: order.sales_channel,
+          status: 'completed' as const,
+          staffName: order.dispatched_by,
+          notes: `Order ${order.id} - ${order.product}`
+        }]
       }
 
-      return {
-        id: order.id,
-        itemId: matchedItemId,
-        itemName: normalizedProduct || order.product,
-        quantity: quantity,
-        costPrice: costPrice,
-        sellingPrice: sellingPrice,
-        totalCost: order.cogs,
-        totalRevenue: order.total,
-        profit: profit,
-        timestamp: order.date,
-        type: 'sale' as const,
-        transactionType: 'sale' as const,
-        department: order.sales_channel,
-        status: 'completed' as const,
-        staffName: order.dispatched_by,
-        notes: `Order ${order.id} - ${order.product}`
+      // Split comma-separated product list: "Berry Soap (1), Aloe Cream (2)"
+      const productParts = (order.product || '').split(',').map(p => p.trim()).filter(Boolean)
+
+      // Try to match each product part to an inventory item
+      const matched: Transaction[] = []
+
+      for (const part of productParts) {
+        const normalizedPart = normalizeProductName(part)
+
+        // Find matching inventory item - try exact match first, then partial
+        const matchedItem = items.find(item => {
+          const itemName = normalizeProductName(item.name || '').toLowerCase()
+          const partLower = normalizedPart.toLowerCase()
+          return itemName === partLower || itemName.includes(partLower) || partLower.includes(itemName)
+        })
+
+        const itemId = matchedItem ? matchedItem.id : order.id  // fallback to order ID
+
+        matched.push({
+          id: `${order.id}-${normalizedPart.slice(0, 8)}`,
+          itemId,
+          itemName: matchedItem?.name || normalizedPart || order.product,
+          quantity,
+          costPrice: costPerUnit,
+          sellingPrice: sellPerUnit,
+          totalCost: order.cogs || 0,
+          totalRevenue: order.total || 0,
+          profit,
+          timestamp: order.date,
+          type: 'sale' as const,
+          transactionType: 'sale' as const,
+          department: order.sales_channel,
+          status: 'completed' as const,
+          staffName: order.dispatched_by,
+          notes: `Order ${order.id} - ${order.product}`
+        })
       }
+
+      // If no parts matched, return a single fallback transaction
+      if (matched.length === 0) {
+        const normalizedProduct = normalizeProductName(order.product || '')
+        return [{
+          id: order.id,
+          itemId: order.id,
+          itemName: normalizedProduct || order.product,
+          quantity,
+          costPrice: costPerUnit,
+          sellingPrice: sellPerUnit,
+          totalCost: order.cogs || 0,
+          totalRevenue: order.total || 0,
+          profit,
+          timestamp: order.date,
+          type: 'sale' as const,
+          transactionType: 'sale' as const,
+          department: order.sales_channel,
+          status: 'completed' as const,
+          staffName: order.dispatched_by,
+          notes: `Order ${order.id} - ${order.product}`
+        }]
+      }
+
+      return matched
     })
 }
 

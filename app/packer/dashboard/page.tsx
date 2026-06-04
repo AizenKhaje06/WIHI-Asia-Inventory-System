@@ -36,6 +36,7 @@ interface Order {
 interface PackedOrder {
   id: string
   waybill: string
+  orderNumber?: string  // Added for consistency with Order interface
   itemName: string
   quantity: number
   totalAmount: number
@@ -475,7 +476,8 @@ export default function PackerDashboard() {
       )
     }
 
-    setFilteredPending(filtered)
+    // Note: Filtering logic exists but result is not used
+    // TODO: Either implement filtered display or remove this function
   }
 
   const handleScan = async (waybill: string) => {

@@ -192,12 +192,13 @@ export function calculateInventoryTurnover(
       status = 'normal'
     } else if (daysToSell >= 180) {
       status = 'dead-stock'
-    } else if (daysToSell < 30) {
-      status = 'fast-moving'
     } else if (daysToSell < 90) {
-      status = 'normal'
-    } else {
+      // Fast moving: sells in less than 90 days (matches UI label)
+      status = 'fast-moving'
+    } else if (daysToSell < 180) {
       status = 'slow-moving'
+    } else {
+      status = 'normal'
     }
 
     return {

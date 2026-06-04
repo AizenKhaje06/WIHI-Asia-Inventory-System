@@ -175,7 +175,9 @@ export async function showLocalNotification(data: PushNotificationData): Promise
       badge: data.badge || '/icon-192.png',
       tag: data.tag || 'wihi-notification',
       requireInteraction: data.requireInteraction || false,
-      vibrate: data.vibrate || [200, 100, 200],
+      // vibrate is non-standard and not in TypeScript's NotificationOptions
+      // but supported by some browsers - cast to any to bypass type checking
+      ...(data.vibrate && { vibrate: data.vibrate }) as any,
       data: {
         url: data.url || '/packer/dashboard',
         channel: data.channel || 'Unknown'
