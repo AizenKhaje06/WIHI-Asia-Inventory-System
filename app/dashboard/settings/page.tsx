@@ -44,7 +44,9 @@ import {
   FileText,
   Clock,
   Zap,
-  Server
+  Server,
+  BookOpen,
+  ChevronRight
 } from "lucide-react"
 import { toast } from "sonner"
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api-client"
@@ -784,7 +786,7 @@ export default function SettingsPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         {/* Professional Tab Navigation */}
         <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg p-1">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 gap-1 h-auto p-0 bg-transparent">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-8 gap-1 h-auto p-0 bg-transparent">
             <TabsTrigger 
               value="profile" 
               className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black transition-colors text-sm font-medium"
@@ -840,6 +842,15 @@ export default function SettingsPage() {
               <Database className="h-4 w-4" />
               <span className="hidden sm:inline">System</span>
             </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger 
+                value="manual" 
+                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black transition-colors text-sm font-medium"
+              >
+                <BookOpen className="h-4 w-4" />
+                <span className="hidden sm:inline">Manual</span>
+              </TabsTrigger>
+            )}
           </TabsList>
         </Card>
 
@@ -2163,7 +2174,663 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* ===== MANUAL TAB ===== */}
+        <TabsContent value="manual" className="space-y-6 mt-8">
+          <ManualTab />
+        </TabsContent>
+
       </Tabs>
+    </div>
+  )
+}
+
+// ─── Manual Tab Component ────────────────────────────────────────────────────
+
+const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<string, { title: string; description: string; workflow: string[]; guide: string[]; notes?: string[] }> }> = {
+  admin: {
+    label: 'Admin',
+    icon: '👔',
+    pages: {
+      dashboard: {
+        title: 'Dashboard Overview',
+        description: 'Main control center showing real-time KPIs: revenue, profit, delivered orders, returns, and inventory alerts.',
+        workflow: [
+          'Open dashboard to see today\'s summary.',
+          'Use the date range picker (top-right) to filter all KPI cards by period.',
+          'Check Row 1 cards: Total Sold, Revenue, Net Profit, Profit Margin.',
+          'Check Row 2 cards: Cancelled (Packing), Cancelled (Tracked), Total Delivered, Total Returns.',
+          'Review Inventory Alerts for low stock or out-of-stock items.',
+          'Use Quick Actions to navigate to common tasks.',
+          'Analyze the Revenue Chart using Day/Week/Month tabs.',
+        ],
+        guide: [
+          'Total Delivered % = delivered orders ÷ total orders × 100.',
+          'Return Rate % = returns ÷ delivered × 100.',
+          'Cancelled (Packing) = orders cancelled BEFORE packing.',
+          'Cancelled (Tracked) = orders cancelled AFTER packing.',
+          'Revenue excludes CANCELLED and RETURNED orders.',
+          'Net Profit = Revenue − Cost of Goods Sold (COGS).',
+        ],
+        notes: [
+          'Charts use Day/Week/Month tabs independently from the date filter.',
+          'Date filter affects KPI cards only, not the revenue chart.',
+        ],
+      },
+      inventory: {
+        title: 'Inventory / Products',
+        description: 'Manage all products and bundles. View stock levels, add/edit/delete items, and monitor total value.',
+        workflow: [
+          'View all products in the table (regular + bundles).',
+          'Click "+ Add Product" to create a new regular product.',
+          'Click "+ Bundle" to create a bundle from existing products.',
+          'Click the Edit (pencil) icon to update a product or bundle.',
+          'Click Delete (trash) icon → confirm → product removed immediately.',
+          'Use Search, Category, and Sales Channel filters to narrow the list.',
+          'Top 3 cards update instantly after any create/edit/delete.',
+        ],
+        guide: [
+          'Total Quantity excludes bundles (bundles use component stock).',
+          'Total Value = sum of (quantity × selling price) per product.',
+          'Total COGS = sum of (quantity × cost price) per product.',
+          'Bundle stock = minimum units buildable from component quantities.',
+          'Editing a bundle opens the full Bundle Builder modal.',
+          'Deleting a bundle does NOT delete its component products.',
+        ],
+        notes: [
+          'Low stock threshold is set per product (Reorder Level field).',
+          'Images are auto-compressed to WebP on upload.',
+        ],
+      },
+      pos: {
+        title: 'Point of Sale (POS)',
+        description: 'Create new sales orders. Add products to cart, set customer details, and submit to packing queue.',
+        workflow: [
+          'Search and click products to add them to the cart.',
+          'Adjust quantities in the cart as needed.',
+          'Click "Checkout" to open the order form.',
+          'Fill in: Sales Channel, Store, Courier, Waybill, Customer info.',
+          'Submit the order — it goes directly to the Packing Queue.',
+          'Inventory is NOT deducted at POS — only after packing.',
+        ],
+        guide: [
+          'Waybill must be unique — duplicates are flagged before submission.',
+          'COGS and total are auto-calculated from cart items.',
+          'Operations staff see only their assigned sales channel.',
+          'Bundles can be added to cart like regular products.',
+        ],
+      },
+      dispatch: {
+        title: 'Dispatch',
+        description: 'Add dispatch notes and customer details to packed orders before they go out for delivery.',
+        workflow: [
+          'View orders ready for dispatch.',
+          'Add or edit dispatch notes per order.',
+          'Confirm dispatch to update the order status.',
+        ],
+        guide: [
+          'Only packed orders appear in dispatch.',
+          'Notes added here are visible in Track Orders.',
+        ],
+      },
+      'packing-queue': {
+        title: 'Packing Queue',
+        description: 'View and manage orders waiting to be packed. Confirm packing to deduct inventory and move to Track Orders.',
+        workflow: [
+          'View all Pending orders queued for packing.',
+          'Click "Pack" on an order to confirm it is packed.',
+          'Inventory is deducted from stock when an order is packed.',
+          'Packed orders move automatically to Track Orders.',
+          'Cancel an order here to mark it as cancelled before packing.',
+        ],
+        guide: [
+          'Cancelled orders from this page count as "Cancelled (Packing)" in dashboard.',
+          'Inventory deduction happens only when status changes to Packed.',
+          'Packer role handles this page in the field.',
+        ],
+      },
+      'track-orders': {
+        title: 'Track Orders',
+        description: 'Monitor all packed orders and update delivery status. Export reports as Excel or PDF.',
+        workflow: [
+          'View all Packed orders with their current parcel status.',
+          'Update parcel status: PENDING → IN TRANSIT → ON DELIVERY → DELIVERED.',
+          'Mark an order as RETURNED if the customer sends it back.',
+          'Mark as CANCELLED if needed after packing.',
+          'Use date filter and status filter to narrow the list.',
+          'Export to Excel or PDF for reporting.',
+        ],
+        guide: [
+          'DELIVERED status is counted in the "Total Delivered" dashboard card.',
+          'RETURNED status is counted in the "Total Returns" dashboard card.',
+          'CANCELLED here = "Cancelled (Tracked)" in dashboard.',
+          'COGS and profit in exports use actual data from each order (not estimates).',
+        ],
+      },
+      analytics: {
+        title: 'Analytics',
+        description: 'Deep-dive sales analytics: revenue trends, top products, channel performance, and period comparisons.',
+        workflow: [
+          'Select a time period or date range.',
+          'View revenue breakdown by sales channel.',
+          'Review top-selling products and categories.',
+          'Compare current period vs previous period.',
+        ],
+        guide: [
+          'All analytics exclude CANCELLED and RETURNED orders.',
+          'Revenue is based on actual order amounts, not estimates.',
+        ],
+      },
+      insights: {
+        title: 'Business Insights',
+        description: 'Inventory health analysis: fast/slow moving items, dead stock, ABC classification, and turnover ratios.',
+        workflow: [
+          'View ABC Analysis — A=high value, B=medium, C=low value items.',
+          'Check Inventory Turnover table for each product.',
+          'Fast Moving Items = products selling in under 90 days.',
+          'Slow Moving = 90–180 days. Dead Stock = 180+ days with no sale.',
+          'Use sort and search to find specific products.',
+        ],
+        guide: [
+          'Turnover Ratio = COGS sold ÷ average inventory value.',
+          'Days to Sell = analysis period ÷ turnover ratio.',
+          'Fast moving threshold: < 90 days to sell.',
+          'Products with no sales history are classified as Normal (not dead stock).',
+          'Product name matching links orders to inventory items automatically.',
+        ],
+      },
+      customers: {
+        title: 'Customers',
+        description: 'Manage customer records, view purchase history, and track loyalty points.',
+        workflow: [
+          'View all customers with their total spent and purchase count.',
+          'Click a customer to view their order history.',
+          'Add or edit customer information as needed.',
+        ],
+        guide: [
+          'Customer data is linked to orders via customer name and contact.',
+        ],
+      },
+      'sales-channels': {
+        title: 'Sales Channels',
+        description: 'Performance breakdown per sales channel: Shopee, Lazada, Facebook, TikTok, Physical Store.',
+        workflow: [
+          'View revenue and order count per sales channel.',
+          'Filter by date range to compare performance across periods.',
+          'Drill into a channel to see individual orders.',
+        ],
+        guide: [
+          'Revenue per channel excludes CANCELLED and RETURNED orders.',
+          'Parcel status distribution is shown per channel.',
+        ],
+      },
+      'internal-usage': {
+        title: 'Internal Usage',
+        description: 'Track products used internally (demos, staff use) without counting as sales.',
+        workflow: [
+          'Select a product and specify quantity used.',
+          'Add a reason/department for the usage.',
+          'Submit — inventory is deducted but no revenue is recorded.',
+        ],
+        guide: [
+          'Internal usage does NOT count toward sales revenue.',
+          'Appears in activity logs for audit trail.',
+        ],
+      },
+      log: {
+        title: 'Activity Log',
+        description: 'Full audit trail of all system actions: product changes, order updates, user actions.',
+        workflow: [
+          'View chronological list of all system events.',
+          'Filter by operation type, user, or date.',
+          'Use to investigate discrepancies or audit changes.',
+        ],
+        guide: [
+          'Logs are append-only — cannot be deleted.',
+          'Includes create, update, delete, and login events.',
+        ],
+      },
+      settings: {
+        title: 'Settings',
+        description: 'Configure profile, security, users, company info, email reports, appearance, and system settings.',
+        workflow: [
+          'Profile tab: Update display name, email, phone, and profile image.',
+          'Security tab: Change your password.',
+          'Users tab (Admin only): Create, edit, or delete user accounts.',
+          'Company tab: Update company information.',
+          'Email Reports: Schedule automated email reports.',
+          'Appearance: Switch between light/dark/system theme.',
+          'System: Export data, create backups, view system metrics.',
+          'Manual tab: This page — view guides for each role and page.',
+        ],
+        guide: [
+          'Password must be at least 6 characters.',
+          'Only admins can manage user accounts.',
+          'Profile image is auto-compressed on upload.',
+        ],
+      },
+    },
+  },
+
+  operations: {
+    label: 'Departments (Operations)',
+    icon: '📦',
+    pages: {
+      'operations-dashboard': {
+        title: 'Operations Dashboard',
+        description: 'Filtered dashboard showing KPIs only for the assigned sales channel/department.',
+        workflow: [
+          'Log in as an Operations staff account.',
+          'Dashboard automatically filters to your assigned sales channel.',
+          'View your channel\'s revenue, orders, and profit metrics.',
+          'Use date filter to review specific periods.',
+        ],
+        guide: [
+          'Operations staff CANNOT see data from other departments.',
+          'Assigned channel is set by Admin in Settings → Users.',
+          'All KPI cards respect the channel filter.',
+        ],
+      },
+      pos: {
+        title: 'Point of Sale (POS)',
+        description: 'Create orders for your assigned sales channel.',
+        workflow: [
+          'Add products to cart.',
+          'Sales Channel is auto-set to your assigned channel.',
+          'Fill in customer and courier details.',
+          'Submit order to packing queue.',
+        ],
+        guide: [
+          'You can only create orders for your assigned channel.',
+          'Inventory is deducted after packing, not at POS.',
+        ],
+      },
+      inventory: {
+        title: 'Inventory',
+        description: 'View and manage all products. Operations staff can see the full product catalog.',
+        workflow: [
+          'Browse all products in the inventory table.',
+          'Check stock levels and reorder points.',
+          'Edit product details if permitted.',
+        ],
+        guide: [
+          'All products are visible regardless of sales channel.',
+          'Stock levels are shared across all channels.',
+        ],
+      },
+      'track-orders': {
+        title: 'Track Orders',
+        description: 'Monitor and update parcel status for orders in your channel.',
+        workflow: [
+          'View orders for your assigned sales channel.',
+          'Update parcel status as deliveries progress.',
+          'Mark orders as DELIVERED or RETURNED.',
+        ],
+        guide: [
+          'Only orders from your channel are visible.',
+          'DELIVERED orders count toward your channel\'s total delivered.',
+        ],
+      },
+      'packing-queue': {
+        title: 'Packing Queue',
+        description: 'View and pack orders for your sales channel.',
+        workflow: [
+          'View Pending orders for your channel.',
+          'Confirm packing to deduct inventory.',
+          'Cancel orders if needed before packing.',
+        ],
+        guide: [
+          'Packing deducts inventory immediately.',
+          'Cancelled orders here show in dashboard as "Cancelled (Packing)".',
+        ],
+      },
+      dispatch: {
+        title: 'Dispatch',
+        description: 'Add dispatch notes to packed orders for your channel.',
+        workflow: [
+          'View packed orders ready for dispatch.',
+          'Add dispatch notes and confirm.',
+        ],
+        guide: [
+          'Notes are visible to the tracker and in reports.',
+        ],
+      },
+      customers: {
+        title: 'Customers',
+        description: 'Manage customer records for your department.',
+        workflow: [
+          'View customers who ordered through your channel.',
+          'Add or update customer information.',
+        ],
+        guide: ['Customer data is shared across the system.'],
+      },
+      log: {
+        title: 'Activity Log',
+        description: 'View activity logs relevant to your department.',
+        workflow: [
+          'Browse logs filtered by your actions.',
+          'Use to trace order history or inventory changes.',
+        ],
+        guide: ['Logs are read-only.'],
+      },
+    },
+  },
+
+  'logistics-admin': {
+    label: 'Logistics Admin',
+    icon: '📊',
+    pages: {
+      'logistics-dashboard': {
+        title: 'Logistics Dashboard',
+        description: 'Read-only overview of all orders, delivery status, and logistics performance.',
+        workflow: [
+          'Log in as Logistics Admin.',
+          'View all orders across all channels.',
+          'Monitor delivery status breakdown.',
+          'Filter by date range or status.',
+        ],
+        guide: [
+          'Logistics Admin has read-only access.',
+          'Cannot create, edit, or delete orders.',
+          'Can export reports for logistics analysis.',
+        ],
+      },
+      'track-orders': {
+        title: 'Track Orders (Logistics View)',
+        description: 'Full view of all orders with parcel status tracking across all channels.',
+        workflow: [
+          'View all packed orders system-wide.',
+          'Filter by parcel status, channel, or date.',
+          'Export to Excel for logistics reporting.',
+        ],
+        guide: [
+          'Read-only — cannot update parcel status.',
+          'Export includes COGS and profit data.',
+        ],
+      },
+      log: {
+        title: 'Activity Log',
+        description: 'Monitor all system activity for logistics audit purposes.',
+        workflow: [
+          'Browse all activity logs.',
+          'Filter by date, operation, or user.',
+        ],
+        guide: ['Logs are read-only.'],
+      },
+    },
+  },
+
+  tracker: {
+    label: 'Tracker',
+    icon: '🚚',
+    pages: {
+      'tracker-dashboard': {
+        title: 'Tracker Dashboard',
+        description: 'Dedicated page for updating parcel status on packed orders. Optimized for logistics tracking.',
+        workflow: [
+          'Log in as Tracker.',
+          'View all orders currently in transit or pending.',
+          'Click an order to open its details.',
+          'Update parcel status: PENDING → IN TRANSIT → ON DELIVERY → PICKUP → DELIVERED.',
+          'Mark RETURNED if customer rejects delivery.',
+          'Add dispatch notes when needed.',
+        ],
+        guide: [
+          'DELIVERED = order completed, counted in Total Delivered.',
+          'RETURNED = order failed, counted in Total Returns.',
+          '"Return to Queue" moves a returned order back to Packing Queue.',
+          'Inventory is restored when an order is returned to queue.',
+          'Cannot create new orders — tracking only.',
+        ],
+        notes: [
+          'Status changes are logged automatically.',
+          'Tracker cannot access inventory or POS.',
+        ],
+      },
+    },
+  },
+
+  packer: {
+    label: 'Packer',
+    icon: '📦',
+    pages: {
+      'packer-dashboard': {
+        title: 'Packer Dashboard',
+        description: 'Mobile-optimized page for processing packing queue orders. Scan or manually confirm packing.',
+        workflow: [
+          'Log in as Packer.',
+          'View all Pending orders in the queue.',
+          'Filter by sales channel using the channel selector.',
+          'Click an order to see full details.',
+          'Click "Pack Order" to confirm packing.',
+          'Inventory is deducted immediately on confirmation.',
+          'Packed orders move to Track Orders automatically.',
+          'Use barcode scanner (camera) to find orders by waybill.',
+        ],
+        guide: [
+          'Only Pending orders appear — already packed orders are hidden.',
+          'Cancelled orders (is_cancelled=true) appear in red — do not pack them.',
+          'Voice notifications announce new orders automatically.',
+          'Packer CANNOT edit, create, or delete orders.',
+          'Inventory deduction is permanent upon packing.',
+        ],
+        notes: [
+          'Designed for mobile use — optimized layout.',
+          'Scanner requires camera permission on first use.',
+          'Real-time auto-refresh polls for new orders.',
+        ],
+      },
+    },
+  },
+}
+
+function ManualTab() {
+  const [selectedAccount, setSelectedAccount] = useState<string>('')
+  const [selectedPage, setSelectedPage] = useState<string>('')
+
+  const accountOptions = Object.entries(MANUAL_DATA).map(([key, val]) => ({
+    key,
+    label: `${val.icon} ${val.label}`,
+  }))
+
+  const pageOptions = selectedAccount
+    ? Object.entries(MANUAL_DATA[selectedAccount].pages).map(([key, val]) => ({
+        key,
+        label: val.title,
+      }))
+    : []
+
+  const content = selectedAccount && selectedPage
+    ? MANUAL_DATA[selectedAccount]?.pages[selectedPage]
+    : null
+
+  const handleAccountChange = (value: string) => {
+    setSelectedAccount(value)
+    setSelectedPage('')
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+        <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/30">
+              <BookOpen className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-bold text-slate-900 dark:text-white">System Manual</CardTitle>
+              <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+                Select an account type and page to view its guide, workflow, and instructions.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Dropdown 1 — Account Type */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                Account Type
+              </label>
+              <select
+                value={selectedAccount}
+                onChange={(e) => handleAccountChange(e.target.value)}
+                className="w-full h-11 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">— Select Account Type —</option>
+                {accountOptions.map((opt) => (
+                  <option key={opt.key} value={opt.key}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Dropdown 2 — Page */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                Page / Feature
+              </label>
+              <select
+                value={selectedPage}
+                onChange={(e) => setSelectedPage(e.target.value)}
+                disabled={!selectedAccount}
+                className="w-full h-11 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="">— Select Page —</option>
+                {pageOptions.map((opt) => (
+                  <option key={opt.key} value={opt.key}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Content Area */}
+      {!selectedAccount && (
+        <Card className="border-0 shadow-md bg-slate-50 dark:bg-slate-800/50">
+          <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
+            <BookOpen className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+            <p className="text-slate-500 dark:text-slate-400 font-medium">Select an account type to get started</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500">Choose from Admin, Departments, Logistics Admin, Tracker, or Packer</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {selectedAccount && !selectedPage && (
+        <Card className="border-0 shadow-md bg-slate-50 dark:bg-slate-800/50">
+          <CardContent className="p-6">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
+              Pages available for <span className="text-indigo-600 dark:text-indigo-400">{MANUAL_DATA[selectedAccount]?.label}</span>:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {pageOptions.map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => setSelectedPage(opt.key)}
+                  className="flex items-center gap-2 px-4 py-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors group"
+                >
+                  <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 flex-shrink-0" />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">{opt.label}</span>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {content && (
+        <div className="space-y-4">
+          {/* Page Title */}
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex-shrink-0">
+                  <FileText className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">{content.title}</h3>
+                    <span className="text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-medium">
+                      {MANUAL_DATA[selectedAccount]?.label}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{content.description}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Workflow */}
+            <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                    <Zap className="h-3 w-3 text-white" />
+                  </div>
+                  Step-by-Step Workflow
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <ol className="space-y-2.5">
+                  {content.workflow.map((step, i) => (
+                    <li key={i} className="flex gap-3 items-start">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center mt-0.5">
+                        {i + 1}
+                      </span>
+                      <span className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </CardContent>
+            </Card>
+
+            {/* Guide / Instructions */}
+            <div className="space-y-4">
+              <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+                <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="h-3 w-3 text-white" />
+                    </div>
+                    Key Information & Rules
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <ul className="space-y-2.5">
+                    {content.guide.map((item, i) => (
+                      <li key={i} className="flex gap-2.5 items-start">
+                        <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2" />
+                        <span className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              {content.notes && content.notes.length > 0 && (
+                <Card className="border-0 shadow-md bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30">
+                  <CardContent className="p-4">
+                    <div className="flex gap-2 items-center mb-2.5">
+                      <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Notes</span>
+                    </div>
+                    <ul className="space-y-2">
+                      {content.notes.map((note, i) => (
+                        <li key={i} className="flex gap-2.5 items-start">
+                          <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-amber-500 mt-2" />
+                          <span className="text-sm text-amber-800 dark:text-amber-300 leading-relaxed">{note}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
