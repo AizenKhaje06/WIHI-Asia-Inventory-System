@@ -1209,7 +1209,7 @@ export default function TrackOrdersPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6">
       {/* Page Header - Professional Style */}
       <div className="mb-8">
         <div className="flex items-start justify-between gap-4">
