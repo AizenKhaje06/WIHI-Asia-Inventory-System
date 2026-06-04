@@ -1119,6 +1119,44 @@ export default function InsightsPage() {
             </CardHeader>
           </Card>
 
+          {/* How it's calculated */}
+          <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 flex-shrink-0 mt-0.5">
+                  <BarChart3 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-0.5">How is this calculated?</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Based on the last 90 days of sales data per product.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
+                  <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Step 1 — Turnover Ratio</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">COGS Sold (90 days) ÷ Inventory Value</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">How many times the stock "turned over" in 90 days</p>
+                </div>
+                <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
+                  <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Step 2 — Days to Sell</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">90 ÷ Turnover Ratio</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Estimated days to sell out current stock at current pace</p>
+                </div>
+                <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
+                  <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Fast Moving = ?</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">Days to Sell &lt; 90 days</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Product sells out in under 3 months — high demand, restock regularly</p>
+                </div>
+              </div>
+              <div className="mt-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-start gap-2">
+                <span className="text-green-500 text-sm font-bold flex-shrink-0">ℹ</span>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Example: If a product's inventory value is ₱10,000 and ₱15,000 worth was sold in the last 90 days → Turnover = 1.5 → Days to Sell = 60 days → <span className="text-green-600 font-semibold">Fast Moving ✓</span>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Filters */}
           <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
             <CardContent className="p-4">
@@ -1233,6 +1271,44 @@ export default function InsightsPage() {
             </CardHeader>
           </Card>
 
+          {/* How it's calculated */}
+          <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex-shrink-0 mt-0.5">
+                  <BarChart3 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-0.5">How is this calculated?</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Based on the last 90 days of sales data per product.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">
+                  <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-1">Step 1 — Turnover Ratio</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">COGS Sold (90 days) ÷ Inventory Value</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Low ratio = few sales relative to stock on hand</p>
+                </div>
+                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">
+                  <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-1">Step 2 — Days to Sell</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">90 ÷ Turnover Ratio</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Estimated days to sell out at current pace</p>
+                </div>
+                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">
+                  <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-1">Slow Moving = ?</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">90 ≤ Days to Sell &lt; 180 days</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Takes 3–6 months to sell — consider promotions or price adjustments</p>
+                </div>
+              </div>
+              <div className="mt-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-start gap-2">
+                <span className="text-amber-500 text-sm font-bold flex-shrink-0">ℹ</span>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Example: Inventory value ₱10,000, sold ₱5,000 in 90 days → Turnover = 0.5 → Days to Sell = 180 days → <span className="text-amber-600 font-semibold">Slow Moving ⚠</span>. Consider running promos or bundling with fast-moving items.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Filters */}
           <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
             <CardContent className="p-4">
@@ -1328,6 +1404,65 @@ export default function InsightsPage() {
 
         {/* Dead Stock */}
         <TabsContent value="deadstock" className="space-y-4 mt-4">
+
+          {/* Header */}
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
+                    <AlertTriangle className="h-6 w-6" />
+                    Dead Stock
+                  </CardTitle>
+                  <p className="text-sm text-red-600 dark:text-red-500 mt-1">
+                    Stagnant products (180+ days with no movement)
+                  </p>
+                </div>
+                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-lg px-4 py-2">
+                  {deadStock.length} Items
+                </Badge>
+              </div>
+            </CardHeader>
+          </Card>
+
+          {/* How it's calculated */}
+          <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 flex-shrink-0 mt-0.5">
+                  <BarChart3 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-0.5">How is this calculated?</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Based on sales history and days since last sale per product.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
+                  <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">Scenario A — Has Recent Sales</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">Days to Sell = 90 ÷ Turnover Ratio</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">If projected days to sell ≥ 180, classified as Dead Stock</p>
+                </div>
+                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
+                  <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">Scenario B — No Recent Sales</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">Days = days since last sale</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">If last sale was 180+ days ago with no activity, it's Dead Stock</p>
+                </div>
+                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
+                  <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">Dead Stock = ?</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">Days to Sell ≥ 180 days</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Product ties up capital — consider clearance sale, bundle, or write-off</p>
+                </div>
+              </div>
+              <div className="mt-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-start gap-2">
+                <span className="text-red-500 text-sm font-bold flex-shrink-0">⚠</span>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Example: Last sale was 250 days ago and no orders since → Days to Sell = 250 → <span className="text-red-600 font-semibold">Dead Stock ✗</span>. Action needed: run a sale, include in bundles, or reallocate to another channel.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Filters */}
           <Card className="border-0 shadow-md bg-white dark:bg-slate-900">
             <CardContent className="p-4">
