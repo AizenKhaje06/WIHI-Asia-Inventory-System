@@ -58,10 +58,10 @@ export default function LogisticsTrackOrdersPage() {
   useEffect(() => {
     fetchOrders()
     
-    // Set up polling to refresh orders every 30 seconds for real-time sync
+    // Set up polling to refresh orders every 1 second for real-time sync
     const pollInterval = setInterval(() => {
       fetchOrders()
-    }, 30000)
+    }, 1000)
     
     return () => clearInterval(pollInterval)
   }, [])
