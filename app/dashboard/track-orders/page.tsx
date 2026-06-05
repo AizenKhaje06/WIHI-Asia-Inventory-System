@@ -1812,7 +1812,7 @@ export default function TrackOrdersPage() {
                         <div className="text-[11px] text-slate-700 dark:text-slate-300">{order.courier || '-'}</div>
                       </td>
                       <td className="py-2 px-2 border-r border-slate-100 dark:border-slate-800">
-                        <div className="text-[11px] font-mono text-slate-900 dark:text-white font-semibold whitespace-normal break-all">{order.trackingNumber || '-'}</div>
+                        <div className="text-[11px] font-mono text-blue-600 dark:text-blue-400 font-semibold whitespace-normal break-all">{order.trackingNumber || '-'}</div>
                       </td>
                       <td className="py-2 px-2 text-center border-r border-slate-100 dark:border-slate-800">
                         {getPaymentBadge(order.paymentStatus)}
