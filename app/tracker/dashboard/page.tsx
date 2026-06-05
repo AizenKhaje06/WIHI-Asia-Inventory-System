@@ -622,7 +622,7 @@ export default function TrackerDashboardPage() {
                     {filteredOrders.map((order) => (
                       <tr
                         key={order.id}
-                        className="transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                        className="h-14 transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
                       >
                         {/* Desktop View - All Columns */}
                         <td className="py-3 px-2 hidden md:table-cell">
@@ -644,17 +644,17 @@ export default function TrackerDashboardPage() {
                           </div>
                         </td>
                         <td className="py-3 px-2 hidden md:table-cell">
-                          <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
+                          <span className="text-[11px] text-slate-900 dark:text-white font-medium truncate max-w-[120px]" title={order.customerName}>
                             {order.customerName}
                           </span>
                         </td>
                         <td className="py-3 px-2 hidden md:table-cell">
-                          <span className="text-[11px] text-slate-700 dark:text-slate-300 block break-words leading-relaxed">
+                          <span className="text-[11px] text-slate-700 dark:text-slate-300 block truncate max-w-[200px]" title={order.customerAddress}>
                             {order.customerAddress}
                           </span>
                         </td>
                         <td className="py-3 px-2 hidden md:table-cell">
-                          <span className="text-[11px] font-mono text-slate-900 dark:text-white font-medium block break-words">
+                          <span className="text-[11px] font-mono text-slate-900 dark:text-white font-medium truncate max-w-[100px]" title={order.customerPhone}>
                             {order.customerPhone}
                           </span>
                         </td>
@@ -665,7 +665,7 @@ export default function TrackerDashboardPage() {
                         </td>
                         <td className="py-3 px-2 hidden md:table-cell">
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[11px] text-slate-900 dark:text-white font-medium block break-words">
+                            <span className="text-[11px] text-slate-900 dark:text-white font-medium truncate max-w-[180px]" title={order.itemName.replace(/\s*\(\d+\)\s*$/, '')}>
                               {order.itemName.replace(/\s*\(\d+\)\s*$/, '')}
                             </span>
                             <span className="text-[10px] text-slate-500 dark:text-slate-400">
@@ -675,10 +675,10 @@ export default function TrackerDashboardPage() {
                         </td>
                         <td className="py-3 px-2 hidden md:table-cell">
                           <div className="flex flex-col gap-0.5">
-                            <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 block break-all">
+                            <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 truncate max-w-[130px]" title={order.trackingNumber}>
                               {order.trackingNumber}
                             </span>
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                               {order.courier}
                             </span>
                           </div>
