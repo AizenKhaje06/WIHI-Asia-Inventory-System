@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { 
   Search, Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, 
@@ -56,11 +55,6 @@ export default function TrackerDashboardPage() {
   const [showReturnConfirm, setShowReturnConfirm] = useState(false)
   const [returnReason, setReturnReason] = useState('')
   const [returning, setReturning] = useState(false)
-  
-  // Memoize textarea onChange handler to prevent re-renders
-  const handleReturnReasonChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setReturnReason(e.target.value)
-  }, [])
 
   useEffect(() => {
     fetchOrders()
@@ -1156,16 +1150,23 @@ export default function TrackerDashboardPage() {
             <Label htmlFor="return-reason" className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
               Reason for Return <span className="text-red-500">*</span>
             </Label>
-            <Textarea
-              id="return-reason"
-              placeholder="e.g., Wrong item packed, damaged product, customer request..."
+            <Select
               value={returnReason}
-              onChange={handleReturnReasonChange}
-              rows={4}
-              className="text-sm border-2 border-slate-300 dark:border-slate-600 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 resize-none"
-              autoComplete="off"
-              spellCheck={false}
-            />
+              onValueChange={setReturnReason}
+            >
+              <SelectTrigger className="text-sm border-2 border-slate-300 dark:border-slate-600 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 h-11">
+                <SelectValue placeholder="Select a reason for returning to queue..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Customer cancellation">Customer cancellation</SelectItem>
+                <SelectItem value="Wrong / incomplete address">Wrong / incomplete address</SelectItem>
+                <SelectItem value="Unreachable customer">Unreachable customer</SelectItem>
+                <SelectItem value="Payment issues (failed / COD risk)">Payment issues (failed / COD risk)</SelectItem>
+                <SelectItem value="Courier unavailable / pickup delay">Courier unavailable / pickup delay</SelectItem>
+                <SelectItem value="Packing error (wrong item)">Packing error (wrong item)</SelectItem>
+                <SelectItem value="Duplicate order">Duplicate order</SelectItem>
+              </SelectContent>
+            </Select>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
               This will be recorded in activity logs for accountability
             </p>
