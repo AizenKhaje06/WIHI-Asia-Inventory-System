@@ -563,7 +563,7 @@ export default function TrackerDashboardPage() {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full table-fixed">
                   {/* Desktop Header - Hidden on Mobile */}
                   <thead className="sticky top-0 z-10 hidden md:table-header-group">
                     <tr className="bg-slate-900 dark:bg-slate-950 border-b border-slate-700">
@@ -644,7 +644,7 @@ export default function TrackerDashboardPage() {
                           </div>
                         </td>
                         <td className="py-3 px-2 hidden md:table-cell">
-                          <span className="text-[11px] text-slate-900 dark:text-white font-medium truncate max-w-[120px]" title={order.customerName}>
+                          <span className="text-[11px] text-slate-900 dark:text-white font-medium block truncate max-w-[120px]" title={order.customerName}>
                             {order.customerName}
                           </span>
                         </td>
@@ -654,7 +654,7 @@ export default function TrackerDashboardPage() {
                           </span>
                         </td>
                         <td className="py-3 px-2 hidden md:table-cell">
-                          <span className="text-[11px] font-mono text-slate-900 dark:text-white font-medium truncate max-w-[100px]" title={order.customerPhone}>
+                          <span className="text-[11px] font-mono text-slate-900 dark:text-white font-medium block truncate max-w-[100px]" title={order.customerPhone}>
                             {order.customerPhone}
                           </span>
                         </td>
@@ -664,8 +664,8 @@ export default function TrackerDashboardPage() {
                           </span>
                         </td>
                         <td className="py-3 px-2 hidden md:table-cell">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[11px] text-slate-900 dark:text-white font-medium truncate max-w-[180px]" title={order.itemName.replace(/\s*\(\d+\)\s*$/, '')}>
+                          <div className="flex flex-col gap-0.5 max-w-[180px]">
+                            <span className="text-[11px] text-slate-900 dark:text-white font-medium truncate" title={order.itemName.replace(/\s*\(\d+\)\s*$/, '')}>
                               {order.itemName.replace(/\s*\(\d+\)\s*$/, '')}
                             </span>
                             <span className="text-[10px] text-slate-500 dark:text-slate-400">
@@ -674,8 +674,8 @@ export default function TrackerDashboardPage() {
                           </div>
                         </td>
                         <td className="py-3 px-2 hidden md:table-cell">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 truncate max-w-[130px]" title={order.trackingNumber}>
+                          <div className="flex flex-col gap-0.5 max-w-[130px]">
+                            <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 truncate" title={order.trackingNumber}>
                               {order.trackingNumber}
                             </span>
                             <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
