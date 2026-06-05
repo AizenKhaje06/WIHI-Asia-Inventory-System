@@ -51,14 +51,17 @@ export const POST = withAuth(async (request: NextRequest, { params, user }) => {
       }, { status: 400 })
     }
 
-    // Step 3: Update order status back to Pending
+    // Step 3: Update order status back to Pending and mark as cancelled
     const { error: updateError } = await supabaseAdmin
       .from('orders')
       .update({
         status: 'Pending',
+        is_cancelled: true,
+        cancellation_reason: reason,
+        cancelled_at: new Date().toISOString(),
         packed_by: null,
         packed_at: null,
-        parcel_status: 'PENDING',
+        parcel_status: 'CANCELLED',
         updated_at: new Date().toISOString()
       })
       .eq('id', orderId)
@@ -120,7 +123,7 @@ export const POST = withAuth(async (request: NextRequest, { params, user }) => {
       console.log('[Return to Queue] Sale activity log removed')
     }
 
-    // Step 6: Create activity log for return to queue action
+    // Step 6: Create activity log for return to queue action (marked as cancelled)
     const { error: logError } = await supabaseAdmin
       .from('activity_logs')
       .insert({
@@ -128,7 +131,7 @@ export const POST = withAuth(async (request: NextRequest, { params, user }) => {
         item_name: order.product,
         operation: 'return-to-queue',
         quantity: order.qty,
-        details: `Order returned to packing queue. Reason: ${reason}`,
+        details: `Order returned to packing queue and CANCELLED. Reason: ${reason}`,
         performed_by: returnedBy,
         order_id: orderId,
         store: order.store,
@@ -145,10 +148,13 @@ export const POST = withAuth(async (request: NextRequest, { params, user }) => {
 
     return NextResponse.json({
       success: true,
-      message: 'Order returned to packing queue successfully',
+      message: 'Order returned to packing queue and marked as cancelled',
       order: {
         id: orderId,
         status: 'Pending',
+        is_cancelled: true,
+        cancellation_reason: reason,
+        parcel_status: 'CANCELLED',
         inventoryRestored: !!inventoryItem
       }
     })

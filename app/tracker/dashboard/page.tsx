@@ -233,8 +233,8 @@ export default function TrackerDashboardPage() {
         throw new Error(data.error || 'Failed to return order to queue')
       }
 
-      toast.success('Order returned to packing queue successfully')
-      toast.info('Inventory has been restored and sales data updated')
+      toast.success('Order cancelled and returned to packing queue')
+      toast.info('Inventory restored • Sales data reverted • Order marked as cancelled')
       
       // Close modals and reset
       setShowReturnConfirm(false)
