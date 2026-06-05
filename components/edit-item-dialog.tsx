@@ -203,27 +203,21 @@ export function EditItemDialog({ open, onOpenChange, item, onSuccess }: EditItem
             
             <div className="space-y-2">
               <Label htmlFor="edit-quantity" className="text-slate-700 dark:text-slate-300 font-medium">
-                Quantity {!isAdmin && "(Read-only)"}
+                Current Stock <span className="text-slate-400 font-normal text-xs">(Read-only)</span>
               </Label>
               <Input
                 id="edit-quantity"
                 type="number"
                 required
                 value={formData.quantity}
-                onChange={isAdmin ? (e) => setFormData({ ...formData, quantity: Number.parseInt(e.target.value) }) : undefined}
-                readOnly={!isAdmin}
-                className={`rounded-[5px] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white ${
-                  isAdmin 
-                    ? "bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20" 
-                    : "bg-slate-100 dark:bg-slate-800 cursor-not-allowed"
-                }`}
+                readOnly
+                disabled
+                className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-not-allowed"
               />
-              {!isAdmin && (
-                <p className="text-xs text-slate-500 dark:text-slate-400">Use Restock to change quantity</p>
-              )}
-              {isAdmin && (
-                <p className="text-xs text-orange-600 dark:text-orange-400">⚠️ Admin: Direct quantity edit enabled</p>
-              )}
+              <p className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                Use Restock button to change stock quantity
+              </p>
             </div>
             
             <div className="space-y-2">

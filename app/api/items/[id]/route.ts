@@ -45,15 +45,26 @@ export async function PUT(
       return NextResponse.json({ error: "Item not found" }, { status: 404 })
     }
     
-    await updateInventoryItem(id, body)
+    // STRICT VALIDATION: Prevent quantity changes through edit
+    if (body.quantity !== undefined && body.quantity !== item.quantity) {
+      return NextResponse.json({ 
+        error: "Direct quantity modification is not allowed. Use the Restock function to change stock levels.",
+        field: "quantity"
+      }, { status: 400 })
+    }
+    
+    // Remove quantity from update if present (safety measure)
+    const { quantity, ...updateData } = body
+    
+    await updateInventoryItem(id, updateData)
     invalidateCachePattern('inventory')
     
     // Skip logging if only imageUrl is being updated (happens during product creation with image upload)
-    const updatedFields = Object.keys(body)
+    const updatedFields = Object.keys(updateData)
     const isOnlyImageUpdate = updatedFields.length === 1 && updatedFields[0] === 'imageUrl'
     
     if (!isOnlyImageUpdate) {
-      const changes = Object.entries(body)
+      const changes = Object.entries(updateData)
         .filter(([key]) => key !== 'imageUrl') // Don't include imageUrl in change log
         .map(([key, value]) => `${key}: ${value}`)
         .join(', ')

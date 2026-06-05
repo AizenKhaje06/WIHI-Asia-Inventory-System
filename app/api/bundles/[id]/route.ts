@@ -75,13 +75,22 @@ export async function PUT(
     console.log('[Bundles API PUT] Existing bundle found:', existingBundle.name)
     console.log('[Bundles API PUT] Current image_url:', existingBundle.image_url)
     
+    // STRICT VALIDATION: Prevent quantity changes through edit
+    if (body.quantity !== undefined && body.quantity !== existingBundle.quantity) {
+      console.error('[Bundles API PUT] ❌ Attempt to change quantity blocked')
+      return NextResponse.json({ 
+        error: "Direct quantity modification is not allowed for bundles. Quantity is auto-calculated from components.",
+        field: "quantity"
+      }, { status: 400 })
+    }
+    
     // Prepare update data
     const updateData: any = {}
     
     if (body.name !== undefined) updateData.name = body.name.trim()
     if (body.store !== undefined) updateData.store = body.store
     if (body.salesChannel !== undefined) updateData.sales_channel = body.salesChannel
-    if (body.quantity !== undefined) updateData.quantity = body.quantity
+    // Removed: if (body.quantity !== undefined) - bundles auto-calculate quantity
     if (body.costPrice !== undefined) updateData.bundle_cost = body.costPrice
     if (body.bundlePrice !== undefined) updateData.bundle_price = body.bundlePrice
     if (body.sellingPrice !== undefined) updateData.bundle_price = body.sellingPrice
