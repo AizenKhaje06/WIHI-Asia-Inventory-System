@@ -144,26 +144,35 @@ export default function PackerLayout({
       {/* Professional Logout Confirmation Dialog */}
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <AlertDialogContent className="max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl">
-          <AlertDialogHeader className="space-y-3">
+          <AlertDialogHeader className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+              <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+                <LogOut className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <AlertDialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">
-                Confirm Sign Out
-              </AlertDialogTitle>
+              <div className="flex-1">
+                <AlertDialogTitle className="text-xl font-semibold text-slate-900 dark:text-white">
+                  Sign Out
+                </AlertDialogTitle>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                  Packer Account
+                </p>
+              </div>
             </div>
-            <AlertDialogDescription className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              You are about to sign out of your Packer account. Any unsaved work may be lost. Are you sure you want to continue?
-            </AlertDialogDescription>
           </AlertDialogHeader>
+          
+          <div className="py-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              You are about to sign out of your Packer account. Any unsaved work will be lost.
+            </p>
+          </div>
+
           <AlertDialogFooter className="gap-2 sm:gap-2">
             <AlertDialogCancel className="mt-0 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
-              Cancel
+              Stay Signed In
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleLogout} 
-              className="bg-red-600 hover:bg-red-700 text-white dark:bg-red-600 dark:hover:bg-red-700"
+              className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-slate-200 dark:text-slate-900"
             >
               Sign Out
             </AlertDialogAction>

@@ -95,6 +95,9 @@ interface DepartmentDetail {
     name: string
     quantity: number
     revenue: number
+    cost: number
+    profit: number
+    orders: number
   }>
   storeBreakdown: Array<{
     name: string
@@ -954,91 +957,95 @@ export default function SalesChannelDetailPage() {
       )}
 
       {/* Cash Flow Chart */}
-      <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900">
-        <CardHeader className="pb-3 px-4 md:px-6">
+      <Card className="mb-6 border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+        {/* Dark header matching Store Performance */}
+        <div className="bg-slate-900 px-6 py-5 border-b border-slate-700">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <CardTitle className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
-              Cash Flow Over Time
-            </CardTitle>
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-              <Button
-                variant={chartPeriod === 'day' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setChartPeriod('day')}
-                className={`h-7 px-2.5 text-xs ${
-                  chartPeriod === 'day' 
-                    ? 'bg-white dark:bg-slate-700 shadow-sm' 
-                    : 'hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                Day
-              </Button>
-              <Button
-                variant={chartPeriod === 'week' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setChartPeriod('week')}
-                className={`h-7 px-2.5 text-xs ${
-                  chartPeriod === 'week' 
-                    ? 'bg-white dark:bg-slate-700 shadow-sm' 
-                    : 'hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                Week
-              </Button>
-              <Button
-                variant={chartPeriod === 'month' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setChartPeriod('month')}
-                className={`h-7 px-2.5 text-xs ${
-                  chartPeriod === 'month' 
-                    ? 'bg-white dark:bg-slate-700 shadow-sm' 
-                    : 'hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                Month
-              </Button>
+            <div>
+              <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
+                <div className="h-6 w-1 bg-blue-500 rounded-full flex-shrink-0"></div>
+                <span style={{ color: '#ffffff' }}>Cash Flow Over Time</span>
+              </h2>
+              <p className="text-xs mt-0.5 ml-3" style={{ color: '#94a3b8' }}>
+                Revenue, cost and profit trend for {departmentName}
+              </p>
+            </div>
+            {/* Period toggle - pill style */}
+            <div className="flex items-center gap-0 bg-slate-800 border border-slate-700 rounded-lg p-1 flex-shrink-0">
+              {(['day', 'week', 'month'] as const).map((period) => (
+                <button
+                  key={period}
+                  onClick={() => setChartPeriod(period)}
+                  className={`h-7 px-3 text-xs font-semibold rounded-md transition-all duration-200 capitalize ${
+                    chartPeriod === period
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700'
+                  }`}
+                >
+                  {period}
+                </button>
+              ))}
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="px-2 md:px-6">
+        </div>
+
+        <CardContent className="px-2 md:px-4 pt-6 pb-4">
+          {/* Legend row */}
+          <div className="flex items-center gap-5 mb-4 px-4">
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20"></div>
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Revenue</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-red-500 ring-2 ring-red-500/20"></div>
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Cost</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-violet-500 ring-2 ring-violet-500/20"></div>
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Profit</span>
+            </div>
+          </div>
+
           <div className="w-full overflow-x-auto">
             <div className="min-w-[300px]">
-              <ResponsiveContainer width="100%" height={350}>
-                <AreaChart data={chartData}>
+              <ResponsiveContainer width="100%" height={320}>
+                <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
                     </linearGradient>
                     <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0.05}/>
+                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
                     </linearGradient>
                     <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.05}/>
+                      <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
-                  <XAxis 
-                    dataKey="date" 
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.07} vertical={false} />
+                  <XAxis
+                    dataKey="date"
                     fontSize={10}
                     tickLine={false}
-                    axisLine={false}
+                    axisLine={{ stroke: '#e2e8f0', strokeOpacity: 0.5 }}
                     tickFormatter={formatXAxisDate}
-                    angle={0}
                     textAnchor="middle"
-                    height={40}
+                    height={36}
                     interval="preserveStartEnd"
+                    tick={{ fill: '#94a3b8' }}
                   />
-                  <YAxis 
+                  <YAxis
                     fontSize={10}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                    tick={{ fill: '#94a3b8' }}
+                    width={48}
                   />
-                  <Tooltip 
-                    formatter={(value: number) => formatCurrency(value)}
+                  <Tooltip
+                    formatter={(value: number, name: string) => [formatCurrency(value), name]}
                     labelFormatter={(date) => {
                       const d = new Date(date)
                       if (chartPeriod === 'day') {
@@ -1049,122 +1056,199 @@ export default function SalesChannelDetailPage() {
                         return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
                       }
                     }}
-                    contentStyle={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                      fontSize: '12px'
+                    contentStyle={{
+                      backgroundColor: '#0f172a',
+                      border: '1px solid #1e293b',
+                      borderRadius: '10px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+                      fontSize: '12px',
+                      color: '#f1f5f9'
                     }}
+                    labelStyle={{ color: '#94a3b8', fontWeight: 600, marginBottom: '4px' }}
+                    itemStyle={{ color: '#f1f5f9' }}
+                    cursor={{ stroke: '#334155', strokeWidth: 1, strokeDasharray: '4 4' }}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="revenue" 
-                    stroke="#10B981" 
-                    strokeWidth={2} 
-                    name="Revenue" 
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#10B981"
+                    strokeWidth={2.5}
+                    name="Revenue"
                     fill="url(#colorRevenue)"
                     dot={false}
+                    activeDot={{ r: 5, fill: '#10B981', strokeWidth: 0 }}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="cost" 
-                    stroke="#EF4444" 
-                    strokeWidth={2} 
-                    name="Cost" 
+                  <Area
+                    type="monotone"
+                    dataKey="cost"
+                    stroke="#EF4444"
+                    strokeWidth={2}
+                    name="Cost"
                     fill="url(#colorCost)"
                     dot={false}
+                    activeDot={{ r: 5, fill: '#EF4444', strokeWidth: 0 }}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="profit" 
-                    stroke="#8B5CF6" 
-                    strokeWidth={2} 
-                    name="Profit" 
+                  <Area
+                    type="monotone"
+                    dataKey="profit"
+                    stroke="#8B5CF6"
+                    strokeWidth={2.5}
+                    name="Profit"
                     fill="url(#colorProfit)"
                     dot={false}
+                    activeDot={{ r: 5, fill: '#8B5CF6', strokeWidth: 0 }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
+
           {/* Mobile Scroll Hint */}
           <div className="md:hidden text-center mt-2">
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              ← Swipe to view full chart →
-            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">← Swipe to view full chart →</p>
           </div>
         </CardContent>
       </Card>
 
       {/* Store/Warehouse Breakdown */}
       {data.storeBreakdown && data.storeBreakdown.length > 1 && (
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 mb-6">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">
-              Store/Warehouse Breakdown
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 mb-6 overflow-hidden">
+          {/* Professional Header */}
+          <div className="bg-slate-900 px-6 py-5 border-b border-slate-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
+                  <div className="h-6 w-1 bg-orange-500 rounded-full flex-shrink-0"></div>
+                  <span style={{ color: '#ffffff' }}>Store Performance Breakdown</span>
+                </h2>
+                <p className="text-xs mt-0.5 ml-3" style={{ color: '#cbd5e1' }}>
+                  Individual store contribution to {departmentName} total sales
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: '#94a3b8' }}>Total Channel Revenue</p>
+                <p className="text-lg font-bold" style={{ color: '#ffffff' }}>{formatCurrency(data.metrics.totalRevenue)}</p>
+              </div>
+            </div>
+          </div>
+
+          <CardContent className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {data.storeBreakdown.map((store) => {
                 const profitMargin = store.revenue > 0 ? (store.profit / store.revenue) * 100 : 0
+                const revenueShare = data.metrics.totalRevenue > 0
+                  ? (store.revenue / data.metrics.totalRevenue) * 100
+                  : 0
                 const isPositive = store.profit >= 0
+                const isTopStore = store.revenue === Math.max(...data.storeBreakdown.map(s => s.revenue))
 
                 return (
                   <div
                     key={store.name}
-                    className="p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                    className={`relative p-5 rounded-xl border-2 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ${
+                      isTopStore
+                        ? 'border-orange-400 dark:border-orange-500 bg-gradient-to-br from-orange-50/50 to-white dark:from-orange-900/10 dark:to-slate-800'
+                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'
+                    }`}
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-semibold text-slate-900 dark:text-white">
-                          {store.name}
-                        </h3>
+                    {/* Top store crown badge */}
+                    {isTopStore && (
+                      <div className="absolute -top-2.5 left-4">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-orange-500 text-white text-[10px] font-bold rounded-full shadow-md shadow-orange-500/30">
+                          ★ TOP STORE
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Store name + arrow */}
+                    <div className="flex items-start justify-between mb-4 mt-1">
+                      <div className="flex items-center gap-2">
+                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center text-sm font-black ${
+                          isTopStore
+                            ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30'
+                            : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                        }`}>
+                          {store.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 dark:text-white text-sm leading-tight">
+                            {store.name}
+                          </h3>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                            {formatNumber(store.transactions)} transactions
+                          </span>
+                        </div>
                       </div>
                       {isPositive ? (
-                        <ArrowUpRight className="h-5 w-5 text-green-500" />
+                        <ArrowUpRight className="h-4 w-4 text-green-500 flex-shrink-0" />
                       ) : (
-                        <ArrowDownRight className="h-5 w-5 text-red-500" />
+                        <ArrowDownRight className="h-4 w-4 text-red-500 flex-shrink-0" />
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Revenue</p>
-                        <p className="text-xl font-bold text-slate-900 dark:text-white">
-                          {formatCurrency(store.revenue)}
+                    {/* Revenue + Share badge */}
+                    <div className="mb-4">
+                      <div className="flex items-end justify-between mb-1.5">
+                        <div>
+                          <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Revenue</p>
+                          <p className="text-xl font-black text-slate-900 dark:text-white leading-tight">
+                            {formatCurrency(store.revenue)}
+                          </p>
+                        </div>
+                        {/* % of total revenue - the key feature */}
+                        <div className={`flex flex-col items-end`}>
+                          <span className={`text-2xl font-black leading-none ${
+                            revenueShare >= 50 ? 'text-orange-600 dark:text-orange-400'
+                            : revenueShare >= 25 ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-slate-500 dark:text-slate-400'
+                          }`}>
+                            {revenueShare.toFixed(1)}%
+                          </span>
+                          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">of channel</span>
+                        </div>
+                      </div>
+                      {/* Progress bar showing share of channel revenue */}
+                      <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            revenueShare >= 50 ? 'bg-gradient-to-r from-orange-500 to-orange-400'
+                            : revenueShare >= 25 ? 'bg-gradient-to-r from-blue-500 to-blue-400'
+                            : 'bg-gradient-to-r from-slate-400 to-slate-300'
+                          }`}
+                          style={{ width: `${Math.min(revenueShare, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Metrics grid */}
+                    <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                      <div className="space-y-0.5">
+                        <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Profit</p>
+                        <p className={`text-sm font-bold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          {formatCurrency(store.profit)}
                         </p>
                       </div>
-                      
-                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-                        <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Profit</p>
-                          <p className={`text-sm font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                            {formatCurrency(store.profit)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Margin</p>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                            {profitMargin.toFixed(1)}%
-                          </p>
-                        </div>
+                      <div className="space-y-0.5">
+                        <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Margin</p>
+                        <p className={`text-sm font-bold ${
+                          profitMargin >= 50 ? 'text-green-600 dark:text-green-400'
+                          : profitMargin >= 25 ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {profitMargin.toFixed(1)}%
+                        </p>
                       </div>
-
-                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-                        <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Transactions</p>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                            {formatNumber(store.transactions)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Items</p>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                            {formatNumber(store.quantity)}
-                          </p>
-                        </div>
+                      <div className="space-y-0.5">
+                        <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Items Sold</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                          {formatNumber(store.quantity)}
+                        </p>
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Avg Order</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                          {store.transactions > 0 ? formatCurrency(store.revenue / store.transactions) : '₱0'}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1180,151 +1264,284 @@ export default function SalesChannelDetailPage() {
         {/* Top Products */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-3 px-4 md:px-6">
-            <CardTitle className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
-              Top Products
-            </CardTitle>
+            <div>
+              <CardTitle className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
+                Top Products
+              </CardTitle>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Revenue & quantity by product</p>
+            </div>
           </CardHeader>
           <CardContent className="px-2 md:px-6">
-            <div className="w-full overflow-x-auto">
-              <div className="min-w-[400px]">
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={data.topProducts.slice(0, 5)} layout="vertical" margin={{ left: 20, right: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} horizontal={false} />
-                    <XAxis 
-                      type="number"
-                      fontSize={11}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
-                    />
-                    <YAxis 
-                      type="category"
-                      dataKey="name" 
-                      fontSize={11}
-                      tickLine={false}
-                      axisLine={false}
-                      width={140}
-                      tick={(props) => {
-                        const { x, y, payload } = props
-                        const name = payload.value
-                        // Truncate long names
-                        const truncated = name.length > 25 ? name.substring(0, 25) + '...' : name
-                        return (
-                          <text 
-                            x={x} 
-                            y={y} 
-                            dy={4} 
-                            textAnchor="end" 
-                            fill="#64748b"
-                            fontSize={11}
-                          >
-                            {truncated}
-                          </text>
-                        )
-                      }}
-                    />
-                    <Tooltip 
-                      formatter={(value: number) => [formatCurrency(value), 'Revenue']}
-                      labelFormatter={(name) => name}
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
-                        fontSize: '12px'
-                      }}
-                    />
-                    <Bar dataKey="revenue" fill="#3B82F6" radius={[0, 8, 8, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+            {data.topProducts.length > 0 ? (
+              <>
+                {/* Bar Chart */}
+                <div className="w-full overflow-x-auto">
+                  <div className="min-w-[300px]">
+                    <ResponsiveContainer width="100%" height={Math.max(180, data.topProducts.slice(0,5).length * 52)}>
+                      <BarChart
+                        data={data.topProducts.slice(0, 5).map(p => ({
+                          ...p,
+                          name: p.name.length > 18 ? p.name.substring(0, 18) + '…' : p.name
+                        }))}
+                        layout="vertical"
+                        margin={{ left: 20, right: 20 }}
+                        barCategoryGap="25%"
+                        barGap={3}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} horizontal={false} />
+                        <XAxis
+                          type="number"
+                          fontSize={11}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                        />
+                        <YAxis
+                          type="category"
+                          dataKey="name"
+                          fontSize={11}
+                          tickLine={false}
+                          axisLine={false}
+                          width={120}
+                          tick={(props) => {
+                            const { x, y, payload } = props
+                            return (
+                              <text x={x} y={y} dy={4} textAnchor="end" fill="#64748b" fontSize={11}>
+                                {payload.value}
+                              </text>
+                            )
+                          }}
+                        />
+                        <Tooltip
+                          formatter={(value: number, name: string) => {
+                            if (name === 'revenue') return [formatCurrency(value), 'Revenue']
+                            if (name === 'estimatedProfit') return [formatCurrency(value), 'Est. Profit']
+                            return [value, name]
+                          }}
+                          contentStyle={{
+                            backgroundColor: 'rgba(255,255,255,0.97)',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            fontSize: '12px'
+                          }}
+                        />
+                        <Bar dataKey="revenue" fill="#3B82F6" radius={[0, 6, 6, 0]} name="revenue" />
+                        <Bar dataKey="estimatedProfit" fill="#10B981" radius={[0, 6, 6, 0]} name="estimatedProfit" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div className="flex items-center gap-4 mt-1 mb-4 px-2">
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2.5 w-2.5 rounded-full bg-blue-500"></div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Revenue</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-500"></div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Profit</span>
+                  </div>
+                </div>
+
+                {/* Products ranked table */}
+                <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4">
+                  {data.topProducts.slice(0, 5).map((product, index) => {
+                    const totalProductRevenue = data.topProducts.reduce((sum, p) => sum + p.revenue, 0)
+                    const share = totalProductRevenue > 0 ? (product.revenue / totalProductRevenue) * 100 : 0
+                    const isTop = index === 0
+
+                    return (
+                      <div
+                        key={product.name}
+                        className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs ${
+                          isTop
+                            ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
+                            : 'bg-slate-50 dark:bg-slate-800/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className={`h-5 w-5 rounded flex items-center justify-center text-[10px] font-black flex-shrink-0 ${
+                            isTop ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                          }`}>
+                            {index + 1}
+                          </span>
+                          <span className="font-semibold text-slate-900 dark:text-white truncate">{product.name}</span>
+                          <span className="text-slate-400 flex-shrink-0">{product.quantity}x</span>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                          <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(product.revenue)}</span>
+                          <span className={`font-bold w-10 text-right ${
+                            share >= 50 ? 'text-orange-600 dark:text-orange-400'
+                            : share >= 25 ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-slate-400'
+                          }`}>{share.toFixed(0)}%</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Column headers */}
+                <div className="flex items-center justify-between px-3 mt-1 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                  <span>Product</span>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <span>Revenue</span>
+                    <span className="w-10 text-right">Share</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-slate-500 dark:text-slate-400 text-sm">No product data available</p>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Store Average */}
         <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
           <CardHeader className="pb-3 px-4 md:px-6">
-            <CardTitle className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
-              Store Average
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 md:px-6">
-            <div className="space-y-2.5">
-              {data.storeBreakdown.length > 0 ? (
-                data.storeBreakdown
-                  .sort((a, b) => b.revenue - a.revenue) // Sort by revenue descending
-                  .slice(0, 5) // Take top 5
-                  .map((store, index) => {
-                  const avgRevenuePerTransaction = store.transactions > 0 ? store.revenue / store.transactions : 0
-                  const avgProfitPerTransaction = store.transactions > 0 ? store.profit / store.transactions : 0
-                  const profitMargin = store.revenue > 0 ? (store.profit / store.revenue) * 100 : 0
-                  
-                  return (
-                    <div
-                      key={index}
-                      className="p-3 md:p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-sm md:text-base text-slate-900 dark:text-white">
-                          {store.name}
-                        </h4>
-                        <Badge variant="outline" className="text-xs">
-                          {store.transactions} orders
-                        </Badge>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-3">
-                        {/* Avg Revenue per Order */}
-                        <div className="space-y-0.5">
-                          <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">
-                            Avg Revenue/Order
-                          </p>
-                          <p className="text-sm md:text-base font-bold text-green-600 dark:text-green-400">
-                            {formatCurrency(avgRevenuePerTransaction)}
-                          </p>
-                        </div>
-                        
-                        {/* Avg Profit per Order */}
-                        <div className="space-y-0.5">
-                          <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">
-                            Avg Profit/Order
-                          </p>
-                          <p className="text-sm md:text-base font-bold text-purple-600 dark:text-purple-400">
-                            {formatCurrency(avgProfitPerTransaction)}
-                          </p>
-                        </div>
-                        
-                        {/* Total Quantity */}
-                        <div className="space-y-0.5">
-                          <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">
-                            Total Quantity
-                          </p>
-                          <p className="text-sm md:text-base font-bold text-blue-600 dark:text-blue-400">
-                            {formatNumber(store.quantity)}
-                          </p>
-                        </div>
-                        
-                        {/* Profit Margin */}
-                        <div className="space-y-0.5">
-                          <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">
-                            Profit Margin
-                          </p>
-                          <p className="text-sm md:text-base font-bold text-amber-600 dark:text-amber-400">
-                            {profitMargin.toFixed(1)}%
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-slate-500 dark:text-slate-400 text-sm">
-                    No store data available
-                  </p>
-                </div>
-              )}
+            <div>
+              <CardTitle className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
+                Store Performance
+              </CardTitle>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Revenue comparison by store</p>
             </div>
+          </CardHeader>
+          <CardContent className="px-2 md:px-6">
+            {data.storeBreakdown.length > 0 ? (
+              <>
+                {/* Bar Chart - matching Top Products style */}
+                <div className="w-full overflow-x-auto">
+                  <div className="min-w-[300px]">
+                    <ResponsiveContainer width="100%" height={Math.max(180, data.storeBreakdown.length * 52)}>
+                      <BarChart
+                        data={[...data.storeBreakdown]
+                          .sort((a, b) => b.revenue - a.revenue)
+                          .slice(0, 5)
+                          .map(s => ({ ...s, name: s.name.length > 18 ? s.name.substring(0, 18) + '…' : s.name }))}
+                        layout="vertical"
+                        margin={{ left: 20, right: 20 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} horizontal={false} />
+                        <XAxis
+                          type="number"
+                          fontSize={11}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                        />
+                        <YAxis
+                          type="category"
+                          dataKey="name"
+                          fontSize={11}
+                          tickLine={false}
+                          axisLine={false}
+                          width={120}
+                          tick={(props) => {
+                            const { x, y, payload } = props
+                            return (
+                              <text x={x} y={y} dy={4} textAnchor="end" fill="#64748b" fontSize={11}>
+                                {payload.value}
+                              </text>
+                            )
+                          }}
+                        />
+                        <Tooltip
+                          formatter={(value: number, name: string) => {
+                            if (name === 'revenue') return [formatCurrency(value), 'Revenue']
+                            if (name === 'profit') return [formatCurrency(value), 'Profit']
+                            return [value, name]
+                          }}
+                          contentStyle={{
+                            backgroundColor: 'rgba(255,255,255,0.97)',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            fontSize: '12px'
+                          }}
+                        />
+                        <Bar dataKey="revenue" fill="#3B82F6" radius={[0, 6, 6, 0]} name="revenue" />
+                        <Bar dataKey="profit" fill="#10B981" radius={[0, 6, 6, 0]} name="profit" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div className="flex items-center gap-4 mt-1 mb-4 px-2">
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2.5 w-2.5 rounded-full bg-blue-500"></div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Revenue</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-500"></div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Profit</span>
+                  </div>
+                </div>
+
+                {/* Store stats table below chart */}
+                <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4">
+                  {[...data.storeBreakdown]
+                    .sort((a, b) => b.revenue - a.revenue)
+                    .slice(0, 5)
+                    .map((store, index) => {
+                      const avgOrder = store.transactions > 0 ? store.revenue / store.transactions : 0
+                      const margin = store.revenue > 0 ? (store.profit / store.revenue) * 100 : 0
+                      const share = data.metrics.totalRevenue > 0 ? (store.revenue / data.metrics.totalRevenue) * 100 : 0
+                      const isTop = index === 0
+
+                      return (
+                        <div
+                          key={store.name}
+                          className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs ${
+                            isTop
+                              ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
+                              : 'bg-slate-50 dark:bg-slate-800/50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`h-5 w-5 rounded flex items-center justify-center text-[10px] font-black flex-shrink-0 ${
+                              isTop ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                            }`}>
+                              {index + 1}
+                            </span>
+                            <span className="font-semibold text-slate-900 dark:text-white truncate">{store.name}</span>
+                            <span className="text-slate-400 flex-shrink-0">{store.transactions}x</span>
+                          </div>
+                          <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                            <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(avgOrder)}<span className="text-slate-400 font-normal">/order</span></span>
+                            <span className={`font-bold w-12 text-right ${
+                              margin >= 50 ? 'text-emerald-600 dark:text-emerald-400'
+                              : margin >= 25 ? 'text-amber-600 dark:text-amber-400'
+                              : 'text-red-600 dark:text-red-400'
+                            }`}>{margin.toFixed(1)}%</span>
+                            <span className={`font-bold w-10 text-right ${
+                              share >= 50 ? 'text-orange-600 dark:text-orange-400'
+                              : share >= 25 ? 'text-blue-600 dark:text-blue-400'
+                              : 'text-slate-400'
+                            }`}>{share.toFixed(0)}%</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                </div>
+
+                {/* Column headers for table */}
+                <div className="flex items-center justify-between px-3 mt-1 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                  <span>Store</span>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <span className="w-[5.5rem] text-right">Avg/Order</span>
+                    <span className="w-12 text-right">Margin</span>
+                    <span className="w-10 text-right">Share</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-slate-500 dark:text-slate-400 text-sm">No store data available</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

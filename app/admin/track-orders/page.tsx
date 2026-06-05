@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { toast } from 'sonner'
+import { TablePagination } from '@/components/ui/table-pagination'
 
 interface Order {
   id: string
@@ -43,6 +44,10 @@ export default function TrackOrdersPage() {
   const [paymentFilter, setPaymentFilter] = useState<string>('all')
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   useEffect(() => {
     fetchOrders()
@@ -146,6 +151,12 @@ export default function TrackOrdersPage() {
     setSelectedOrder(order)
     setShowDetailsModal(true)
   }
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredOrders.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex)
 
   const totalOrders = filteredOrders.length
   const pendingOrders = filteredOrders.filter(o => o.orderStatus === 'pending').length
@@ -322,7 +333,7 @@ export default function TrackOrdersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredOrders.map((order) => (
+                  {paginatedOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                       <td className="py-3 px-4">
                         <div className="font-mono text-xs font-semibold text-slate-900 dark:text-white">
@@ -358,6 +369,16 @@ export default function TrackOrdersPage() {
                 </tbody>
               </table>
             </div>
+          )}
+          {filteredOrders.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={filteredOrders.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
         </CardContent>
       </Card>

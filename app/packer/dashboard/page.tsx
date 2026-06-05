@@ -13,6 +13,7 @@ import { Search, Package, RefreshCw, Camera, Eye, CheckCircle, Clock, TrendingUp
 import { toast } from 'sonner'
 import { getCurrentUser } from '@/lib/auth'
 import { AnimatedNumber } from '@/components/ui/animated-number'
+import { TablePagination } from '@/components/ui/table-pagination'
 
 interface Order {
   id: string
@@ -75,6 +76,10 @@ export default function PackerDashboard() {
     const now = new Date()
     return new Date(now.getFullYear(), now.getMonth() + 1, 0)
   })
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
 
   // Get unique channels
   const channels = useMemo(() => {
@@ -278,6 +283,12 @@ export default function PackerDashboard() {
 
     return filtered
   }, [searchTerm, selectedChannel, statusFilter, pendingOrders, packedHistory])
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredOrders.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex)
 
   const fetchData = async (silent = false) => {
     try {
@@ -922,7 +933,7 @@ export default function PackerDashboard() {
                   </thead>
 
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                    {filteredOrders.map((order) => (
+                    {paginatedOrders.map((order) => (
                       <tr
                         key={order.id}
                         className={`transition-all duration-200 cursor-pointer ${
@@ -1060,6 +1071,16 @@ export default function PackerDashboard() {
                 </table>
               </div>
             </>
+          )}
+          {filteredOrders.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={filteredOrders.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
         </CardContent>
       </Card>

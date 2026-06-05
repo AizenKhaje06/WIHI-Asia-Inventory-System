@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 import { apiGet } from '@/lib/api-client'
 import { BrandLoader } from '@/components/ui/brand-loader'
 import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
+import { TablePagination } from '@/components/ui/table-pagination'
 
 interface Order {
   id: string
@@ -55,6 +56,10 @@ export default function TrackerDashboardPage() {
   const [showReturnConfirm, setShowReturnConfirm] = useState(false)
   const [returnReason, setReturnReason] = useState('')
   const [returning, setReturning] = useState(false)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
 
   useEffect(() => {
     fetchOrders()
@@ -284,6 +289,12 @@ export default function TrackerDashboardPage() {
     
     setFilteredOrders(filtered)
   }
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredOrders.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex)
 
   const clearFilters = () => {
     setSearchTerm('')
@@ -613,7 +624,7 @@ export default function TrackerDashboardPage() {
                   </thead>
 
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                    {filteredOrders.map((order) => (
+                    {paginatedOrders.map((order) => (
                       <tr
                         key={order.id}
                         className="h-14 transition-all duration-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30"
@@ -794,6 +805,16 @@ export default function TrackerDashboardPage() {
                 </table>
               </div>
             </>
+          )}
+          {filteredOrders.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={filteredOrders.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
         </CardContent>
       </Card>

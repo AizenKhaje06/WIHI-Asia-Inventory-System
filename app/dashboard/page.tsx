@@ -525,169 +525,152 @@ export default function DashboardPage() {
       {/* Performance Analytics */}
       <div className="grid gap-5 grid-cols-1 lg:grid-cols-3">
         {/* Top Products Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-              Top Products
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-1 bg-emerald-500 rounded-full flex-shrink-0"></div>
+              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Top Products</h3>
+            </div>
+            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Units sold by product</p>
+          </div>
+          <CardContent className="pt-4 pb-2">
             {stats?.topProducts && stats.topProducts.length > 0 ? (
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart 
-                  data={stats.topProducts} 
-                  layout="vertical"
-                  margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="0" className="stroke-gray-200 dark:stroke-gray-800" opacity={0.5} horizontal={true} vertical={false} />
-                  <XAxis 
-                    type="number"
-                    className="fill-gray-500 dark:fill-gray-500" 
-                    fontSize={10}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis 
-                    type="category"
-                    dataKey="name" 
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={10}
-                    tickLine={false}
-                    axisLine={false}
-                    width={100}
-                  />
-                  <Tooltip 
-                    content={<ChartTooltip formatter={(value, name) => {
-                      if (name === 'sales') return [value.toString(), 'Units Sold']
-                      return [value.toString(), 'Units Sold']
-                    }} />}
-                    cursor={{ fill: 'rgba(16, 185, 129, 0.05)' }}
-                  />
-                  <Bar 
-                    dataKey="sales" 
-                    fill="#10B981" 
-                    radius={[0, 4, 4, 0]}
-                    maxBarSize={32}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <>
+                <ResponsiveContainer width="100%" height={Math.max(160, stats.topProducts.slice(0,5).length * 52)}>
+                  <BarChart
+                    data={stats.topProducts.slice(0, 5).map((p: any) => ({ ...p, name: p.name.length > 18 ? p.name.substring(0, 18) + '…' : p.name }))}
+                    layout="vertical"
+                    margin={{ left: 10, right: 10, top: 5, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.07} horizontal={false} vertical={true} />
+                    <XAxis type="number" fontSize={10} tickLine={false} axisLine={false} tick={{ fill: '#94a3b8' }} />
+                    <YAxis type="category" dataKey="name" fontSize={10} tickLine={false} axisLine={false} width={100} tick={{ fill: '#64748b' }} />
+                    <Tooltip
+                      content={<ChartTooltip formatter={(value, name) => [value.toString(), 'Units Sold']} />}
+                      cursor={{ fill: 'rgba(16,185,129,0.06)' }}
+                    />
+                    <Bar dataKey="sales" fill="#10B981" radius={[0, 6, 6, 0]} maxBarSize={28} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <div className="mt-2 space-y-1.5 border-t border-slate-100 dark:border-slate-800 pt-3">
+                  {stats.topProducts.slice(0, 5).map((p: any, i: number) => (
+                    <div key={p.name} className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs ${i === 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`h-5 w-5 rounded flex items-center justify-center text-[10px] font-black flex-shrink-0 ${i === 0 ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>{i + 1}</span>
+                        <span className="font-semibold text-slate-900 dark:text-white truncate">{p.name}</span>
+                      </div>
+                      <span className="font-bold text-slate-700 dark:text-slate-300 flex-shrink-0">{p.sales}x</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
-              <div className="text-center py-20">
-                <TrendingUp className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <div className="text-center py-16">
+                <TrendingUp className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
                 <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No sales data yet</p>
-                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Start selling to see top products</p>
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Top Categories Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
-              <BarChart2 className="h-5 w-5 text-purple-600" />
-              Top Categories
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-1 bg-purple-500 rounded-full flex-shrink-0"></div>
+              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Top Categories</h3>
+            </div>
+            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Units sold by category</p>
+          </div>
+          <CardContent className="pt-4 pb-2">
             {stats?.topCategories && stats.topCategories.length > 0 ? (
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart 
-                  data={stats.topCategories} 
-                  layout="vertical"
-                  margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="0" className="stroke-gray-200 dark:stroke-gray-800" opacity={0.5} horizontal={true} vertical={false} />
-                  <XAxis 
-                    type="number"
-                    className="fill-gray-500 dark:fill-gray-500" 
-                    fontSize={10}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis 
-                    type="category"
-                    dataKey="name" 
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={10}
-                    tickLine={false}
-                    axisLine={false}
-                    width={100}
-                  />
-                  <Tooltip 
-                    content={<ChartTooltip formatter={(value) => [value.toString(), 'Units Sold']} />}
-                    cursor={{ fill: 'rgba(168, 85, 247, 0.05)' }}
-                  />
-                  <Bar 
-                    dataKey="sales" 
-                    fill="#A855F7" 
-                    radius={[0, 4, 4, 0]}
-                    maxBarSize={32}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <>
+                <ResponsiveContainer width="100%" height={Math.max(160, stats.topCategories.slice(0,5).length * 52)}>
+                  <BarChart
+                    data={stats.topCategories.slice(0, 5).map((c: any) => ({ ...c, name: c.name.length > 18 ? c.name.substring(0, 18) + '…' : c.name }))}
+                    layout="vertical"
+                    margin={{ left: 10, right: 10, top: 5, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.07} horizontal={false} vertical={true} />
+                    <XAxis type="number" fontSize={10} tickLine={false} axisLine={false} tick={{ fill: '#94a3b8' }} />
+                    <YAxis type="category" dataKey="name" fontSize={10} tickLine={false} axisLine={false} width={100} tick={{ fill: '#64748b' }} />
+                    <Tooltip
+                      content={<ChartTooltip formatter={(value) => [value.toString(), 'Units Sold']} />}
+                      cursor={{ fill: 'rgba(168,85,247,0.06)' }}
+                    />
+                    <Bar dataKey="sales" fill="#A855F7" radius={[0, 6, 6, 0]} maxBarSize={28} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <div className="mt-2 space-y-1.5 border-t border-slate-100 dark:border-slate-800 pt-3">
+                  {stats.topCategories.slice(0, 5).map((c: any, i: number) => (
+                    <div key={c.name} className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs ${i === 0 ? 'bg-purple-50 dark:bg-purple-900/20' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`h-5 w-5 rounded flex items-center justify-center text-[10px] font-black flex-shrink-0 ${i === 0 ? 'bg-purple-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>{i + 1}</span>
+                        <span className="font-semibold text-slate-900 dark:text-white truncate">{c.name}</span>
+                      </div>
+                      <span className="font-bold text-slate-700 dark:text-slate-300 flex-shrink-0">{c.sales}x</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
-              <div className="text-center py-20">
-                <BarChart2 className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <div className="text-center py-16">
+                <BarChart2 className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
                 <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No category data yet</p>
-                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Sales by category will appear here</p>
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Return Count by Sales Channel */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
-              <RotateCcw className="h-5 w-5 text-red-600" />
-              Return Count by Sales Channel
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-1 bg-red-500 rounded-full flex-shrink-0"></div>
+              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Return Count by Sales Channel</h3>
+            </div>
+            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Returned orders per channel</p>
+          </div>
+          <CardContent className="pt-4 pb-2">
             {stats?.cancelledOrdersByChannel && Object.keys(stats.cancelledOrdersByChannel).length > 0 ? (
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart 
-                  data={Object.entries(stats.cancelledOrdersByChannel).map(([name, data]) => ({ 
-                    name, 
-                    count: typeof data === 'object' ? data.count : data 
-                  }))} 
-                  layout="vertical"
-                  margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="0" className="stroke-gray-200 dark:stroke-gray-800" opacity={0.5} horizontal={true} vertical={false} />
-                  <XAxis 
-                    type="number"
-                    className="fill-gray-500 dark:fill-gray-500" 
-                    fontSize={10}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis 
-                    type="category"
-                    dataKey="name" 
-                    className="fill-gray-600 dark:fill-gray-400" 
-                    fontSize={10}
-                    tickLine={false}
-                    axisLine={false}
-                    width={100}
-                  />
-                  <Tooltip 
-                    content={<ChartTooltip formatter={(value) => [value.toString(), 'Returns']} />}
-                    cursor={{ fill: 'rgba(239, 68, 68, 0.05)' }}
-                  />
-                  <Bar 
-                    dataKey="count" 
-                    fill="#EF4444" 
-                    radius={[0, 4, 4, 0]}
-                    maxBarSize={32}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <>
+                {(() => {
+                  const returnData = Object.entries(stats.cancelledOrdersByChannel).map(([name, data]) => ({
+                    name: name.length > 18 ? name.substring(0, 18) + '…' : name,
+                    count: typeof data === 'object' ? (data as any).count : data
+                  }))
+                  return (
+                    <>
+                      <ResponsiveContainer width="100%" height={Math.max(160, returnData.slice(0,5).length * 52)}>
+                        <BarChart data={returnData.slice(0, 5)} layout="vertical" margin={{ left: 10, right: 10, top: 5, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.07} horizontal={false} vertical={true} />
+                          <XAxis type="number" fontSize={10} tickLine={false} axisLine={false} tick={{ fill: '#94a3b8' }} />
+                          <YAxis type="category" dataKey="name" fontSize={10} tickLine={false} axisLine={false} width={100} tick={{ fill: '#64748b' }} />
+                          <Tooltip
+                            content={<ChartTooltip formatter={(value) => [value.toString(), 'Returns']} />}
+                            cursor={{ fill: 'rgba(239,68,68,0.06)' }}
+                          />
+                          <Bar dataKey="count" fill="#EF4444" radius={[0, 6, 6, 0]} maxBarSize={28} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                      <div className="mt-2 space-y-1.5 border-t border-slate-100 dark:border-slate-800 pt-3">
+                        {returnData.slice(0, 5).map((r, i) => (
+                          <div key={r.name} className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs ${i === 0 ? 'bg-red-50 dark:bg-red-900/20' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className={`h-5 w-5 rounded flex items-center justify-center text-[10px] font-black flex-shrink-0 ${i === 0 ? 'bg-red-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>{i + 1}</span>
+                              <span className="font-semibold text-slate-900 dark:text-white truncate">{r.name}</span>
+                            </div>
+                            <span className="font-bold text-red-600 dark:text-red-400 flex-shrink-0">{r.count} returns</span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )
+                })()}
+              </>
             ) : (
-              <div className="text-center py-20">
-                <RotateCcw className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <div className="text-center py-16">
+                <RotateCcw className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
                 <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">No returns yet</p>
                 <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Returned orders by channel will appear here</p>
               </div>
@@ -699,88 +682,78 @@ export default function DashboardPage() {
       {/* Stock Distribution */}
       <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
         {/* Department Performance Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
-              <Package className="h-5 w-5 text-blue-600" />
-              Department Performance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-1 bg-blue-500 rounded-full flex-shrink-0"></div>
+              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Department Performance</h3>
+            </div>
+            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Revenue by sales channel / department</p>
+          </div>
+          <CardContent className="pt-4 pb-2">
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart data={stocksCountByStoreData} margin={{ top: 10, bottom: 20, left: 0, right: 10 }}>
-                <CartesianGrid strokeDasharray="0" className="stroke-gray-200 dark:stroke-gray-800" opacity={0.5} horizontal={true} vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  className="fill-gray-600 dark:fill-gray-400" 
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                  interval={0}
-                />
-                <YAxis 
-                  className="fill-gray-500 dark:fill-gray-500" 
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                  width={50}
-                  tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip 
+                <CartesianGrid strokeDasharray="3 3" opacity={0.07} horizontal={true} vertical={false} />
+                <XAxis dataKey="name" fontSize={10} tickLine={false} axisLine={false} interval={0} tick={{ fill: '#64748b' }} />
+                <YAxis fontSize={10} tickLine={false} axisLine={false} width={48} tickFormatter={(v) => `₱${(v/1000).toFixed(0)}k`} tick={{ fill: '#94a3b8' }} />
+                <Tooltip
                   content={<ChartTooltip formatter={(value) => [`₱${formatNumber(value as number)}`, 'Revenue']} />}
-                  cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }}
+                  cursor={{ fill: 'rgba(59,130,246,0.06)' }}
                 />
-                <Bar 
-                  dataKey="count" 
-                  fill="#3B82F6" 
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={48}
-                />
+                <Bar dataKey="count" fill="#3B82F6" radius={[6, 6, 0, 0]} maxBarSize={52}>
+                  {stocksCountByStoreData.map((_: any, index: number) => (
+                    <cell key={`cell-${index}`} fill={index === 0 ? '#2563EB' : '#3B82F6'} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
+            <div className="mt-2 space-y-1.5 border-t border-slate-100 dark:border-slate-800 pt-3">
+              {stocksCountByStoreData.slice(0, 4).map((d: any, i: number) => (
+                <div key={d.name} className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs ${i === 0 ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`h-5 w-5 rounded flex items-center justify-center text-[10px] font-black flex-shrink-0 ${i === 0 ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>{i + 1}</span>
+                    <span className="font-semibold text-slate-900 dark:text-white truncate">{d.name}</span>
+                  </div>
+                  <span className="font-bold text-slate-700 dark:text-slate-300 flex-shrink-0">₱{formatNumber(d.count)}</span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
         {/* Store Performance Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
-              <Activity className="h-5 w-5 text-green-600" />
-              Store Performance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-1 bg-emerald-500 rounded-full flex-shrink-0"></div>
+              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Store Performance</h3>
+            </div>
+            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Revenue by store / warehouse</p>
+          </div>
+          <CardContent className="pt-4 pb-2">
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart data={storePerformanceData} margin={{ top: 10, bottom: 20, left: 0, right: 10 }}>
-                <CartesianGrid strokeDasharray="0" className="stroke-gray-200 dark:stroke-gray-800" opacity={0.5} horizontal={true} vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  className="fill-gray-600 dark:fill-gray-400" 
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                  interval={0}
-                />
-                <YAxis 
-                  className="fill-gray-500 dark:fill-gray-500" 
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                  width={50}
-                  tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip 
+                <CartesianGrid strokeDasharray="3 3" opacity={0.07} horizontal={true} vertical={false} />
+                <XAxis dataKey="name" fontSize={10} tickLine={false} axisLine={false} interval={0} tick={{ fill: '#64748b' }} />
+                <YAxis fontSize={10} tickLine={false} axisLine={false} width={48} tickFormatter={(v) => `₱${(v/1000).toFixed(0)}k`} tick={{ fill: '#94a3b8' }} />
+                <Tooltip
                   content={<ChartTooltip formatter={(value) => [`₱${formatNumber(value as number)}`, 'Revenue']} />}
-                  cursor={{ fill: 'rgba(16, 185, 129, 0.05)' }}
+                  cursor={{ fill: 'rgba(16,185,129,0.06)' }}
                 />
-                <Bar 
-                  dataKey="count" 
-                  fill="#10B981" 
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={48}
-                />
+                <Bar dataKey="count" fill="#10B981" radius={[6, 6, 0, 0]} maxBarSize={52} />
               </BarChart>
             </ResponsiveContainer>
+            <div className="mt-2 space-y-1.5 border-t border-slate-100 dark:border-slate-800 pt-3">
+              {storePerformanceData.slice(0, 4).map((d: any, i: number) => (
+                <div key={d.name} className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs ${i === 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`h-5 w-5 rounded flex items-center justify-center text-[10px] font-black flex-shrink-0 ${i === 0 ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>{i + 1}</span>
+                    <span className="font-semibold text-slate-900 dark:text-white truncate">{d.name}</span>
+                  </div>
+                  <span className="font-bold text-slate-700 dark:text-slate-300 flex-shrink-0">₱{formatNumber(d.count)}</span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -788,71 +761,78 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
         {/* Recent Sales */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5 text-green-600" />
-              Recent Sales
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-1 bg-emerald-500 rounded-full flex-shrink-0"></div>
+              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Recent Sales</h3>
+            </div>
+            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Latest completed transactions</p>
+          </div>
+          <CardContent className="pt-4 pb-3">
             <div className="space-y-2">
               {stats?.recentTransactions && stats.recentTransactions.length > 0 ? (
                 stats.recentTransactions.map((tx, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-[5px] bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate text-slate-900 dark:text-white">{tx.itemName}</div>
-                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                        <span>{tx.quantity} units</span>
-                        {tx.staffName && (
-                          <>
-                            <span>•</span>
-                            <span className="truncate">by {tx.staffName}</span>
-                          </>
-                        )}
+                  <div key={index} className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                        <ShoppingCart className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-xs truncate" style={{ color: '#0f172a' }}>{tx.itemName}</div>
+                        <div className="flex items-center gap-1.5 mt-0.5" style={{ color: '#64748b', fontSize: '10px' }}>
+                          <span>{tx.quantity} units</span>
+                          {tx.staffName && <><span>·</span><span className="truncate">{tx.staffName}</span></>}
+                        </div>
                       </div>
                     </div>
-                    <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+                    <div className="text-sm font-bold flex-shrink-0 ml-2" style={{ color: '#059669' }}>
                       ₱{formatNumber(tx.totalRevenue)}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8">
-                  <ShoppingCart className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                  <p className="text-sm text-slate-600 dark:text-slate-400">No recent sales</p>
+                <div className="text-center py-10">
+                  <ShoppingCart className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No recent sales</p>
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Recent Restocks - NEW */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Package className="h-5 w-5 text-blue-600" />
-              Recent Restocks
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        {/* Recent Restocks */}
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-1 bg-blue-500 rounded-full flex-shrink-0"></div>
+              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Recent Restocks</h3>
+            </div>
+            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Latest inventory replenishments</p>
+          </div>
+          <CardContent className="pt-4 pb-3">
             <div className="space-y-2">
               {stats?.recentRestocks && stats.recentRestocks.length > 0 ? (
                 stats.recentRestocks.map((restock, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-[5px] bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate text-slate-900 dark:text-white">{restock.itemName}</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">{restock.quantity} units</div>
+                  <div key={index} className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                        <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-xs truncate" style={{ color: '#0f172a' }}>{restock.itemName}</div>
+                        <div className="mt-0.5" style={{ color: '#64748b', fontSize: '10px' }}>{restock.quantity} units added</div>
+                      </div>
                     </div>
-                    <div className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                    <div className="text-sm font-bold flex-shrink-0 ml-2" style={{ color: '#2563eb' }}>
                       ₱{formatNumber(restock.totalCost)}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8">
-                  <Package className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                  <p className="text-sm text-slate-600 dark:text-slate-400">No recent restocks</p>
+                <div className="text-center py-10">
+                  <Package className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No recent restocks</p>
                 </div>
               )}
             </div>
@@ -863,131 +843,151 @@ export default function DashboardPage() {
       {/* Insights & Health */}
       <div className="grid gap-5 grid-cols-1 lg:grid-cols-3">
         {/* Business Insights */}
-        <Card className="lg:col-span-2 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Activity className="h-5 w-5 text-purple-600" />
-              Business Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Card className="lg:col-span-2 border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-1 bg-violet-500 rounded-full flex-shrink-0"></div>
+              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Business Insights</h3>
+            </div>
+            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Automated performance analysis</p>
+          </div>
+          <CardContent className="pt-4 pb-3">
             <div className="space-y-2">
               {stats?.insights && stats.insights.length > 0 ? (
                 stats.insights.map((insight, index) => (
-                  <Alert 
-                    key={index} 
+                  <div
+                    key={index}
                     className={cn(
-                      "border-l-4",
-                      insight.type === 'success' && "border-green-500 bg-green-50 dark:bg-green-900/20",
-                      insight.type === 'warning' && "border-amber-500 bg-amber-50 dark:bg-amber-900/20",
-                      insight.type === 'error' && "border-red-500 bg-red-50 dark:bg-red-900/20"
+                      "flex items-start gap-3 px-4 py-3 rounded-lg border-l-4",
+                      insight.type === 'success' && "border-l-emerald-500 bg-emerald-50 dark:bg-emerald-900/15",
+                      insight.type === 'warning' && "border-l-amber-500 bg-amber-50 dark:bg-amber-900/15",
+                      insight.type === 'error'   && "border-l-red-500 bg-red-50 dark:bg-red-900/15"
                     )}
                   >
-                    <AlertDescription className="text-sm font-medium">
+                    <div className={cn(
+                      "h-5 w-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5",
+                      insight.type === 'success' && "bg-emerald-500",
+                      insight.type === 'warning' && "bg-amber-500",
+                      insight.type === 'error'   && "bg-red-500"
+                    )}>
+                      <svg className="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {insight.type === 'success'
+                          ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                          : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v4m0 4h.01" />}
+                      </svg>
+                    </div>
+                    <p className="text-xs font-semibold leading-relaxed" style={{
+                      color: insight.type === 'success' ? '#065f46'
+                           : insight.type === 'warning' ? '#92400e'
+                           : '#991b1b'
+                    }}>
                       {insight.message}
-                    </AlertDescription>
-                  </Alert>
+                    </p>
+                  </div>
                 ))
               ) : (
-                <div className="text-center py-8">
-                  <Activity className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                  <p className="text-sm text-slate-600 dark:text-slate-400">No insights available</p>
+                <div className="text-center py-10">
+                  <Activity className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No insights available</p>
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Inventory Health Score - Meter Style */}
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Activity className="h-5 w-5 text-green-600" />
-              Inventory Health
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Health Score Meter */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Health Score</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-slate-900 dark:text-white">
-                      {stats?.inventoryHealthScore || 0}
-                    </span>
-                    <span className="text-sm text-slate-500 dark:text-slate-400">/ 100</span>
-                  </div>
-                </div>
-                
-                {/* Progress Bar */}
-                <div className="relative h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-all duration-1000 ease-out",
-                      (stats?.inventoryHealthScore || 0) >= 80 ? "bg-gradient-to-r from-green-500 to-green-600" :
-                      (stats?.inventoryHealthScore || 0) >= 60 ? "bg-gradient-to-r from-amber-500 to-amber-600" :
-                      "bg-gradient-to-r from-red-500 to-red-600"
-                    )}
-                    style={{ width: `${stats?.inventoryHealthScore || 0}%` }}
-                  />
-                </div>
-
-                {/* Status Label */}
-                <div className="flex items-center justify-center">
-                  <span className={cn(
-                    "text-xs font-semibold px-3 py-1 rounded-full",
-                    (stats?.inventoryHealthScore || 0) >= 80 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                    (stats?.inventoryHealthScore || 0) >= 60 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
-                    "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                  )}>
-                    {(stats?.inventoryHealthScore || 0) >= 80 ? "Excellent Health" :
-                     (stats?.inventoryHealthScore || 0) >= 60 ? "Good Health" :
-                     (stats?.inventoryHealthScore || 0) >= 40 ? "Fair Health" : "Needs Attention"}
+        {/* Inventory Health Score */}
+        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-1 bg-emerald-500 rounded-full flex-shrink-0"></div>
+              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Inventory Health</h3>
+            </div>
+            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Overall stock status score</p>
+          </div>
+          <CardContent className="pt-5 pb-4">
+            {/* Score */}
+            <div className="flex items-end justify-between mb-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: '#64748b' }}>Health Score</p>
+                <div className="flex items-end gap-1.5">
+                  <span className="text-4xl font-black leading-none" style={{ color: '#0f172a' }}>
+                    {stats?.inventoryHealthScore || 0}
                   </span>
+                  <span className="text-base mb-0.5" style={{ color: '#94a3b8' }}>/ 100</span>
                 </div>
               </div>
+              {/* Circular indicator */}
+              <div className={cn(
+                "h-14 w-14 rounded-full flex items-center justify-center border-4",
+                (stats?.inventoryHealthScore || 0) >= 80 ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" :
+                (stats?.inventoryHealthScore || 0) >= 60 ? "border-amber-500 bg-amber-50 dark:bg-amber-900/20" :
+                "border-red-500 bg-red-50 dark:bg-red-900/20"
+              )}>
+                <Activity className={cn("h-6 w-6",
+                  (stats?.inventoryHealthScore || 0) >= 80 ? "text-emerald-600 dark:text-emerald-400" :
+                  (stats?.inventoryHealthScore || 0) >= 60 ? "text-amber-600 dark:text-amber-400" :
+                  "text-red-600 dark:text-red-400"
+                )} />
+              </div>
+            </div>
 
-              {/* Metrics Grid - Mobile Optimized */}
-              <div className="space-y-2.5 pt-2">
-                {/* Stock Levels */}
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded bg-blue-100 dark:bg-blue-900/30">
-                      <Package className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Stock Levels</span>
-                  </div>
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">
-                    {Math.round(((stats?.totalItems || 0) - (stats?.outOfStockCount || 0)) / (stats?.totalItems || 1) * 100)}%
-                  </span>
-                </div>
+            {/* Progress bar */}
+            <div className="h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-2">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all duration-1000 ease-out",
+                  (stats?.inventoryHealthScore || 0) >= 80 ? "bg-gradient-to-r from-emerald-500 to-emerald-400" :
+                  (stats?.inventoryHealthScore || 0) >= 60 ? "bg-gradient-to-r from-amber-500 to-amber-400" :
+                  "bg-gradient-to-r from-red-500 to-red-400"
+                )}
+                style={{ width: `${stats?.inventoryHealthScore || 0}%` }}
+              />
+            </div>
+            <div className="flex justify-center mb-4">
+              <span className={cn(
+                "text-[11px] font-bold px-3 py-1 rounded-full",
+                (stats?.inventoryHealthScore || 0) >= 80 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" :
+                (stats?.inventoryHealthScore || 0) >= 60 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
+                "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+              )}>
+                {(stats?.inventoryHealthScore || 0) >= 80 ? "Excellent Health" :
+                 (stats?.inventoryHealthScore || 0) >= 60 ? "Good Health" :
+                 (stats?.inventoryHealthScore || 0) >= 40 ? "Fair Health" : "Needs Attention"}
+              </span>
+            </div>
 
-                {/* Return Rate */}
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded bg-amber-100 dark:bg-amber-900/30">
-                      <TrendingUp className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                    </div>
-                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Return Rate</span>
+            {/* Metrics */}
+            <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <Package className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">
-                    {(stats?.returnRate || 0).toFixed(1)}%
-                  </span>
+                  <span className="text-xs font-semibold" style={{ color: '#374151' }}>Stock Levels</span>
                 </div>
-
-                {/* Low Stock */}
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded bg-red-100 dark:bg-red-900/30">
-                      <AlertTriangle className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
-                    </div>
-                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Low Stock Items</span>
+                <span className="text-sm font-bold" style={{ color: '#111827' }}>
+                  {Math.round(((stats?.totalItems || 0) - (stats?.outOfStockCount || 0)) / (stats?.totalItems || 1) * 100)}%
+                </span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                    <TrendingUp className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                   </div>
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">
-                    {lowStockCount}
-                  </span>
+                  <span className="text-xs font-semibold" style={{ color: '#374151' }}>Return Rate</span>
                 </div>
+                <span className="text-sm font-bold" style={{ color: '#111827' }}>
+                  {(stats?.returnRate || 0).toFixed(1)}%
+                </span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <AlertTriangle className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
+                  </div>
+                  <span className="text-xs font-semibold" style={{ color: '#374151' }}>Low Stock Items</span>
+                </div>
+                <span className="text-sm font-bold" style={{ color: '#111827' }}>{lowStockCount}</span>
               </div>
             </div>
           </CardContent>

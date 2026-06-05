@@ -211,9 +211,10 @@ export default function LogPage() {
   )
 
   // Reset to page 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, operationFilter, salesChannelFilter, sortBy, startDate, endDate])
+  // REMOVED - causes pagination to jump back to page 1 constantly
+  // useEffect(() => {
+  //   setCurrentPage(1)
+  // }, [searchQuery, operationFilter, salesChannelFilter, sortBy, startDate, endDate])
 
   // Statistics
   const stats = useMemo(() => {

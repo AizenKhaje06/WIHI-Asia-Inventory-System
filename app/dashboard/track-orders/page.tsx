@@ -28,6 +28,7 @@ import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
 import { getCurrentUserRole, getAuthHeaders } from '@/lib/role-utils'
 import { format } from 'date-fns'
+import { TablePagination } from '@/components/ui/table-pagination'
 
 interface Order {
   id: string
@@ -68,6 +69,10 @@ export default function TrackOrdersPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null)
   const [isEditMode, setIsEditMode] = useState(false)
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [editForm, setEditForm] = useState({
     customerName: '',
     customerContact: '',
@@ -984,6 +989,13 @@ export default function TrackOrdersPage() {
     setFilteredOrders(filtered)
   }
 
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredOrders.length / pageSize)
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
+
   const clearFilters = () => {
     setSearchTerm('')
     setStatusFilter('all')
@@ -1761,7 +1773,7 @@ export default function TrackOrdersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredOrders.map((order, index) => (
+                  {paginatedOrders.map((order, index) => (
                     <tr 
                       key={order.id} 
                       className="group hover:bg-blue-50 dark:hover:bg-slate-800/50 transition-all duration-200 h-16"
@@ -1840,6 +1852,19 @@ export default function TrackOrdersPage() {
                   ))}
                 </tbody>
               </table>
+
+              {/* Pagination */}
+              <TablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalItems={filteredOrders.length}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size)
+                  setCurrentPage(1)
+                }}
+              />
             </div>
           )}
         </CardContent>

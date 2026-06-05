@@ -161,7 +161,7 @@ export default function LogisticsLogPage() {
   )
 
   useEffect(() => {
-    setCurrentPage(1)
+    // REMOVED: setCurrentPage(1) - causes pagination to jump back constantly
   }, [searchQuery, operationFilter, salesChannelFilter, sortBy, startDate, endDate])
 
   const stats = useMemo(() => {

@@ -12,6 +12,7 @@ import { formatCurrency } from '@/lib/utils'
 import { toast } from 'sonner'
 import { apiGet, apiPost } from '@/lib/api-client'
 import { getCurrentUser } from '@/lib/auth'
+import { TablePagination } from '@/components/ui/table-pagination'
 
 interface Order {
   id: string
@@ -39,6 +40,10 @@ export default function TransactionHistoryPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [salesChannelFilter, setSalesChannelFilter] = useState<string>('all')
   const [currentUser, setCurrentUser] = useState<any>(null)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
 
   useEffect(() => {
     const user = getCurrentUser()
@@ -83,6 +88,12 @@ export default function TransactionHistoryPage() {
     
     setFilteredOrders(filtered)
   }
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredOrders.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex)
 
   const handleMarkAsPacked = async (orderId: string) => {
     if (!currentUser) {
@@ -259,14 +270,14 @@ export default function TransactionHistoryPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredOrders.map((order, index) => (
+                  {paginatedOrders.map((order, index) => (
                     <tr 
                       key={order.id} 
                       className="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
                     >
                       <td className="py-2 px-2">
                         <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
-                          {index + 1}
+                          {startIndex + index + 1}
                         </span>
                       </td>
                       <td className="py-2 px-2">
@@ -340,6 +351,16 @@ export default function TransactionHistoryPage() {
                 </tbody>
               </table>
             </div>
+          )}
+          {filteredOrders.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={filteredOrders.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
         </CardContent>
       </Card>

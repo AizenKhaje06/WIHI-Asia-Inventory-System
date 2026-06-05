@@ -52,6 +52,8 @@ export default function AdminInstructionsPage() {
                 <ul className="space-y-1 text-sm text-gray-600">
                   <li>• Login Credentials Management</li>
                   <li>• Settings Access Code Control</li>
+                  <li>• Product Management (Full CRUD)</li>
+                  <li>• User Role Management</li>
                   <li>• System Configuration</li>
                   <li>• Database Management</li>
                   <li>• Security Settings</li>
@@ -215,6 +217,152 @@ export default function AdminInstructionsPage() {
                 </ul>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* User Roles & Permissions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserCog className="h-5 w-5 text-orange-500" />
+              User Roles & Permissions
+            </CardTitle>
+            <CardDescription>
+              Understanding access levels across different user types
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-4">
+              {/* Main Admin */}
+              <div className="border-l-4 border-orange-500 pl-4">
+                <h4 className="font-semibold text-orange-600 mb-2">Main Admin (You)</h4>
+                <ul className="space-y-1 text-sm text-gray-600">
+                  <li>✓ Full system access and control</li>
+                  <li>✓ Create, edit, delete products</li>
+                  <li>✓ Manage inventory restocking</li>
+                  <li>✓ Access to all admin settings</li>
+                  <li>✓ User credential management</li>
+                  <li>✓ Database configuration</li>
+                  <li>✓ System-wide settings</li>
+                </ul>
+              </div>
+
+              {/* Logistics Admin */}
+              <div className="border-l-4 border-blue-500 pl-4">
+                <h4 className="font-semibold text-blue-600 mb-2">Logistics/Warehouse Admin</h4>
+                <ul className="space-y-1 text-sm text-gray-600">
+                  <li>✓ Full product management access</li>
+                  <li>✓ Create, edit, delete products</li>
+                  <li>✓ Manage inventory restocking</li>
+                  <li>✓ Order tracking and dispatch</li>
+                  <li>✓ Warehouse operations</li>
+                  <li>✗ No access to admin settings</li>
+                  <li>✗ Cannot manage credentials</li>
+                </ul>
+              </div>
+
+              {/* Departments/Sales Teams */}
+              <div className="border-l-4 border-green-500 pl-4">
+                <h4 className="font-semibold text-green-600 mb-2">Departments (Sales Teams)</h4>
+                <ul className="space-y-1 text-sm text-gray-600">
+                  <li>✓ View product inventory (Read-only)</li>
+                  <li>✓ Search and filter products</li>
+                  <li>✓ View product details and pricing</li>
+                  <li>✓ Create sales orders</li>
+                  <li>✗ Cannot add/edit/delete products</li>
+                  <li>✗ Cannot restock inventory</li>
+                  <li>✗ No admin settings access</li>
+                </ul>
+              </div>
+            </div>
+
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Product Management Access:</strong> Only Main Admin and Logistics Admin can manage products. 
+                Departments have read-only access to ensure data integrity and proper inventory control.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+
+        {/* Product Management Guide */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5 text-orange-500" />
+              Product Management Guide
+            </CardTitle>
+            <CardDescription>
+              How to manage products in the inventory system
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <Badge variant="outline" className="mt-1 bg-blue-50">Add</Badge>
+                <div>
+                  <h4 className="font-semibold">Adding New Products</h4>
+                  <p className="text-sm text-gray-600">
+                    Click the "+ Product" button at the top of the Inventory page. Fill in product details including name, 
+                    category, prices, and initial stock. Upload product image for better visibility.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Badge variant="outline" className="mt-1 bg-purple-50">Bundle</Badge>
+                <div>
+                  <h4 className="font-semibold">Creating Product Bundles</h4>
+                  <p className="text-sm text-gray-600">
+                    Click the "+ Bundle" button to create product bundles. Select multiple products and set quantities. 
+                    Bundles automatically calculate pricing and manage stock of component items.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Badge variant="outline" className="mt-1 bg-orange-50">Edit</Badge>
+                <div>
+                  <h4 className="font-semibold">Editing Products</h4>
+                  <p className="text-sm text-gray-600">
+                    Click the edit icon (pencil) in the Actions column. Update product details as needed. 
+                    <strong> Note:</strong> Quantity cannot be edited directly - use Restock function instead.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Badge variant="outline" className="mt-1 bg-green-50">Restock</Badge>
+                <div>
+                  <h4 className="font-semibold">Restocking Inventory</h4>
+                  <p className="text-sm text-gray-600">
+                    Click the restock icon (package plus) to add inventory. Enter the amount and reason for audit trail. 
+                    This is the ONLY way to increase product quantity to maintain proper inventory tracking.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Badge variant="outline" className="mt-1 bg-red-50">Delete</Badge>
+                <div>
+                  <h4 className="font-semibold">Deleting Products</h4>
+                  <p className="text-sm text-gray-600">
+                    Click the delete icon (trash) in the Actions column. Confirm deletion when prompted. 
+                    <strong> Warning:</strong> This action cannot be undone. Ensure no active orders reference the product.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Alert className="bg-yellow-50 border-yellow-200">
+              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-yellow-800">
+                <strong>Important:</strong> Quantity validation is strictly enforced. You cannot edit product quantity 
+                through the edit dialog. All stock increases must go through the Restock function to maintain proper 
+                audit trails and inventory accuracy.
+              </AlertDescription>
+            </Alert>
           </CardContent>
         </Card>
       </div>

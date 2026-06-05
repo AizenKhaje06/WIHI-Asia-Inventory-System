@@ -114,7 +114,7 @@ interface PremiumSidebarProps {
 
 export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, onCollapsedChange }: PremiumSidebarProps) {
   const pathname = usePathname()
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(false) // Default: false = expanded/open
   const reducedMotion = useReducedMotion()
   const [isMobile, setIsMobile] = useState(false)
   const [lowStockCount, setLowStockCount] = useState(0)
@@ -332,8 +332,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
         className={cn(
           "fixed z-50 flex flex-col",
           reducedMotion ? "" : "transition-all duration-300",
-          // Responsive width: smaller on <27" screens, optimal on 27"+
-          collapsed ? "w-30 xl:w-[72px]" : "w-48 xl:w-52", // Increased collapsed width from 14/16 to 16/72px
+          // Fixed width - no more collapsing
+          "w-48 xl:w-52",
           isMobile && !mobileOpen && "-translate-x-full",
           isMobile && mobileOpen && "translate-x-0",
           // Desktop: clean edge with subtle border
@@ -350,13 +350,14 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
       >
         {/* Logo & Brand - Professional Layout with Dark Mode Support */}
         <div 
-          className="h-14 flex items-center justify-center px-1.5 xl:px-2 flex-shrink-0 relative"
+          className="h-14 flex items-center px-1.5 xl:px-2 flex-shrink-0 relative"
         >
           {/* Bottom border line - matching separator style */}
           <div className="absolute bottom-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-white to-transparent dark:from-transparent dark:via-white dark:to-transparent" />
           
-          {!collapsed ? (
-            <div className="flex items-center justify-center w-full py-1.5">
+          {/* Logo - Centered */}
+          <div className="flex items-center justify-center flex-1">
+            <div className="flex items-center justify-center py-1.5">
               {/* Light mode logo */}
               <img 
                 src="/Vertex-icon.png" 
@@ -370,21 +371,13 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                 className="h-9 w-auto object-contain hidden dark:block"
               />
             </div>
-          ) : (
-            <div className="w-8 h-8 relative" aria-hidden="true">
-              <img 
-                src="/Vertex-icon-3.png" 
-                alt="Vertex" 
-                className="w-full h-full object-contain"
-              />
-            </div>
-          )}
+          </div>
           
           {/* Mobile Close Button */}
           {isMobile && (
             <button
               onClick={onMobileClose}
-              className="absolute right-2 p-2 rounded-lg transition-colors text-white hover:bg-white/10 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="ml-auto p-2 rounded-lg transition-colors text-white hover:bg-white/10 dark:text-slate-400 dark:hover:bg-slate-800 flex-shrink-0"
               aria-label="Close navigation menu"
             >
               <X className="h-5 w-5" />
@@ -419,44 +412,74 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                       href={item.href}
                       onClick={handleNavClick}
                       className={cn(
-                        "flex items-center rounded-lg group relative overflow-hidden",
+                        "flex items-center group relative overflow-hidden",
                         reducedMotion ? "" : "transition-all duration-200",
                         // Collapsed state: centered icon with better spacing
                         collapsed ? "justify-center py-2.5 xl:py-3 mx-auto" : "gap-1.5 xl:gap-2 px-1.5 xl:px-2 py-1.5 xl:py-2",
-                        // Active state with gradient and shadow
+                        // Active state - NEON ORANGE GRADIENT with LEFT BORDER
                         isActive 
-                          ? "bg-white/20 text-white shadow-lg shadow-white/10 backdrop-blur-sm" 
-                          : "text-white hover:bg-white/10 hover:text-white dark:text-white dark:hover:bg-slate-800/80 dark:hover:text-white",
-                        // Hover effects for collapsed state
-                        collapsed && !isActive && "hover:bg-white/10 dark:hover:from-slate-800 dark:hover:to-slate-800/50",
-                        // Scale effect on hover (collapsed only)
-                        collapsed && !reducedMotion && "hover:scale-105"
+                          ? "border-l-3 border-orange-500" 
+                          : "text-white/70 hover:text-white hover:bg-white/5 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 border-l-3 border-transparent",
+                        // Smooth transitions
+                        "transition-all duration-200"
                       )}
+                      style={isActive ? {
+                        borderLeftWidth: '3px',
+                        borderLeftColor: '#f97316',
+                      } : {
+                        borderLeftWidth: '3px',
+                        borderLeftColor: 'transparent'
+                      }}
                       aria-current={isActive ? "page" : undefined}
                       role="listitem"
                     >
-                      {/* Icon with better sizing in collapsed state */}
+                      {/* Icon with neon glow effect when active */}
                       <div className={cn(
-                        "flex items-center justify-center flex-shrink-0",
+                        "flex items-center justify-center flex-shrink-0 relative",
                         collapsed ? "w-5 h-5 xl:w-6 xl:h-6" : ""
                       )}>
                         <item.icon
                           className={cn(
-                            "flex-shrink-0",
+                            "flex-shrink-0 relative z-10",
                             collapsed 
                               ? "h-[16px] w-[16px] xl:h-[18px] xl:w-[18px]" 
                               : "h-[13px] w-[13px] xl:h-[14px] xl:w-[14px]",
                             // Icon animation on hover
-                            !reducedMotion && collapsed && "group-hover:scale-110 transition-transform duration-200"
+                            !reducedMotion && "group-hover:scale-110 transition-transform duration-200"
                           )}
                           strokeWidth={isActive ? 2.5 : 2}
+                          style={isActive ? {
+                            filter: 'drop-shadow(0 0 6px rgba(249, 115, 22, 0.8)) drop-shadow(0 0 12px rgba(249, 115, 22, 0.4))',
+                            color: '#fb923c'
+                          } : undefined}
                           aria-hidden="true"
                         />
+                        {/* Neon glow backdrop for active icon */}
+                        {isActive && (
+                          <div 
+                            className="absolute inset-0 blur-md opacity-50"
+                            style={{
+                              background: 'radial-gradient(circle, rgba(249, 115, 22, 0.6) 0%, transparent 70%)'
+                            }}
+                          />
+                        )}
                       </div>
                       
                       {!collapsed && (
                         <>
-                          <span className="text-xs xl:text-sm font-normal flex-1">
+                          <span 
+                            className={cn(
+                              "text-xs xl:text-sm flex-1 relative z-10",
+                              isActive ? "font-semibold" : "font-normal"
+                            )}
+                            style={isActive ? {
+                              background: 'linear-gradient(90deg, #fb923c 0%, #f97316 50%, #ea580c 100%)',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent',
+                              backgroundClip: 'text',
+                              filter: 'drop-shadow(0 0 8px rgba(249, 115, 22, 0.5))'
+                            } : undefined}
+                          >
                             {item.name}
                           </span>
                           {item.badge !== undefined && (
@@ -465,8 +488,11 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                               className={cn(
                                 "ml-auto text-xs xl:text-sm px-1 xl:px-1.5 py-0",
                                 item.badgeVariant === 'warning' && "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400",
-                                isActive && "bg-white/20 text-white"
+                                isActive && "bg-orange-500/20 text-orange-300 border border-orange-500/50"
                               )}
+                              style={isActive ? {
+                                boxShadow: '0 0 8px rgba(249, 115, 22, 0.3)'
+                              } : undefined}
                             >
                               {item.badge}
                             </Badge>
@@ -492,11 +518,6 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
                         )}>
                           {item.badge > 9 ? '9+' : item.badge}
                         </div>
-                      )}
-                      
-                      {/* Active indicator bar for collapsed state */}
-                      {collapsed && isActive && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
                       )}
                     </Link>
                   )
@@ -531,8 +552,8 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
           ))}
         </nav>
 
-        {/* Logout & Collapse Button Container */}
-        <div className="p-2.5 xl:p-3 border-t flex-shrink-0 border-white/10 dark:border-slate-800/60 relative">
+        {/* Logout Button Container */}
+        <div className="p-2.5 xl:p-3 border-t flex-shrink-0 border-white/10 dark:border-slate-800/60">
           {collapsed ? (
             <TooltipProvider>
               <Tooltip delayDuration={100}>
@@ -594,71 +615,43 @@ export function PremiumSidebar({ onNavClick, mobileOpen = false, onMobileClose, 
               </span>
             </button>
           )}
-
-          {/* Collapse/Expand Button - Desktop Only - Inside Sidebar */}
-          {!isMobile && (
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className={cn(
-                "w-full flex items-center justify-center gap-2 rounded-lg",
-                "py-2.5 xl:py-3",
-                "bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10",
-                "text-white dark:text-white",
-                "transition-all duration-200",
-                "hover:shadow-lg",
-                collapsed ? "px-0" : "px-3"
-              )}
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {/* Hamburger/Vertical Lines Icon */}
-              <div className="flex flex-col gap-1 items-center justify-center">
-                {collapsed ? (
-                  // Vertical lines when collapsed
-                  <>
-                    <div className="w-1 h-1.5 bg-white rounded-full" />
-                    <div className="w-1 h-1.5 bg-white rounded-full" />
-                    <div className="w-1 h-1.5 bg-white rounded-full" />
-                  </>
-                ) : (
-                  // Horizontal lines (hamburger) when expanded
-                  <>
-                    <div className="w-4 h-0.5 bg-white rounded-full" />
-                    <div className="w-4 h-0.5 bg-white rounded-full" />
-                    <div className="w-4 h-0.5 bg-white rounded-full" />
-                  </>
-                )}
-              </div>
-              {!collapsed && (
-                <span className="text-xs xl:text-sm font-medium">Collapse</span>
-              )}
-            </button>
-          )}
         </div>
       </aside>
 
       {/* Professional Logout Confirmation Modal */}
       <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
         <AlertDialogContent className="max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl">
-          <AlertDialogHeader className="space-y-3">
+          <AlertDialogHeader className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+              <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+                <LogOut className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <AlertDialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">
-                Confirm Sign Out
-              </AlertDialogTitle>
+              <div className="flex-1">
+                <AlertDialogTitle className="text-xl font-semibold text-slate-900 dark:text-white">
+                  Sign Out
+                </AlertDialogTitle>
+                {currentUser && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                    {currentUser.displayName || currentUser.username} • {currentUser.role === 'admin' ? 'Main Admin' : currentUser.role === 'logistics' ? 'Logistics Admin' : currentUser.role === 'operations' ? 'Department User' : currentUser.role?.charAt(0).toUpperCase() + currentUser.role?.slice(1)}
+                  </p>
+                )}
+              </div>
             </div>
-            <AlertDialogDescription className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              You are about to sign out of your account. Any unsaved changes may be lost. Are you sure you want to continue?
-            </AlertDialogDescription>
           </AlertDialogHeader>
+          
+          <div className="py-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              You are about to sign out of your account. Any unsaved work will be lost.
+            </p>
+          </div>
+
           <AlertDialogFooter className="gap-2 sm:gap-2">
             <AlertDialogCancel className="mt-0 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
-              Cancel
+              Stay Signed In
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white dark:bg-red-600 dark:hover:bg-red-700"
+              className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-slate-200 dark:text-slate-900"
             >
               Sign Out
             </AlertDialogAction>

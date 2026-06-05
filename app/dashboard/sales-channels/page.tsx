@@ -27,6 +27,7 @@ import {
   FileDown,
   ChevronDown
 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { formatCurrency, formatNumber } from "@/lib/utils"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { apiGet } from "@/lib/api-client"
@@ -80,6 +81,7 @@ export default function SalesChannelsPage() {
   const [loading, setLoading] = useState(true)
   const [startDate, setStartDate] = useState<Date | null>(null)
   const [endDate, setEndDate] = useState<Date | null>(null)
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null)
 
   // Role detection
   const userRole = getCurrentUserRole()
@@ -570,12 +572,27 @@ export default function SalesChannelsPage() {
 
       {/* Channels List */}
       <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">
-            All Sales Channels ({data?.departments.length || 0})
-          </CardTitle>
+        <CardHeader className="pb-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                All Sales Channels ({data?.departments.length || 0})
+              </CardTitle>
+              <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                View performance metrics and detailed analytics for each sales channel
+              </p>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+              </svg>
+              <span className="text-sm font-bold text-blue-700 dark:text-blue-300 whitespace-nowrap">
+                Click to view details
+              </span>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {data?.departments && data.departments.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {data.departments.map((dept) => {
@@ -585,82 +602,118 @@ export default function SalesChannelsPage() {
                 return (
                   <button
                     key={dept.name}
-                    onClick={() => router.push(`/dashboard/sales-channels/${encodeURIComponent(dept.name)}?startDate=${startDate}&endDate=${endDate}`)}
-                    className="text-left p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out"
+                    onClick={() => {
+                      setNavigatingTo(dept.name)
+                      router.push(`/dashboard/sales-channels/${encodeURIComponent(dept.name)}?startDate=${startDate}&endDate=${endDate}`)
+                    }}
+                    disabled={navigatingTo !== null}
+                    className="group text-left p-5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-500 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 ease-out relative overflow-hidden cursor-pointer disabled:cursor-wait disabled:pointer-events-none"
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center">
-                          <img
-                            src={getChannelIcon(dept.name)}
-                            alt={dept.name}
-                            className="w-10 h-10 object-contain"
-                          />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-slate-900 dark:text-white">
-                            {dept.name}
-                          </h3>
-                          <Badge className={`${getTypeColor(dept.type)} text-xs mt-1`}>
-                            {dept.type}
-                          </Badge>
-                        </div>
-                      </div>
-                      {isPositive ? (
-                        <ArrowUpRight className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <ArrowDownRight className="h-5 w-5 text-red-500" />
-                      )}
-                    </div>
+                    {/* Hover gradient effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Revenue</p>
-                        <p className="text-xl font-bold text-slate-900 dark:text-white">
-                          {formatCurrency(dept.revenue)}
-                        </p>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-                        <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Profit</p>
-                          <p className={`text-sm font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                            {formatCurrency(dept.profit)}
-                          </p>
+                    {/* Loading overlay - shown when this card is being navigated */}
+                    {navigatingTo === dept.name && (
+                      <div className="absolute inset-0 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm z-20 flex flex-col items-center justify-center gap-3 rounded-xl">
+                        <div className="relative">
+                          <div className="h-12 w-12 rounded-full border-4 border-blue-200 dark:border-blue-800"></div>
+                          <div className="absolute inset-0 h-12 w-12 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
                         </div>
-                        <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Margin</p>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                            {profitMargin.toFixed(1)}%
-                          </p>
+                        <div className="text-center">
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">Loading {dept.name}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Fetching performance data...</p>
                         </div>
                       </div>
+                    )}
 
-                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-                        <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">COGS</p>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                            {formatCurrency(dept.cost)}
-                          </p>
+                    {/* Click indicator badge - hidden when loading */}
+                    {navigatingTo !== dept.name && (
+                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                        <div className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded-full text-[10px] font-bold shadow-lg">
+                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                          VIEW
                         </div>
-                        <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">AOV</p>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                            {dept.transactions > 0 ? formatCurrency(dept.revenue / dept.transactions) : '₱0'}
-                          </p>
+                      </div>
+                    )}
+
+                    <div className="relative">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className={`relative w-12 h-12 flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ${navigatingTo && navigatingTo !== dept.name ? 'opacity-40' : ''}`}>
+                            <img
+                              src={getChannelIcon(dept.name)}
+                              alt={dept.name}
+                              className="w-12 h-12 object-contain"
+                            />
+                          </div>
+                          <div className={navigatingTo && navigatingTo !== dept.name ? 'opacity-40' : ''}>
+                            <h3 className="font-bold text-slate-900 dark:text-white text-base group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              {dept.name}
+                            </h3>
+                            <Badge className={`${getTypeColor(dept.type)} text-xs mt-1`}>
+                              {dept.type}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className={navigatingTo && navigatingTo !== dept.name ? 'opacity-40' : ''}>
+                          {isPositive ? (
+                            <ArrowUpRight className="h-5 w-5 text-green-500 group-hover:scale-125 transition-transform" />
+                          ) : (
+                            <ArrowDownRight className="h-5 w-5 text-red-500 group-hover:scale-125 transition-transform" />
+                          )}
                         </div>
                       </div>
 
+                      <div className={`space-y-2 ${navigatingTo && navigatingTo !== dept.name ? 'opacity-40' : ''}`}>
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Revenue</p>
+                          <p className="text-xl font-bold text-slate-900 dark:text-white">
+                            {formatCurrency(dept.revenue)}
+                          </p>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Profit</p>
+                            <p className={`text-sm font-bold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                              {formatCurrency(dept.profit)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Margin</p>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">
+                              {profitMargin.toFixed(1)}%
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">COGS</p>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">
+                              {formatCurrency(dept.cost)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">AOV</p>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">
+                              {dept.transactions > 0 ? formatCurrency(dept.revenue / dept.transactions) : '₱0'}
+                            </p>
+                        </div>
+                      </div>
+
                       <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
                         <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Transactions</p>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Transactions</p>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">
                             {formatNumber(dept.transactions)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Items</p>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Items</p>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">
                             {formatNumber(dept.quantity)}
                           </p>
                         </div>
@@ -669,28 +722,28 @@ export default function SalesChannelsPage() {
                       {/* Parcel Status Indicators */}
                       {dept.parcelStatus && dept.parcelStatus.total > 0 && (
                         <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Parcel Status</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-2">Parcel Status</p>
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1">
                               <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                                 {dept.parcelStatus.pending}
                               </span>
                             </div>
                             <div className="flex items-center gap-1">
                               <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                                 {dept.parcelStatus.inTransit}
                               </span>
                             </div>
                             <div className="flex items-center gap-1">
                               <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                                 {dept.parcelStatus.delivered}
                               </span>
                             </div>
                             <div className="ml-auto">
-                              <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-[10px] px-1.5 py-0">
+                              <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-[10px] font-bold px-1.5 py-0">
                                 {dept.parcelStatus.total > 0 
                                   ? `${((dept.parcelStatus.delivered / dept.parcelStatus.total) * 100).toFixed(0)}%`
                                   : '0%'}
@@ -700,6 +753,7 @@ export default function SalesChannelsPage() {
                         </div>
                       )}
                     </div>
+                  </div>
                   </button>
                 )
               })}

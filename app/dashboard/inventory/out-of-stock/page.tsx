@@ -17,6 +17,7 @@ import { EditItemDialog } from "@/components/edit-item-dialog"
 import { apiGet, apiPost, apiDelete } from "@/lib/api-client"
 import { getCurrentUser } from "@/lib/auth"
 import { toast } from "sonner"
+import { TablePagination } from "@/components/ui/table-pagination"
 
 export default function OutOfStockPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -30,6 +31,10 @@ export default function OutOfStockPage() {
   const [restockAmount, setRestockAmount] = useState(0)
   const [restockReason, setRestockReason] = useState("")
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   
   // Resizable columns state
   const [columnWidths, setColumnWidths] = useState({
@@ -110,6 +115,12 @@ export default function OutOfStockPage() {
 
     setFilteredItems(filtered)
   }, [search, items])
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredItems.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedItems = filteredItems.slice(startIndex, endIndex)
 
   async function fetchItems() {
     try {
@@ -380,7 +391,7 @@ export default function OutOfStockPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                    {filteredItems.map((item) => {
+                    {paginatedItems.map((item) => {
                       const isSelected = selectedRowId === item.id
                       
                       return (
@@ -524,6 +535,16 @@ export default function OutOfStockPage() {
                 </table>
               </div>
             </>
+          )}
+          {filteredItems.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={filteredItems.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
         </CardContent>
       </Card>

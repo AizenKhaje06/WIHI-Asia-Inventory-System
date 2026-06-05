@@ -18,6 +18,7 @@ import { apiGet } from '@/lib/api-client'
 import { BrandLoader } from '@/components/ui/brand-loader'
 import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
 import * as XLSX from 'xlsx'
+import { TablePagination } from '@/components/ui/table-pagination'
 
 interface Order {
   id: string
@@ -54,6 +55,10 @@ export default function LogisticsTrackOrdersPage() {
   const [endDate, setEndDate] = useState<Date | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   useEffect(() => {
     fetchOrders()
@@ -292,6 +297,12 @@ export default function LogisticsTrackOrdersPage() {
     }
   }
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredOrders.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex)
+
   if (loading) {
     return (
       <div className="max-w-[1600px] mx-auto px-3 py-6">
@@ -421,7 +432,7 @@ export default function LogisticsTrackOrdersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredOrders.map((order) => (
+                  {paginatedOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors duration-150 h-14">
                       <td className="py-2 px-3 text-[11px] text-slate-600 dark:text-slate-400 font-medium">
                         <div className="whitespace-nowrap">
@@ -508,6 +519,16 @@ export default function LogisticsTrackOrdersPage() {
                 </tbody>
               </table>
             </div>
+          )}
+          {filteredOrders.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={filteredOrders.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
         </CardContent>
       </Card>

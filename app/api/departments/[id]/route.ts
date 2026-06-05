@@ -294,7 +294,7 @@ export async function GET(
       .sort((a, b) => a.date.localeCompare(b.date))
 
     // Top products by revenue (only active orders)
-    const productMap = new Map<string, { name: string; quantity: number; revenue: number; orders: number }>()
+    const productMap = new Map<string, { name: string; quantity: number; revenue: number; cost: number; profit: number; orders: number }>()
 
     orders.forEach(order => {
       // Only count active orders for revenue
@@ -303,12 +303,14 @@ export async function GET(
       const productName = order.product || 'Unknown'
 
       if (!productMap.has(productName)) {
-        productMap.set(productName, { name: productName, quantity: 0, revenue: 0, orders: 0 })
+        productMap.set(productName, { name: productName, quantity: 0, revenue: 0, cost: 0, profit: 0, orders: 0 })
       }
 
       const product = productMap.get(productName)!
       product.quantity += order.qty || 0
       product.revenue += order.total || 0
+      product.cost += order.cogs || 0
+      product.profit += (order.total || 0) - (order.cogs || 0)
       product.orders += 1
     })
 

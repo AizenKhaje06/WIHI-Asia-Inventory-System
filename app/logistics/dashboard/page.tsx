@@ -344,53 +344,51 @@ export default function LogisticsAdminDashboard() {
         {/* MIDDLE ROW */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Packing Queue list */}
-          <Card className="lg:col-span-2 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <Card className="lg:col-span-2 border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+            <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-900/20">
-                    <Package className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                  </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-1 bg-orange-500 rounded-full flex-shrink-0"></div>
                   <div>
-                    <CardTitle className="text-sm font-semibold">Packing Queue</CardTitle>
-                    <CardDescription className="text-xs mt-0.5">Awaiting packing</CardDescription>
+                    <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Packing Queue</h3>
+                    <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5">Awaiting packing</p>
                   </div>
                 </div>
-                <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 border-0">{filteredQueue.length}</Badge>
+                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-orange-500 text-white shadow-md shadow-orange-500/30">
+                  {filteredQueue.length}
+                </span>
               </div>
-            </CardHeader>
+            </div>
             <CardContent className="p-0">
               {filteredQueue.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <CheckCircle className="h-8 w-8 text-green-400 mb-2" />
-                  <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">All caught up!</p>
+                  <CheckCircle className="h-8 w-8 text-emerald-400 mb-2" />
+                  <p className="text-sm font-semibold" style={{ color: '#64748b' }}>All caught up!</p>
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[320px] overflow-y-auto">
                   {filteredQueue.map((order, i) => (
                     <div key={order.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                      <span className="text-xs font-bold text-slate-400 w-5 flex-shrink-0">{i + 1}</span>
+                      <span className="text-xs font-black w-5 flex-shrink-0" style={{ color: i === 0 ? '#f97316' : '#94a3b8' }}>{i + 1}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                        <p className="text-sm font-semibold truncate" style={{ color: '#0f172a' }}>
                           {toTitleCase(order.itemName)}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className={cn('h-1.5 w-1.5 rounded-full flex-shrink-0', CHANNEL_COLORS[order.channel] || 'bg-slate-400')} />
-                          <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          <span className="text-xs truncate" style={{ color: '#64748b' }}>
                             {order.customerName} · {order.channel}
                           </span>
                         </div>
                         {order.waybill && order.waybill !== order.id && (
-                          <p className="text-[10px] font-mono text-slate-400 dark:text-slate-500 mt-0.5 truncate">
+                          <p className="text-[10px] font-mono mt-0.5 truncate" style={{ color: '#94a3b8' }}>
                             {order.waybill}
                           </p>
                         )}
                       </div>
-                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <span className="text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md">
-                          ×{order.quantity}
-                        </span>
-                      </div>
+                      <span className="text-xs font-bold px-2 py-1 rounded-md flex-shrink-0" style={{ background: '#f1f5f9', color: '#475569' }}>
+                        ×{order.quantity}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -399,20 +397,21 @@ export default function LogisticsAdminDashboard() {
           </Card>
 
           {/* Parcel Status Breakdown */}
-          <Card className="lg:col-span-3 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <Card className="lg:col-span-3 border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+            <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                    <Truck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-1 bg-blue-500 rounded-full flex-shrink-0"></div>
                   <div>
-                    <CardTitle className="text-sm font-semibold">Parcel Status Breakdown</CardTitle>
-                    <CardDescription className="text-xs mt-0.5">{totalOrders} total tracked orders</CardDescription>
+                    <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Parcel Status Breakdown</h3>
+                    <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5">{totalOrders} total tracked orders</p>
                   </div>
                 </div>
-                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border-0">{totalOrders}</Badge>              </div>
-            </CardHeader>
+                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500 text-white shadow-md shadow-blue-500/30">
+                  {totalOrders}
+                </span>
+              </div>
+            </div>
             <CardContent className="p-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {PARCEL_STATUSES.map(status => {
@@ -424,15 +423,15 @@ export default function LogisticsAdminDashboard() {
                       <div className={cn('h-2.5 w-2.5 rounded-full flex-shrink-0', status.dot)} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{status.label}</span>
-                          <span className="text-xs font-bold text-slate-900 dark:text-white">{count}</span>
+                          <span className="text-xs font-semibold" style={{ color: '#374151' }}>{status.label}</span>
+                          <span className="text-xs font-bold" style={{ color: '#111827' }}>{count}</span>
                         </div>
                         <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                           <div className={cn('h-full rounded-full transition-all duration-500', status.color)} style={{ width: `${pct}%` }} />
                         </div>
                         <div className="flex items-center justify-between mt-0.5">
-                          <span className="text-[10px] text-slate-400">{pct}%</span>
-                          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                          <span className="text-[10px]" style={{ color: '#94a3b8' }}>{pct}%</span>
+                          <span className="text-[10px] font-semibold" style={{ color: '#64748b' }}>
                             ₱{amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </span>
                         </div>
@@ -448,39 +447,43 @@ export default function LogisticsAdminDashboard() {
         {/* BOTTOM ROW */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Needs Attention */}
-          <Card className="border border-slate-200 dark:border-slate-800 shadow-sm">
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20">
-                  <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+            <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-1 bg-red-500 rounded-full flex-shrink-0"></div>
+                  <div>
+                    <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Needs Attention</h3>
+                    <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5">Cancelled, returned, detained & problematic</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <CardTitle className="text-sm font-semibold">Needs Attention</CardTitle>
-                  <CardDescription className="text-xs mt-0.5">Cancelled, returned, detained & problematic</CardDescription>
-                </div>
-                {problematicCount > 0 && <Badge className="bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 border-0">{problematicCount}</Badge>}
+                {problematicCount > 0 && (
+                  <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-red-500 text-white shadow-md shadow-red-500/30">
+                    {problematicCount}
+                  </span>
+                )}
               </div>
-            </CardHeader>
+            </div>
             <CardContent className="p-4">
               {problematicCount === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <CheckCircle className="h-8 w-8 text-green-400 mb-2" />
-                  <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">No issues — all on track</p>
+                  <CheckCircle className="h-8 w-8 text-emerald-400 mb-2" />
+                  <p className="text-sm font-semibold" style={{ color: '#64748b' }}>No issues — all on track</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {[
-                    { key: 'CANCELLED',   label: 'Cancelled',   icon: XCircle,       color: 'text-red-500',    bg: 'bg-red-50 dark:bg-red-900/20' },
-                    { key: 'RETURNED',    label: 'Returned',    icon: RotateCcw,     color: 'text-amber-500',  bg: 'bg-amber-50 dark:bg-amber-900/20' },
-                    { key: 'DETAINED',    label: 'Detained',    icon: ShieldAlert,   color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20' },
-                    { key: 'PROBLEMATIC', label: 'Problematic', icon: AlertTriangle, color: 'text-rose-500',   bg: 'bg-rose-50 dark:bg-rose-900/20' },
+                    { key: 'CANCELLED',   label: 'Cancelled',   icon: XCircle,       color: '#ef4444', bg: '#fef2f2', border: '#fecaca' },
+                    { key: 'RETURNED',    label: 'Returned',    icon: RotateCcw,     color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' },
+                    { key: 'DETAINED',    label: 'Detained',    icon: ShieldAlert,   color: '#f97316', bg: '#fff7ed', border: '#fed7aa' },
+                    { key: 'PROBLEMATIC', label: 'Problematic', icon: AlertTriangle, color: '#f43f5e', bg: '#fff1f2', border: '#fecdd3' },
                   ].filter(s => (statusCounts[s.key] || 0) > 0).map(s => (
-                    <div key={s.key} className={cn('flex items-center justify-between p-3 rounded-xl', s.bg)}>
+                    <div key={s.key} className="flex items-center justify-between p-3 rounded-xl border" style={{ background: s.bg, borderColor: s.border }}>
                       <div className="flex items-center gap-2.5">
-                        <s.icon className={cn('h-4 w-4', s.color)} />
-                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{s.label}</span>
+                        <s.icon className="h-4 w-4" style={{ color: s.color }} />
+                        <span className="text-sm font-semibold" style={{ color: '#374151' }}>{s.label}</span>
                       </div>
-                      <span className={cn('text-xl font-bold', s.color)}>{statusCounts[s.key] || 0}</span>
+                      <span className="text-xl font-black" style={{ color: s.color }}>{statusCounts[s.key] || 0}</span>
                     </div>
                   ))}
                 </div>
@@ -489,49 +492,47 @@ export default function LogisticsAdminDashboard() {
           </Card>
 
           {/* Recent Packed */}
-          <Card className="border border-slate-200 dark:border-slate-800 shadow-sm">
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
-                  <PackageCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                </div>
+          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
+            <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+              <div className="flex items-center gap-2">
+                <div className="h-5 w-1 bg-emerald-500 rounded-full flex-shrink-0"></div>
                 <div>
-                  <CardTitle className="text-sm font-semibold">Recent Packed Orders</CardTitle>
-                  <CardDescription className="text-xs mt-0.5">Latest packing activity</CardDescription>
+                  <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Recent Packed Orders</h3>
+                  <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5">Latest packing activity</p>
                 </div>
               </div>
-            </CardHeader>
+            </div>
             <CardContent className="p-0">
               {packedInPeriod.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-center">
                   <Package className="h-8 w-8 text-slate-300 dark:text-slate-600 mb-2" />
-                  <p className="text-sm text-slate-500">No packed orders yet</p>
+                  <p className="text-sm" style={{ color: '#64748b' }}>No packed orders yet</p>
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[260px] overflow-y-auto">
                   {packedInPeriod.slice(0, 8).map(order => (
                     <div key={order.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                      <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
+                      <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
                         <PackageCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                        <p className="text-sm font-semibold truncate" style={{ color: '#0f172a' }}>
                           {toTitleCase(order.itemName)}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          Packed by <span className="font-medium text-slate-700 dark:text-slate-300">{order.packedBy}</span>
+                        <p className="text-xs mt-0.5" style={{ color: '#64748b' }}>
+                          Packed by <span className="font-semibold" style={{ color: '#374151' }}>{order.packedBy}</span>
                           {' · '}
                           {new Date(order.packedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           {', '}
                           {new Date(order.packedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                         {order.waybill && order.waybill !== order.id && (
-                          <p className="text-[10px] font-mono text-slate-400 dark:text-slate-500 mt-0.5">
+                          <p className="text-[10px] font-mono mt-0.5 truncate" style={{ color: '#94a3b8' }}>
                             {order.waybill}
                           </p>
                         )}
                       </div>
-                      <span className="text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md flex-shrink-0">
+                      <span className="text-xs font-bold px-2 py-1 rounded-md flex-shrink-0" style={{ background: '#f1f5f9', color: '#475569' }}>
                         ×{order.quantity}
                       </span>
                     </div>

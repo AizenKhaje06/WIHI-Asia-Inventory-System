@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EditItemDialog } from "@/components/edit-item-dialog"
 import { toast } from "sonner"
 import { Label } from "@/components/ui/label"
+import { TablePagination } from "@/components/ui/table-pagination"
 
 export default function LogisticsProductsPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -29,6 +30,10 @@ export default function LogisticsProductsPage() {
   const [restockDialogOpen, setRestockDialogOpen] = useState(false)
   const [selectedRestockItem, setSelectedRestockItem] = useState<InventoryItem | null>(null)
   const [restockAmount, setRestockAmount] = useState(0)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
 
   useEffect(() => {
     fetchItems()
@@ -60,6 +65,12 @@ export default function LogisticsProductsPage() {
 
     setFilteredItems(filtered)
   }, [search, categoryFilter, statusFilter, items])
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredItems.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedItems = filteredItems.slice(startIndex, endIndex)
 
   async function fetchItems() {
     try {
@@ -277,7 +288,7 @@ export default function LogisticsProductsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                  {filteredItems.map(item => {
+                  {paginatedItems.map(item => {
                     const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
                     const isOutOfStock = item.quantity === 0
                     const stockPercentage = Math.min((item.quantity / Math.max(item.reorderLevel * 2, 1)) * 100, 100)
@@ -416,6 +427,16 @@ export default function LogisticsProductsPage() {
                 </tbody>
               </table>
             </div>
+          )}
+          {filteredItems.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={filteredItems.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
         </CardContent>
       </Card>

@@ -18,6 +18,7 @@ import { apiGet, apiPost } from '@/lib/api-client'
 import { getCurrentUser } from '@/lib/auth'
 import { getCurrentUserRole, getAuthHeaders } from '@/lib/role-utils'
 import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
+import { TablePagination } from '@/components/ui/table-pagination'
 
 interface Order {
   id: string
@@ -81,6 +82,11 @@ export default function PackingQueuePage() {
   const [cancellationReason, setCancellationReason] = useState('')
   const [cancellationReasonOther, setCancellationReasonOther] = useState('') // For "Other" option
   const [uncancelling, setUncancelling] = useState(false)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  
   const [editForm, setEditForm] = useState({
     customerName: '',
     customerPhone: '',
@@ -301,6 +307,12 @@ export default function PackingQueuePage() {
     
     setFilteredOrders(filtered)
   }
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredOrders.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex)
 
   const handleMarkAsPacked = async (orderId: string) => {
     if (!currentUser) {
@@ -961,7 +973,7 @@ export default function PackingQueuePage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                    {filteredOrders.map((order) => (
+                    {paginatedOrders.map((order) => (
                       <tr
                         key={order.id}
                         className={`transition-all duration-200 cursor-pointer ${
@@ -1055,6 +1067,16 @@ export default function PackingQueuePage() {
               </table>
             </div>
             </>
+          )}
+          {filteredOrders.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={filteredOrders.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
       </div>
 

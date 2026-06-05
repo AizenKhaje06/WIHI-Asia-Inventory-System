@@ -204,7 +204,7 @@ export default function CustomersPage() {
     })
 
     setFilteredCustomers(filtered)
-    setCurrentPage(1)
+    // REMOVED: setCurrentPage(1) - causes pagination to jump back constantly
   }
 
   async function handleSubmit(e: React.FormEvent) {

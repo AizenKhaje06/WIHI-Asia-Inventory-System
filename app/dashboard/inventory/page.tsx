@@ -29,6 +29,7 @@ const SALES_CHANNELS = ['Shopee', 'Lazada', 'Facebook', 'TikTok', 'Physical Stor
 
 import { PremiumTableLoading } from "@/components/premium-loading"
 import { BrandLoader } from '@/components/ui/brand-loader'
+import { TablePagination } from "@/components/ui/table-pagination"
 
 export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -45,6 +46,10 @@ export default function InventoryPage() {
   const [selectedRestockItem, setSelectedRestockItem] = useState<InventoryItem | null>(null)
   const [restockAmount, setRestockAmount] = useState(0)
   const [restockReason, setRestockReason] = useState("")
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   
   // Get current user for role-based features
   const currentUser = getCurrentUser()
@@ -289,6 +294,13 @@ export default function InventoryPage() {
 
     setFilteredItems(filtered)
   }, [search, salesChannelFilter, categoryFilter, sortBy, items])
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredItems.length / pageSize)
+  const paginatedItems = filteredItems.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
 
   async function fetchItems() {
     try {
@@ -1100,42 +1112,44 @@ export default function InventoryPage() {
           </p>
         </div>
         
-        {/* Action Buttons - Top Right */}
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => setCategoryDialogOpen(true)}
-            variant="outline"
-            className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Categories
-          </Button>
+        {/* Action Buttons - Top Right - Hidden for Departments */}
+        {!isDepartment && (
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setCategoryDialogOpen(true)}
+              variant="outline"
+              className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Categories
+            </Button>
 
-          <Button
-            onClick={() => setStoreDialogOpen(true)}
-            variant="outline"
-            className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Stores
-          </Button>
+            <Button
+              onClick={() => setStoreDialogOpen(true)}
+              variant="outline"
+              className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Stores
+            </Button>
 
-          <Button
-            onClick={() => setCreateBundleOpen(true)}
-            className="h-7 w-[100px] px-2.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-md"
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Bundle
-          </Button>
+            <Button
+              onClick={() => setCreateBundleOpen(true)}
+              className="h-7 w-[100px] px-2.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-md"
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Bundle
+            </Button>
 
-          <Button
-            onClick={() => setAddDialogOpen(true)}
-            className="h-7 w-[100px] px-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Product
-          </Button>
-        </div>
+            <Button
+              onClick={() => setAddDialogOpen(true)}
+              className="h-7 w-[100px] px-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Product
+            </Button>
+          </div>
+        )}
       </div>
 
       <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
@@ -1329,47 +1343,47 @@ export default function InventoryPage() {
                       </th>
                       <th className={cn(
                         "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
-                        getCurrentUser()?.role === 'admin' ? "w-[20%]" : "w-[25%]"
+                        !isDepartment ? "w-[20%]" : "w-[25%]"
                       )}>
                         Product
                       </th>
                       <th className={cn(
                         "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
-                        getCurrentUser()?.role === 'admin' ? "w-[16%]" : "w-[15%]"
+                        !isDepartment ? "w-[16%]" : "w-[15%]"
                       )}>
                         Category
                       </th>
                       <th className={cn(
                         "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
-                        getCurrentUser()?.role === 'admin' ? "w-[9%]" : "w-[10%]"
+                        !isDepartment ? "w-[9%]" : "w-[10%]"
                       )}>
                         Status
                       </th>
                       <th className={cn(
                         "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
-                        getCurrentUser()?.role === 'admin' ? "w-[11%]" : "w-[13%]"
+                        !isDepartment ? "w-[11%]" : "w-[13%]"
                       )}>
                         Stock
                       </th>
                       <th className={cn(
                         "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
-                        getCurrentUser()?.role === 'admin' ? "w-[10%]" : "w-[12%]"
+                        !isDepartment ? "w-[10%]" : "w-[12%]"
                       )}>
                         Cost
                       </th>
                       <th className={cn(
                         "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
-                        getCurrentUser()?.role === 'admin' ? "w-[10%]" : "w-[12%]"
+                        !isDepartment ? "w-[10%]" : "w-[12%]"
                       )}>
                         Price
                       </th>
                       <th className={cn(
                         "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider",
-                        getCurrentUser()?.role === 'admin' ? "w-[8%] border-r border-slate-700/50" : "w-[13%]"
+                        !isDepartment ? "w-[8%] border-r border-slate-700/50" : "w-[13%]"
                       )}>
                         Margin
                       </th>
-                      {getCurrentUser()?.role === 'admin' && (
+                      {!isDepartment && (
                         <th className="py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[16%]">
                           Actions
                         </th>
@@ -1377,7 +1391,7 @@ export default function InventoryPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                    {filteredItems.map((item) => {
+                    {paginatedItems.map((item) => {
                       const profitMargin = item.sellingPrice > 0 ? ((item.sellingPrice - item.costPrice) / item.sellingPrice * 100) : 0
                       const isLowStock = item.quantity <= item.reorderLevel && item.quantity > 0
                       const isOutOfStock = item.quantity === 0
@@ -1526,9 +1540,9 @@ export default function InventoryPage() {
                             </div>
                           </td>
 
-                          {/* Actions - Admin only */}
-                          <td className="py-2 px-3">
-                            {getCurrentUser()?.role === 'admin' && (
+                          {/* Actions - Hidden for Department Users */}
+                          {!isDepartment && (
+                            <td className="py-2 px-3">
                               <TooltipProvider>
                                 <div className="flex justify-start gap-0.5">
                                   <Tooltip>
@@ -1589,14 +1603,27 @@ export default function InventoryPage() {
                                   </Tooltip>
                                 </div>
                               </TooltipProvider>
-                            )}
-                          </td>
+                            </td>
+                          )}
                         </tr>
                       )
                     })}
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              <TablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalItems={filteredItems.length}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size)
+                  setCurrentPage(1)
+                }}
+              />
             </>
           )}
         </CardContent>
