@@ -1097,7 +1097,7 @@ export default function PackingQueuePage() {
                   Review and manage order information
                 </p>
               </DialogHeader>
-              {!isEditMode && (
+              {!isEditMode && userRole !== 'logistics-admin' && (
                 <Button
                   variant="outline"
                   onClick={handleEditMode}
@@ -1451,6 +1451,8 @@ export default function PackingQueuePage() {
                         <p className="text-sm text-slate-600 dark:text-slate-400">
                           {selectedOrder?.is_cancelled 
                             ? 'This order has been cancelled. You can restore it to allow packing.' 
+                            : userRole === 'logistics-admin'
+                            ? 'View order details below.'
                             : 'Mark this order as packed, cancel it, or delete it from the queue.'}
                         </p>
                       </div>
@@ -1548,26 +1550,32 @@ export default function PackingQueuePage() {
                               </Button>
                             )}
                             
-                            <Button
-                              variant="destructive"
-                              onClick={() => setShowDeleteConfirm(true)}
-                              className="h-12 px-8 rounded-xl font-bold"
-                            >
-                              DELETE
-                            </Button>
+                            {/* DELETE - hidden for logistics-admin */}
+                            {userRole !== 'logistics-admin' && (
+                              <Button
+                                variant="destructive"
+                                onClick={() => setShowDeleteConfirm(true)}
+                                className="h-12 px-8 rounded-xl font-bold"
+                              >
+                                DELETE
+                              </Button>
+                            )}
                           </>
                         ) : (
                           <>
-                            <Button
-                              onClick={() => {
-                                setShowDetailsModal(false)
-                                openConfirmDialog(selectedOrder)
-                              }}
-                              className="flex-1 h-12 px-8 rounded-xl font-bold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg"
-                            >
-                              <CheckCircle className="h-5 w-5 mr-3" />
-                              MARK AS PACKED
-                            </Button>
+                            {/* MARK AS PACKED - hidden for logistics-admin */}
+                            {userRole !== 'logistics-admin' && (
+                              <Button
+                                onClick={() => {
+                                  setShowDetailsModal(false)
+                                  openConfirmDialog(selectedOrder)
+                                }}
+                                className="flex-1 h-12 px-8 rounded-xl font-bold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg"
+                              >
+                                <CheckCircle className="h-5 w-5 mr-3" />
+                                MARK AS PACKED
+                              </Button>
+                            )}
                             
                             {/* CANCEL button - For admin and department accounts (operations role) */}
                             {(userRole === 'operations' || userRole === 'admin') && (
@@ -1580,13 +1588,16 @@ export default function PackingQueuePage() {
                               </Button>
                             )}
                             
-                            <Button
-                              variant="destructive"
-                              onClick={() => setShowDeleteConfirm(true)}
-                              className="h-12 px-8 rounded-xl font-bold"
-                            >
-                              DELETE
-                            </Button>
+                            {/* DELETE - hidden for logistics-admin */}
+                            {userRole !== 'logistics-admin' && (
+                              <Button
+                                variant="destructive"
+                                onClick={() => setShowDeleteConfirm(true)}
+                                className="h-12 px-8 rounded-xl font-bold"
+                              >
+                                DELETE
+                              </Button>
+                            )}
                           </>
                         )}
                       </div>
