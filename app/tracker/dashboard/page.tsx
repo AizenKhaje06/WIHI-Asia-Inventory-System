@@ -40,6 +40,10 @@ interface Order {
   dispatchNotes?: string
   department?: string
   reason?: string // Reason for CANCELLED, RETURNED, PROBLEMATIC
+  is_cancelled?: boolean
+  cancellation_reason?: string
+  cancelled_by?: string
+  cancelled_at?: string
 }
 
 export default function TrackerDashboardPage() {
@@ -100,7 +104,11 @@ export default function TrackerDashboardPage() {
         }),
         dispatchNotes: order.dispatch_notes || '',
         department: order.sales_channel || 'N/A',
-        reason: order.reason || ''
+        reason: order.reason || '',
+        is_cancelled: order.is_cancelled || false,
+        cancellation_reason: order.cancellation_reason || '',
+        cancelled_by: order.cancelled_by || '',
+        cancelled_at: order.cancelled_at || ''
       }))
       
       setOrders(transformedOrders)
@@ -1055,6 +1063,41 @@ export default function TrackerDashboardPage() {
                     }
                   })()}
                 </div>
+
+                {/* Cancelled Info Section - shown when order was returned to queue (is_cancelled) */}
+                {selectedOrder.is_cancelled && (
+                  <div className="rounded-lg p-5 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
+                    <div className="mb-3">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Actions</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
+                        This order has been cancelled. It was returned to the packing queue.
+                      </p>
+                    </div>
+                    <div className="bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 space-y-2">
+                      <p className="text-sm font-bold text-red-700 dark:text-red-400 flex items-center gap-1.5">
+                        ⚠️ Order Cancelled
+                      </p>
+                      {selectedOrder.cancellation_reason && (
+                        <div>
+                          <p className="text-xs font-bold text-red-600 dark:text-red-500 uppercase tracking-wider mb-0.5">Reason:</p>
+                          <p className="text-sm font-bold text-red-700 dark:text-red-400">{selectedOrder.cancellation_reason}</p>
+                        </div>
+                      )}
+                      <p className="text-xs text-red-600 dark:text-red-500">
+                        {selectedOrder.cancelled_by
+                          ? <>Cancelled by: <span className="font-semibold">{selectedOrder.cancelled_by}</span></>
+                          : <span className="italic">Cancelled by: Unknown</span>
+                        }
+                        {selectedOrder.cancelled_at && (
+                          <> on {new Date(selectedOrder.cancelled_at + (!selectedOrder.cancelled_at.includes('+') && !selectedOrder.cancelled_at.includes('Z') ? '+08:00' : '')).toLocaleString('en-US', {
+                            month: 'short', day: 'numeric', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                          })}</>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Update Status Section */}
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">

@@ -20,6 +20,7 @@ export default function ProductEditPage() {
   const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([])
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
+  const [productTypeFilter, setProductTypeFilter] = useState("all")
   const [loading, setLoading] = useState(true)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -49,8 +50,14 @@ export default function ProductEditPage() {
       filtered = filtered.filter((item) => item.category === categoryFilter)
     }
 
+    if (productTypeFilter === "single") {
+      filtered = filtered.filter((item) => (item as any).productType !== 'bundle' && (item as any).product_type !== 'bundle')
+    } else if (productTypeFilter === "bundle") {
+      filtered = filtered.filter((item) => (item as any).productType === 'bundle' || (item as any).product_type === 'bundle')
+    }
+
     setFilteredItems(filtered)
-  }, [search, categoryFilter, items])
+  }, [search, categoryFilter, productTypeFilter, items])
 
   async function fetchItems() {
     try {
@@ -158,6 +165,19 @@ export default function ProductEditPage() {
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex-1">
+              <Label htmlFor="type-filter">Product Type</Label>
+              <Select value={productTypeFilter} onValueChange={setProductTypeFilter}>
+                <SelectTrigger id="type-filter">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="single">Single Product</SelectItem>
+                  <SelectItem value="bundle">Bundle</SelectItem>
                 </SelectContent>
               </Select>
             </div>

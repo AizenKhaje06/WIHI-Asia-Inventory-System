@@ -37,6 +37,7 @@ export default function InventoryPage() {
   const [search, setSearch] = useState("")
   const [salesChannelFilter, setSalesChannelFilter] = useState("all")
   const [categoryFilter, setCategoryFilter] = useState("all")
+  const [productTypeFilter, setProductTypeFilter] = useState("all")
   const [sortBy, setSortBy] = useState("name-asc")
   const [loading, setLoading] = useState(true)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
@@ -270,6 +271,13 @@ export default function InventoryPage() {
       filtered = filtered.filter((item) => item.category === categoryFilter)
     }
 
+    // Product type filter (single vs bundle)
+    if (productTypeFilter === "single") {
+      filtered = filtered.filter((item) => (item as any).productType !== 'bundle' && (item as any).product_type !== 'bundle')
+    } else if (productTypeFilter === "bundle") {
+      filtered = filtered.filter((item) => (item as any).productType === 'bundle' || (item as any).product_type === 'bundle')
+    }
+
     // Stock status filter
     if (salesChannelFilter === "low-stock") {
       filtered = filtered.filter((item) => item.quantity > 0 && item.quantity <= item.reorderLevel)
@@ -293,7 +301,7 @@ export default function InventoryPage() {
     }
 
     setFilteredItems(filtered)
-  }, [search, salesChannelFilter, categoryFilter, sortBy, items])
+  }, [search, salesChannelFilter, categoryFilter, productTypeFilter, sortBy, items])
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredItems.length / pageSize)
@@ -1297,6 +1305,16 @@ export default function InventoryPage() {
                       {category.name}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+              <Select value={productTypeFilter} onValueChange={setProductTypeFilter}>
+                <SelectTrigger className="w-full lg:w-[180px] h-7 text-xs border-slate-200 dark:border-slate-700">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="single">Single Product</SelectItem>
+                  <SelectItem value="bundle">Bundle</SelectItem>
                 </SelectContent>
               </Select>
             </div>

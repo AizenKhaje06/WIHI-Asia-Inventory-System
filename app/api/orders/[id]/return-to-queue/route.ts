@@ -58,6 +58,7 @@ export const POST = withAuth(async (request: NextRequest, { params, user }) => {
         status: 'Pending',
         is_cancelled: true,
         cancellation_reason: reason,
+        cancelled_by: returnedBy,
         cancelled_at: new Date().toISOString(),
         packed_by: null,
         packed_at: null,

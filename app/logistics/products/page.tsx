@@ -25,6 +25,7 @@ export default function LogisticsProductsPage() {
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [productTypeFilter, setProductTypeFilter] = useState("all")
   const [loading, setLoading] = useState(true)
   const [viewItem, setViewItem] = useState<InventoryItem | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -48,7 +49,12 @@ export default function LogisticsProductsPage() {
   }, [])
 
   useEffect(() => {
-    let filtered = items.filter(i => (i as any).productType !== 'bundle')
+    // Start with all items (include bundles when type filter is bundle/all)
+    let filtered = productTypeFilter === "bundle"
+      ? items.filter(i => (i as any).productType === 'bundle' || (i as any).product_type === 'bundle')
+      : productTypeFilter === "single"
+      ? items.filter(i => (i as any).productType !== 'bundle' && (i as any).product_type !== 'bundle')
+      : items // "all" shows everything
 
     if (search) {
       const q = search.toLowerCase()
@@ -72,7 +78,7 @@ export default function LogisticsProductsPage() {
     }
 
     setFilteredItems(filtered)
-  }, [search, categoryFilter, statusFilter, items])
+  }, [search, categoryFilter, statusFilter, productTypeFilter, items])
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredItems.length / pageSize)
@@ -260,6 +266,16 @@ export default function LogisticsProductsPage() {
                 {categories.map(cat => (
                   <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+            <Select value={productTypeFilter} onValueChange={setProductTypeFilter}>
+              <SelectTrigger className="h-10 w-[170px] bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="single">Single Product</SelectItem>
+                <SelectItem value="bundle">Bundle</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
