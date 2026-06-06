@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Search, Package, TrendingUp, Eye, Pencil, Trash2, PackagePlus, Plus, Tag, Warehouse } from "lucide-react"
+import { Search, Package, TrendingUp, Eye, Pencil, Trash2, PackagePlus, Plus, Tag, Warehouse, Loader2, AlertCircle } from "lucide-react"
 import type { InventoryItem } from "@/lib/types"
 import { formatNumber, formatCurrency, cn } from "@/lib/utils"
 import { apiGet, apiDelete, apiPost } from "@/lib/api-client"
@@ -34,6 +34,11 @@ export default function LogisticsProductsPage() {
   const [selectedRestockItem, setSelectedRestockItem] = useState<InventoryItem | null>(null)
   const [restockAmount, setRestockAmount] = useState(0)
   const [restockReason, setRestockReason] = useState("")
+
+  // Delete confirmation state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState<{id: string, name: string} | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   // Add/Bundle/Category/Store dialogs
   const [addDialogOpen, setAddDialogOpen] = useState(false)
@@ -112,16 +117,25 @@ export default function LogisticsProductsPage() {
     setEditDialogOpen(true)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return
+  const handleDelete = async (id: string, name: string) => {
+    setItemToDelete({ id, name })
+    setDeleteDialogOpen(true)
+  }
 
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return
+    setIsDeleting(true)
     try {
-      await apiDelete(`/api/items/${id}`)
+      await apiDelete(`/api/items/${itemToDelete.id}`)
       toast.success("Product deleted successfully")
+      setDeleteDialogOpen(false)
+      setItemToDelete(null)
       fetchItems()
     } catch (error) {
       console.error("[Logistics Products] Error deleting item:", error)
       toast.error("Failed to delete product")
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -452,7 +466,7 @@ export default function LogisticsProductsPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDelete(item.id)}
+                              onClick={() => handleDelete(item.id, item.name)}
                               className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 h-8 w-8 p-0"
                               title="Delete Product"
                             >
@@ -504,6 +518,97 @@ export default function LogisticsProductsPage() {
         items={items}
         onSuccess={fetchItems}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[480px] p-0 gap-0 overflow-hidden border-0">
+          {/* Header with gradient background */}
+          <div className="relative bg-gradient-to-br from-red-500 via-red-600 to-red-700 px-6 py-5 text-center">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-20"></div>
+            <div className="relative">
+              <div className="inline-flex items-center justify-center w-14 h-14 mx-auto mb-3 rounded-full bg-white/20 backdrop-blur-sm ring-4 ring-white/30">
+                <AlertCircle className="h-7 w-7 text-white" strokeWidth={2.5} />
+              </div>
+              <DialogTitle className="text-xl font-bold !text-white tracking-tight">
+                Delete Product
+              </DialogTitle>
+              <p className="text-white text-xs mt-1.5 font-medium">
+                This action is permanent and cannot be undone
+              </p>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="px-6 py-6 space-y-4">
+            <div className="text-center space-y-3">
+              <p className="text-slate-700 dark:text-slate-300 font-medium">
+                Are you sure you want to delete this product?
+              </p>
+              {itemToDelete && (
+                <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3 rounded-lg">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide font-semibold mb-1">
+                    Product Name
+                  </p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">
+                    {itemToDelete.name}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Warning box */}
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-red-900 dark:text-red-100 mb-1">
+                    Warning: Permanent Action
+                  </p>
+                  <p className="text-xs text-red-700 dark:text-red-300">
+                    All product data, including inventory history and associated records, will be permanently removed from the system.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => { setDeleteDialogOpen(false); setItemToDelete(null) }}
+                disabled={isDeleting}
+                className="h-11 px-6 font-semibold border-2 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="h-11 px-6 font-semibold bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Please wait...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Product
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Restock Dialog */}
       {selectedRestockItem && (
