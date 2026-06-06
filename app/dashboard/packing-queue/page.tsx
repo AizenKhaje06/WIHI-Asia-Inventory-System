@@ -1450,7 +1450,9 @@ export default function PackingQueuePage() {
                         </h3>
                         <p className="text-sm text-slate-600 dark:text-slate-400">
                           {selectedOrder?.is_cancelled 
-                            ? 'This order has been cancelled. You can restore it to allow packing.' 
+                            ? userRole === 'logistics-admin'
+                              ? 'This order has been cancelled.'
+                              : 'This order has been cancelled. You can restore it to allow packing.'
                             : userRole === 'logistics-admin'
                             ? 'View order details below.'
                             : 'Mark this order as packed, cancel it, or delete it from the queue.'}

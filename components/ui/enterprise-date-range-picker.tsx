@@ -269,36 +269,33 @@ export function EnterpriseDateRangePicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-2xl max-h-[500px] overflow-auto" 
+        className="w-auto p-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl rounded-xl overflow-hidden" 
         align="start"
         sideOffset={4}
       >
-        <div className="flex">
-          {/* Left Sidebar - Presets */}
-          <div className="w-36 border-r border-slate-200 dark:border-slate-700 p-2.5 bg-slate-50 dark:bg-slate-900/50">
-            <div className="space-y-0.5 max-h-[300px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600">
+        <div className="flex" style={{ height: 'fit-content' }}>
+          {/* Left Sidebar - Presets - fixed height with scroll to match calendar */}
+          <div className="w-40 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex-shrink-0 flex flex-col">
+            <div className="px-3 pt-4 pb-2 flex-shrink-0">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2">Quick Select</p>
+            </div>
+            <div className="overflow-y-auto flex-1 px-3 pb-4 space-y-0.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
               {presets.map((preset) => (
                 <button
                   key={preset.value}
                   onClick={() => handlePresetClick(preset)}
                   className={cn(
-                    "w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-[11px] font-medium transition-all duration-200",
-                    "hover:bg-white dark:hover:bg-slate-800",
+                    "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150",
                     selectedPreset === preset.value
-                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                      : "text-slate-700 dark:text-slate-300"
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                   )}
                 >
-                  <div className={cn(
-                    "w-3 h-3 rounded-full border-2 flex items-center justify-center flex-shrink-0",
-                    selectedPreset === preset.value
-                      ? "border-blue-600 dark:border-blue-400 bg-blue-600 dark:bg-blue-400"
-                      : "border-slate-300 dark:border-slate-600"
-                  )}>
-                    {selectedPreset === preset.value && (
-                      <div className="w-1 h-1 rounded-full bg-white" />
-                    )}
-                  </div>
+                  {selectedPreset === preset.value ? (
+                    <Check className="h-3 w-3 flex-shrink-0" />
+                  ) : (
+                    <div className="w-3 h-3 rounded-full border-2 border-slate-300 dark:border-slate-600 flex-shrink-0" />
+                  )}
                   <span>{preset.label}</span>
                 </button>
               ))}
@@ -306,55 +303,50 @@ export function EnterpriseDateRangePicker({
           </div>
 
           {/* Right Section - Calendars */}
-          <div className="p-3">
+          <div className="p-5">
             {/* Dual Calendar */}
-            <div className="flex gap-3 mb-3">
+            <div className="flex gap-8 mb-4">
               {/* Calendar 1 */}
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-3">
                   <button
                     onClick={() => handlePrevMonth(1)}
-                    className="p-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
-                    <ChevronLeft className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
+                    <ChevronLeft className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                   </button>
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white w-32 text-center">
                     {monthNames[currentMonth1.getMonth()]} {currentMonth1.getFullYear()}
                   </h3>
-                  <div className="w-5" />
+                  <div className="w-6" />
                 </div>
 
-                <div className="grid grid-cols-7 gap-0.5 mb-1">
+                <div className="grid grid-cols-7 mb-1">
                   {dayNames.map((day) => (
-                    <div
-                      key={day}
-                      className="text-center text-[9px] font-semibold text-slate-500 dark:text-slate-400 w-7 py-0.5"
-                    >
+                    <div key={day} className="text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 w-9 py-1">
                       {day}
                     </div>
                   ))}
                 </div>
 
-                <div className="grid grid-cols-7 gap-0.5">
+                <div className="grid grid-cols-7">
                   {days1.map((day, index) => {
-                    if (day === null) {
-                      return <div key={`empty-${index}`} className="w-7 h-7" />
-                    }
-
+                    if (day === null) return <div key={`empty-${index}`} className="w-9 h-9" />
                     const inRange = isDateInRange(day, currentMonth1)
                     const isStart = isStartDate(day, currentMonth1)
                     const isEnd = isEndDate(day, currentMonth1)
                     const isSelected = isStart || isEnd
-
                     return (
                       <button
                         key={day}
                         onClick={() => handleDateClick(day, currentMonth1)}
                         className={cn(
-                          "w-7 h-7 text-[11px] font-medium rounded transition-all duration-150 flex items-center justify-center",
+                          "w-9 h-9 text-xs font-medium rounded-md transition-all duration-150 flex items-center justify-center",
                           "hover:bg-slate-100 dark:hover:bg-slate-800",
-                          inRange && !isSelected && "bg-blue-50 dark:bg-blue-900/20 text-slate-900 dark:text-white",
-                          isSelected && "bg-blue-600 dark:bg-blue-500 text-white font-bold shadow-sm",
+                          inRange && !isSelected && "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-none",
+                          isStart && "bg-blue-600 text-white font-bold rounded-l-md rounded-r-none",
+                          isEnd && "bg-blue-600 text-white font-bold rounded-r-md rounded-l-none",
+                          isStart && isEnd && "rounded-md",
                           !inRange && !isSelected && "text-slate-700 dark:text-slate-300"
                         )}
                       >
@@ -365,52 +357,50 @@ export function EnterpriseDateRangePicker({
                 </div>
               </div>
 
+              {/* Divider */}
+              <div className="w-px bg-slate-200 dark:bg-slate-700 self-stretch" />
+
               {/* Calendar 2 */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="w-5" />
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-6" />
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white w-32 text-center">
                     {monthNames[currentMonth2.getMonth()]} {currentMonth2.getFullYear()}
                   </h3>
                   <button
                     onClick={() => handleNextMonth(2)}
-                    className="p-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
-                    <ChevronRight className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
+                    <ChevronRight className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-7 gap-0.5 mb-1">
+                <div className="grid grid-cols-7 mb-1">
                   {dayNames.map((day) => (
-                    <div
-                      key={day}
-                      className="text-center text-[9px] font-semibold text-slate-500 dark:text-slate-400 w-7 py-0.5"
-                    >
+                    <div key={day} className="text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 w-9 py-1">
                       {day}
                     </div>
                   ))}
                 </div>
 
-                <div className="grid grid-cols-7 gap-0.5">
+                <div className="grid grid-cols-7">
                   {days2.map((day, index) => {
-                    if (day === null) {
-                      return <div key={`empty-${index}`} className="w-7 h-7" />
-                    }
-
+                    if (day === null) return <div key={`empty-${index}`} className="w-9 h-9" />
                     const inRange = isDateInRange(day, currentMonth2)
                     const isStart = isStartDate(day, currentMonth2)
                     const isEnd = isEndDate(day, currentMonth2)
                     const isSelected = isStart || isEnd
-
                     return (
                       <button
                         key={day}
                         onClick={() => handleDateClick(day, currentMonth2)}
                         className={cn(
-                          "w-7 h-7 text-[11px] font-medium rounded transition-all duration-150 flex items-center justify-center",
+                          "w-9 h-9 text-xs font-medium rounded-md transition-all duration-150 flex items-center justify-center",
                           "hover:bg-slate-100 dark:hover:bg-slate-800",
-                          inRange && !isSelected && "bg-blue-50 dark:bg-blue-900/20 text-slate-900 dark:text-white",
-                          isSelected && "bg-blue-600 dark:bg-blue-500 text-white font-bold shadow-sm",
+                          inRange && !isSelected && "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-none",
+                          isStart && "bg-blue-600 text-white font-bold rounded-l-md rounded-r-none",
+                          isEnd && "bg-blue-600 text-white font-bold rounded-r-md rounded-l-none",
+                          isStart && isEnd && "rounded-md",
                           !inRange && !isSelected && "text-slate-700 dark:text-slate-300"
                         )}
                       >
@@ -423,71 +413,37 @@ export function EnterpriseDateRangePicker({
             </div>
 
             {/* Bottom Controls */}
-            <div className="border-t border-slate-200 dark:border-slate-700 pt-2.5 space-y-2.5">
-              {/* Compare Checkbox */}
-              <div className="flex items-center gap-1.5">
-                <Checkbox 
-                  id="compare" 
-                  checked={compareEnabled}
-                  onCheckedChange={(checked) => setCompareEnabled(checked as boolean)}
-                  className="border-slate-300 dark:border-slate-600 h-3.5 w-3.5"
-                />
-                <label 
-                  htmlFor="compare" 
-                  className="text-[11px] font-medium text-slate-700 dark:text-slate-300 cursor-pointer"
-                >
-                  Compare
-                </label>
-              </div>
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+              <div className="flex items-center justify-between">
+                {/* Selected range display */}
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 border border-slate-200 dark:border-slate-700">
+                  <Calendar className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                  <span className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                    {tempStart ? format(tempStart, 'MMM d, yyyy') : '—'}
+                  </span>
+                  <span className="text-slate-300 dark:text-slate-600 text-xs">→</span>
+                  <span className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                    {tempEnd ? format(tempEnd, 'MMM d, yyyy') : '—'}
+                  </span>
+                </div>
 
-              {/* Custom Dropdown and Date Inputs */}
-              <div className="flex items-center gap-1.5">
-                <Select defaultValue="custom">
-                  <SelectTrigger className="w-[85px] h-7 border-slate-300 dark:border-slate-600 text-[11px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="custom">Custom</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Input
-                  type="text"
-                  value={tempStart ? format(tempStart, 'MMM d, yyyy') : ''}
-                  readOnly
-                  className="w-28 h-7 border-slate-300 dark:border-slate-600 text-[11px] px-2"
-                />
-                
-                <span className="text-slate-400 text-[11px]">-</span>
-                
-                <Input
-                  type="text"
-                  value={tempEnd ? format(tempEnd, 'MMM d, yyyy') : ''}
-                  readOnly
-                  className="w-28 h-7 border-slate-300 dark:border-slate-600 text-[11px] px-2"
-                />
-              </div>
-
-              {/* Footer Note */}
-              <p className="text-[9px] text-slate-500 dark:text-slate-400">
-                Dates are shown in Berlin Time
-              </p>
-
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-1.5 pt-1">
-                <Button
-                  variant="outline"
-                  onClick={handleCancel}
-                  className="px-3 h-7 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-[11px]"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleUpdate}
-                  className="px-3 h-7 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md text-[11px]"
-                >
-                  Update
-                </Button>
+                {/* Action Buttons */}
+                <div className="flex gap-2 ml-4">
+                  <Button
+                    variant="outline"
+                    onClick={handleCancel}
+                    className="px-4 h-9 border-slate-300 dark:border-slate-600 font-semibold text-xs"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleUpdate}
+                    disabled={!tempStart || !tempEnd}
+                    className="px-4 h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md disabled:opacity-50"
+                  >
+                    Apply
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
