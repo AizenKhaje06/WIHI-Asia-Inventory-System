@@ -273,13 +273,13 @@ export function EnterpriseDateRangePicker({
         align="start"
         sideOffset={4}
       >
-        <div className="flex" style={{ height: 'fit-content' }}>
-          {/* Left Sidebar - Presets - fixed height with scroll to match calendar */}
-          <div className="w-40 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex-shrink-0 flex flex-col">
+        <div className="flex items-stretch">
+          {/* Left Sidebar - Presets - same height as right panel, scrolls internally */}
+          <div className="w-40 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex-shrink-0 flex flex-col max-h-[430px]">
             <div className="px-3 pt-4 pb-2 flex-shrink-0">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2">Quick Select</p>
             </div>
-            <div className="overflow-y-auto flex-1 px-3 pb-4 space-y-0.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
+            <div className="overflow-y-auto px-3 pb-4 space-y-0.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
               {presets.map((preset) => (
                 <button
                   key={preset.value}
