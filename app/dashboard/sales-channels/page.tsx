@@ -571,27 +571,30 @@ export default function SalesChannelsPage() {
       </div>
 
       {/* Channels List */}
-      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
-        <CardHeader className="pb-4 border-b border-slate-200 dark:border-slate-800">
+      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
+        <div className="bg-slate-900 px-6 py-5 border-b border-slate-700">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <CardTitle className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                All Sales Channels ({data?.departments.length || 0})
-              </CardTitle>
-              <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="h-5 w-1 bg-blue-500 rounded-full flex-shrink-0"></div>
+                <h2 className="text-lg font-bold tracking-tight" style={{ color: '#ffffff' }}>
+                  All Sales Channels ({data?.departments.length || 0})
+                </h2>
+              </div>
+              <p className="text-xs ml-3" style={{ color: '#94a3b8' }}>
                 View performance metrics and detailed analytics for each sales channel
               </p>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-600 border border-blue-500 rounded-lg flex-shrink-0 shadow-md shadow-blue-500/30">
+              <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
               </svg>
-              <span className="text-sm font-bold text-blue-700 dark:text-blue-300 whitespace-nowrap">
+              <span className="text-sm font-bold text-white whitespace-nowrap">
                 Click to view details
               </span>
             </div>
           </div>
-        </CardHeader>
+        </div>
         <CardContent className="pt-6">
           {data?.departments && data.departments.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -607,10 +610,10 @@ export default function SalesChannelsPage() {
                       router.push(`/dashboard/sales-channels/${encodeURIComponent(dept.name)}?startDate=${startDate}&endDate=${endDate}`)
                     }}
                     disabled={navigatingTo !== null}
-                    className="group text-left p-5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-500 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 ease-out relative overflow-hidden cursor-pointer disabled:cursor-wait disabled:pointer-events-none"
+                    className="group text-left rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-500 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 ease-out relative overflow-hidden cursor-pointer disabled:cursor-wait disabled:pointer-events-none"
                   >
                     {/* Hover gradient effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
 
                     {/* Loading overlay - shown when this card is being navigated */}
                     {navigatingTo === dept.name && (
@@ -626,47 +629,49 @@ export default function SalesChannelsPage() {
                       </div>
                     )}
 
-                    {/* Click indicator badge - hidden when loading */}
-                    {navigatingTo !== dept.name && (
-                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-                        <div className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded-full text-[10px] font-bold shadow-lg">
-                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                          VIEW
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="relative">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className={`relative w-12 h-12 flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ${navigatingTo && navigatingTo !== dept.name ? 'opacity-40' : ''}`}>
-                            <img
-                              src={getChannelIcon(dept.name)}
-                              alt={dept.name}
-                              className="w-12 h-12 object-contain"
-                            />
-                          </div>
-                          <div className={navigatingTo && navigatingTo !== dept.name ? 'opacity-40' : ''}>
-                            <h3 className="font-bold text-slate-900 dark:text-white text-base group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                              {dept.name}
-                            </h3>
-                            <Badge className={`${getTypeColor(dept.type)} text-xs mt-1`}>
-                              {dept.type}
-                            </Badge>
+                    {/* Card header - clean corporate */}
+                    <div
+                      className={`relative px-4 py-3.5 bg-slate-50 border-b border-slate-200 ${navigatingTo && navigatingTo !== dept.name ? 'opacity-40' : ''}`}
+                    >
+                      {/* Click indicator badge */}
+                      {navigatingTo !== dept.name && (
+                        <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                          <div className="flex items-center gap-1 px-2 py-0.5 bg-blue-600 text-white rounded-full text-[10px] font-bold shadow-md">
+                            <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                            VIEW
                           </div>
                         </div>
-                        <div className={navigatingTo && navigatingTo !== dept.name ? 'opacity-40' : ''}>
+                      )}
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 shadow-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 p-1.5">
+                          <img
+                            src={getChannelIcon(dept.name)}
+                            alt={dept.name}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-bold text-sm leading-tight group-hover:text-blue-600 transition-colors" style={{ color: '#0f172a' }}>
+                            {dept.name}
+                          </h3>
+                          <Badge className={`${getTypeColor(dept.type)} text-[10px] mt-0.5`}>
+                            {dept.type}
+                          </Badge>
+                        </div>
+                        <div className="flex-shrink-0">
                           {isPositive ? (
-                            <ArrowUpRight className="h-5 w-5 text-green-500 group-hover:scale-125 transition-transform" />
+                            <ArrowUpRight className="h-4 w-4 text-green-600 group-hover:scale-125 transition-transform" />
                           ) : (
-                            <ArrowDownRight className="h-5 w-5 text-red-500 group-hover:scale-125 transition-transform" />
+                            <ArrowDownRight className="h-4 w-4 text-red-500 group-hover:scale-125 transition-transform" />
                           )}
                         </div>
                       </div>
+                    </div>
 
-                      <div className={`space-y-2 ${navigatingTo && navigatingTo !== dept.name ? 'opacity-40' : ''}`}>
+                    {/* Card body */}
+                    <div className={`relative p-4 space-y-2 ${navigatingTo && navigatingTo !== dept.name ? 'opacity-40' : ''}`}>
                         <div>
                           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Revenue</p>
                           <p className="text-xl font-bold text-slate-900 dark:text-white">
@@ -701,23 +706,23 @@ export default function SalesChannelsPage() {
                             <p className="text-sm font-bold text-slate-900 dark:text-white">
                               {dept.transactions > 0 ? formatCurrency(dept.revenue / dept.transactions) : '₱0'}
                             </p>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-                        <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Transactions</p>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white">
-                            {formatNumber(dept.transactions)}
-                          </p>
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Transactions</p>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">
+                              {formatNumber(dept.transactions)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Items</p>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">
+                              {formatNumber(dept.quantity)}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Items</p>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white">
-                            {formatNumber(dept.quantity)}
-                          </p>
-                        </div>
-                      </div>
 
                       {/* Parcel Status Indicators */}
                       {dept.parcelStatus && dept.parcelStatus.total > 0 && (
@@ -753,7 +758,6 @@ export default function SalesChannelsPage() {
                         </div>
                       )}
                     </div>
-                  </div>
                   </button>
                 )
               })}

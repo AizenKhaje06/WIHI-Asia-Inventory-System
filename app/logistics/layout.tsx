@@ -24,27 +24,24 @@ export default function LogisticsLayout({ children }: { children: React.ReactNod
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   const [currentTime, setCurrentTime] = useState('')
   const [displayName, setDisplayName] = useState('Logistics Admin')
+  const [profileImage, setProfileImage] = useState<string | null>(null)
+  const [initials, setInitials] = useState('LA')
 
   useEffect(() => {
-    // Update time every second
     const updateTime = () => {
       const now = new Date()
-      const timeString = now.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: false 
-      })
-      setCurrentTime(timeString)
+      setCurrentTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }))
     }
-    
     updateTime()
     const interval = setInterval(updateTime, 1000)
 
-    // Get display name from localStorage
     const storedDisplayName = localStorage.getItem('displayName')
     if (storedDisplayName) {
       setDisplayName(storedDisplayName)
+      setInitials(storedDisplayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2))
     }
+    const storedProfileImage = localStorage.getItem('profileImage')
+    if (storedProfileImage) setProfileImage(storedProfileImage)
 
     return () => clearInterval(interval)
   }, [])
@@ -120,6 +117,16 @@ export default function LogisticsLayout({ children }: { children: React.ReactNod
                   <RefreshCw className="h-3.5 w-3.5" />
                 </Button>
                 <ThemeToggle />
+                {/* User Avatar */}
+                <div className="flex items-center gap-1.5 ml-1 pl-1 border-l border-slate-200 dark:border-slate-800">
+                  <div className="h-7 w-7 rounded-full overflow-hidden bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0 ring-2 ring-slate-200 dark:ring-slate-700">
+                    {profileImage ? (
+                      <img src={profileImage} alt={displayName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[10px] font-bold text-blue-700 dark:text-blue-300">{initials}</span>
+                    )}
+                  </div>
+                </div>
                 <Button 
                   variant="ghost" 
                   size="sm" 

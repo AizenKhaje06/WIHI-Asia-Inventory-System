@@ -6,13 +6,15 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Search, Package, TrendingUp, Eye, Pencil, Trash2, PackagePlus } from "lucide-react"
+import { Search, Package, TrendingUp, Eye, Pencil, Trash2, PackagePlus, Plus, Tag, Warehouse } from "lucide-react"
 import type { InventoryItem } from "@/lib/types"
 import { formatNumber, formatCurrency, cn } from "@/lib/utils"
 import { apiGet, apiDelete, apiPost } from "@/lib/api-client"
 import { BrandLoader } from '@/components/ui/brand-loader'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { EditItemDialog } from "@/components/edit-item-dialog"
+import { AddItemDialog } from "@/components/add-item-dialog"
+import { CreateBundleDialog } from "@/components/create-bundle-dialog"
 import { toast } from "sonner"
 import { Label } from "@/components/ui/label"
 import { TablePagination } from "@/components/ui/table-pagination"
@@ -30,6 +32,12 @@ export default function LogisticsProductsPage() {
   const [restockDialogOpen, setRestockDialogOpen] = useState(false)
   const [selectedRestockItem, setSelectedRestockItem] = useState<InventoryItem | null>(null)
   const [restockAmount, setRestockAmount] = useState(0)
+  
+  // Add/Bundle/Category/Store dialogs
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [createBundleOpen, setCreateBundleOpen] = useState(false)
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
+  const [storeDialogOpen, setStoreDialogOpen] = useState(false)
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -147,9 +155,21 @@ export default function LogisticsProductsPage() {
   return (
     <div className="max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl sm:text-3xl font-bold gradient-text mb-1">Product Inventory</h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400">Read-only view of all products and stock levels</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold gradient-text mb-1">Product Inventory</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Manage all products and stock levels</p>
+        </div>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            onClick={() => setAddDialogOpen(true)}
+            className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Add Product
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -450,6 +470,21 @@ export default function LogisticsProductsPage() {
           onSuccess={fetchItems}
         />
       )}
+
+      {/* Add Item Dialog */}
+      <AddItemDialog
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        onSuccess={fetchItems}
+      />
+
+      {/* Create Bundle Dialog */}
+      <CreateBundleDialog
+        open={createBundleOpen}
+        onOpenChange={setCreateBundleOpen}
+        items={items}
+        onSuccess={fetchItems}
+      />
 
       {/* Restock Dialog */}
       {selectedRestockItem && (

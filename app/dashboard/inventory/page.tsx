@@ -1112,35 +1112,37 @@ export default function InventoryPage() {
           </p>
         </div>
         
-        {/* Action Buttons - Top Right - Hidden for Departments */}
-        {!isDepartment && (
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => setCategoryDialogOpen(true)}
-              variant="outline"
-              className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              Categories
-            </Button>
+        {/* Action Buttons - Top Right */}
+        <div className="flex items-center gap-2">
+          {/* Categories & Stores - visible to everyone */}
+          <Button
+            onClick={() => setCategoryDialogOpen(true)}
+            variant="outline"
+            className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Categories
+          </Button>
 
-            <Button
-              onClick={() => setStoreDialogOpen(true)}
-              variant="outline"
-              className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              Stores
-            </Button>
+          <Button
+            onClick={() => setStoreDialogOpen(true)}
+            variant="outline"
+            className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Stores
+          </Button>
 
-            <Button
-              onClick={() => setCreateBundleOpen(true)}
-              className="h-7 w-[100px] px-2.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-md"
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              Bundle
-            </Button>
+          <Button
+            onClick={() => setCreateBundleOpen(true)}
+            className="h-7 w-[100px] px-2.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-md"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Bundle
+          </Button>
 
+          {/* Add Product - Main Admin & Logistics Admin only */}
+          {!isDepartment && (
             <Button
               onClick={() => setAddDialogOpen(true)}
               className="h-7 w-[100px] px-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md"
@@ -1148,8 +1150,8 @@ export default function InventoryPage() {
               <Plus className="h-3 w-3 mr-1" />
               Product
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-0 shadow-lg">
@@ -1379,15 +1381,13 @@ export default function InventoryPage() {
                       </th>
                       <th className={cn(
                         "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider",
-                        !isDepartment ? "w-[8%] border-r border-slate-700/50" : "w-[13%]"
+                        "w-[8%] border-r border-slate-700/50"
                       )}>
                         Margin
                       </th>
-                      {!isDepartment && (
-                        <th className="py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[16%]">
-                          Actions
-                        </th>
-                      )}
+                      <th className="py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[16%]">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
@@ -1540,67 +1540,63 @@ export default function InventoryPage() {
                             </div>
                           </td>
 
-                          {/* Actions - Hidden for Department Users */}
-                          {!isDepartment && (
+                          {/* Actions Column */}
+                          {(!isDepartment || true) && (
                             <td className="py-2 px-3">
                               <TooltipProvider>
                                 <div className="flex justify-start gap-0.5">
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleRestock(item)
-                                        }}
-                                        className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 h-9 w-9 p-0"
-                                      >
-                                        <PackagePlus className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Restock</p>
-                                    </TooltipContent>
-                                  </Tooltip>
 
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleEdit(item)
-                                        }}
-                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-9 w-9 p-0"
-                                      >
-                                        <Pencil className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Edit</p>
-                                    </TooltipContent>
-                                  </Tooltip>
+                                  {/* Restock - only for non-bundles, non-department users */}
+                                  {!isDepartment && !isBundle && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={(e) => { e.stopPropagation(); handleRestock(item) }}
+                                          className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 h-9 w-9 p-0"
+                                        >
+                                          <PackagePlus className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent><p>Restock</p></TooltipContent>
+                                    </Tooltip>
+                                  )}
 
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          openDeleteDialog(item.id, item.name)
-                                        }}
-                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 h-9 w-9 p-0"
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Delete</p>
-                                    </TooltipContent>
-                                  </Tooltip>
+                                  {/* Edit - for non-bundles: admins only; for bundles: everyone */}
+                                  {(!isBundle && !isDepartment) || isBundle ? (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={(e) => { e.stopPropagation(); handleEdit(item) }}
+                                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-9 w-9 p-0"
+                                        >
+                                          <Pencil className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent><p>Edit</p></TooltipContent>
+                                    </Tooltip>
+                                  ) : null}
+
+                                  {/* Delete - for non-bundles: admins only; for bundles: everyone */}
+                                  {(!isBundle && !isDepartment) || isBundle ? (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={(e) => { e.stopPropagation(); openDeleteDialog(item.id, item.name) }}
+                                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 h-9 w-9 p-0"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent><p>Delete</p></TooltipContent>
+                                    </Tooltip>
+                                  ) : null}
+
                                 </div>
                               </TooltipProvider>
                             </td>
