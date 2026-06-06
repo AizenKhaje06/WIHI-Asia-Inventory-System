@@ -43,6 +43,7 @@ const OPERATION_CONFIG = {
   sale: { label: "Sale", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800", icon: ShoppingCart },
   cancel: { label: "Cancelled", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800", icon: X },
   uncancel: { label: "Uncancelled", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800", icon: RefreshCw },
+  restore: { label: "Restored", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800", icon: RefreshCw },
   'transaction-cancelled': { label: "Cancelled", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800", icon: X },
   'internal-usage': { label: "Internal Usage", color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800", icon: Package },
   'demo-display': { label: "Demo/Display", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800", icon: Activity },
@@ -132,19 +133,14 @@ export default function LogPage() {
       )
     }
 
-    // Operation filter (now includes cancel and uncancel)
+    // Operation filter (now includes cancel, uncancel, restore)
     if (operationFilter !== "all") {
       filtered = filtered.filter(log => {
         const operation = log.operation?.toLowerCase() || ''
         
-        // Direct match for cancel/uncancel operations (case-insensitive)
-        if (operationFilter === 'cancel' && operation === 'cancel') {
-          return true
-        }
-        
-        if (operationFilter === 'uncancel' && operation === 'uncancel') {
-          return true
-        }
+        // Direct case-insensitive match for cancel/restore/uncancel
+        if (operationFilter === 'cancel' && (operation === 'cancel' || operation === 'cancelled' || operation === 'transaction-cancelled')) return true
+        if (operationFilter === 'restore' && (operation === 'restore' || operation === 'uncancel')) return true
         
         // Use the same logic as getOperationBadge to determine actual operation
         let actualOperation = operation.replace(/\s+/g, '-').replace(/_/g, '-') || 'other'
@@ -155,11 +151,10 @@ export default function LogPage() {
         }
         
         // Only override based on details if operation is still unclear
-        const explicitOperations = ['create', 'update', 'delete', 'restock', 'transaction-cancelled', 'to-be-packed', 'sale', 'cancel', 'uncancel']
+        const explicitOperations = ['create', 'update', 'delete', 'restock', 'transaction-cancelled', 'to-be-packed', 'sale', 'cancel', 'restore', 'uncancel']
         const isExplicitOperation = explicitOperations.includes(actualOperation)
         
         if (!isExplicitOperation) {
-          // Override based on details content for backward compatibility
           const detailsLower = log.details?.toLowerCase() || ''
           if (detailsLower.includes('demo/display') || detailsLower.includes('demo / display')) {
             actualOperation = 'demo-display'
@@ -496,7 +491,7 @@ export default function LogPage() {
               <SelectItem value="sale">Sale</SelectItem>
               <SelectItem value="to-be-packed">To Be Packed</SelectItem>
               {!isDepartment && <SelectItem value="cancel">Cancelled Orders</SelectItem>}
-              {!isDepartment && <SelectItem value="uncancel">Uncancelled Orders</SelectItem>}
+              {!isDepartment && <SelectItem value="restore">Restored Orders</SelectItem>}
               <SelectItem value="internal-usage">Internal Usage</SelectItem>
               <SelectItem value="demo-display">Demo/Display</SelectItem>
               <SelectItem value="warehouse">Warehouse</SelectItem>

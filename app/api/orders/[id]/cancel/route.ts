@@ -75,10 +75,10 @@ export async function PATCH(
     // Log activity
     try {
       await supabase.from('logs').insert({
-        operation: 'CANCEL',
+        operation: 'cancel',
         item_name: order.product || 'Unknown Product',
         quantity: order.qty || 0,
-        details: `Order cancelled. Reason: ${reason.trim()}. Waybill: ${order.waybill || 'N/A'}. Cancelled by: ${cancelledBy || 'Unknown'}`,
+        details: `Order cancelled. Reason: ${reason.trim()}. Waybill: ${order.waybill || 'N/A'}. Cancelled by: ${cancelledBy || 'Unknown'}. Sales Channel: ${order.sales_channel || 'N/A'}`,
         timestamp: new Date().toISOString()
       })
     } catch (logError) {
@@ -179,10 +179,10 @@ export async function POST(
     // Log activity
     try {
       await supabase.from('logs').insert({
-        operation: 'UNCANCEL',
+        operation: 'restore',
         item_name: order.product || 'Unknown Product',
         quantity: order.qty || 0,
-        details: `Order uncancelled and restored to packing queue. Waybill: ${order.waybill || 'N/A'}. Restored by: ${restoredBy || 'Unknown'}`,
+        details: `Order restored to packing queue. Waybill: ${order.waybill || 'N/A'}. Restored by: ${restoredBy || 'Unknown'}. Sales Channel: ${order.sales_channel || 'N/A'}`,
         timestamp: new Date().toISOString()
       })
     } catch (logError) {

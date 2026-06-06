@@ -37,7 +37,9 @@ const OPERATION_CONFIG = {
   delete: { label: "Delete", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800", icon: Trash2 },
   restock: { label: "Restock", color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-800", icon: RefreshCw },
   sale: { label: "Sale", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800", icon: ShoppingCart },
-  'transaction-cancelled': { label: "Cancelled", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800", icon: X },
+  cancel: { label: "Cancelled", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800", icon: X },
+  restore: { label: "Restored", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800", icon: RefreshCw },
+  uncancel: { label: "Restored", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800", icon: RefreshCw },
   'internal-usage': { label: "Internal Usage", color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800", icon: Package },
   'demo-display': { label: "Demo/Display", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800", icon: Activity },
   warehouse: { label: "Warehouse", color: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800", icon: Database },
@@ -104,13 +106,19 @@ export default function LogisticsLogPage() {
 
     if (operationFilter !== "all") {
       filtered = filtered.filter(log => {
-        let actualOperation = log.operation?.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-') || 'other'
+        const operation = log.operation?.toLowerCase() || ''
+        
+        // Direct match for cancel/restore (case-insensitive)
+        if (operationFilter === 'cancel' && (operation === 'cancel' || operation === 'cancelled' || operation === 'transaction-cancelled')) return true
+        if (operationFilter === 'restore' && (operation === 'restore' || operation === 'uncancel')) return true
+        
+        let actualOperation = operation.replace(/\s+/g, '-').replace(/_/g, '-') || 'other'
         
         if (actualOperation.includes('cancelled') || (log.details?.toLowerCase().includes('transaction') && log.details?.toLowerCase().includes('cancelled'))) {
           actualOperation = 'transaction-cancelled'
         }
         
-        const explicitOperations = ['create', 'update', 'delete', 'restock', 'transaction-cancelled', 'to-be-packed', 'sale']
+        const explicitOperations = ['create', 'update', 'delete', 'restock', 'transaction-cancelled', 'to-be-packed', 'sale', 'cancel', 'restore']
         const isExplicitOperation = explicitOperations.includes(actualOperation)
         
         if (!isExplicitOperation) {
@@ -396,7 +404,8 @@ export default function LogisticsLogPage() {
               <SelectItem value="restock">Restock</SelectItem>
               <SelectItem value="sale">Sale</SelectItem>
               <SelectItem value="to-be-packed">To Be Packed</SelectItem>
-              <SelectItem value="transaction-cancelled">Cancelled Transactions</SelectItem>
+              <SelectItem value="cancel">Cancelled Orders</SelectItem>
+              <SelectItem value="restore">Restored Orders</SelectItem>
               <SelectItem value="internal-usage">Internal Usage</SelectItem>
               <SelectItem value="demo-display">Demo/Display</SelectItem>
               <SelectItem value="warehouse">Warehouse</SelectItem>
