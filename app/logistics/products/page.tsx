@@ -33,6 +33,7 @@ export default function LogisticsProductsPage() {
   const [restockDialogOpen, setRestockDialogOpen] = useState(false)
   const [selectedRestockItem, setSelectedRestockItem] = useState<InventoryItem | null>(null)
   const [restockAmount, setRestockAmount] = useState(0)
+  const [restockReason, setRestockReason] = useState("")
   
   // Add/Bundle/Category/Store dialogs
   const [addDialogOpen, setAddDialogOpen] = useState(false)
@@ -127,16 +128,18 @@ export default function LogisticsProductsPage() {
   const handleRestock = (item: InventoryItem) => {
     setSelectedRestockItem(item)
     setRestockAmount(0)
+    setRestockReason("")
     setRestockDialogOpen(true)
   }
 
   const handleRestockSubmit = async () => {
-    if (!selectedRestockItem || restockAmount <= 0) return
+    if (!selectedRestockItem || restockAmount <= 0 || !restockReason) return
 
     try {
-      await apiPost(`/api/items/${selectedRestockItem.id}/restock`, { amount: restockAmount })
+      await apiPost(`/api/items/${selectedRestockItem.id}/restock`, { amount: restockAmount, reason: restockReason })
       setRestockDialogOpen(false)
       setSelectedRestockItem(null)
+      setRestockReason("")
       fetchItems()
       toast.success("Item restocked successfully!")
     } catch (error) {
@@ -505,41 +508,82 @@ export default function LogisticsProductsPage() {
       {/* Restock Dialog */}
       {selectedRestockItem && (
         <Dialog open={restockDialogOpen} onOpenChange={setRestockDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Restock {selectedRestockItem.name}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Current Stock:</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{selectedRestockItem.quantity}</p>
-              </div>
+          <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
+            {/* Dark Header */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 px-6 py-5">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <Package className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold text-base leading-tight">Restock Product</p>
+                    <p className="text-white font-bold text-xl leading-tight mt-0.5">{selectedRestockItem.name}</p>
+                  </div>
+                </DialogTitle>
+                <p className="text-slate-300 text-sm font-medium mt-2 ml-0">
+                  {selectedRestockItem.quantity === 0
+                    ? `This item is currently out of stock. Reorder level: ${selectedRestockItem.reorderLevel}`
+                    : `Current stock: ${formatNumber(selectedRestockItem.quantity)} units. Reorder level: ${selectedRestockItem.reorderLevel}`
+                  }
+                </p>
+              </DialogHeader>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-5 bg-white dark:bg-slate-900">
               <div>
-                <Label htmlFor="restock-amount">Amount to Add</Label>
+                <Label htmlFor="restock-amount" className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1.5 block">
+                  Amount to Restock
+                </Label>
                 <Input
                   id="restock-amount"
                   type="number"
                   min="1"
-                  value={restockAmount}
+                  value={restockAmount || ""}
                   onChange={(e) => setRestockAmount(Number.parseInt(e.target.value) || 0)}
-                  placeholder="Enter amount"
-                  className="mt-2"
+                  placeholder="0"
+                  className="h-11 text-base border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                 />
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Suggested: {Math.max(selectedRestockItem.reorderLevel * 2 - selectedRestockItem.quantity, selectedRestockItem.reorderLevel)} units
+                </p>
               </div>
-              {restockAmount > 0 && (
-                <div className="p-4 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-200 dark:border-green-800">
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">New Stock:</p>
-                  <p className="text-xl font-bold text-green-600 dark:text-green-400">
-                    {selectedRestockItem.quantity + restockAmount}
-                  </p>
-                </div>
-              )}
+
+              <div>
+                <Label htmlFor="restock-reason" className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1.5 block">
+                  Reason for Restock
+                </Label>
+                <Select value={restockReason} onValueChange={setRestockReason}>
+                  <SelectTrigger id="restock-reason" className="h-11 text-base border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                    <SelectValue placeholder="Select a reason" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="New Stock Arrival">New Stock Arrival</SelectItem>
+                    <SelectItem value="Low Stock Alert">Low Stock Alert</SelectItem>
+                    <SelectItem value="Damaged Item Return">Damaged Item Return</SelectItem>
+                    <SelectItem value="Customer Return">Customer Return</SelectItem>
+                    <SelectItem value="Inventory Adjustment">Inventory Adjustment</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={() => setRestockDialogOpen(false)}>
+
+            {/* Footer */}
+            <div className="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 flex justify-end gap-3 border-t border-slate-200 dark:border-slate-700">
+              <Button
+                variant="outline"
+                onClick={() => { setRestockDialogOpen(false); setRestockReason("") }}
+                className="px-6 h-11 rounded-xl font-semibold border-2"
+              >
                 Cancel
               </Button>
-              <Button onClick={handleRestockSubmit} disabled={restockAmount <= 0}>
+              <Button
+                onClick={handleRestockSubmit}
+                disabled={restockAmount <= 0 || !restockReason}
+                className="px-6 h-11 rounded-xl font-semibold bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-md shadow-orange-500/30 disabled:opacity-50"
+              >
                 Restock Item
               </Button>
             </div>
