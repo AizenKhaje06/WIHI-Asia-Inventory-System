@@ -1091,24 +1091,38 @@ export default function PackingQueuePage() {
                   <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                     <Package className="h-6 w-6 text-white" />
                   </div>
-                  <span className="text-white">Order Details</span>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-white">Order Details</span>
+                    {/* Status badges */}
+                    {selectedOrder && (
+                      <div className="flex items-center gap-2">
+                        {selectedOrder.is_cancelled ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/90 text-white">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
+                            Cancelled
+                          </span>
+                        ) : (
+                          <>
+                            {selectedOrder.restored_by && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 text-white">
+                                <span className="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
+                                Restored
+                              </span>
+                            )}
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/90 text-white">
+                              <span className="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
+                              Active
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </DialogTitle>
                 <p className="text-slate-300 dark:text-slate-400 text-sm mt-2 font-medium">
                   Review and manage order information
                 </p>
               </DialogHeader>
-              {!isEditMode && userRole !== 'logistics-admin' && (
-                <Button
-                  variant="outline"
-                  onClick={handleEditMode}
-                  className="h-10 px-6 rounded-lg font-semibold bg-white/10 border-slate-600 text-white hover:bg-white/20 hover:border-slate-500 transition-colors flex-shrink-0"
-                >
-                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Edit Order
-                </Button>
-              )}
             </div>
           </div>
 
@@ -1576,6 +1590,20 @@ export default function PackingQueuePage() {
                               >
                                 <CheckCircle className="h-5 w-5 mr-3" />
                                 MARK AS PACKED
+                              </Button>
+                            )}
+
+                            {/* EDIT ORDER - for admin/operations, after mark as packed */}
+                            {!isEditMode && userRole !== 'logistics-admin' && (
+                              <Button
+                                variant="outline"
+                                onClick={handleEditMode}
+                                className="h-12 px-6 rounded-xl font-bold border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                              >
+                                <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                EDIT
                               </Button>
                             )}
                             
