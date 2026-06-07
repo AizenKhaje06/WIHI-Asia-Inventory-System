@@ -269,6 +269,7 @@ export default function POSPage() {
 
       // Create order in orders table (for tracking system)
       // NOTE: Inventory is NOT deducted here - only when order is marked as packed
+      const currentUser = getCurrentUser()
       await apiPost("/api/orders", {
         date: orderForm.date,
         salesChannel: orderForm.salesChannel,
@@ -280,6 +281,7 @@ export default function POSPage() {
         total: orderForm.total,
         product: orderForm.product,
         dispatchedBy: orderForm.dispatchedBy,
+        agentUsername: currentUser?.username || null, // Track agent by username for dept-manager
         customerName: orderForm.customerName,
         customerAddress: orderForm.customerAddress,
         customerContact: orderForm.customerContact,

@@ -19,38 +19,56 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
     const channel = searchParams.get('channel') || user.assignedChannel
 
     if (!channel) {
-      return NextResponse.json({ error: 'No channel assigned' }, { status: 400 })
+      // Fallback: return empty data instead of erroring — channel may not be set yet
+      return NextResponse.json({
+        totalOrders: 0,
+        activeOrders: 0,
+        cancelledOrders: 0,
+        totalRevenue: 0,
+        agents: []
+      })
     }
 
-    // Build orders query for this channel
+    console.log('[DeptManager Stats] Fetching for channel:', channel, 'user:', user.username)
+
+    // Get all team members (operations + dept-manager) for this channel
+    const { data: agents, error: agentsError } = await supabaseAdmin
+      .from('users')
+      .select('username, display_name, assigned_channel, role')
+      .ilike('assigned_channel', channel)
+      .in('role', ['operations', 'dept-manager'])
+
+    console.log('[DeptManager Stats] Team members found:', agents?.length, agentsError)
+
+    const agentList = agents || []
+
+    // Build orders query
     let query = supabaseAdmin
       .from('orders')
       .select('id, dispatched_by, agent_username, total, is_cancelled, status, created_at, sales_channel')
-      .eq('sales_channel', channel)
+      .ilike('sales_channel', channel)
       .is('deleted_at', null)
 
-    if (startDate) query = query.gte('created_at', startDate)
-    if (endDate) query = query.lte('created_at', endDate)
+    if (startDate) {
+      const startUTC = new Date(new Date(startDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }) + 'T00:00:00+08:00').toISOString().replace('Z','').slice(0,19)
+      query = query.gte('created_at', startUTC)
+    }
+    if (endDate) {
+      const endUTC = new Date(new Date(endDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }) + 'T23:59:59+08:00').toISOString().replace('Z','').slice(0,19)
+      query = query.lte('created_at', endUTC)
+    }
 
     const { data: orders, error } = await query
 
     if (error) {
-      console.error('[DeptManager Stats] Error:', error)
+      console.error('[DeptManager Stats] Error fetching orders:', error)
       return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 })
     }
 
     const allOrders = orders || []
+    console.log('[DeptManager Stats] Orders found:', allOrders.length)
 
-    // Get all agents (users) for this channel
-    const { data: agents } = await supabaseAdmin
-      .from('users')
-      .select('username, display_name, assigned_channel')
-      .eq('assigned_channel', channel)
-      .eq('role', 'operations')
-
-    const agentList = agents || []
-
-    // Group orders by agent
+    // Group orders by agent — declare map first
     const agentMap = new Map<string, {
       username: string
       displayName: string
@@ -61,11 +79,14 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
       lastActivity: string | null
     }>()
 
-    // Initialize with all known agents (even those with 0 orders)
+    // Initialize with all known team members (even those with 0 orders)
     for (const agent of agentList) {
+      const label = agent.role === 'dept-manager'
+        ? `${agent.display_name || agent.username} (Manager)`
+        : (agent.display_name || agent.username)
       agentMap.set(agent.username, {
         username: agent.username,
-        displayName: agent.display_name || agent.username,
+        displayName: label,
         totalOrders: 0,
         activeOrders: 0,
         cancelledOrders: 0,
@@ -74,7 +95,7 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
       })
     }
 
-    // Aggregate orders per agent
+    // Aggregate orders per agent/manager
     for (const order of allOrders) {
       // Use agent_username if available, fallback to dispatched_by
       const agentKey = order.agent_username || order.dispatched_by || 'Unknown'

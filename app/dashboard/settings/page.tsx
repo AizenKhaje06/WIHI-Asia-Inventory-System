@@ -46,7 +46,9 @@ import {
   Zap,
   Server,
   BookOpen,
-  ChevronRight
+  ChevronRight,
+  Users,
+  UserCog
 } from "lucide-react"
 import { toast } from "sonner"
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api-client"

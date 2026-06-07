@@ -363,7 +363,7 @@ export default function EnterpriseLoginPage() {
               profileImage: data.account.profileImage || null
             }))
           }
-          router.push('/dept-manager/dashboard')
+          router.push('/dashboard/operations')
           return
         } else {
           throw new Error("Invalid credentials or account is not a Department Manager")
