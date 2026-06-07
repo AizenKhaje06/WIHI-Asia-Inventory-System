@@ -16,14 +16,27 @@ export const GET = withAuth(async (request, { user }) => {
     )
 
     // Fetch cancelled/restored orders from orders table to create synthetic log entries
-    // This ensures orders cancelled/restored before logging was implemented still appear
+    // Query 1: cancelled orders (is_cancelled = true)
     const { data: cancelledOrders } = await supabaseAdmin
       .from('orders')
       .select('id, product, qty, sales_channel, store, waybill, is_cancelled, cancellation_reason, cancelled_by, cancelled_at, restored_by, restored_at')
+      .eq('is_cancelled', true)
       .not('cancelled_at', 'is', null)
       .is('deleted_at', null)
       .order('cancelled_at', { ascending: false })
       .limit(500)
+
+    // Query 2: restored orders (was cancelled, now restored - is_cancelled = false but has restored_at)
+    const { data: restoredOrders } = await supabaseAdmin
+      .from('orders')
+      .select('id, product, qty, sales_channel, store, waybill, is_cancelled, cancellation_reason, cancelled_by, cancelled_at, restored_by, restored_at')
+      .eq('is_cancelled', false)
+      .not('restored_at', 'is', null)
+      .is('deleted_at', null)
+      .order('restored_at', { ascending: false })
+      .limit(500)
+
+    const allOrders = [...(cancelledOrders || []), ...(restoredOrders || [])]
 
     // Build a set of order IDs already in logs (to avoid duplicates)
     const loggedOrderIds = new Set(
@@ -39,16 +52,15 @@ export const GET = withAuth(async (request, { user }) => {
 
     // Create synthetic log entries for cancelled/restored orders not already in logs
     const syntheticLogs: any[] = []
-    for (const order of (cancelledOrders || [])) {
+    for (const order of allOrders) {
       const waybill = order.waybill || 'N/A'
       
-      // Add cancel log if not already logged
-      if (order.cancelled_at) {
-        const alreadyLogged = loggedOrderIds.has(waybill) && 
-          regularLogs.some(l => 
-            l.details?.includes(waybill) && 
-            (l.operation?.toLowerCase() === 'cancel' || l.operation?.toLowerCase() === 'cancelled')
-          )
+      // Add cancel log if this order is currently cancelled and not already logged
+      if (order.is_cancelled && order.cancelled_at) {
+        const alreadyLogged = regularLogs.some(l => 
+          l.details?.includes(waybill) && 
+          (l.operation?.toLowerCase() === 'cancel' || l.operation?.toLowerCase() === 'cancelled')
+        )
         
         if (!alreadyLogged) {
           syntheticLogs.push({
@@ -63,8 +75,8 @@ export const GET = withAuth(async (request, { user }) => {
         }
       }
 
-      // Add restore log if order was restored and not already logged
-      if (order.restored_at && !order.is_cancelled) {
+      // Add restore log if this order was restored (has restored_at, is_cancelled = false)
+      if (!order.is_cancelled && order.restored_at) {
         const alreadyRestoredLogged = regularLogs.some(l => 
           l.details?.includes(waybill) && 
           (l.operation?.toLowerCase() === 'restore' || l.operation?.toLowerCase() === 'uncancel')
