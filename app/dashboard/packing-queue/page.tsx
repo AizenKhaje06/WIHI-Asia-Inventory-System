@@ -1084,46 +1084,45 @@ export default function PackingQueuePage() {
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0 flex flex-col">
           {/* Modal Header */}
-          <div className="bg-slate-900 dark:bg-slate-950 px-8 py-6 border-b border-slate-700 dark:border-slate-800 flex-shrink-0">
-            <div className="flex items-start justify-between gap-4 pr-8">
+          <div className="bg-slate-900 dark:bg-slate-950 px-8 py-6 border-b border-slate-700 dark:border-slate-800 flex-shrink-0 relative">
+            <div className="flex items-start gap-4 pr-8">
               <DialogHeader className="flex-1">
                 <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
                   <div className="p-2 bg-slate-700 dark:bg-slate-600 rounded-lg">
                     <Package className="h-6 w-6 text-white" />
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-white">Order Details</span>
-                    {/* Status badges */}
-                    {selectedOrder && (
-                      <div className="flex items-center gap-2">
-                        {selectedOrder.is_cancelled ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/90 text-white">
-                            <span className="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
-                            Cancelled
-                          </span>
-                        ) : (
-                          <>
-                            {selectedOrder.restored_by && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 text-white">
-                                <span className="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
-                                Restored
-                              </span>
-                            )}
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/90 text-white">
-                              <span className="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
-                              Active
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <span className="text-white">Order Details</span>
                 </DialogTitle>
                 <p className="text-slate-300 dark:text-slate-400 text-sm mt-2 font-medium">
                   Review and manage order information
                 </p>
               </DialogHeader>
             </div>
+
+            {/* Status badges — absolute, bottom-right below X button */}
+            {selectedOrder && (
+              <div className="absolute bottom-6 right-8 flex items-center gap-2">
+                {selectedOrder.is_cancelled ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-red-500/80 text-white border border-red-400/40">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
+                    Cancelled
+                  </span>
+                ) : (
+                  <>
+                    {selectedOrder.restored_by && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-500/80 text-white border border-blue-400/40">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
+                        Restored
+                      </span>
+                    )}
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/80 text-white border border-emerald-400/40">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
+                      Active
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {selectedOrder && (
