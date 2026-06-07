@@ -332,6 +332,44 @@ export default function EnterpriseLoginPage() {
         return
       }
 
+      // Dept Manager login
+      if (formData.role === 'dept-manager') {
+        const data = await apiPost("/api/accounts", {
+          action: "validate",
+          username: formData.username,
+          password: formData.password
+        })
+
+        if (data.success && data.account && data.account.role === 'dept-manager') {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem("isLoggedIn", "true")
+            localStorage.setItem("username", data.account.username)
+            localStorage.setItem("userRole", "dept-manager")
+            localStorage.setItem("displayName", data.account.displayName)
+            if (data.account.assignedChannel) {
+              localStorage.setItem("assignedChannel", data.account.assignedChannel)
+            }
+            if (data.account.profileImage) {
+              localStorage.setItem("profileImage", data.account.profileImage)
+            }
+            if (formData.rememberDevice) {
+              localStorage.setItem("rememberedUsername", formData.username)
+            }
+            localStorage.setItem("currentUser", JSON.stringify({
+              username: data.account.username,
+              role: "dept-manager",
+              displayName: data.account.displayName,
+              assignedChannel: data.account.assignedChannel || null,
+              profileImage: data.account.profileImage || null
+            }))
+          }
+          router.push('/dept-manager/dashboard')
+          return
+        } else {
+          throw new Error("Invalid credentials or account is not a Department Manager")
+        }
+      }
+
       // Admin login
       const data = await apiPost("/api/accounts", {
         action: "validate",

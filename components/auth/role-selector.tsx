@@ -1,6 +1,6 @@
 "use client"
 
-import { Shield, Users, Package } from "lucide-react"
+import { Shield, Users, Package, UserCog } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   Tooltip,
@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-export type UserRole = "admin" | "operations" | "logistics"
+export type UserRole = "admin" | "operations" | "logistics" | "dept-manager"
 export type LogisticsSubRole = "logistics-admin" | "packer" | "tracker"
 
 interface RoleSelectorProps {
@@ -39,6 +39,13 @@ const roles = [
     icon: Package,
     description: "Order fulfillment and tracking",
     color: "purple",
+  },
+  {
+    id: "dept-manager" as UserRole,
+    label: "Manager",
+    icon: UserCog,
+    description: "Department performance overview",
+    color: "orange",
   },
 ]
 
