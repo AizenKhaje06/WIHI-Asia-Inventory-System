@@ -184,7 +184,10 @@ export default function LogisticsLogPage() {
       creates: logs.filter(log => log.operation?.toLowerCase() === 'create').length,
       updates: logs.filter(log => log.operation?.toLowerCase() === 'update').length,
       deletes: logs.filter(log => log.operation?.toLowerCase() === 'delete').length,
-      cancelled: logs.filter(log => log.operation?.toLowerCase().includes('cancelled')).length
+      cancelled: logs.filter(log => {
+        const op = log.operation?.toLowerCase() || ''
+        return op === 'cancel' || op === 'cancelled' || op.includes('cancelled') || op === 'transaction-cancelled'
+      }).length
     }
   }, [logs])
 
