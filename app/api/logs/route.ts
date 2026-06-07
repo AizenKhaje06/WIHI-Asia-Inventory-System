@@ -2,30 +2,102 @@ import { NextResponse } from 'next/server'
 import { getLogs } from '@/lib/supabase-db'
 import { getCachedData } from '@/lib/cache'
 import { withAuth } from '@/lib/api-helpers'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
 export const GET = withAuth(async (request, { user }) => {
   try {
-    const logs = await getCachedData(
+    // Fetch regular logs (cached)
+    const regularLogs = await getCachedData(
       'logs',
       () => getLogs(),
-      1 * 60 * 1000 // 1 minute cache
+      1 * 60 * 1000
     )
 
+    // Fetch cancelled/restored orders from orders table to create synthetic log entries
+    // This ensures orders cancelled/restored before logging was implemented still appear
+    const { data: cancelledOrders } = await supabaseAdmin
+      .from('orders')
+      .select('id, product, qty, sales_channel, store, waybill, is_cancelled, cancellation_reason, cancelled_by, cancelled_at, restored_by, restored_at')
+      .not('cancelled_at', 'is', null)
+      .is('deleted_at', null)
+      .order('cancelled_at', { ascending: false })
+      .limit(500)
+
+    // Build a set of order IDs already in logs (to avoid duplicates)
+    const loggedOrderIds = new Set(
+      regularLogs
+        .filter(l => l.details?.includes('Waybill:'))
+        .map(l => {
+          // Extract waybill from details — format: "Waybill: XXXXX"
+          const match = l.details?.match(/Waybill:\s*([^\s.]+)/)
+          return match?.[1]
+        })
+        .filter(Boolean)
+    )
+
+    // Create synthetic log entries for cancelled/restored orders not already in logs
+    const syntheticLogs: any[] = []
+    for (const order of (cancelledOrders || [])) {
+      const waybill = order.waybill || 'N/A'
+      
+      // Add cancel log if not already logged
+      if (order.cancelled_at) {
+        const alreadyLogged = loggedOrderIds.has(waybill) && 
+          regularLogs.some(l => 
+            l.details?.includes(waybill) && 
+            (l.operation?.toLowerCase() === 'cancel' || l.operation?.toLowerCase() === 'cancelled')
+          )
+        
+        if (!alreadyLogged) {
+          syntheticLogs.push({
+            id: `synthetic-cancel-${order.id}`,
+            operation: 'cancel',
+            itemId: order.id,
+            itemName: order.product || 'Unknown Product',
+            quantity: order.qty || 0,
+            details: `Order cancelled. Reason: ${order.cancellation_reason || 'N/A'}. Waybill: ${waybill}. Cancelled by: ${order.cancelled_by || 'Unknown'}. Sales Channel: ${order.sales_channel || 'N/A'}`,
+            timestamp: order.cancelled_at,
+          })
+        }
+      }
+
+      // Add restore log if order was restored and not already logged
+      if (order.restored_at && !order.is_cancelled) {
+        const alreadyRestoredLogged = regularLogs.some(l => 
+          l.details?.includes(waybill) && 
+          (l.operation?.toLowerCase() === 'restore' || l.operation?.toLowerCase() === 'uncancel')
+        )
+        
+        if (!alreadyRestoredLogged) {
+          syntheticLogs.push({
+            id: `synthetic-restore-${order.id}`,
+            operation: 'restore',
+            itemId: order.id,
+            itemName: order.product || 'Unknown Product',
+            quantity: order.qty || 0,
+            details: `Order restored to packing queue. Waybill: ${waybill}. Restored by: ${order.restored_by || 'Unknown'}. Sales Channel: ${order.sales_channel || 'N/A'}`,
+            timestamp: order.restored_at,
+          })
+        }
+      }
+    }
+
+    // Merge and sort by timestamp descending
+    const allLogs = [...regularLogs, ...syntheticLogs].sort((a, b) => {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    })
+
     // DEPARTMENT FILTERING: Operations users only see logs for their assigned channel
-    let filteredLogs = logs
+    let filteredLogs = allLogs
     if (user.role === 'operations' && user.assignedChannel) {
-      // Filter logs by checking if the log details contain the assigned channel
-      filteredLogs = logs.filter(log => {
+      filteredLogs = allLogs.filter(log => {
         const detailsLower = log.details?.toLowerCase() || ''
         const channelLower = user.assignedChannel.toLowerCase()
-        
-        // Check if the log details mention the assigned channel
         return detailsLower.includes(channelLower)
       })
     }
-    // Admin sees all logs
 
     return NextResponse.json(filteredLogs)
   } catch (error) {
