@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { invalidateCache } from '@/lib/cache'
 
 /**
  * PATCH /api/orders/[id]/cancel
@@ -81,9 +82,9 @@ export async function PATCH(
         details: `Order cancelled. Reason: ${reason.trim()}. Waybill: ${order.waybill || 'N/A'}. Cancelled by: ${cancelledBy || 'Unknown'}. Sales Channel: ${order.sales_channel || 'N/A'}`,
         timestamp: new Date().toISOString()
       })
+      invalidateCache('logs') // Clear cache so activity log shows immediately
     } catch (logError) {
       console.error('[Cancel Order API] Failed to log activity:', logError)
-      // Don't fail the request if logging fails
     }
 
     return NextResponse.json({
@@ -185,9 +186,9 @@ export async function POST(
         details: `Order restored to packing queue. Waybill: ${order.waybill || 'N/A'}. Restored by: ${restoredBy || 'Unknown'}. Sales Channel: ${order.sales_channel || 'N/A'}`,
         timestamp: new Date().toISOString()
       })
+      invalidateCache('logs') // Clear cache so activity log shows immediately
     } catch (logError) {
       console.error('[Uncancel Order API] Failed to log activity:', logError)
-      // Don't fail the request if logging fails
     }
 
     return NextResponse.json({
