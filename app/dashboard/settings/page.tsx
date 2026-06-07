@@ -59,7 +59,7 @@ interface Account {
   id: string
   username: string
   password: string
-  role: 'admin' | 'operations' | 'packer' | 'tracker' | 'logistics-admin'
+  role: 'admin' | 'operations' | 'packer' | 'tracker' | 'logistics-admin' | 'dept-manager'
   assignedChannel?: string // Legacy field, no longer used
   displayName: string
   profileImage?: string // Profile image URL
@@ -407,7 +407,7 @@ export default function SettingsPage() {
     }
 
     // Validate that Operations Staff has an assigned channel
-    if (newUserForm.role === 'operations' && !newUserForm.assignedChannel) {
+    if ((newUserForm.role === 'operations' || newUserForm.role === 'dept-manager') && !newUserForm.assignedChannel) {
       toast.error('Please select a sales channel for Operations Staff')
       return
     }
@@ -1252,21 +1252,22 @@ export default function SettingsPage() {
                               className="flex h-9 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background px-3 py-2 text-sm"
                             >
                               <option value="admin">Administrator</option>
-                              <option value="operations">Operations Staff</option>
+                              <option value="operations">Operations Staff (Agent)</option>
+                              <option value="dept-manager">Department Manager</option>
                               <option value="packer">Packer</option>
                               <option value="tracker">Tracker</option>
                               <option value="logistics-admin">Logistics Admin</option>
                             </select>
                             
-                            {/* Sales Channel Dropdown - Only show when Operations Staff is selected */}
-                            {newUserForm.role === 'operations' && (
+                            {/* Sales Channel Dropdown - Show for Operations and Dept Manager */}
+                            {(newUserForm.role === 'operations' || newUserForm.role === 'dept-manager') && (
                               <select
                                 id="newChannel"
                                 value={newUserForm.assignedChannel}
                                 onChange={(e) => setNewUserForm({ ...newUserForm, assignedChannel: e.target.value })}
                                 className="flex h-9 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background px-3 py-2 text-sm"
                               >
-                                <option value="">Select channel...</option>
+                                <option value="">Select department...</option>
                                 <option value="Shopee">Shopee</option>
                                 <option value="Lazada">Lazada</option>
                                 <option value="TikTok">TikTok</option>

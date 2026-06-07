@@ -1,6 +1,6 @@
 // Role-based access control system
 
-export type UserRole = 'admin' | 'operations' | 'packer' | 'tracker' | 'logistics-admin'
+export type UserRole = 'admin' | 'operations' | 'packer' | 'tracker' | 'logistics-admin' | 'dept-manager'
 
 export interface User {
   username: string
@@ -8,8 +8,8 @@ export interface User {
   displayName: string
   email?: string
   phone?: string
-  assignedChannel?: string // NEW: Department/channel for operations users
-  profileImage?: string | null // Added for profile image feature
+  assignedChannel?: string
+  profileImage?: string | null
 }
 
 // Role definitions with better names
@@ -43,6 +43,12 @@ export const ROLES = {
     name: 'Logistics Admin',
     description: 'Logistics overview and monitoring',
     icon: '📊'
+  },
+  'dept-manager': {
+    id: 'dept-manager' as const,
+    name: 'Department Manager',
+    description: 'View all agents performance within their department',
+    icon: '👥'
   }
 } as const
 
@@ -89,6 +95,14 @@ export const ROLE_PERMISSIONS = {
     '/logistics/dashboard',
     '/dashboard/log',
     '/dashboard/track-orders'
+  ],
+  'dept-manager': [
+    '/dept-manager/dashboard',
+    '/dept-manager/agents',
+    '/dept-manager/log',
+    '/dashboard/inventory/**',
+    '/dashboard/packing-queue',
+    '/dashboard/track-orders'
   ]
 } as const
 
@@ -98,7 +112,8 @@ export const DEFAULT_PASSWORDS: Record<UserRole, string> = {
   operations: 'ops456',
   packer: 'pack789',
   tracker: 'tracker123',
-  'logistics-admin': 'logistics123'
+  'logistics-admin': 'logistics123',
+  'dept-manager': 'manager123'
 }
 
 // Auth helpers
@@ -151,6 +166,9 @@ export function getDefaultRoute(role: UserRole): string {
   if (role === 'logistics-admin') {
     return '/logistics/dashboard'
   }
+  if (role === 'dept-manager') {
+    return '/dept-manager/dashboard'
+  }
   return '/dashboard'
 }
 
@@ -181,7 +199,7 @@ export function getCurrentUser(): User | null {
     
     if (isLoggedIn === 'true' && username && role) {
       // Validate role is valid
-      if (!['admin', 'operations', 'packer', 'tracker', 'logistics-admin'].includes(role)) {
+      if (!['admin', 'operations', 'packer', 'tracker', 'logistics-admin', 'dept-manager'].includes(role)) {
         console.warn('[Auth] Invalid role in session, clearing...')
         clearCurrentUser()
         return null
