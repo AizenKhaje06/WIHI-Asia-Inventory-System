@@ -51,42 +51,67 @@ export const GET = withAuth(async (request, { user }) => {
 })
 
 // POST - Requires admin, operations, or logistics-admin role
-export const POST = withRoles(['admin', 'operations', 'logistics-admin'], async (request, { user }) => {
+export const POST = withRoles(['admin', 'operations', 'logistics-admin', 'dept-manager'], async (request, { user }) => {
   try {
     const body = await request.json()
+    console.log('[Items API POST] body:', JSON.stringify(body))
     
-    // Products are now universal - check for duplicates by name only
-    const existingItems = await getInventoryItems()
-    const duplicate = existingItems.find(item => 
-      item.name.toLowerCase() === body.name.toLowerCase()
-    )
+    // Allow duplicate names, but block exact duplicates (name + COGS + price all match)
+    let existingItems: any[] = []
+    try { existingItems = await getInventoryItems() } catch { /* allow create if fetch fails */ }
     
-    if (duplicate) {
+    const bodyName = (body.name || '').toString().toLowerCase().trim()
+    const bodyCost = Number(body.costPrice) || 0
+    const bodyPrice = Number(body.sellingPrice) || 0
+    
+    const exactDuplicate = bodyName ? existingItems.find(item => {
+      const itemName = (item.name || '').toString().toLowerCase().trim()
+      const itemCost = Number(item.costPrice) || 0
+      const itemPrice = Number(item.sellingPrice) || 0
+      
+      return itemName === bodyName && itemCost === bodyCost && itemPrice === bodyPrice
+    }) : null
+    
+    if (exactDuplicate) {
       return NextResponse.json({ 
-        error: `Product "${body.name}" already exists. Please update the existing product instead of creating a duplicate.`,
+        error: `Product "${body.name}" with COGS ₱${bodyCost.toFixed(2)} and price ₱${bodyPrice.toFixed(2)} already exists. Change the COGS or price to create a variant.`,
         existingProduct: {
-          id: duplicate.id,
-          name: duplicate.name,
-          quantity: duplicate.quantity
+          id: exactDuplicate.id,
+          name: exactDuplicate.name,
+          quantity: exactDuplicate.quantity,
+          costPrice: exactDuplicate.costPrice,
+          sellingPrice: exactDuplicate.sellingPrice
         }
-      }, { status: 409 }) // 409 Conflict
+      }, { status: 409 })
     }
     
-    const item = await addInventoryItem(body)
-    
-    // Invalidate cache after creating new item
-    invalidateCachePattern('inventory')
-    
-    await addLog({
-      operation: "create",
-      itemId: item.id,
-      itemName: item.name,
-      details: `Added "${item.name}" by ${user.displayName} - Qty: ${item.quantity}, Cost: ₱${item.costPrice.toFixed(2)}, Sell: ₱${item.sellingPrice.toFixed(2)}`
-    })
-    
-    return NextResponse.json(item)
+    try {
+      const item = await addInventoryItem(body)
+      
+      // Invalidate cache after creating new item
+      invalidateCachePattern('inventory')    
+      await addLog({
+        operation: "create",
+        itemId: item.id,
+        itemName: item.name,
+        details: `Added "${item.name}" by ${user.displayName} - Qty: ${item.quantity}, Cost: ₱${item.costPrice.toFixed(2)}, Sell: ₱${item.sellingPrice.toFixed(2)}`
+      })
+      
+      return NextResponse.json(item)
+    } catch (dbError: any) {
+      // Handle unique constraint violation from database
+      if (dbError.message?.includes('inventory_name_store_channel_unique') || 
+          dbError.message?.includes('duplicate key') ||
+          dbError.code === '23505') {
+        return NextResponse.json({ 
+          error: `Database constraint error: A product with this name already exists in this store/channel. Please contact administrator to update database schema to allow product variants.`,
+          details: 'The database has a unique constraint preventing duplicate product names. This needs to be removed to support product variants with different COGS/prices.'
+        }, { status: 409 })
+      }
+      throw dbError
+    }
   } catch (error) {
     console.error("[API] Error creating item:", error)
-    return NextResponse.json({ error: "Failed to create item" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to create item", details: String(error) }, { status: 500 })
   }
 })
