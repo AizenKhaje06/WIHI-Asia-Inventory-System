@@ -131,14 +131,21 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
       .select(`
         id, date, sales_channel, store, courier, waybill,
         qty, cogs, total, product,
-        status, is_cancelled,
+        status, is_cancelled, cancellation_reason,
         dispatched_by, agent_username,
+        packed_at, packed_by,
         created_at
       `)
-      .ilike('sales_channel', channel)
-      .gte('date', startManilaKey)   // 'date' column is local date YYYY-MM-DD
-      .lte('date', endManilaKey)
       .is('deleted_at', null)
+
+    // Include channel orders + manager's own orders from any channel
+    if (user.role === 'dept-manager') {
+      query = query.or(`sales_channel.ilike.${channel},agent_username.eq.${user.username}`)
+    } else {
+      query = query.ilike('sales_channel', channel)
+    }
+
+    query = query.gte('date', startManilaKey).lte('date', endManilaKey)
 
     if (agentFilter !== 'all') {
       query = query.or(`agent_username.eq.${agentFilter},dispatched_by.eq.${agentFilter}`)
@@ -324,18 +331,129 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
     const agentRanking = Array.from(agentRankMap.values())
       .sort((a, b) => b.revenue - a.revenue)
 
-    // ── 5. SUMMARY ───────────────────────────────────────────────────────────────
+    // ── 5. SUMMARY — extended ────────────────────────────────────────────────────
     const totalRevenue = activeOrders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0)
     const totalOrders = allOrders.length
     const cancelledOrders = allOrders.filter(o => o.is_cancelled).length
     const avgOrderValue = activeOrders.length > 0 ? totalRevenue / activeOrders.length : 0
+    const totalQty = activeOrders.reduce((sum, o) => sum + (o.qty || 0), 0)
+    const totalCOGS = activeOrders.reduce((sum, o) => sum + (parseFloat(o.cogs) || 0), 0)
+    const grossMargin = totalRevenue > 0 ? parseFloat(((1 - totalCOGS / totalRevenue) * 100).toFixed(1)) : 0
+
+    // ── 6. REVENUE SHARE PER AGENT ───────────────────────────────────────────────
+    const revenueShare = agentRanking
+      .filter(a => a.revenue > 0)
+      .map(a => ({
+        name: a.displayName,
+        username: a.username,
+        value: Math.round(a.revenue * 100) / 100,
+        percentage: totalRevenue > 0 ? parseFloat(((a.revenue / totalRevenue) * 100).toFixed(1)) : 0
+      }))
+
+    // ── 7. CANCELLATION REASONS ───────────────────────────────────────────────────
+    const cancelReasonMap = new Map<string, number>()
+    for (const o of allOrders.filter(o => o.is_cancelled)) {
+      const reason = (o.cancellation_reason || 'No reason given').trim() || 'No reason given'
+      cancelReasonMap.set(reason, (cancelReasonMap.get(reason) || 0) + 1)
+    }
+    const cancellationReasons = Array.from(cancelReasonMap.entries())
+      .map(([reason, count]) => ({ reason, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8)
+
+    // ── 8. COURIER BREAKDOWN ──────────────────────────────────────────────────────
+    const courierMap = new Map<string, { courier: string; orders: number; revenue: number; qty: number }>()
+    for (const o of activeOrders) {
+      const courier = (o.courier || 'Unknown').trim() || 'Unknown'
+      if (!courierMap.has(courier)) {
+        courierMap.set(courier, { courier, orders: 0, revenue: 0, qty: 0 })
+      }
+      const entry = courierMap.get(courier)!
+      entry.orders++
+      entry.revenue += parseFloat(o.total) || 0
+      entry.qty += o.qty || 0
+    }
+    const courierBreakdown = Array.from(courierMap.values())
+      .sort((a, b) => b.orders - a.orders)
+      .slice(0, 8)
+
+    // ── 9. AGENT ACTIVE DAYS + PACK RATE ─────────────────────────────────────────
+    const periodDays = (() => {
+      const start = new Date(startManilaKey + 'T12:00:00Z')
+      const end   = new Date(endManilaKey + 'T12:00:00Z')
+      return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1)
+    })()
+
+    const agentMetricsMap = new Map<string, {
+      username: string; displayName: string
+      activeDays: Set<string>; packedOrders: number; totalDispatchedOrders: number
+      avgOrderValue: number
+    }>()
+
+    for (const o of allOrders) {
+      const agentKey = o.agent_username || o.dispatched_by || 'Unknown'
+      const displayName = agentNameMap.get(agentKey) || agentKey
+
+      if (!agentMetricsMap.has(agentKey)) {
+        agentMetricsMap.set(agentKey, {
+          username: agentKey,
+          displayName,
+          activeDays: new Set(),
+          packedOrders: 0,
+          totalDispatchedOrders: 0,
+          avgOrderValue: 0
+        })
+      }
+      const m = agentMetricsMap.get(agentKey)!
+      m.totalDispatchedOrders++
+      m.activeDays.add((o.date || '').slice(0, 10))
+      if (o.status === 'Packed' || o.status === 'Shipped' || o.status === 'Delivered') {
+        m.packedOrders++
+      }
+    }
+
+    // Calculate avg order value per agent
+    for (const [agentKey, m] of agentMetricsMap) {
+      const agentActive = activeOrders.filter(o =>
+        (o.agent_username || o.dispatched_by) === agentKey
+      )
+      const rev = agentActive.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0)
+      m.avgOrderValue = agentActive.length > 0 ? Math.round((rev / agentActive.length) * 100) / 100 : 0
+    }
+
+    const agentMetrics = Array.from(agentMetricsMap.values())
+      .map(m => ({
+        username: m.username,
+        displayName: m.displayName,
+        activeDays: m.activeDays.size,
+        periodDays,
+        consistencyRate: Math.round((m.activeDays.size / periodDays) * 100),
+        packRate: m.totalDispatchedOrders > 0
+          ? Math.round((m.packedOrders / m.totalDispatchedOrders) * 100)
+          : 0,
+        packedOrders: m.packedOrders,
+        totalDispatchedOrders: m.totalDispatchedOrders,
+        avgOrderValue: m.avgOrderValue
+      }))
+      .sort((a, b) => b.activeDays - a.activeDays)
 
     return NextResponse.json({
       salesTrend,
       productSales,
       storeSales,
       agentRanking,
-      summary: { totalRevenue, totalOrders, cancelledOrders, avgOrderValue }
+      revenueShare,
+      cancellationReasons,
+      courierBreakdown,
+      agentMetrics,
+      summary: {
+        totalRevenue,
+        totalOrders,
+        cancelledOrders,
+        avgOrderValue,
+        totalQty,
+        grossMargin
+      }
     })
   } catch (error) {
     console.error('[DeptManager Analytics] Exception:', error)

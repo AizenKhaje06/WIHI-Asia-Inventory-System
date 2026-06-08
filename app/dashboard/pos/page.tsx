@@ -208,7 +208,7 @@ export default function POSPage() {
     
     setOrderForm({
       date: getLocalDateString(),
-      salesChannel: currentUserRole === 'operations' ? assignedChannel : (firstItem.salesChannel || ''),
+      salesChannel: (currentUserRole === 'operations' || currentUserRole === 'dept-manager') ? assignedChannel : (firstItem.salesChannel || ''),
       store: firstItem.store || '',
       courier: '',
       waybill: '',
@@ -698,7 +698,7 @@ export default function POSPage() {
                   </div>
                   <div>
                     <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sales Channel</Label>
-                    {currentUserRole === 'operations' ? (
+                    {(currentUserRole === 'operations' || currentUserRole === 'dept-manager') ? (
                       <Input
                         value={assignedChannel}
                         readOnly
@@ -731,7 +731,7 @@ export default function POSPage() {
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
                         {stores
-                          .filter(s => currentUserRole === 'operations' 
+                          .filter(s => (currentUserRole === 'operations' || currentUserRole === 'dept-manager') 
                             ? true 
                             : (!orderForm.salesChannel || s.sales_channel === orderForm.salesChannel)
                           )
@@ -739,7 +739,7 @@ export default function POSPage() {
                           .map((store) => (
                             <SelectItem key={store.id} value={store.store_name}>
                               {store.store_name}
-                              {currentUserRole !== 'operations' && orderForm.salesChannel && (
+                              {(currentUserRole !== 'operations' && currentUserRole !== 'dept-manager') && orderForm.salesChannel && (
                                 <span className="text-xs text-slate-500 ml-2">({store.sales_channel})</span>
                               )}
                             </SelectItem>

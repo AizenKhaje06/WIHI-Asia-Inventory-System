@@ -42,12 +42,18 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
 
     const agentList = agents || []
 
-    // Build orders query
+    // Build orders query — filter by channel OR directly dispatched by this manager
     let query = supabaseAdmin
       .from('orders')
       .select('id, dispatched_by, agent_username, total, is_cancelled, status, created_at, sales_channel')
-      .ilike('sales_channel', channel)
       .is('deleted_at', null)
+
+    // Include orders from the assigned channel OR dispatched by this manager directly
+    if (user.role === 'dept-manager') {
+      query = query.or(`sales_channel.ilike.${channel},agent_username.eq.${user.username}`)
+    } else {
+      query = query.ilike('sales_channel', channel)
+    }
 
     if (startDate) {
       const startUTC = new Date(new Date(startDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }) + 'T00:00:00+08:00').toISOString().replace('Z','').slice(0,19)

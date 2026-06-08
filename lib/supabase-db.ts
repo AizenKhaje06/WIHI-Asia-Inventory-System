@@ -136,6 +136,14 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
 }
 
 export async function deleteInventoryItem(id: string): Promise<void> {
+  // Delete dependent records first to avoid foreign key constraint violations
+  // 1. Delete restock history referencing this item
+  await supabaseAdmin.from('restocks').delete().eq('item_id', id)
+
+  // 2. Delete transactions referencing this item (if any)
+  await supabaseAdmin.from('transactions').delete().eq('item_id', id)
+
+  // 3. Now delete the inventory item
   const { error } = await supabaseAdmin
     .from('inventory')
     .delete()
