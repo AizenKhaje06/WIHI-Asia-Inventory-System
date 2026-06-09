@@ -9,6 +9,7 @@ import { CommandPalette } from "@/components/command-palette"
 import { RouteGuard } from "@/components/route-guard"
 import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal"
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
+import { useSessionGuard } from "@/lib/use-session-guard"
 import { cn } from "@/lib/utils"
 
 export default function ClientLayout({
@@ -21,6 +22,9 @@ export default function ClientLayout({
 
   // Initialize keyboard shortcuts
   useKeyboardShortcuts()
+  
+  // Initialize session guard (single-device security)
+  useSessionGuard()
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-[#121212]">

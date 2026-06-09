@@ -203,7 +203,7 @@ export default function EnterpriseLoginPage() {
 
       // Store user data in localStorage
       if (typeof window !== 'undefined') {
-        const { user, redirectPath } = data
+        const { user, redirectPath, sessionId } = data
 
         // Handle remember device
         if (rememberDevice) {
@@ -217,6 +217,7 @@ export default function EnterpriseLoginPage() {
         localStorage.setItem("username", user.username)
         localStorage.setItem("userRole", user.role)
         localStorage.setItem("displayName", user.displayName)
+        localStorage.setItem("sessionId", sessionId) // Store session ID for security
 
         // Store optional fields
         if (user.profileImage) {
@@ -301,9 +302,16 @@ export default function EnterpriseLoginPage() {
           {/* Login Card - ENHANCED */}
           <div className="bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8 lg:p-10 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200 transition-all">
             {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-white mb-2">Welcome back</h1>
-              <p className="text-slate-400">Sign in to access dashboard</p>
+            <div className="mb-8 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30 mb-4">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-bold text-white mb-2 tracking-tight" style={{ color: '#ffffff' }}>
+                Secure Access Portal
+              </h1>
+              <p className="text-slate-300 text-sm font-medium">Enter your credentials to continue to dashboard</p>
             </div>
 
             {/* Error Alert */}
