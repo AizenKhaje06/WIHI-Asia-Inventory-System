@@ -110,7 +110,7 @@ export default function LogisticsProductsPage() {
   const inStockCount = regularItems.filter(i => i.quantity > i.reorderLevel).length
   const lowStockCount = regularItems.filter(i => i.quantity > 0 && i.quantity <= i.reorderLevel).length
   const outOfStockCount = regularItems.filter(i => i.quantity === 0).length
-  const categories = Array.from(new Set(regularItems.map(i => i.category))).sort()
+  const categories = Array.from(new Set(regularItems.map(i => i.category).filter(cat => cat && cat.trim()))).sort()
 
   const handleEdit = (item: InventoryItem) => {
     setSelectedItem(item)
