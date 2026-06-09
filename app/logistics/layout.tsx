@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { href: '/logistics/products', label: 'Products' },
   { href: '/logistics/packing-queue', label: 'Packing Queue' },
   { href: '/logistics/track-orders', label: 'Track Orders' },
+  { href: '/logistics/business-contacts', label: 'Business Contacts' },
   { href: '/logistics/log', label: 'Activity Logs' },
 ]
 
