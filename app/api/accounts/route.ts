@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
               username: account.username,
               role: account.role,
               displayName: account.displayName,
+              assignedChannel: account.assignedChannel || null,
               profileImage: account.profileImage || null,
               email: account.email || '',
               phone: account.phone || ''

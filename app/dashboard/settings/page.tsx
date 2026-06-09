@@ -46,7 +46,9 @@ import {
   Zap,
   Server,
   BookOpen,
-  ChevronRight
+  ChevronRight,
+  Users,
+  UserCog
 } from "lucide-react"
 import { toast } from "sonner"
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api-client"
@@ -1480,6 +1482,68 @@ export default function SettingsPage() {
                                         {account.assignedChannel}
                                       </Badge>
                                     )}
+                                  </div>
+                                  <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
+                                </div>
+                              </div>
+                              {account.username !== currentUser?.username && (
+                                <div className="flex gap-1 flex-shrink-0">
+                                  <Button variant="ghost" size="sm" onClick={() => handleEditUser(account)} className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(account.username)} className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    {/* Department Managers Card */}
+                    <Card className="border-0 shadow-sm bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                      <CardHeader className="p-4 pb-3 border-b border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-purple-600">
+                              <Users className="h-3.5 w-3.5 text-white" />
+                            </div>
+                            <span className="text-sm font-semibold text-slate-900 dark:text-white">Dept Managers</span>
+                          </div>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                            {accounts.filter(a => a.role === 'dept-manager').length} users
+                          </span>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-3 space-y-2">
+                        {accounts.filter(a => a.role === 'dept-manager').length === 0 ? (
+                          <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-3">No department managers</p>
+                        ) : (
+                          accounts.filter(a => a.role === 'dept-manager').map((account) => (
+                            <div key={account.id} className="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                              <div className="min-w-0 flex-1 flex items-center gap-2">
+                                <div className="flex-shrink-0">
+                                  {account.profileImage ? (
+                                    <img src={account.profileImage} alt={account.displayName} className="h-8 w-8 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700" />
+                                  ) : (
+                                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                                      <User className="h-4 w-4 text-white" />
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{account.displayName}</p>
+                                    {account.assignedChannel && (
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-400 flex-shrink-0">
+                                        {account.assignedChannel}
+                                      </Badge>
+                                    )}
+                                    <Badge className="text-[10px] px-1.5 py-0 h-4 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-0 flex-shrink-0">
+                                      Manager
+                                    </Badge>
                                   </div>
                                   <p className="text-[10px] text-slate-500 dark:text-slate-400">@{account.username}</p>
                                 </div>

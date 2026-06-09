@@ -1122,32 +1122,36 @@ export default function InventoryPage() {
         
         {/* Action Buttons - Top Right */}
         <div className="flex items-center gap-2">
-          {/* Categories & Stores - visible to everyone */}
-          <Button
-            onClick={() => setCategoryDialogOpen(true)}
-            variant="outline"
-            className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Categories
-          </Button>
+          {/* Categories, Stores & Bundle - hidden for operations (agents) */}
+          {!isDepartment && (
+            <>
+              <Button
+                onClick={() => setCategoryDialogOpen(true)}
+                variant="outline"
+                className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Categories
+              </Button>
 
-          <Button
-            onClick={() => setStoreDialogOpen(true)}
-            variant="outline"
-            className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Stores
-          </Button>
+              <Button
+                onClick={() => setStoreDialogOpen(true)}
+                variant="outline"
+                className="h-7 w-[100px] px-2.5 text-xs border-slate-200 dark:border-slate-700 rounded-md"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Stores
+              </Button>
 
-          <Button
-            onClick={() => setCreateBundleOpen(true)}
-            className="h-7 w-[100px] px-2.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-md"
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Bundle
-          </Button>
+              <Button
+                onClick={() => setCreateBundleOpen(true)}
+                className="h-7 w-[100px] px-2.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-md"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Bundle
+              </Button>
+            </>
+          )}
 
           {/* Add Product - Main Admin & Logistics Admin only */}
           {!isDepartment && (
@@ -1398,14 +1402,16 @@ export default function InventoryPage() {
                         Price
                       </th>
                       <th className={cn(
-                        "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider",
-                        "w-[8%] border-r border-slate-700/50"
+                        "py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider border-r border-slate-700/50",
+                        isDepartment ? "w-[10%]" : "w-[8%]"
                       )}>
                         Margin
                       </th>
-                      <th className="py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[16%]">
-                        Actions
-                      </th>
+                      {!isDepartment && (
+                        <th className="py-2.5 px-3 text-left text-[10px] font-bold text-white uppercase tracking-wider w-[16%]">
+                          Actions
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
@@ -1558,8 +1564,8 @@ export default function InventoryPage() {
                             </div>
                           </td>
 
-                          {/* Actions Column */}
-                          {(!isDepartment || true) && (
+                          {/* Actions Column - Hidden for agents (operations) */}
+                          {!isDepartment && (
                             <td className="py-2 px-3">
                               <TooltipProvider>
                                 <div className="flex justify-start gap-0.5">

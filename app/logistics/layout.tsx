@@ -9,12 +9,14 @@ import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
+import { useSessionGuard } from '@/lib/use-session-guard'
 
 const NAV_ITEMS = [
   { href: '/logistics/dashboard', label: 'Dashboard' },
   { href: '/logistics/products', label: 'Products' },
   { href: '/logistics/packing-queue', label: 'Packing Queue' },
   { href: '/logistics/track-orders', label: 'Track Orders' },
+  { href: '/logistics/business-contacts', label: 'Business Contacts' },
   { href: '/logistics/log', label: 'Activity Logs' },
 ]
 
@@ -26,6 +28,9 @@ export default function LogisticsLayout({ children }: { children: React.ReactNod
   const [displayName, setDisplayName] = useState('Logistics Admin')
   const [profileImage, setProfileImage] = useState<string | null>(null)
   const [initials, setInitials] = useState('LA')
+
+  // Initialize session guard (single-device security)
+  useSessionGuard()
 
   useEffect(() => {
     const updateTime = () => {

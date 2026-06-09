@@ -208,7 +208,7 @@ export default function POSPage() {
     
     setOrderForm({
       date: getLocalDateString(),
-      salesChannel: currentUserRole === 'operations' ? assignedChannel : (firstItem.salesChannel || ''),
+      salesChannel: (currentUserRole === 'operations' || currentUserRole === 'dept-manager') ? assignedChannel : (firstItem.salesChannel || ''),
       store: firstItem.store || '',
       courier: '',
       waybill: '',
@@ -269,6 +269,7 @@ export default function POSPage() {
 
       // Create order in orders table (for tracking system)
       // NOTE: Inventory is NOT deducted here - only when order is marked as packed
+      const currentUser = getCurrentUser()
       await apiPost("/api/orders", {
         date: orderForm.date,
         salesChannel: orderForm.salesChannel,
@@ -280,6 +281,7 @@ export default function POSPage() {
         total: orderForm.total,
         product: orderForm.product,
         dispatchedBy: orderForm.dispatchedBy,
+        agentUsername: currentUser?.username || null, // Track agent by username for dept-manager
         customerName: orderForm.customerName,
         customerAddress: orderForm.customerAddress,
         customerContact: orderForm.customerContact,
@@ -486,6 +488,9 @@ export default function POSPage() {
                         <div className="flex items-center justify-between pt-0.5">
                           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                             ₱{item.sellingPrice.toFixed(0)}
+                          </span>
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums">
+                            COGS ₱{item.costPrice.toFixed(0)}
                           </span>
                         </div>
                       </div>
@@ -696,7 +701,7 @@ export default function POSPage() {
                   </div>
                   <div>
                     <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sales Channel</Label>
-                    {currentUserRole === 'operations' ? (
+                    {(currentUserRole === 'operations' || currentUserRole === 'dept-manager') ? (
                       <Input
                         value={assignedChannel}
                         readOnly
@@ -729,7 +734,7 @@ export default function POSPage() {
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
                         {stores
-                          .filter(s => currentUserRole === 'operations' 
+                          .filter(s => (currentUserRole === 'operations' || currentUserRole === 'dept-manager') 
                             ? true 
                             : (!orderForm.salesChannel || s.sales_channel === orderForm.salesChannel)
                           )
@@ -737,7 +742,7 @@ export default function POSPage() {
                           .map((store) => (
                             <SelectItem key={store.id} value={store.store_name}>
                               {store.store_name}
-                              {currentUserRole !== 'operations' && orderForm.salesChannel && (
+                              {(currentUserRole !== 'operations' && currentUserRole !== 'dept-manager') && orderForm.salesChannel && (
                                 <span className="text-xs text-slate-500 ml-2">({store.sales_channel})</span>
                               )}
                             </SelectItem>

@@ -93,7 +93,7 @@ export async function apiPost<T = any>(url: string, data: any): Promise<T> {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Request failed' }))
-    throw new Error(error.error || `HTTP ${response.status}`)
+    throw new Error(error.error || error.details || `HTTP ${response.status}`)
   }
 
   return response.json()
@@ -110,7 +110,7 @@ export async function apiPut<T = any>(url: string, data: any): Promise<T> {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Request failed' }))
-    throw new Error(error.error || `HTTP ${response.status}`)
+    throw new Error(error.error || error.details || `HTTP ${response.status}`)
   }
 
   return response.json()

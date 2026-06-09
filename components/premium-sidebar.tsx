@@ -16,6 +16,7 @@ import {
   Brain,
   X,
   Settings,
+  BarChart2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/hooks/use-accessibility"
@@ -57,11 +58,12 @@ const getNavigation = (lowStockCount: number = 0, outOfStockCount: number = 0): 
     section: "Main",
     items: [
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, // Admin only
-      { name: "Operations Dashboard", href: "/dashboard/operations", icon: LayoutDashboard }, // Operations only
+      { name: "Operations Dashboard", href: "/dashboard/operations", icon: LayoutDashboard }, // Operations + dept-manager
       { name: "Point of Sale (POS)", href: "/dashboard/pos", icon: ShoppingCart },
       { name: "Packing Queue", href: "/dashboard/packing-queue", icon: Package },
       { name: "Track Orders", href: "/dashboard/track-orders", icon: ShoppingCart },
       { name: "Internal Usage", href: "/dashboard/internal-usage", icon: Users },
+      { name: "Team Performance", href: "/dashboard/agent-performance", icon: BarChart2 }, // dept-manager only
     ],
   },
   {

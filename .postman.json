@@ -1758,6 +1758,239 @@
               ]
             },
             {
+              "name": "Unified Login - Admin User",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\",\n  \"rememberDevice\": false\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/unified-login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "unified-login"]
+                },
+                "description": "Unified login endpoint - auto-detects user role (admin, operations, logistics-admin, packer, tracker, dept-manager). Returns user profile and role-specific redirect path."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: Response should be JSON",
+                      "pm.test('Response is JSON', function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// Test 3: Response has required fields",
+                      "pm.test('Response has required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('success');",
+                      "    pm.expect(jsonData).to.have.property('user');",
+                      "    pm.expect(jsonData).to.have.property('redirectPath');",
+                      "});",
+                      "",
+                      "// Test 4: Success is true",
+                      "pm.test('Success is true', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.success).to.be.true;",
+                      "});",
+                      "",
+                      "// Test 5: User object has required fields",
+                      "pm.test('User object has required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.user).to.have.property('username');",
+                      "    pm.expect(jsonData.user).to.have.property('role');",
+                      "    pm.expect(jsonData.user).to.have.property('displayName');",
+                      "});",
+                      "",
+                      "// Test 6: Admin role redirects to /dashboard",
+                      "pm.test('Admin redirects to /dashboard', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.user.role === 'admin') {",
+                      "        pm.expect(jsonData.redirectPath).to.equal('/dashboard');",
+                      "    }",
+                      "});",
+                      "",
+                      "// Test 7: Response time is acceptable",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Unified Login - Operations User",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"Shopee\",\n  \"password\": \"shopee123\",\n  \"rememberDevice\": false\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/unified-login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "unified-login"]
+                },
+                "description": "Test unified login with department/operations user (Shopee department account)"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 200",
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "// Test 2: User role is operations",
+                      "pm.test('User role is operations', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.user.role).to.equal('operations');",
+                      "});",
+                      "",
+                      "// Test 3: Operations redirects to /dashboard/operations",
+                      "pm.test('Operations redirects to /dashboard/operations', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.redirectPath).to.equal('/dashboard/operations');",
+                      "});",
+                      "",
+                      "// Test 4: User has assigned channel",
+                      "pm.test('User has assigned channel', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.user).to.have.property('assignedChannel');",
+                      "    pm.expect(jsonData.user.assignedChannel).to.not.be.null;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Unified Login - Invalid Credentials",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"invalid_user\",\n  \"password\": \"wrong_password\",\n  \"rememberDevice\": false\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/unified-login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "unified-login"]
+                },
+                "description": "Test unified login with invalid credentials - should return 401"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 401",
+                      "pm.test('Status code is 401', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error message",
+                      "pm.test('Response has error message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "    pm.expect(jsonData.success).to.be.false;",
+                      "});",
+                      "",
+                      "// Test 3: Error message is descriptive",
+                      "pm.test('Error message mentions invalid credentials', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include('invalid');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Unified Login - Missing Fields",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/unified-login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "unified-login"]
+                },
+                "description": "Test unified login with missing username/password - should return 400"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test 1: Status code should be 400",
+                      "pm.test('Status code is 400', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// Test 2: Response has error message",
+                      "pm.test('Response has error message', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "    pm.expect(jsonData.success).to.be.false;",
+                      "});",
+                      "",
+                      "// Test 3: Error message mentions required fields",
+                      "pm.test('Error message mentions required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include('required');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
               "name": "Forgot Password - Valid Email",
               "request": {
                 "method": "POST",
@@ -3392,6 +3625,417 @@
                       "});"
                     ],
                     "type": "text/javascript"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Dept Manager",
+          "description": "Endpoints accessible by dept-manager and admin roles for per-channel order visibility and agent performance.",
+          "item": [
+            {
+              "name": "Get Order Log (dept-manager)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dept-manager/log?startDate=2026-01-01&endDate=2026-12-31&page=1&pageSize=50",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "dept-manager", "log"],
+                  "query": [
+                    { "key": "startDate", "value": "2026-01-01", "description": "ISO date — filters by created_at" },
+                    { "key": "endDate",   "value": "2026-12-31", "description": "ISO date — filters by created_at" },
+                    { "key": "channel",   "value": "",           "description": "Override assigned channel (admin only). Leave empty to use token's assignedChannel." },
+                    { "key": "agent",     "value": "",           "description": "Filter by agent_username or dispatched_by" },
+                    { "key": "status",    "value": "",           "description": "active | cancelled | pending | packed" },
+                    { "key": "search",    "value": "",           "description": "Free-text search across id, waybill, customer_name, product" },
+                    { "key": "page",      "value": "1" },
+                    { "key": "pageSize",  "value": "50" }
+                  ]
+                },
+                "description": "Returns paginated order log for the dept-manager's assigned channel. Supports filtering by agent, status, date range, and free-text search. Role: dept-manager or admin."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Response is JSON object', function () {",
+                      "    pm.response.to.be.json;",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body).to.be.an('object');",
+                      "});",
+                      "",
+                      "pm.test('Response has pagination fields', function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body).to.have.property('orders');",
+                      "    pm.expect(body).to.have.property('total');",
+                      "    pm.expect(body).to.have.property('page');",
+                      "    pm.expect(body).to.have.property('pageSize');",
+                      "    pm.expect(body).to.have.property('totalPages');",
+                      "    pm.expect(body).to.have.property('agents');",
+                      "});",
+                      "",
+                      "pm.test('orders is an array', function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.orders).to.be.an('array');",
+                      "});",
+                      "",
+                      "pm.test('agents is an array', function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.agents).to.be.an('array');",
+                      "});",
+                      "",
+                      "pm.test('Each order has required fields', function () {",
+                      "    const body = pm.response.json();",
+                      "    if (body.orders.length > 0) {",
+                      "        const order = body.orders[0];",
+                      "        pm.expect(order).to.have.property('id');",
+                      "        pm.expect(order).to.have.property('sales_channel');",
+                      "        pm.expect(order).to.have.property('status');",
+                      "        pm.expect(order).to.have.property('is_cancelled');",
+                      "        pm.expect(order).to.have.property('created_at');",
+                      "    }",
+                      "});",
+                      "",
+                      "pm.test('Pagination values are numbers', function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.total).to.be.a('number');",
+                      "    pm.expect(body.page).to.be.a('number');",
+                      "    pm.expect(body.pageSize).to.be.a('number');",
+                      "    pm.expect(body.totalPages).to.be.a('number');",
+                      "});",
+                      "",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Order Log — Filtered by Status: cancelled",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dept-manager/log?status=cancelled&page=1&pageSize=20",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "dept-manager", "log"],
+                  "query": [
+                    { "key": "status",   "value": "cancelled" },
+                    { "key": "page",     "value": "1" },
+                    { "key": "pageSize", "value": "20" }
+                  ]
+                },
+                "description": "Returns only cancelled orders for the dept-manager's channel."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('All returned orders are cancelled', function () {",
+                      "    const body = pm.response.json();",
+                      "    body.orders.forEach(function (order) {",
+                      "        pm.expect(order.is_cancelled).to.equal(true);",
+                      "    });",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Order Log — Filtered by Status: active",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dept-manager/log?status=active&page=1&pageSize=20",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "dept-manager", "log"],
+                  "query": [
+                    { "key": "status",   "value": "active" },
+                    { "key": "page",     "value": "1" },
+                    { "key": "pageSize", "value": "20" }
+                  ]
+                },
+                "description": "Returns only non-cancelled (active) orders."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('All returned orders are not cancelled', function () {",
+                      "    const body = pm.response.json();",
+                      "    body.orders.forEach(function (order) {",
+                      "        pm.expect(order.is_cancelled).to.equal(false);",
+                      "    });",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Order Log — Filtered by Status: pending",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dept-manager/log?status=pending&page=1&pageSize=20",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "dept-manager", "log"],
+                  "query": [
+                    { "key": "status",   "value": "pending" },
+                    { "key": "page",     "value": "1" },
+                    { "key": "pageSize", "value": "20" }
+                  ]
+                },
+                "description": "Returns orders with status=Pending and is_cancelled=false."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('All returned orders are Pending and not cancelled', function () {",
+                      "    const body = pm.response.json();",
+                      "    body.orders.forEach(function (order) {",
+                      "        pm.expect(order.status).to.equal('Pending');",
+                      "        pm.expect(order.is_cancelled).to.equal(false);",
+                      "    });",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Order Log — Filtered by Status: packed",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dept-manager/log?status=packed&page=1&pageSize=20",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "dept-manager", "log"],
+                  "query": [
+                    { "key": "status",   "value": "packed" },
+                    { "key": "page",     "value": "1" },
+                    { "key": "pageSize", "value": "20" }
+                  ]
+                },
+                "description": "Returns orders with status IN (Packed, Shipped, Delivered) and is_cancelled=false."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('All returned orders have a packed-family status and are not cancelled', function () {",
+                      "    const body = pm.response.json();",
+                      "    const packedStatuses = ['Packed', 'Shipped', 'Delivered'];",
+                      "    body.orders.forEach(function (order) {",
+                      "        pm.expect(packedStatuses).to.include(order.status);",
+                      "        pm.expect(order.is_cancelled).to.equal(false);",
+                      "    });",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Order Log — Unauthorized (no token)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dept-manager/log",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "dept-manager", "log"]
+                },
+                "description": "Should return 401 when no auth token is provided."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is 401', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test('Response has error field', function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body).to.have.property('error');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Agent Stats (dept-manager)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dept-manager/stats?startDate=2026-01-01&endDate=2026-12-31",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "dept-manager", "stats"],
+                  "query": [
+                    { "key": "startDate", "value": "2026-01-01", "description": "Filter orders from this date (inclusive)" },
+                    { "key": "endDate",   "value": "2026-12-31", "description": "Filter orders up to this date (inclusive)" },
+                    { "key": "channel",   "value": "",           "description": "Override channel (admin only)" }
+                  ]
+                },
+                "description": "Returns aggregated agent performance stats for the dept-manager's assigned channel: totalOrders, activeOrders, cancelledOrders, totalRevenue, and a per-agent breakdown. Role: dept-manager or admin."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Response is a JSON object', function () {",
+                      "    pm.response.to.be.json;",
+                      "    pm.expect(pm.response.json()).to.be.an('object');",
+                      "});",
+                      "",
+                      "pm.test('Response has summary fields', function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body).to.have.property('totalOrders');",
+                      "    pm.expect(body).to.have.property('activeOrders');",
+                      "    pm.expect(body).to.have.property('cancelledOrders');",
+                      "    pm.expect(body).to.have.property('totalRevenue');",
+                      "    pm.expect(body).to.have.property('agents');",
+                      "});",
+                      "",
+                      "pm.test('Summary numbers are non-negative', function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.totalOrders).to.be.at.least(0);",
+                      "    pm.expect(body.activeOrders).to.be.at.least(0);",
+                      "    pm.expect(body.cancelledOrders).to.be.at.least(0);",
+                      "    pm.expect(body.totalRevenue).to.be.at.least(0);",
+                      "});",
+                      "",
+                      "pm.test('activeOrders + cancelledOrders = totalOrders', function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.activeOrders + body.cancelledOrders).to.equal(body.totalOrders);",
+                      "});",
+                      "",
+                      "pm.test('agents is an array', function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body.agents).to.be.an('array');",
+                      "});",
+                      "",
+                      "pm.test('Each agent entry has required fields', function () {",
+                      "    const body = pm.response.json();",
+                      "    body.agents.forEach(function (agent) {",
+                      "        pm.expect(agent).to.have.property('username');",
+                      "        pm.expect(agent).to.have.property('displayName');",
+                      "        pm.expect(agent).to.have.property('totalOrders');",
+                      "        pm.expect(agent).to.have.property('activeOrders');",
+                      "        pm.expect(agent).to.have.property('cancelledOrders');",
+                      "        pm.expect(agent).to.have.property('revenue');",
+                      "    });",
+                      "});",
+                      "",
+                      "pm.test('Per-agent activeOrders + cancelledOrders = totalOrders', function () {",
+                      "    const body = pm.response.json();",
+                      "    body.agents.forEach(function (agent) {",
+                      "        pm.expect(agent.activeOrders + agent.cancelledOrders).to.equal(agent.totalOrders);",
+                      "    });",
+                      "});",
+                      "",
+                      "pm.test('Response time is acceptable', function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Agent Stats — Unauthorized (no token)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dept-manager/stats",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "dept-manager", "stats"]
+                },
+                "description": "Should return 401 when no auth token is provided."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is 401', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test('Response has error field', function () {",
+                      "    const body = pm.response.json();",
+                      "    pm.expect(body).to.have.property('error');",
+                      "});"
+                    ]
                   }
                 }
               ]

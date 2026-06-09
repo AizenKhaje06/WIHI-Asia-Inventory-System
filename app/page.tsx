@@ -11,30 +11,22 @@ import {
   Loader2, Mail, CheckCircle2, AlertCircle
 } from "lucide-react"
 import { apiPost } from "@/lib/api-client"
-import { RoleSelector, type UserRole, type LogisticsSubRole } from "@/components/auth/role-selector"
-import { LoginForm, type LoginFormData } from "@/components/auth/login-form"
 import { SecurityIndicator } from "@/components/auth/security-indicator"
 
-interface Channel {
-  id: string
-  name: string
-  label: string
-}
-
 export default function EnterpriseLoginPage() {
-  const [selectedRole, setSelectedRole] = useState<UserRole>("admin")
-  const [logisticsSubRole, setLogisticsSubRole] = useState<LogisticsSubRole>("logistics-admin")
   const [mounted, setMounted] = useState(false)
   const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false)
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("")
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false)
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false)
   const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
   
-  // Staff/Team Leader specific states
-  const [channels, setChannels] = useState<Channel[]>([])
-  const [selectedChannel, setSelectedChannel] = useState<string>("")
-  const [channelsLoading, setChannelsLoading] = useState(false)
+  // Form state
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [rememberDevice, setRememberDevice] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   
   const router = useRouter()
 
@@ -80,6 +72,13 @@ export default function EnterpriseLoginPage() {
         userRole: localStorage.getItem('userRole')
       }
       console.log('[Login Page] Remaining keys after cleanup:', remainingKeys)
+      
+      // Load remembered username if exists
+      const remembered = localStorage.getItem("rememberedUsername")
+      if (remembered) {
+        setUsername(remembered)
+        setRememberDevice(true)
+      }
     }
     
     // Check for logout marker in cookie
@@ -142,29 +141,6 @@ export default function EnterpriseLoginPage() {
     }
   }, [])
 
-  // Fetch channels when operations role is selected
-  useEffect(() => {
-    if (selectedRole === 'operations') {
-      const fetchChannels = async () => {
-        setChannelsLoading(true)
-        try {
-          const response = await fetch('/api/auth/channels')
-          const data = await response.json()
-          
-          if (data.success) {
-            setChannels(data.channels)
-          }
-        } catch (error) {
-          console.error('Error fetching channels:', error)
-        } finally {
-          setChannelsLoading(false)
-        }
-      }
-
-      fetchChannels()
-    }
-  }, [selectedRole])
-
   const handleForgotPassword = async () => {
     if (!forgotPasswordEmail) {
       setError("Please enter your email address")
@@ -202,216 +178,66 @@ export default function EnterpriseLoginPage() {
     setError("")
   }
 
-  const handleLogin = async (formData: LoginFormData) => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
     setError("")
+    setLoading(true)
 
     try {
-      // Logistics login (Admin, Packer or Tracker)
-      if (formData.role === 'logistics') {
-        const actualRole = formData.logisticsSubRole || 'logistics-admin'
-        
-        const data = await apiPost("/api/accounts", {
-          action: "validate",
-          username: formData.username,
-          password: formData.password
+      // Call unified login API
+      const response = await fetch('/api/auth/unified-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          password,
+          rememberDevice
         })
-
-        if (data.success && data.account && data.account.role === actualRole) {
-          if (typeof window !== 'undefined') {
-            localStorage.setItem("isLoggedIn", "true")
-            localStorage.setItem("username", data.account.username)
-            localStorage.setItem("userRole", actualRole)
-            localStorage.setItem("displayName", data.account.displayName)
-            
-            // Store profile image if available
-            if (data.account.profileImage) {
-              localStorage.setItem("profileImage", data.account.profileImage)
-            }
-            
-            localStorage.setItem("currentUser", JSON.stringify({
-              username: data.account.username,
-              role: actualRole,
-              displayName: data.account.displayName,
-              profileImage: data.account.profileImage || null
-            }))
-
-            if (formData.rememberDevice) {
-              localStorage.setItem("rememberedUsername", formData.username)
-            }
-          }
-          
-          // Route based on sub-role
-          if (actualRole === 'logistics-admin') {
-            router.push('/logistics/dashboard')
-          } else if (actualRole === 'tracker') {
-            router.push('/tracker/dashboard')
-          } else {
-            router.push('/packer/dashboard')
-          }
-          return
-        } else {
-          throw new Error(`Invalid ${actualRole} credentials or account is not a ${actualRole}`)
-        }
-      }
-
-      // Operations login - Use department authentication
-      if (formData.role === 'operations') {
-        // Validate that a channel is selected
-        if (!selectedChannel) {
-          throw new Error("Please select a sales channel")
-        }
-
-        const authResponse = await fetch('/api/departments/authenticate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            department: formData.username,
-            password: formData.password,
-            selectedChannel: selectedChannel // Pass selected channel for validation
-          })
-        })
-
-        const authData = await authResponse.json()
-
-        console.log('[Operations Login] ===== AUTH RESPONSE DEBUG =====')
-        console.log('[Operations Login] Auth data:', authData)
-        console.log('[Operations Login] Department:', authData.department)
-        console.log('[Operations Login] Assigned channel:', authData.department?.assigned_channel)
-        console.log('[Operations Login] Selected channel:', selectedChannel)
-        console.log('[Operations Login] ===== END DEBUG =====')
-
-        if (!authResponse.ok || !authData.success) {
-          throw new Error(authData.error || "Invalid department credentials")
-        }
-
-        // Validate that the user's assigned channel matches the selected channel
-        if (authData.department.assigned_channel !== selectedChannel) {
-          throw new Error(`This account is not assigned to ${selectedChannel}`)
-        }
-
-        // Authentication successful - Store department channel for filtering
-        if (typeof window !== 'undefined') {
-          if (formData.rememberDevice) {
-            localStorage.setItem("rememberedUsername", formData.username)
-          } else {
-            localStorage.removeItem("rememberedUsername")
-          }
-          
-          const assignedChannel = authData.department.assigned_channel
-          console.log('[Operations Login] Saving to localStorage:', {
-            username: authData.department.name,
-            displayName: authData.department.display_name,
-            assignedChannel: assignedChannel
-          })
-          
-          localStorage.setItem("isLoggedIn", "true")
-          localStorage.setItem("username", authData.department.name)
-          localStorage.setItem("userRole", "operations")
-          localStorage.setItem("displayName", authData.department.display_name)
-          localStorage.setItem("assignedChannel", assignedChannel || '') // Store even if null/undefined
-          
-          // Store profile image if available
-          if (authData.department.profileImage) {
-            localStorage.setItem("profileImage", authData.department.profileImage)
-          }
-          
-          console.log('[Operations Login] Saved assignedChannel:', localStorage.getItem('assignedChannel'))
-          
-          localStorage.setItem("currentUser", JSON.stringify({
-            username: authData.department.name,
-            role: "operations",
-            displayName: authData.department.display_name,
-            assignedChannel: assignedChannel,
-            profileImage: authData.department.profile_image || null,
-            email: '',
-            phone: ''
-          }))
-        }
-        
-        router.push('/dashboard/operations')
-        return
-      }
-
-      // Dept Manager login
-      if (formData.role === 'dept-manager') {
-        const data = await apiPost("/api/accounts", {
-          action: "validate",
-          username: formData.username,
-          password: formData.password
-        })
-
-        if (data.success && data.account && data.account.role === 'dept-manager') {
-          if (typeof window !== 'undefined') {
-            localStorage.setItem("isLoggedIn", "true")
-            localStorage.setItem("username", data.account.username)
-            localStorage.setItem("userRole", "dept-manager")
-            localStorage.setItem("displayName", data.account.displayName)
-            if (data.account.assignedChannel) {
-              localStorage.setItem("assignedChannel", data.account.assignedChannel)
-            }
-            if (data.account.profileImage) {
-              localStorage.setItem("profileImage", data.account.profileImage)
-            }
-            if (formData.rememberDevice) {
-              localStorage.setItem("rememberedUsername", formData.username)
-            }
-            localStorage.setItem("currentUser", JSON.stringify({
-              username: data.account.username,
-              role: "dept-manager",
-              displayName: data.account.displayName,
-              assignedChannel: data.account.assignedChannel || null,
-              profileImage: data.account.profileImage || null
-            }))
-          }
-          router.push('/dept-manager/dashboard')
-          return
-        } else {
-          throw new Error("Invalid credentials or account is not a Department Manager")
-        }
-      }
-
-      // Admin login
-      const data = await apiPost("/api/accounts", {
-        action: "validate",
-        username: formData.username,
-        password: formData.password
       })
 
-      if (data.success && data.account && data.account.role === 'admin') {
-        if (typeof window !== 'undefined') {
-          if (formData.rememberDevice) {
-            localStorage.setItem("rememberedUsername", formData.username)
-          } else {
-            localStorage.removeItem("rememberedUsername")
-          }
-          
-          localStorage.setItem("isLoggedIn", "true")
-          localStorage.setItem("username", data.account.username)
-          localStorage.setItem("userRole", "admin")
-          localStorage.setItem("displayName", data.account.displayName)
-          
-          // Store profile image if available
-          if (data.account.profileImage) {
-            localStorage.setItem("profileImage", data.account.profileImage)
-          }
-          
-          localStorage.setItem("currentUser", JSON.stringify({
-            username: data.account.username,
-            role: "admin",
-            displayName: data.account.displayName,
-            profileImage: data.account.profileImage || null,
-            email: data.account.email || '',
-            phone: data.account.phone || ''
-          }))
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Invalid credentials")
+      }
+
+      // Store user data in localStorage
+      if (typeof window !== 'undefined') {
+        const { user, redirectPath, sessionId } = data
+
+        // Handle remember device
+        if (rememberDevice) {
+          localStorage.setItem("rememberedUsername", username)
+        } else {
+          localStorage.removeItem("rememberedUsername")
         }
-        
-        router.push('/dashboard')
-      } else {
-        throw new Error("Invalid admin credentials or account is not an admin")
+
+        // Store authentication data
+        localStorage.setItem("isLoggedIn", "true")
+        localStorage.setItem("username", user.username)
+        localStorage.setItem("userRole", user.role)
+        localStorage.setItem("displayName", user.displayName)
+        localStorage.setItem("sessionId", sessionId) // Store session ID for security
+
+        // Store optional fields
+        if (user.profileImage) {
+          localStorage.setItem("profileImage", user.profileImage)
+        }
+        if (user.assignedChannel) {
+          localStorage.setItem("assignedChannel", user.assignedChannel)
+        }
+
+        // Store complete user object
+        localStorage.setItem("currentUser", JSON.stringify(user))
+
+        // Redirect to appropriate dashboard
+        router.push(redirectPath)
       }
     } catch (error) {
       console.error("Login error:", error)
-      throw error
+      setError(error instanceof Error ? error.message : "Login failed. Please try again.")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -475,26 +301,136 @@ export default function EnterpriseLoginPage() {
 
           {/* Login Card - ENHANCED */}
           <div className="bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8 lg:p-10 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200 transition-all">
-            {/* Role Selector */}
-            <RoleSelector 
-              selectedRole={selectedRole}
-              onRoleChange={setSelectedRole}
-            />
+            {/* Header */}
+            <div className="mb-8 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30 mb-4">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-bold text-white mb-2 tracking-tight" style={{ color: '#ffffff' }}>
+                Secure Access Portal
+              </h1>
+              <p className="text-slate-300 text-sm font-medium">Enter your credentials to continue to dashboard</p>
+            </div>
+
+            {/* Error Alert */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-900/20 border border-red-800 rounded-lg">
+                <p className="text-sm text-red-400">{error}</p>
+              </div>
+            )}
 
             {/* Login Form */}
-            <div className="mt-6">
-              <LoginForm
-                role={selectedRole}
-                onSubmit={handleLogin}
-                onForgotPassword={() => setShowForgotPasswordDialog(true)}
-                channels={channels}
-                selectedChannel={selectedChannel}
-                onChannelChange={setSelectedChannel}
-                channelsLoading={channelsLoading}
-                logisticsSubRole={logisticsSubRole}
-                onLogisticsSubRoleChange={setLogisticsSubRole}
-              />
-            </div>
+            <form onSubmit={handleLogin} className="space-y-5">
+              {/* Username */}
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-sm font-medium text-slate-300">
+                  Username
+                </Label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <Input
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter your username"
+                    className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-slate-300">
+                  Password
+                </Label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="pl-10 pr-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+                    required
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-300"
+                    disabled={loading}
+                  >
+                    {showPassword ? (
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Remember & Forgot Password */}
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rememberDevice}
+                    onChange={(e) => setRememberDevice(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-700 bg-slate-900/50 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-800"
+                    disabled={loading}
+                  />
+                  <span className="text-sm text-slate-400">Remember this device</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPasswordDialog(true)}
+                  className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                  disabled={loading}
+                >
+                  Forgot password?
+                </button>
+              </div>
+
+              {/* Sign In Button */}
+              <Button
+                type="submit"
+                disabled={loading || !username || !password}
+                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base rounded-lg transition-all shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Signing in...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span>Sign In</span>
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </div>
+                )}
+              </Button>
+            </form>
 
             {/* Security Indicator */}
             <div className="mt-8">

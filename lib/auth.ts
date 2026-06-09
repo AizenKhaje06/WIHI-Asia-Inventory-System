@@ -97,13 +97,20 @@ export const ROLE_PERMISSIONS = {
     '/dashboard/track-orders'
   ],
   'dept-manager': [
-    '/dept-manager/dashboard',
-    '/dept-manager/agents',
-    '/dept-manager/log',
-    '/dashboard/inventory/**',
+    '/dashboard/operations',
+    '/dashboard/pos',
+    '/dashboard/dispatch',
     '/dashboard/packing-queue',
-    '/dashboard/track-orders'
-  ]
+    '/dashboard/operations/transaction-history',
+    '/dashboard/track-orders',
+    '/dashboard/inventory/**',
+    '/dashboard/customers',
+    '/dashboard/business-contacts',
+    '/dashboard/log',
+    '/dashboard/agent-performance',
+    '/dept-manager/agents',
+    '/dept-manager/dashboard',
+    '/dept-manager/log'  ]
 } as const
 
 // Default passwords per role
@@ -167,7 +174,7 @@ export function getDefaultRoute(role: UserRole): string {
     return '/logistics/dashboard'
   }
   if (role === 'dept-manager') {
-    return '/dept-manager/dashboard'
+    return '/dashboard/operations'
   }
   return '/dashboard'
 }

@@ -53,32 +53,37 @@ export function RoleSelector({ selectedRole, onRoleChange, disabled }: RoleSelec
   return (
     <TooltipProvider>
       <div className="space-y-3">
-        {/* Role Tabs with Sliding Indicator */}
-        <div className="relative flex gap-2 p-1.5 bg-slate-900/50 rounded-2xl shadow-inner">
-          {roles.map((role) => {
+        {/* Role Tabs with Dividers - Square Design */}
+        <div className="flex items-center bg-slate-900/50 rounded-lg px-4 py-2">
+          {roles.map((role, index) => {
             const Icon = role.icon
             const isSelected = selectedRole === role.id
             
             return (
               <Tooltip key={role.id}>
                 <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={() => onRoleChange(role.id)}
-                    disabled={disabled}
-                    className={cn(
-                      "relative flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-300",
-                      "disabled:opacity-50 disabled:cursor-not-allowed",
-                      isSelected
-                        ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30 scale-[1.02]"
-                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 hover:scale-[1.01]"
+                  <div className="flex items-center">
+                    <button
+                      type="button"
+                      onClick={() => onRoleChange(role.id)}
+                      disabled={disabled}
+                      className={cn(
+                        "flex items-center justify-center gap-2 px-6 py-2.5 font-medium text-sm transition-all duration-200",
+                        "disabled:opacity-50 disabled:cursor-not-allowed",
+                        isSelected
+                          ? "text-blue-400"
+                          : "text-slate-500 hover:text-slate-300"
+                      )}
+                      aria-label={`Select ${role.label} role`}
+                      aria-pressed={isSelected}
+                    >
+                      <Icon className="w-4 h-4 flex-shrink-0" />
+                      <span className="whitespace-nowrap">{role.label}</span>
+                    </button>
+                    {index < roles.length - 1 && (
+                      <div className="h-6 w-px bg-slate-700" />
                     )}
-                    aria-label={`Select ${role.label} role`}
-                    aria-pressed={isSelected}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span className="hidden sm:inline">{role.label}</span>
-                  </button>
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="bg-slate-900 border-slate-600">
                   <p className="font-semibold text-white">{role.label}</p>

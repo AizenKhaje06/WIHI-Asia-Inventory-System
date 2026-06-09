@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 const NAV_ITEMS = [
   { href: '/dept-manager/dashboard', label: 'Dashboard' },
   { href: '/dept-manager/agents', label: 'Agent Performance' },
+  { href: '/dept-manager/log', label: 'Order Log' },
 ]
 
 export default function DeptManagerLayout({ children }: { children: React.ReactNode }) {
