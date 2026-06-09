@@ -174,7 +174,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 type="number"
                 required
                 value={formData.quantity}
-                onChange={(e) => setFormData({ ...formData, quantity: Number.parseInt(e.target.value) })}
+                onChange={(e) => setFormData({ ...formData, quantity: Number.parseInt(e.target.value) || 0 })}
                 className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
@@ -188,7 +188,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 step="0.01"
                 required
                 value={formData.costPrice}
-                onChange={(e) => setFormData({ ...formData, costPrice: Number.parseFloat(e.target.value) })}
+                onChange={(e) => setFormData({ ...formData, costPrice: Number.parseFloat(e.target.value) || 0 })}
                 className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
@@ -202,7 +202,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 step="0.01"
                 required
                 value={formData.sellingPrice}
-                onChange={(e) => setFormData({ ...formData, sellingPrice: Number.parseFloat(e.target.value) })}
+                onChange={(e) => setFormData({ ...formData, sellingPrice: Number.parseFloat(e.target.value) || 0 })}
                 className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
@@ -215,7 +215,7 @@ export function AddItemDialog({ open, onOpenChange, onSuccess }: AddItemDialogPr
                 type="number"
                 required
                 value={formData.reorderLevel}
-                onChange={(e) => setFormData({ ...formData, reorderLevel: Number.parseInt(e.target.value) })}
+                onChange={(e) => setFormData({ ...formData, reorderLevel: Number.parseInt(e.target.value) || 0 })}
                 className="rounded-[5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>

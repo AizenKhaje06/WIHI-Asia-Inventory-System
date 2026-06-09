@@ -489,6 +489,9 @@ export default function POSPage() {
                           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                             ₱{item.sellingPrice.toFixed(0)}
                           </span>
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums">
+                            COGS ₱{item.costPrice.toFixed(0)}
+                          </span>
                         </div>
                       </div>
                     </button>
