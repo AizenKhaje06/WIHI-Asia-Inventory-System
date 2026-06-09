@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
-import { supabaseAdmin } from "@/lib/supabase"
+import { validateCredentials } from "@/lib/supabase-db"
 
 /**
  * Unified Login API - Auto-detects user role and authenticates
  * Supports: Admin, Operations, Logistics (Admin/Packer/Tracker), Dept-Manager
+ * 
+ * All users (including operations/departments) are stored in the users table
  */
 export async function POST(request: NextRequest) {
   try {
     const { username, password, rememberDevice } = await request.json()
+
+    console.log('[Unified Login] Login attempt:', { username })
 
     if (!username || !password) {
       return NextResponse.json(
@@ -16,77 +20,50 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 1. Check if it's a regular account (Admin, Logistics, Dept-Manager)
-    const { data: account, error: accountError } = await supabaseAdmin
-      .from('accounts')
-      .select('*')
-      .eq('username', username)
-      .eq('password', password)
-      .single()
-
-    if (account && !accountError) {
-      // Account found - return based on role
-      const userRole = account.role
-      
-      // Determine redirect path based on role
-      let redirectPath = '/dashboard'
-      if (userRole === 'logistics-admin') {
-        redirectPath = '/logistics/dashboard'
-      } else if (userRole === 'packer') {
-        redirectPath = '/packer/dashboard'
-      } else if (userRole === 'tracker') {
-        redirectPath = '/tracker/dashboard'
-      } else if (userRole === 'dept-manager' || userRole === 'operations') {
-        redirectPath = '/dashboard/operations'
-      }
-
-      return NextResponse.json({
-        success: true,
-        user: {
-          username: account.username,
-          role: userRole,
-          displayName: account.display_name || account.username,
-          profileImage: account.profile_image || null,
-          email: account.email || '',
-          phone: account.phone || '',
-          assignedChannel: account.assigned_channel || null
-        },
-        redirectPath,
-        rememberDevice
-      })
+    // Validate credentials using SQLite-compatible function
+    console.log('[Unified Login] Validating credentials...')
+    const account = await validateCredentials(username, password)
+    
+    if (!account) {
+      console.log('[Unified Login] Login failed: Invalid credentials')
+      return NextResponse.json(
+        { success: false, error: "Invalid username or password" },
+        { status: 401 }
+      )
     }
 
-    // 2. Check if it's a department account (Operations)
-    const { data: department, error: deptError } = await supabaseAdmin
-      .from('departments')
-      .select('*')
-      .eq('name', username)
-      .eq('password', password)
-      .single()
-
-    if (department && !deptError) {
-      // Department account found
-      return NextResponse.json({
-        success: true,
-        user: {
-          username: department.name,
-          role: 'operations',
-          displayName: department.display_name || department.name,
-          profileImage: department.profile_image || null,
-          email: '',
-          phone: '',
-          assignedChannel: department.assigned_channel || null
-        },
-        redirectPath: '/dashboard/operations',
-        rememberDevice
-      })
+    console.log('[Unified Login] Account found:', { username: account.username, role: account.role })
+    const userRole = account.role
+    
+    // Determine redirect path based on role
+    let redirectPath = '/dashboard'
+    if (userRole === 'logistics-admin') {
+      redirectPath = '/logistics/dashboard'
+    } else if (userRole === 'packer') {
+      redirectPath = '/packer/dashboard'
+    } else if (userRole === 'tracker') {
+      redirectPath = '/tracker/dashboard'
+    } else if (userRole === 'dept-manager') {
+      redirectPath = '/dashboard/operations'
+    } else if (userRole === 'operations') {
+      redirectPath = '/dashboard/operations'
     }
 
-    // 3. No match found - invalid credentials
-    return NextResponse.json(
-      { success: false, error: "Invalid username or password" },
-      { status: 401 }
-    )
+    console.log('[Unified Login] Login successful, redirecting to:', redirectPath)
+    return NextResponse.json({
+      success: true,
+      user: {
+        username: account.username,
+        role: userRole,
+        displayName: account.displayName || account.username,
+        profileImage: account.profileImage || null,
+        email: account.email || '',
+        phone: account.phone || '',
+        assignedChannel: account.assignedChannel || null
+      },
+      redirectPath,
+      rememberDevice
+    })
 
   } catch (error) {
     console.error('[Unified Login] Error:', error)
