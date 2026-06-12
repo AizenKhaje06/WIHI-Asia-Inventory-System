@@ -11,7 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Label } from '@/components/ui/label'
 import { 
   Search, Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, 
-  User, Phone, MapPin, AlertCircle, PackageCheck, AlertTriangle, RotateCcw, Eye
+  User, Phone, MapPin, AlertCircle, PackageCheck, AlertTriangle, RotateCcw, Eye, Download
 } from 'lucide-react'
 import { formatCurrency, cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -19,6 +19,7 @@ import { apiGet } from '@/lib/api-client'
 import { BrandLoader } from '@/components/ui/brand-loader'
 import { EnterpriseDateRangePicker } from '@/components/ui/enterprise-date-range-picker'
 import { TablePagination } from '@/components/ui/table-pagination'
+import * as XLSX from 'xlsx'
 
 interface Order {
   id: string
@@ -313,6 +314,70 @@ export default function TrackerDashboardPage() {
     toast.success('Filters cleared')
   }
 
+  const exportToExcel = () => {
+    try {
+      // Export only the currently displayed data (paginated)
+      const dataToExport = paginatedOrders.map(order => ({
+        'Date': new Date(order.orderDate).toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: '2-digit', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        'Customer Name': order.customerName,
+        'Address': order.customerAddress,
+        'Contact Number': order.customerPhone,
+        'Total Price': formatCurrency(order.totalAmount),
+        'Items': order.itemName,
+        'Quantity': order.quantity,
+        'Courier': order.courier || '-',
+        'Tracking Number': order.trackingNumber || '-',
+        'Payment Status': order.paymentStatus.toUpperCase(),
+        'Parcel Status': order.parcelStatus,
+        'Sales Channel': order.department || 'N/A',
+        'Store': order.storeName || 'N/A',
+      }))
+
+      // Create worksheet
+      const ws = XLSX.utils.json_to_sheet(dataToExport)
+      
+      // Set column widths
+      const colWidths = [
+        { wch: 15 }, // Date
+        { wch: 20 }, // Customer Name
+        { wch: 40 }, // Address
+        { wch: 15 }, // Contact Number
+        { wch: 12 }, // Total Price
+        { wch: 30 }, // Items
+        { wch: 8 },  // Quantity
+        { wch: 15 }, // Courier
+        { wch: 20 }, // Tracking Number
+        { wch: 15 }, // Payment Status
+        { wch: 15 }, // Parcel Status
+        { wch: 15 }, // Sales Channel
+        { wch: 15 }, // Store
+      ]
+      ws['!cols'] = colWidths
+
+      // Create workbook
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'Tracker Orders')
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split('T')[0]
+      const filename = `Tracker_Orders_Page${currentPage}_${timestamp}.xlsx`
+
+      // Save file
+      XLSX.writeFile(wb, filename)
+
+      toast.success(`Exported ${paginatedOrders.length} orders from current page`)
+    } catch (error) {
+      console.error('Export error:', error)
+      toast.error('Failed to export data')
+    }
+  }
+
   const getParcelStatusBadge = (status: string) => {
     const styles = {
       PENDING: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
@@ -379,15 +444,26 @@ export default function TrackerDashboardPage() {
             Update parcel status and manage order tracking
           </p>
         </div>
-        <EnterpriseDateRangePicker
-          startDate={startDate}
-          endDate={endDate}
-          onDateChange={(start, end) => {
-            setStartDate(start)
-            setEndDate(end)
-          }}
-          className="h-10 sm:h-11 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all shadow-sm"
-        />
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={exportToExcel}
+            disabled={paginatedOrders.length === 0}
+            className="h-10 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold text-sm rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Export to Excel</span>
+            <span className="sm:hidden">Export</span>
+          </Button>
+          <EnterpriseDateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onDateChange={(start, end) => {
+              setStartDate(start)
+              setEndDate(end)
+            }}
+            className="h-10 sm:h-11 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg font-semibold transition-all shadow-sm"
+          />
+        </div>
       </div>
 
       {/* KPI Cards - Mobile Optimized */}
