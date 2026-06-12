@@ -1268,24 +1268,44 @@ export default function PackingQueuePage() {
                         {isEditMode ? (
                           <div className="mt-2">
                             <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1 block">
-                              Quantity
+                              Quantity {(() => {
+                                // Check if order has multiple products
+                                const productName = selectedOrder.product || selectedOrder.itemName || ''
+                                const hasMultipleProducts = productName.includes(',') || productName.includes('+') || productName.includes('&')
+                                return hasMultipleProducts ? '(Read-only for multiple products)' : ''
+                              })()}
                             </Label>
                             <Input
                               type="number"
                               value={editForm.quantity}
                               onChange={(e) => {
-                                const newQty = parseInt(e.target.value) || 0
-                                const unitPrice = selectedOrder.total && selectedOrder.qty 
-                                  ? selectedOrder.total / selectedOrder.qty 
-                                  : 0
-                                setEditForm({
-                                  ...editForm, 
-                                  quantity: newQty,
-                                  totalAmount: newQty * unitPrice
-                                })
+                                // Check if order has multiple products
+                                const productName = selectedOrder.product || selectedOrder.itemName || ''
+                                const hasMultipleProducts = productName.includes(',') || productName.includes('+') || productName.includes('&')
+                                
+                                if (!hasMultipleProducts) {
+                                  const newQty = parseInt(e.target.value) || 0
+                                  const unitPrice = selectedOrder.total && selectedOrder.qty 
+                                    ? selectedOrder.total / selectedOrder.qty 
+                                    : 0
+                                  setEditForm({
+                                    ...editForm, 
+                                    quantity: newQty,
+                                    totalAmount: newQty * unitPrice
+                                  })
+                                }
                               }}
                               className="text-sm font-semibold h-10"
                               min="1"
+                              disabled={(() => {
+                                const productName = selectedOrder.product || selectedOrder.itemName || ''
+                                return productName.includes(',') || productName.includes('+') || productName.includes('&')
+                              })()}
+                              title={(() => {
+                                const productName = selectedOrder.product || selectedOrder.itemName || ''
+                                const hasMultipleProducts = productName.includes(',') || productName.includes('+') || productName.includes('&')
+                                return hasMultipleProducts ? 'Quantity cannot be edited for orders with multiple products' : ''
+                              })()}
                             />
                           </div>
                         ) : (

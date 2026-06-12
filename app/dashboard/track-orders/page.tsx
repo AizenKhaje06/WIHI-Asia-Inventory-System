@@ -2023,25 +2023,44 @@ export default function TrackOrdersPage() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                        Quantity
+                        Quantity {(() => {
+                          const productName = selectedOrder.itemName || ''
+                          const hasMultipleProducts = productName.includes(',') || productName.includes('+') || productName.includes('&')
+                          return isEditMode && hasMultipleProducts ? '(Read-only for multiple products)' : ''
+                        })()}
                       </p>
                       {isEditMode ? (
                         <Input
                           type="number"
                           value={editForm.quantity}
                           onChange={(e) => {
-                            const newQty = parseInt(e.target.value) || 0
-                            const unitPrice = selectedOrder.totalAmount && selectedOrder.quantity 
-                              ? selectedOrder.totalAmount / selectedOrder.quantity 
-                              : 0
-                            setEditForm({
-                              ...editForm, 
-                              quantity: newQty,
-                              totalAmount: newQty * unitPrice
-                            })
+                            // Check if order has multiple products
+                            const productName = selectedOrder.itemName || ''
+                            const hasMultipleProducts = productName.includes(',') || productName.includes('+') || productName.includes('&')
+                            
+                            if (!hasMultipleProducts) {
+                              const newQty = parseInt(e.target.value) || 0
+                              const unitPrice = selectedOrder.totalAmount && selectedOrder.quantity 
+                                ? selectedOrder.totalAmount / selectedOrder.quantity 
+                                : 0
+                              setEditForm({
+                                ...editForm, 
+                                quantity: newQty,
+                                totalAmount: newQty * unitPrice
+                              })
+                            }
                           }}
                           className="h-12 text-xl font-bold text-emerald-600 dark:text-emerald-400 border-2"
                           min="1"
+                          disabled={(() => {
+                            const productName = selectedOrder.itemName || ''
+                            return productName.includes(',') || productName.includes('+') || productName.includes('&')
+                          })()}
+                          title={(() => {
+                            const productName = selectedOrder.itemName || ''
+                            const hasMultipleProducts = productName.includes(',') || productName.includes('+') || productName.includes('&')
+                            return hasMultipleProducts ? 'Quantity cannot be edited for orders with multiple products' : ''
+                          })()}
                         />
                       ) : (
                         <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
