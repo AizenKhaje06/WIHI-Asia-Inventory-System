@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Package, AlertTriangle, ShoppingCart, PackageX, TrendingUp, RefreshCw, RotateCcw, DollarSign, Percent, ArrowUpRight, ArrowDownRight, CheckCircle } from "lucide-react"
@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils"
 import { apiGet } from "@/lib/api-client"
 import { EnterpriseDateRangePicker } from "@/components/ui/enterprise-date-range-picker"
 import { RevenueChart } from "@/components/dashboard/revenue-chart"
+import { TopProductsChart } from "@/components/dashboard/top-products-chart"
+import { TopStoresChart } from "@/components/dashboard/top-stores-chart"
 import { formatChartData, calculatePeriodComparison } from "@/lib/dashboard-utils"
 
 interface Order {
@@ -20,6 +22,8 @@ interface Order {
   parcel_status: string
   sales_channel: string
   status: string
+  product?: string // Product name
+  store?: string // Store name
 }
 
 export default function OperationsDashboardPage() {
@@ -121,23 +125,68 @@ export default function OperationsDashboardPage() {
   const totalSold = stats?.totalSales ?? totalQuantitySold
   const profitMargin = stats?.profitMargin ?? (totalRevenue > 0 ? ((totalRevenue - returnedAmount) / totalRevenue) * 100 : 0)
 
-  // Debug logging
-  console.log('[Operations Dashboard] Financial Metrics Debug:', {
-    ordersCount: orders.length,
-    totalRevenue,
-    returnedAmount,
-    totalQuantitySold,
-    statsFromAPI: {
-      totalProfit: stats?.totalProfit,
-      totalSales: stats?.totalSales,
-      profitMargin: stats?.profitMargin
-    },
-    calculated: {
-      netProfit,
-      totalSold,
-      profitMargin
+  // Debug logging (development only)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Operations Dashboard] Financial Metrics Debug:', {
+      ordersCount: orders.length,
+      totalRevenue,
+      returnedAmount,
+      totalQuantitySold,
+      statsFromAPI: {
+        totalProfit: stats?.totalProfit,
+        totalSales: stats?.totalSales,
+        profitMargin: stats?.profitMargin
+      },
+      calculated: {
+        netProfit,
+        totalSold,
+        profitMargin
+      }
+    })
+  }
+
+  // Calculate Top Products by Revenue (Top 10)
+  const topProducts = useMemo(() => {
+    try {
+      const productRevenue = new Map<string, number>()
+      
+      orders.forEach(order => {
+        if (order.product && typeof order.total === 'number') {
+          const currentRevenue = productRevenue.get(order.product) || 0
+          productRevenue.set(order.product, currentRevenue + order.total)
+        }
+      })
+      
+      return Array.from(productRevenue.entries())
+        .map(([name, revenue]) => ({ name, revenue }))
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 10)
+    } catch (error) {
+      console.error('[Operations Dashboard] Error calculating top products:', error)
+      return []
     }
-  })
+  }, [orders])
+
+  // Calculate Top Stores by Revenue
+  const topStores = useMemo(() => {
+    try {
+      const storeRevenue = new Map<string, number>()
+      
+      orders.forEach(order => {
+        if (order.store && typeof order.total === 'number') {
+          const currentRevenue = storeRevenue.get(order.store) || 0
+          storeRevenue.set(order.store, currentRevenue + order.total)
+        }
+      })
+      
+      return Array.from(storeRevenue.entries())
+        .map(([name, revenue]) => ({ name, revenue }))
+        .sort((a, b) => b.revenue - a.revenue)
+    } catch (error) {
+      console.error('[Operations Dashboard] Error calculating top stores:', error)
+      return []
+    }
+  }, [orders])
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -394,6 +443,12 @@ export default function OperationsDashboardPage() {
         comparison={calculatePeriodComparison(stats, timePeriod)}
         loading={refreshing}
       />
+
+      {/* Top Products and Top Stores Charts */}
+      <div className="grid gap-6 lg:grid-cols-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-300">
+        <TopProductsChart data={topProducts} loading={refreshing} />
+        <TopStoresChart data={topStores} loading={refreshing} />
+      </div>
 
       {/* Quick Tips */}
       <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
