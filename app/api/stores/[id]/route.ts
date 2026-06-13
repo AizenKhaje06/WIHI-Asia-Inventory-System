@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
 import { updateStore, deleteStore } from "@/lib/supabase-db"
 import { invalidateCachePattern } from "@/lib/cache"
-import { withAdmin } from "@/lib/api-helpers"
+import { withRoles } from "@/lib/api-helpers"
 
-export const PUT = withAdmin(async (request, { params, user }) => {
+export const PUT = withRoles(['admin', 'dept-manager'], async (request, { params, user }) => {
   try {
     const { store_name, sales_channel } = await request.json()
     
@@ -25,7 +25,7 @@ export const PUT = withAdmin(async (request, { params, user }) => {
   }
 })
 
-export const DELETE = withAdmin(async (request, { params, user }) => {
+export const DELETE = withRoles(['admin', 'dept-manager'], async (request, { params, user }) => {
   try {
     await deleteStore(params.id)
     invalidateCachePattern('stores')
