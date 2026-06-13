@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server"
 // Using Supabase as primary database
 import { updateCategory, deleteCategory } from "@/lib/supabase-db"
+import { withRoles } from "@/lib/api-helpers"
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export const PUT = withRoles(['admin', 'dept-manager'], async (request, { params }) => {
   try {
     const { name } = await request.json()
     
@@ -19,12 +17,9 @@ export async function PUT(
     console.error("Error updating category:", error)
     return NextResponse.json({ error: "Failed to update category" }, { status: 500 })
   }
-}
+})
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export const DELETE = withRoles(['admin', 'dept-manager'], async (request, { params }) => {
   try {
     await deleteCategory(params.id)
     return NextResponse.json({ success: true })
@@ -32,4 +27,4 @@ export async function DELETE(
     console.error("Error deleting category:", error)
     return NextResponse.json({ error: "Failed to delete category" }, { status: 500 })
   }
-}
+})
