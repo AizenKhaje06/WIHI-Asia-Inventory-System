@@ -2263,9 +2263,9 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
         workflow: [
           'Open dashboard to see today\'s summary.',
           'Use the date range picker (top-right) to filter all KPI cards by period.',
-          'Check Row 1 cards: Total Sold, Revenue, Gross Profit, Profit Margin.',
-          'Check Row 2 cards: Cancelled (Packing), Cancelled (Tracked), Total Delivered, Total Returns.',
-          'Review Inventory Alerts for low stock or out-of-stock items.',
+          'Check Row 1 cards: Total Revenue, Gross Profit, Total Sold, Profit Margin.',
+          'Check Row 2 cards: Total Delivered, Low Stock, Out of Stock, Total Returns.',
+          'Review Operational Alerts & Tips for inventory warnings.',
           'Use Quick Actions to navigate to common tasks.',
           'Analyze the Revenue Chart using Day/Week/Month tabs.',
         ],
@@ -2276,10 +2276,12 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
           'Cancelled (Tracked) = orders cancelled AFTER packing.',
           'Revenue excludes CANCELLED, RETURNED, PROBLEMATIC, and DETAINED orders.',
           'Gross Profit = Revenue − Cost of Goods Sold (COGS).',
+          'Profit Margin % = (Gross Profit ÷ Revenue) × 100.',
         ],
         notes: [
           'Charts use Day/Week/Month tabs independently from the date filter.',
           'Date filter affects KPI cards only, not the revenue chart.',
+          'Low Stock Alert shows products near reorder level.',
         ],
       },
       inventory: {
@@ -2340,25 +2342,38 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
       },
       'packing-queue': {
         title: 'Packing Queue',
-        description: 'View and manage orders waiting to be packed. Confirm packing to deduct inventory and move to Track Orders.',
+        description: 'View and manage orders waiting to be packed. Edit order details, confirm packing to deduct inventory, or cancel orders.',
         workflow: [
           'View all Pending orders queued for packing.',
-          'Click "Pack" on an order to confirm it is packed.',
-          'Inventory is deducted from stock when an order is packed.',
+          'Click an order to view details in the modal.',
+          'Click "EDIT" to modify customer info, courier, waybill, quantity, or amount.',
+          'Click "MARK AS PACKED" to confirm packing — inventory is deducted.',
+          'Click "CANCEL" to mark as cancelled before packing.',
+          'Click "DELETE" to permanently remove an order.',
+          'Click "UNCANCEL" to restore a cancelled order.',
           'Packed orders move automatically to Track Orders.',
-          'Cancel an order here to mark it as cancelled before packing.',
         ],
         guide: [
-          'Cancelled orders from this page count as "Cancelled (Packing)" in dashboard.',
+          'Cancelled orders count as "Cancelled (Packing)" in dashboard.',
           'Inventory deduction happens only when status changes to Packed.',
+          'Single Product Orders: Quantity and Amount are editable.',
+          'Multiple Product Orders: Quantity is read-only, Amount is editable.',
+          'System detects multiple products by commas (,), plus (+), or ampersand (&).',
+          'Edit mode auto-calculates amount when quantity changes (single products only).',
+          'Logistics Admin has read-only access (no edit/pack/cancel buttons).',
+        ],
+        notes: [
           'Packer role handles this page in the field.',
+          'Cancelled orders can be restored before being deleted.',
         ],
       },
       'track-orders': {
         title: 'Track Orders',
-        description: 'Monitor all packed orders and update delivery status. Export reports as Excel or PDF.',
+        description: 'Monitor all packed orders and update delivery status. Edit order details and export reports as Excel or PDF.',
         workflow: [
           'View all Packed orders with their current parcel status.',
+          'Click an order to view details in the modal.',
+          'Click "Edit Order" to modify customer info, courier, waybill, quantity, or amount.',
           'Update parcel status: PENDING → IN TRANSIT → ON DELIVERY → DELIVERED.',
           'Mark an order as RETURNED if the customer sends it back.',
           'Mark as CANCELLED if needed after packing.',
@@ -2370,6 +2385,14 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
           'RETURNED status is counted in the "Total Returns" dashboard card.',
           'CANCELLED here = "Cancelled (Tracked)" in dashboard.',
           'COGS and profit in exports use actual data from each order (not estimates).',
+          'Single Product Orders: Quantity and Amount are editable.',
+          'Multiple Product Orders: Quantity is read-only, Amount is editable.',
+          'System detects multiple products by commas (,), plus (+), or ampersand (&).',
+          'Edit mode auto-calculates amount when quantity changes (single products only).',
+        ],
+        notes: [
+          'Edit functionality available for Admin, Operations, and Managers.',
+          'Quantity editing rules prevent errors in multi-product orders.',
         ],
       },
       analytics: {
@@ -2414,6 +2437,28 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
         ],
         guide: [
           'Customer data is linked to orders via customer name and contact.',
+        ],
+      },
+      'business-contacts': {
+        title: 'Business Contacts',
+        description: 'Manage suppliers, distributors, and resellers. Store contact information for business partners.',
+        workflow: [
+          'Click "+ Add Contact" to create a new business contact.',
+          'Select contact type: Supplier, Distributor, or Reseller.',
+          'Fill in company name, contact person, position, email, phone, address.',
+          'Add notes for special terms, pricing, or agreements.',
+          'Click Edit (pencil) icon to update existing contacts.',
+          'Click Delete (trash) icon to remove contacts.',
+          'Use search to find specific contacts quickly.',
+        ],
+        guide: [
+          'Contact types help organize your business partners.',
+          'Notes field is useful for tracking payment terms or special agreements.',
+          'All fields except notes are optional but recommended for completeness.',
+        ],
+        notes: [
+          'Business contacts are separate from customers.',
+          'Used primarily for vendor and partner management.',
         ],
       },
       'sales-channels': {
@@ -2472,6 +2517,12 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
           'Password must be at least 6 characters.',
           'Only admins can manage user accounts.',
           'Profile image is auto-compressed on upload.',
+          'Single-device login: One active session per account — logging in elsewhere will auto-logout previous sessions.',
+          'Session validation checks every 30 seconds to ensure no duplicate logins.',
+        ],
+        notes: [
+          'Single-device security prevents account sharing.',
+          'You will see "Account logged in on another device" if your session is invalidated.',
         ],
       },
     },
@@ -2483,17 +2534,29 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
     pages: {
       'operations-dashboard': {
         title: 'Operations Dashboard',
-        description: 'Filtered dashboard showing KPIs only for the assigned sales channel/department.',
+        description: 'Filtered dashboard showing KPIs, charts, and insights only for your assigned sales channel/department.',
         workflow: [
           'Log in as an Operations staff account.',
           'Dashboard automatically filters to your assigned sales channel.',
-          'View your channel\'s revenue, orders, and profit metrics.',
+          'View Row 1 cards: Total Revenue, Gross Profit, Total Sold, Profit Margin.',
+          'View Row 2 cards: Total Delivered, Low Stock, Out of Stock, Total Returns.',
+          'Analyze Revenue Chart (area chart) using Day/Week/Month tabs.',
+          'Check Top Products by Revenue chart (horizontal bar chart, top 10).',
+          'Check Top Stores by Revenue chart (horizontal bar chart, all stores).',
+          'Review Operational Alerts & Tips for inventory warnings.',
           'Use date filter to review specific periods.',
         ],
         guide: [
           'Operations staff CANNOT see data from other departments.',
           'Assigned channel is set by Admin in Settings → Users.',
-          'All KPI cards respect the channel filter.',
+          'All KPI cards, charts, and alerts respect the channel filter.',
+          'Top Products chart shows your top 10 best-selling products by revenue.',
+          'Top Stores chart shows all stores ranked by revenue in your channel.',
+          'Charts auto-update when you change the date filter.',
+        ],
+        notes: [
+          'Top Products and Top Stores charts are exclusive to Operations Dashboard.',
+          'Data aggregation is optimized for fast performance.',
         ],
       },
       pos: {
@@ -2525,28 +2588,44 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
       },
       'track-orders': {
         title: 'Track Orders',
-        description: 'Monitor and update parcel status for orders in your channel.',
+        description: 'Monitor and update parcel status for orders in your channel. Edit order details.',
         workflow: [
           'View orders for your assigned sales channel.',
+          'Click an order to view details.',
+          'Click "Edit Order" to modify customer info, courier, waybill, quantity, or amount.',
           'Update parcel status as deliveries progress.',
           'Mark orders as DELIVERED or RETURNED.',
         ],
         guide: [
           'Only orders from your channel are visible.',
           'DELIVERED orders count toward your channel\'s total delivered.',
+          'Single Product Orders: Quantity and Amount are editable.',
+          'Multiple Product Orders: Quantity is read-only, Amount is editable.',
+          'System detects multiple products by commas (,), plus (+), or ampersand (&).',
+        ],
+        notes: [
+          'Edit mode auto-calculates amount when quantity changes (single products only).',
         ],
       },
       'packing-queue': {
         title: 'Packing Queue',
-        description: 'View and pack orders for your sales channel.',
+        description: 'View and pack orders for your sales channel. Edit order details before packing.',
         workflow: [
           'View Pending orders for your channel.',
-          'Confirm packing to deduct inventory.',
+          'Click an order to view details.',
+          'Click "EDIT" to modify customer info, courier, waybill, quantity, or amount.',
+          'Click "MARK AS PACKED" to confirm packing and deduct inventory.',
           'Cancel orders if needed before packing.',
         ],
         guide: [
           'Packing deducts inventory immediately.',
           'Cancelled orders here show in dashboard as "Cancelled (Packing)".',
+          'Single Product Orders: Quantity and Amount are editable.',
+          'Multiple Product Orders: Quantity is read-only, Amount is editable.',
+          'System detects multiple products by commas (,), plus (+), or ampersand (&).',
+        ],
+        notes: [
+          'Edit mode auto-calculates amount when quantity changes (single products only).',
         ],
       },
       dispatch: {
@@ -2622,6 +2701,20 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
         ],
         guide: ['Logs are read-only.'],
       },
+      'business-contacts': {
+        title: 'Business Contacts',
+        description: 'Manage suppliers, distributors, and resellers. Full access to add, edit, and delete contacts.',
+        workflow: [
+          'View all business contacts.',
+          'Click "+ Add Contact" to create new suppliers, distributors, or resellers.',
+          'Edit or delete existing contacts as needed.',
+          'Use search to find specific contacts.',
+        ],
+        guide: [
+          'Logistics Admin has full permissions for Business Contacts.',
+          'Can manage all contact types: Supplier, Distributor, Reseller.',
+        ],
+      },
     },
   },
 
@@ -2631,14 +2724,17 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
     pages: {
       'tracker-dashboard': {
         title: 'Tracker Dashboard',
-        description: 'Dedicated page for updating parcel status on packed orders. Optimized for logistics tracking.',
+        description: 'Dedicated page for updating parcel status on packed orders. Optimized for logistics tracking with Excel export.',
         workflow: [
           'Log in as Tracker.',
           'View all orders currently in transit or pending.',
+          'Use filters: Status, Sales Channel, Payment Status, Date Range.',
+          'Use search to find orders by waybill, customer name, or product.',
           'Click an order to open its details.',
           'Update parcel status: PENDING → IN TRANSIT → ON DELIVERY → PICKUP → DELIVERED.',
           'Mark RETURNED if customer rejects delivery.',
           'Add dispatch notes when needed.',
+          'Click "Export to Excel" button to download currently displayed orders.',
         ],
         guide: [
           'DELIVERED = order completed, counted in Total Delivered.',
@@ -2646,10 +2742,15 @@ const MANUAL_DATA: Record<string, { label: string; icon: string; pages: Record<s
           '"Return to Queue" moves a returned order back to Packing Queue.',
           'Inventory is restored when an order is returned to queue.',
           'Cannot create new orders — tracking only.',
+          'Excel export includes only the CURRENT PAGE of orders (respects pagination).',
+          'Export filename includes page number and date for easy identification.',
+          'Exported data respects all active filters and search results.',
         ],
         notes: [
           'Status changes are logged automatically.',
           'Tracker cannot access inventory or POS.',
+          'Export is limited to displayed rows to prevent overwhelming Excel files.',
+          'Use pagination controls to navigate and export specific pages.',
         ],
       },
     },
