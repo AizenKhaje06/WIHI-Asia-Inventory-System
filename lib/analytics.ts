@@ -305,13 +305,15 @@ export function calculateProfitMarginByCategory(
 }
 
 /**
- * Calculate return analytics from restock data
+ * Calculate return analytics from restock data AND order parcel_status
  * Returns include: damaged-return and supplier-return
+ * Return Rate = (RETURNED orders / DELIVERED orders) × 100 (per order, not quantity)
  */
 export function calculateReturnAnalytics(
   restocks: Restock[],
   transactions: Transaction[],
-  items: InventoryItem[]
+  items: InventoryItem[],
+  orders?: any[] // Orders with parcel_status field
 ): {
   totalReturns: number
   totalReturnValue: number
@@ -330,12 +332,33 @@ export function calculateReturnAnalytics(
   const totalReturns = returns.reduce((sum, r) => sum + r.quantity, 0)
   const totalReturnValue = returns.reduce((sum, r) => sum + r.totalCost, 0)
 
-  // Calculate total sales for return rate
+  // NEW: Calculate return rate based on ORDER COUNT, not item quantities
+  let returnRate = 0
+  if (orders && orders.length > 0) {
+    // Count unique orders by parcel_status
+    const returnedOrdersCount = orders.filter(o => o.parcel_status === 'RETURNED').length
+    const deliveredOrdersCount = orders.filter(o => o.parcel_status === 'DELIVERED').length
+    
+    // Return rate = (returned orders / delivered orders) × 100
+    returnRate = deliveredOrdersCount > 0 ? (returnedOrdersCount / deliveredOrdersCount) * 100 : 0
+    
+    console.log('[Return Analytics] Order-based calculation:', {
+      returnedOrders: returnedOrdersCount,
+      deliveredOrders: deliveredOrdersCount,
+      returnRate: returnRate.toFixed(2) + '%'
+    })
+  } else {
+    // Fallback: Use item quantities if orders not available
+    const totalSales = transactions
+      .filter(t => t.type === 'sale' && t.transactionType === 'sale')
+      .reduce((sum, t) => sum + t.quantity, 0)
+    returnRate = totalSales > 0 ? (totalReturns / totalSales) * 100 : 0
+  }
+
+  // Calculate total sales for other rate breakdowns
   const totalSales = transactions
     .filter(t => t.type === 'sale' && t.transactionType === 'sale')
     .reduce((sum, t) => sum + t.quantity, 0)
-
-  const returnRate = totalSales > 0 ? (totalReturns / totalSales) * 100 : 0
 
   // Calculate return rate breakdown by reason
   const damagedReturns = returns.filter(r => r.reason === 'damaged-return').reduce((sum, r) => sum + r.quantity, 0)
@@ -394,17 +417,13 @@ export function calculateReturnAnalytics(
     }
   }).sort((a, b) => b.quantity - a.quantity)
 
-  // Calculate overall return rate (total returns / total sales)
-  // This shows the true ratio even if some items have returns without sales
-  const overallReturnRate = totalSales > 0 ? (totalReturns / totalSales) * 100 : 0
-  
   // Check if there are items with returns but no sales (data quality issue)
   const hasReturnsWithoutSales = returnsByItem.some(item => item.hasReturnsWithoutSales)
 
   return {
     totalReturns,
     totalReturnValue,
-    returnRate: Math.round(overallReturnRate * 100) / 100, // Overall return rate
+    returnRate: Math.round(returnRate * 100) / 100, // Now based on order count, not quantities
     damagedReturnRate: Math.round(damagedReturnRate * 100) / 100, // Damaged stock return rate
     supplierReturnRate: Math.round(supplierReturnRate * 100) / 100, // Supplier return rate
     hasReturnsWithoutSales, // Flag for UI warning

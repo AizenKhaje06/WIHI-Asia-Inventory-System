@@ -958,9 +958,13 @@ export default function TrackOrdersPage() {
     let filtered = [...orders]
     
     if (searchTerm) {
+      const search = searchTerm.toLowerCase()
       filtered = filtered.filter(order => 
-        order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (order.trackingNumber && order.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase()))
+        order.orderNumber.toLowerCase().includes(search) ||
+        (order.trackingNumber && order.trackingNumber.toLowerCase().includes(search)) ||
+        (order.customerName && order.customerName.toLowerCase().includes(search)) ||
+        (order.itemName && order.itemName.toLowerCase().includes(search)) ||
+        (order.storeName && order.storeName.toLowerCase().includes(search))
       )
     }
     
@@ -1739,7 +1743,7 @@ export default function TrackOrdersPage() {
       </Card>
 
       {/* Orders Table - Enterprise Grade 10/10 */}
-      <Card className="border-0 shadow-xl bg-white dark:bg-slate-900 rounded-xl overflow-hidden">
+      <Card className="rounded-none border-0 shadow-xl bg-white dark:bg-slate-900 overflow-hidden">
         <CardContent className="p-0">
           {filteredOrders.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16">

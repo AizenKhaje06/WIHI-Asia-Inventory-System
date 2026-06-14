@@ -330,7 +330,7 @@ export default function LogPage() {
 
   if (loading) {
     return (
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 py-6">
         <div className="mb-8">
           <h2 className="text-2xl sm:text-3xl font-bold gradient-text">Activity Logs Overview</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">View all system operations and changes</p>
@@ -346,7 +346,7 @@ export default function LogPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6">
       {/* Page Header with Date Filter - Professional Style */}
       <div className="flex items-center justify-between mb-8">
         <div>

@@ -603,7 +603,7 @@ export default function PackerDashboard() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-4 sm:space-y-6 pb-6 sm:pb-8 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-[1600px] mx-auto space-y-4 sm:space-y-6 pb-6 sm:pb-8 px-2 sm:px-4 lg:px-6">
       {/* Page Header - Mobile Responsive */}
       <div className="flex flex-col gap-3 pt-4 sm:pt-6 mb-4 sm:mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -678,117 +678,87 @@ export default function PackerDashboard() {
       {/* Enhanced Stats Cards - Mobile Optimized */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
         {/* Pending Orders */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
-          <CardHeader className="pb-1.5 sm:pb-2 md:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
-            <CardTitle className="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                <Package className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600 dark:text-orange-400" />
-              </div>
-              <span className="leading-tight">Pending Queue</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-br from-orange-600 to-orange-700 bg-clip-text text-transparent">
-              <AnimatedNumber value={pendingCount} />
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-orange-600 shadow-lg shadow-orange-500/30 flex-shrink-0">
+              <Package className="h-5 w-5 text-white" />
             </div>
-            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium leading-tight">
-              {pendingCount === 0 ? '✨ All caught up!' : `${pendingCount} ${pendingCount === 1 ? 'order' : 'orders'} ready`}
-            </p>
-            <div className="mt-2 sm:mt-3 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-500"
-                style={{ width: `${Math.min((pendingCount / 50) * 100, 100)}%` }}
-              />
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">Pending Queue</p>
+              <p className="text-2xl font-bold text-orange-900 dark:text-orange-100 tabular-nums">
+                <AnimatedNumber value={pendingCount} />
+              </p>
+              <p className="text-xs text-orange-600 dark:text-orange-500 flex items-center gap-1 mt-0.5">
+                <Package className="h-3 w-3" />
+                {pendingCount === 0 ? 'All caught up' : `${pendingCount} ready`}
+              </p>
             </div>
-          </CardContent>
+          </div>
         </Card>
 
         {/* Today's Packed */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
-          <CardHeader className="pb-1.5 sm:pb-2 md:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
-            <CardTitle className="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 dark:text-green-400" />
-              </div>
-              <span className="leading-tight">Today's Progress</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent">
-              <AnimatedNumber value={todayPacked.length} />
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30 flex-shrink-0">
+              <CheckCircle className="h-5 w-5 text-white" />
             </div>
-            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium leading-tight">
-              {todayPacked.length > 0 ? `🎯 ${todayPacked.length} packed today` : 'Start packing'}
-            </p>
-            <div className="mt-2 sm:mt-3 flex items-center gap-1.5 sm:gap-2">
-              <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600" />
-              <span className="text-[10px] sm:text-xs font-semibold text-green-600">
-                {todayPacked.length > 0 ? '+' : ''}{todayPacked.length} today
-              </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Today's Progress</p>
+              <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
+                <AnimatedNumber value={todayPacked.length} />
+              </p>
+              <p className="text-xs text-green-600 dark:text-green-500 flex items-center gap-1 mt-0.5">
+                <CheckCircle className="h-3 w-3" />
+                {todayPacked.length > 0 ? `${todayPacked.length} packed` : 'Start packing'}
+              </p>
             </div>
-          </CardContent>
+          </div>
         </Card>
 
         {/* Cancelled Orders */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
-          <CardHeader className="pb-1.5 sm:pb-2 md:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
-            <CardTitle className="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-                <svg className="h-3 w-3 sm:h-4 sm:w-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-red-600 shadow-lg shadow-red-500/30 flex-shrink-0">
+              <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Cancelled</p>
+              <p className="text-2xl font-bold text-red-900 dark:text-red-100 tabular-nums">
+                <AnimatedNumber value={cancelledCount} />
+              </p>
+              <p className="text-xs text-red-600 dark:text-red-500 flex items-center gap-1 mt-0.5">
+                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </div>
-              <span className="leading-tight">Cancelled</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent">
-              <AnimatedNumber value={cancelledCount} />
+                {cancelledCount === 0 ? 'No cancellations' : `${cancelledCount} cancelled`}
+              </p>
             </div>
-            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium leading-tight">
-              {cancelledCount === 0 ? '✨ No cancellations' : `${cancelledCount} ${cancelledCount === 1 ? 'order' : 'orders'} cancelled`}
-            </p>
-            <div className="mt-2 sm:mt-3 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-500"
-                style={{ width: `${Math.min((cancelledCount / Math.max(pendingOrders.length, 1)) * 100, 100)}%` }}
-              />
-            </div>
-          </CardContent>
+          </div>
         </Card>
 
         {/* Packs Per Hour */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
-          <CardHeader className="pb-1.5 sm:pb-2 md:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
-            <CardTitle className="text-[10px] sm:text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                <Target className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600 dark:text-purple-400" />
-              </div>
-              <span className="leading-tight">Productivity</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent">
-              {packsPerHour > 0 ? (
-                <><AnimatedNumber value={packsPerHour} />/h</>
-              ) : (
-                '--'
-              )}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30 flex-shrink-0">
+              <Target className="h-5 w-5 text-white" />
             </div>
-            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium leading-tight">
-              {packsPerHour > 0 ? 'Orders per hour' : 'No data yet'}
-            </p>
-            <div className="mt-2 sm:mt-3 flex items-center gap-1.5 sm:gap-2">
-              <Award className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-purple-600" />
-              <span className="text-[10px] sm:text-xs font-semibold text-purple-600">
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Productivity</p>
+              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
+                {packsPerHour > 0 ? (
+                  <><AnimatedNumber value={packsPerHour} />/h</>
+                ) : (
+                  '--'
+                )}
+              </p>
+              <p className="text-xs text-purple-600 dark:text-purple-500 flex items-center gap-1 mt-0.5">
+                <Award className="h-3 w-3" />
                 {packsPerHour >= 30 ? 'Excellent!' : packsPerHour >= 20 ? 'Great!' : packsPerHour > 0 ? 'Good!' : 'Start packing'}
-              </span>
+              </p>
             </div>
-          </CardContent>
+          </div>
         </Card>
       </div>
 

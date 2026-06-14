@@ -317,7 +317,7 @@ export default function InternalUsagePage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6">
       {/* Page Header - Professional */}
       <div className="flex items-start justify-between">
         <div>
@@ -811,7 +811,7 @@ export default function InternalUsagePage() {
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[180px]">Department</TableHead>
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 text-center w-[70px]">Qty</TableHead>
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 text-right w-[100px]">Cost</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[120px]">Staff</TableHead>
+                        <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-[160px]">Staff</TableHead>
                         <TableHead className="text-[10px] font-semibold text-white uppercase tracking-wider py-3 px-4 w-auto">Notes</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -915,12 +915,12 @@ export default function InternalUsagePage() {
                                 {formatCurrency(transaction.totalCost)}
                               </span>
                             </TableCell>
-                            <TableCell className="py-3 px-4 w-[120px]">
+                            <TableCell className="py-3 px-4 w-[160px]">
                               <div className="flex items-center gap-2">
                                 <div className="h-6 w-6 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
                                   {transaction.staffName ? transaction.staffName.charAt(0).toUpperCase() : '?'}
                                 </div>
-                                <span className="text-[11px] text-slate-700 dark:text-slate-300 truncate">
+                                <span className="text-[11px] text-slate-700 dark:text-slate-300">
                                   {transaction.staffName || 'N/A'}
                                 </span>
                               </div>

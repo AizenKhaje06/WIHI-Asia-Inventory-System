@@ -435,7 +435,7 @@ export default function TrackerDashboardPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-4 sm:space-y-6 pt-4 sm:pt-6 px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8">
+    <div className="max-w-[1600px] mx-auto space-y-4 sm:space-y-6 pt-4 sm:pt-6 px-2 sm:px-4 lg:px-6 pb-6 sm:pb-8">
       {/* Page Header - Mobile Responsive */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
         <div>
@@ -469,66 +469,54 @@ export default function TrackerDashboardPage() {
       {/* KPI Cards - Mobile Optimized */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
         {/* Total Orders */}
-        <Card className="relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-slate-100 dark:bg-slate-800 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 opacity-50" />
-          <CardHeader className="pb-2 sm:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
-            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400" />
-              </div>
-              <span>Total Orders</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
-            <div className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-              {totalOrders}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30 flex-shrink-0">
+              <Package className="h-5 w-5 text-white" />
             </div>
-            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium">
-              All tracked orders
-            </p>
-          </CardContent>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Total Orders</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">{totalOrders}</p>
+              <p className="text-xs text-blue-600 dark:text-blue-500 flex items-center gap-1 mt-0.5">
+                <Package className="h-3 w-3" />
+                All tracked
+              </p>
+            </div>
+          </div>
         </Card>
 
         {/* Delivered */}
-        <Card className="relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-slate-100 dark:bg-slate-800 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 opacity-50" />
-          <CardHeader className="pb-2 sm:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
-            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 dark:text-green-400" />
-              </div>
-              <span>Delivered</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
-            <div className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-              {deliveredCount}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30 flex-shrink-0">
+              <CheckCircle className="h-5 w-5 text-white" />
             </div>
-            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium">
-              {totalOrders > 0 ? `${Math.round((deliveredCount / totalOrders) * 100)}% delivery rate` : 'No orders yet'}
-            </p>
-          </CardContent>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Delivered</p>
+              <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">{deliveredCount}</p>
+              <p className="text-xs text-green-600 dark:text-green-500 flex items-center gap-1 mt-0.5">
+                <CheckCircle className="h-3 w-3" />
+                {totalOrders > 0 ? `${Math.round((deliveredCount / totalOrders) * 100)}% rate` : 'No orders'}
+              </p>
+            </div>
+          </div>
         </Card>
 
         {/* Returned */}
-        <Card className="relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-slate-100 dark:bg-slate-800 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 opacity-50" />
-          <CardHeader className="pb-2 sm:pb-3 relative px-3 sm:px-4 pt-3 sm:pt-4">
-            <CardTitle className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                <RotateCcw className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-600 dark:text-orange-400" />
-              </div>
-              <span>Returned</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-3 sm:pb-4 relative px-3 sm:px-4">
-            <div className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-              {returnedCount}
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-orange-600 shadow-lg shadow-orange-500/30 flex-shrink-0">
+              <RotateCcw className="h-5 w-5 text-white" />
             </div>
-            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium">
-              {totalOrders > 0 ? `${Math.round((returnedCount / totalOrders) * 100)}% return rate` : 'No returns yet'}
-            </p>
-          </CardContent>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">Returned</p>
+              <p className="text-2xl font-bold text-orange-900 dark:text-orange-100 tabular-nums">{returnedCount}</p>
+              <p className="text-xs text-orange-600 dark:text-orange-500 flex items-center gap-1 mt-0.5">
+                <RotateCcw className="h-3 w-3" />
+                {totalOrders > 0 ? `${Math.round((returnedCount / totalOrders) * 100)}% rate` : 'No returns'}
+              </p>
+            </div>
+          </div>
         </Card>
       </div>
 

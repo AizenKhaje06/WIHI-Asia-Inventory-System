@@ -189,7 +189,7 @@ export default function OperationsDashboardPage() {
   }, [orders])
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between animate-in fade-in-0 slide-in-from-top-4 duration-700">
         <div>
@@ -209,15 +209,14 @@ export default function OperationsDashboardPage() {
       {/* Key Metrics - 5 Primary KPIs - Professional Corporate Design */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-100">
         {/* Total Revenue */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-full -mr-16 -mt-16" />
-          <CardContent className="p-3 sm:p-4 relative">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+              <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
                 <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent mb-2">
+            <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
               ₱<AnimatedNumber value={totalRevenue} duration={1500} />
             </div>
             <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Total Revenue</div>
@@ -243,15 +242,14 @@ export default function OperationsDashboardPage() {
         </Card>
 
         {/* Gross Profit */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16" />
-          <CardContent className="p-3 sm:p-4 relative">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+              <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
                 <DollarSign className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent mb-2">
+            <div className="text-2xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
               ₱<AnimatedNumber value={netProfit} duration={1500} />
             </div>
             <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Gross Profit</div>
@@ -271,15 +269,14 @@ export default function OperationsDashboardPage() {
         </Card>
 
         {/* Total Sold */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-full -mr-16 -mt-16" />
-          <CardContent className="p-3 sm:p-4 relative">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
                 <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
+            <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
               <AnimatedNumber value={totalSold} duration={1500} />
             </div>
             <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Total Sold</div>
@@ -292,15 +289,14 @@ export default function OperationsDashboardPage() {
         </Card>
 
         {/* Profit Margin */}
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-full -mr-16 -mt-16" />
-          <CardContent className="p-3 sm:p-4 relative">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+              <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
                 <Percent className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-amber-600 to-amber-700 bg-clip-text text-transparent mb-2">
+            <div className="text-2xl sm:text-3xl font-bold text-amber-600 dark:text-amber-400 mb-2">
               <AnimatedNumber value={profitMargin} decimals={1} duration={1500} />%
             </div>
             <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 font-medium">Profit Margin</div>
@@ -320,7 +316,7 @@ export default function OperationsDashboardPage() {
 
       {/* Secondary Metrics - 4 Cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-125">
-        <Card className="border-0 shadow-md bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 hover:shadow-lg transition-shadow">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
@@ -339,7 +335,7 @@ export default function OperationsDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 hover:shadow-lg transition-shadow">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
@@ -353,7 +349,7 @@ export default function OperationsDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-md bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 hover:shadow-lg transition-shadow">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
@@ -367,7 +363,7 @@ export default function OperationsDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-md bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 hover:shadow-lg transition-shadow">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div className="flex-1">
@@ -399,7 +395,7 @@ export default function OperationsDashboardPage() {
 
       {/* Order Statistics - Affected by Date Filter */}
       {(startDate || endDate) && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
           <div className="flex items-center gap-2 mb-3">
             <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
@@ -407,25 +403,25 @@ export default function OperationsDashboardPage() {
             </h3>
           </div>
           <div className="grid gap-3 md:grid-cols-4">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border border-blue-100 dark:border-blue-800">
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
               <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Total Orders</div>
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 <AnimatedNumber value={totalOrders} />
               </div>
             </div>
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border border-green-100 dark:border-green-800">
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
               <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Total Revenue</div>
               <div className="text-lg font-bold text-green-600 dark:text-green-400">
                 ₱<AnimatedNumber value={totalRevenue} />
               </div>
             </div>
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border border-amber-100 dark:border-amber-800">
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
               <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">To Pack</div>
               <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
                 <AnimatedNumber value={pendingCount} />
               </div>
             </div>
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border border-purple-100 dark:border-purple-800">
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
               <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Completed</div>
               <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 <AnimatedNumber value={packedCount} />
@@ -451,11 +447,11 @@ export default function OperationsDashboardPage() {
       </div>
 
       {/* Quick Tips */}
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+      <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
         <CardHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-600 shadow-sm">
-              <AlertTriangle className="h-4 w-4 text-white" />
+            <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
+              <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <CardTitle className="text-base font-bold text-slate-900 dark:text-white">Operational Alerts & Tips</CardTitle>
@@ -468,8 +464,8 @@ export default function OperationsDashboardPage() {
 
             {/* Low Stock Alert */}
             {lowStockItems.length > 0 ? (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40">
-                <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex-shrink-0">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 flex-shrink-0">
                   <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div className="min-w-0">
@@ -483,8 +479,8 @@ export default function OperationsDashboardPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/40">
-                <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30 flex-shrink-0">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 flex-shrink-0">
                   <Package className="h-4 w-4 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
@@ -498,8 +494,8 @@ export default function OperationsDashboardPage() {
 
             {/* Out of Stock */}
             {outOfStockItems.length > 0 ? (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/40">
-                <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 flex-shrink-0">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 flex-shrink-0">
                   <PackageX className="h-4 w-4 text-red-600 dark:text-red-400" />
                 </div>
                 <div className="min-w-0">
@@ -513,8 +509,8 @@ export default function OperationsDashboardPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/40">
-                <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30 flex-shrink-0">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 flex-shrink-0">
                   <Package className="h-4 w-4 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
@@ -528,8 +524,8 @@ export default function OperationsDashboardPage() {
 
             {/* Returns Alert */}
             {returnedCount > 0 ? (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800/40">
-                <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex-shrink-0">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 flex-shrink-0">
                   <RotateCcw className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
@@ -540,8 +536,8 @@ export default function OperationsDashboardPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/40">
-                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex-shrink-0">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 flex-shrink-0">
                   <RotateCcw className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
@@ -554,8 +550,8 @@ export default function OperationsDashboardPage() {
             )}
 
             {/* Inventory Check Reminder */}
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-              <div className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 flex-shrink-0">
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 flex-shrink-0">
                 <RefreshCw className="h-4 w-4 text-slate-600 dark:text-slate-300" />
               </div>
               <div>

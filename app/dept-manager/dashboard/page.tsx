@@ -78,7 +78,7 @@ export default function DeptManagerDashboard() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -98,60 +98,68 @@ export default function DeptManagerDashboard() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
-                <ShoppingCart className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Total Orders</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{stats?.totalOrders || 0}</p>
-              </div>
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30 flex-shrink-0">
+              <ShoppingCart className="h-5 w-5 text-white" />
             </div>
-          </CardContent>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Total Orders</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">{stats?.totalOrders || 0}</p>
+              <p className="text-xs text-blue-600 dark:text-blue-500 flex items-center gap-1 mt-0.5">
+                <ShoppingCart className="h-3 w-3" />
+                All orders
+              </p>
+            </div>
+          </div>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-emerald-600 shadow-lg shadow-emerald-500/30">
-                <CheckCircle className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Active Orders</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{stats?.activeOrders || 0}</p>
-              </div>
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-600 shadow-lg shadow-emerald-500/30 flex-shrink-0">
+              <CheckCircle className="h-5 w-5 text-white" />
             </div>
-          </CardContent>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Active Orders</p>
+              <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100 tabular-nums">{stats?.activeOrders || 0}</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-500 flex items-center gap-1 mt-0.5">
+                <CheckCircle className="h-3 w-3" />
+                In progress
+              </p>
+            </div>
+          </div>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-red-600 shadow-lg shadow-red-500/30">
-                <XCircle className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Cancelled</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{stats?.cancelledOrders || 0}</p>
-              </div>
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-red-600 shadow-lg shadow-red-500/30 flex-shrink-0">
+              <XCircle className="h-5 w-5 text-white" />
             </div>
-          </CardContent>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Cancelled</p>
+              <p className="text-2xl font-bold text-red-900 dark:text-red-100 tabular-nums">{stats?.cancelledOrders || 0}</p>
+              <p className="text-xs text-red-600 dark:text-red-500 flex items-center gap-1 mt-0.5">
+                <XCircle className="h-3 w-3" />
+                Cancelled
+              </p>
+            </div>
+          </div>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
-                <TrendingUp className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Total Revenue</p>
-                <p className="text-xl font-bold text-slate-900 dark:text-white tabular-nums">{formatCurrency(stats?.totalRevenue || 0)}</p>
-              </div>
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30 flex-shrink-0">
+              <TrendingUp className="h-5 w-5 text-white" />
             </div>
-          </CardContent>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Total Revenue</p>
+              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">{formatCurrency(stats?.totalRevenue || 0)}</p>
+              <p className="text-xs text-purple-600 dark:text-purple-500 flex items-center gap-1 mt-0.5">
+                <TrendingUp className="h-3 w-3" />
+                Revenue
+              </p>
+            </div>
+          </div>
         </Card>
       </div>
 

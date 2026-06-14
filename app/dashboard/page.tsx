@@ -135,7 +135,7 @@ export default function DashboardPage() {
   })) || []
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6">
       {/* Page Header - Professional Shopify Style */}
       <div className="flex items-center justify-between gap-4 mb-8">
         <div>
@@ -162,130 +162,105 @@ export default function DashboardPage() {
       {/* Row 1: Financial Metrics (4 cards) */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Sold */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
-              <ShoppingCart className="h-4 w-4 text-white" strokeWidth={2.5} />
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30 flex-shrink-0">
+              <ShoppingCart className="h-5 w-5 text-white" strokeWidth={2.5} />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Total Sold</p>
-              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 tabular-nums">
                 <AnimatedNumber value={stats?.totalSales || 0} duration={1500} />
-              </div>
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-500 flex items-center gap-1 mt-0.5">
+                All-time quantity
+              </p>
             </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-              All-time quantity
-            </span>
           </div>
         </Card>
 
         {/* Total Revenue */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-900/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30">
-              <TrendingUp className="h-4 w-4 text-white" strokeWidth={2.5} />
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-green-600 shadow-lg shadow-green-500/30 flex-shrink-0">
+              <TrendingUp className="h-5 w-5 text-white" strokeWidth={2.5} />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Total Revenue</p>
-              <div className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
+              <p className="text-2xl font-bold text-green-900 dark:text-green-100 tabular-nums">
                 ₱<AnimatedNumber value={stats?.totalRevenue || 0} duration={1500} />
-              </div>
+              </p>
+              <p className="text-xs text-green-600 dark:text-green-500 flex items-center gap-1 mt-0.5">
+                {startDate || endDate ? (
+                  stats?.totalRevenue && stats.totalRevenue > 0 ? (
+                    <>
+                      <ArrowUpRight className="h-3 w-3" />
+                      Filtered period
+                    </>
+                  ) : (
+                    "No sales in period"
+                  )
+                ) : (
+                  stats?.revenueToday !== undefined && stats.revenueToday > 0 ? (
+                    <>
+                      <ArrowUpRight className="h-3 w-3" />
+                      ₱{formatNumber(stats.revenueToday)} today
+                    </>
+                  ) : (
+                    "No sales today yet"
+                  )
+                )}
+              </p>
             </div>
           </div>
-          {startDate || endDate ? (
-            stats?.totalRevenue && stats.totalRevenue > 0 ? (
-              <div className="flex items-center gap-1">
-                <ArrowUpRight className="h-3 w-3 text-green-600 dark:text-green-400" />
-                <span className="text-xs text-green-600 dark:text-green-400 font-semibold">
-                  Filtered period
-                </span>
-              </div>
-            ) : (
-              <div className="text-xs text-slate-500 dark:text-slate-400">
-                No sales in period
-              </div>
-            )
-          ) : (
-            stats?.revenueToday !== undefined && stats.revenueToday > 0 ? (
-              <div className="flex items-center gap-1">
-                <ArrowUpRight className="h-3 w-3 text-green-600 dark:text-green-400" />
-                <span className="text-xs text-green-600 dark:text-green-400 font-semibold">
-                  ₱{formatNumber(stats.revenueToday)} today
-                </span>
-              </div>
-            ) : (
-              <div className="text-xs text-slate-500 dark:text-slate-400">
-                No sales today yet
-              </div>
-            )
-          )}
         </Card>
 
         {/* Gross Profit */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30">
-              <DollarSign className="h-4 w-4 text-white" strokeWidth={2.5} />
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 shadow-lg shadow-purple-500/30 flex-shrink-0">
+              <DollarSign className="h-5 w-5 text-white" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Gross Profit</p>
-              <div className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
+              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 tabular-nums">
                 ₱<AnimatedNumber value={netProfit} duration={1500} />
-              </div>
+              </p>
+              <p className="text-xs text-purple-600 dark:text-purple-500 flex items-center gap-1 mt-0.5">
+                {stats?.returnValue !== undefined && stats.returnValue > 0 ? (
+                  <>
+                    <ArrowDownRight className="h-3 w-3" />
+                    ₱{formatNumber(stats.returnValue)} returns
+                  </>
+                ) : (
+                  "No returns"
+                )}
+              </p>
             </div>
           </div>
-          {startDate || endDate ? (
-            stats?.returnValue !== undefined && stats.returnValue > 0 ? (
-              <div className="flex items-center gap-1">
-                <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />
-                <span className="text-xs text-red-600 dark:text-red-400 font-semibold">
-                  ₱{formatNumber(stats.returnValue)} returns
-                </span>
-              </div>
-            ) : (
-              <div className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
-                No returns
-              </div>
-            )
-          ) : (
-            stats?.returnValue !== undefined && stats.returnValue > 0 ? (
-              <div className="flex items-center gap-1">
-                <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />
-                <span className="text-xs text-red-600 dark:text-red-400 font-semibold">
-                  ₱{formatNumber(stats.returnValue)} returns
-                </span>
-              </div>
-            ) : (
-              <div className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
-                No returns
-              </div>
-            )
-          )}
         </Card>
 
         {/* Profit Margin */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-900/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-amber-600 shadow-lg shadow-amber-500/30">
-              <Percent className="h-4 w-4 text-white" strokeWidth={2.5} />
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-600 shadow-lg shadow-amber-500/30 flex-shrink-0">
+              <Percent className="h-5 w-5 text-white" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Profit Margin</p>
-              <div className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">
+              <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 tabular-nums">
                 <AnimatedNumber value={stats?.profitMargin || 0} decimals={1} duration={1500} />%
-              </div>
+              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1 mt-0.5">
+                {(stats?.profitMargin || 0) >= 30 ? (
+                  "🏆 Excellent!"
+                ) : (stats?.profitMargin || 0) >= 15 ? (
+                  "✓ Good"
+                ) : (
+                  "⚠ Improve"
+                )}
+              </p>
             </div>
-          </div>
-          <div className="flex items-center gap-1">
-            {(stats?.profitMargin || 0) >= 30 ? (
-              <span className="text-xs font-semibold text-green-600 dark:text-green-400">🏆 Excellent!</span>
-            ) : (stats?.profitMargin || 0) >= 15 ? (
-              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">✓ Good</span>
-            ) : (
-              <span className="text-xs font-semibold text-red-600 dark:text-red-400">⚠ Improve</span>
-            )}
           </div>
         </Card>
       </div>
@@ -293,91 +268,87 @@ export default function DashboardPage() {
       {/* Row 2: Order Status Metrics (4 cards) */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Cancelled (Packing Queue) */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-rose-50 to-rose-100/50 dark:from-rose-900/20 dark:to-rose-900/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-rose-600 shadow-lg shadow-rose-500/30">
-              <PackageX className="h-4 w-4 text-white" strokeWidth={2.5} />
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-rose-600 shadow-lg shadow-rose-500/30 flex-shrink-0">
+              <PackageX className="h-5 w-5 text-white" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">Cancelled (Packing)</p>
-              <div className="text-2xl font-bold text-rose-900 dark:text-rose-100 tabular-nums">
+              <p className="text-2xl font-bold text-rose-900 dark:text-rose-100 tabular-nums">
                 <AnimatedNumber value={stats?.cancelledPackingQueue || 0} duration={1500} />
-              </div>
+              </p>
+              <p className="text-xs text-rose-600 dark:text-rose-500 flex items-center gap-1 mt-0.5">
+                Before packing
+              </p>
             </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-rose-600 dark:text-rose-400 font-semibold">
-              Before packing
-            </span>
           </div>
         </Card>
 
         {/* Cancelled (Track Orders) */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-pink-50 to-pink-100/50 dark:from-pink-900/20 dark:to-pink-900/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-pink-600 shadow-lg shadow-pink-500/30">
-              <PackageX className="h-4 w-4 text-white" strokeWidth={2.5} />
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-pink-600 shadow-lg shadow-pink-500/30 flex-shrink-0">
+              <PackageX className="h-5 w-5 text-white" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold text-pink-700 dark:text-pink-400 uppercase tracking-wider">Cancelled (Tracked)</p>
-              <div className="text-2xl font-bold text-pink-900 dark:text-pink-100 tabular-nums">
+              <p className="text-2xl font-bold text-pink-900 dark:text-pink-100 tabular-nums">
                 <AnimatedNumber value={stats?.cancelledTrackOrders || 0} duration={1500} />
-              </div>
+              </p>
+              <p className="text-xs text-pink-600 dark:text-pink-500 flex items-center gap-1 mt-0.5">
+                After packing
+              </p>
             </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-pink-600 dark:text-pink-400 font-semibold">
-              After packing
-            </span>
           </div>
         </Card>
 
         {/* Total Delivered */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-900/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-emerald-600 shadow-lg shadow-emerald-500/30">
-              <CheckCircle className="h-4 w-4 text-white" strokeWidth={2.5} />
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-600 shadow-lg shadow-emerald-500/30 flex-shrink-0">
+              <CheckCircle className="h-5 w-5 text-white" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Total Delivered</p>
-              <div className="text-2xl font-bold text-emerald-900 dark:text-emerald-100 tabular-nums">
+              <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100 tabular-nums">
                 <AnimatedNumber value={stats?.totalDelivered || 0} duration={1500} />
-              </div>
+              </p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-500 flex items-center gap-1 mt-0.5">
+                {stats?.deliveredPercentage !== undefined ? (
+                  <>
+                    <AnimatedNumber value={stats.deliveredPercentage} decimals={1} duration={1500} />% of total orders
+                  </>
+                ) : (
+                  "No deliveries yet"
+                )}
+              </p>
             </div>
           </div>
-          {stats?.deliveredPercentage !== undefined ? (
-            <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
-              <AnimatedNumber value={stats.deliveredPercentage} decimals={1} duration={1500} />% of total orders
-            </div>
-          ) : (
-            <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
-              No deliveries yet
-            </div>
-          )}
         </Card>
 
         {/* Total Returns */}
-        <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-900/10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-orange-600 shadow-lg shadow-orange-500/30">
-              <RotateCcw className="h-4 w-4 text-white" strokeWidth={2.5} />
+        <Card className="p-5 border-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-orange-600 shadow-lg shadow-orange-500/30 flex-shrink-0">
+              <RotateCcw className="h-5 w-5 text-white" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">Total Returns</p>
-              <div className="text-2xl font-bold text-orange-900 dark:text-orange-100 tabular-nums">
+              <p className="text-2xl font-bold text-orange-900 dark:text-orange-100 tabular-nums">
                 <AnimatedNumber value={stats?.totalReturns || 0} duration={1500} />
-              </div>
+              </p>
+              <p className="text-xs text-orange-600 dark:text-orange-500 flex items-center gap-1 mt-0.5">
+                {stats?.returnRate !== undefined && stats.returnRate > 0 ? (
+                  <>
+                    <AnimatedNumber value={stats.returnRate} decimals={1} duration={1500} />% of delivered
+                  </>
+                ) : (
+                  "No returns yet"
+                )}
+              </p>
             </div>
           </div>
-          {stats?.returnRate !== undefined && stats.returnRate > 0 ? (
-            <div className="text-xs text-orange-600 dark:text-orange-400 font-semibold">
-              <AnimatedNumber value={stats.returnRate} decimals={1} duration={1500} />% of delivered
-            </div>
-          ) : (
-            <div className="text-xs text-orange-600 dark:text-orange-400 font-semibold">
-              No returns yet
-            </div>
-          )}
         </Card>
       </div>
 
@@ -388,7 +359,7 @@ export default function DashboardPage() {
       )}>
         {/* Quick Actions - Admin Only */}
         {currentUser?.role === 'admin' && (
-          <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+          <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <Activity className="h-4 w-4 text-blue-600" />
@@ -427,7 +398,7 @@ export default function DashboardPage() {
         )}
 
         {/* Critical Alerts - Redesigned Compact */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-red-600" />
@@ -443,7 +414,7 @@ export default function DashboardPage() {
             {(outOfStockCount > 0 || lowStockCount > 0) ? (
               <div className="grid grid-cols-2 gap-2">
                 {/* Out of Stock Card */}
-                <Card className="border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
+                <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between mb-1.5">
                       <div>
@@ -472,7 +443,7 @@ export default function DashboardPage() {
                 </Card>
 
                 {/* Low Stock Card */}
-                <Card className="border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800">
+                <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between mb-1.5">
                       <div>
@@ -525,13 +496,13 @@ export default function DashboardPage() {
       {/* Performance Analytics */}
       <div className="grid gap-5 grid-cols-1 lg:grid-cols-3">
         {/* Top Products Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
-          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <div className="h-5 w-1 bg-emerald-500 rounded-full flex-shrink-0"></div>
-              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Top Products</h3>
+              <h3 className="text-slate-900 dark:text-white text-sm font-bold tracking-tight">Top Products</h3>
             </div>
-            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Units sold by product</p>
+            <p className="text-slate-600 dark:text-slate-400 text-xs mt-0.5 ml-3">Units sold by product</p>
           </div>
           <CardContent className="pt-4 pb-2">
             {stats?.topProducts && stats.topProducts.length > 0 ? (
@@ -574,13 +545,13 @@ export default function DashboardPage() {
         </Card>
 
         {/* Top Categories Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
-          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <div className="h-5 w-1 bg-purple-500 rounded-full flex-shrink-0"></div>
-              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Top Categories</h3>
+              <h3 className="text-slate-900 dark:text-white text-sm font-bold tracking-tight">Top Categories</h3>
             </div>
-            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Units sold by category</p>
+            <p className="text-slate-600 dark:text-slate-400 text-xs mt-0.5 ml-3">Units sold by category</p>
           </div>
           <CardContent className="pt-4 pb-2">
             {stats?.topCategories && stats.topCategories.length > 0 ? (
@@ -623,13 +594,13 @@ export default function DashboardPage() {
         </Card>
 
         {/* Return Count by Sales Channel */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
-          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <div className="h-5 w-1 bg-red-500 rounded-full flex-shrink-0"></div>
-              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Return Count by Sales Channel</h3>
+              <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Return Count by Sales Channel</h3>
             </div>
-            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Returned orders per channel</p>
+            <p className="text-xs mt-0.5 ml-3 text-slate-600 dark:text-slate-400">Returned orders per channel</p>
           </div>
           <CardContent className="pt-4 pb-2">
             {stats?.cancelledOrdersByChannel && Object.keys(stats.cancelledOrdersByChannel).length > 0 ? (
@@ -682,13 +653,13 @@ export default function DashboardPage() {
       {/* Stock Distribution */}
       <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
         {/* Department Performance Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
-          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <div className="h-5 w-1 bg-blue-500 rounded-full flex-shrink-0"></div>
-              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Department Performance</h3>
+              <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Department Performance</h3>
             </div>
-            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Revenue by sales channel / department</p>
+            <p className="text-xs mt-0.5 ml-3 text-slate-600 dark:text-slate-400">Revenue by sales channel / department</p>
           </div>
           <CardContent className="pt-4 pb-2">
             <ResponsiveContainer width="100%" height={280}>
@@ -722,13 +693,13 @@ export default function DashboardPage() {
         </Card>
 
         {/* Store Performance Chart */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
-          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <div className="h-5 w-1 bg-emerald-500 rounded-full flex-shrink-0"></div>
-              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Store Performance</h3>
+              <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Store Performance</h3>
             </div>
-            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Revenue by store / warehouse</p>
+            <p className="text-xs mt-0.5 ml-3 text-slate-600 dark:text-slate-400">Revenue by store / warehouse</p>
           </div>
           <CardContent className="pt-4 pb-2">
             <ResponsiveContainer width="100%" height={280}>
@@ -761,13 +732,13 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
         {/* Recent Sales */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
-          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <div className="h-5 w-1 bg-emerald-500 rounded-full flex-shrink-0"></div>
-              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Recent Sales</h3>
+              <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Recent Sales</h3>
             </div>
-            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Latest completed transactions</p>
+            <p className="text-xs mt-0.5 ml-3 text-slate-600 dark:text-slate-400">Latest completed transactions</p>
           </div>
           <CardContent className="pt-4 pb-3">
             <div className="space-y-2">
@@ -802,13 +773,13 @@ export default function DashboardPage() {
         </Card>
 
         {/* Recent Restocks */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
-          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <div className="h-5 w-1 bg-blue-500 rounded-full flex-shrink-0"></div>
-              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Recent Restocks</h3>
+              <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Recent Restocks</h3>
             </div>
-            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Latest inventory replenishments</p>
+            <p className="text-xs mt-0.5 ml-3 text-slate-600 dark:text-slate-400">Latest inventory replenishments</p>
           </div>
           <CardContent className="pt-4 pb-3">
             <div className="space-y-2">
@@ -843,13 +814,13 @@ export default function DashboardPage() {
       {/* Insights & Health */}
       <div className="grid gap-5 grid-cols-1 lg:grid-cols-3">
         {/* Business Insights */}
-        <Card className="lg:col-span-2 border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
-          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+        <Card className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <div className="h-5 w-1 bg-violet-500 rounded-full flex-shrink-0"></div>
-              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Business Insights</h3>
+              <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Business Insights</h3>
             </div>
-            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Automated performance analysis</p>
+            <p className="text-xs mt-0.5 ml-3 text-slate-600 dark:text-slate-400">Automated performance analysis</p>
           </div>
           <CardContent className="pt-4 pb-3">
             <div className="space-y-2">
@@ -896,13 +867,13 @@ export default function DashboardPage() {
         </Card>
 
         {/* Inventory Health Score */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
-          <div className="bg-slate-900 px-5 py-4 border-b border-slate-700">
+        <Card className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <div className="h-5 w-1 bg-emerald-500 rounded-full flex-shrink-0"></div>
-              <h3 style={{ color: '#ffffff' }} className="text-sm font-bold tracking-tight">Inventory Health</h3>
+              <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Inventory Health</h3>
             </div>
-            <p style={{ color: '#94a3b8' }} className="text-xs mt-0.5 ml-3">Overall stock status score</p>
+            <p className="text-xs mt-0.5 ml-3 text-slate-600 dark:text-slate-400">Overall stock status score</p>
           </div>
           <CardContent className="pt-5 pb-4">
             {/* Score */}

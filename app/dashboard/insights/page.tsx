@@ -309,7 +309,7 @@ export default function InsightsPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6">
       {/* Page Header - Professional */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -1773,8 +1773,8 @@ export default function InsightsPage() {
                 </div>
                 <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
                   <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">Return Rate %</p>
-                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">(Returns ÷ Delivered) × 100</p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Percentage of delivered orders that were returned by customers</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-mono">(Returned Orders ÷ Delivered Orders) × 100</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Percentage based on number of orders, not item quantities</p>
                 </div>
                 <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
                   <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">Return Value</p>

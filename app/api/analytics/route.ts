@@ -88,7 +88,7 @@ export const GET = withAuth(async (request, { user }) => {
         break
 
       case 'returns':
-        result = calculateReturnAnalytics(restocks, transactions, items)
+        result = calculateReturnAnalytics(restocks, transactions, items, orders)
         break
 
       case 'netsales':
@@ -102,7 +102,7 @@ export const GET = withAuth(async (request, { user }) => {
           turnover: calculateInventoryTurnover(items, transactions),
           deadStock: identifyDeadStock(items, transactions),
           profitMargin: calculateProfitMarginByCategory(transactions, items),
-          returns: calculateReturnAnalytics(restocks, transactions, items),
+          returns: calculateReturnAnalytics(restocks, transactions, items, orders),
           netSales: calculateNetSales(transactions, restocks)
         }
         break

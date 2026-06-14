@@ -64,7 +64,7 @@ export function TablePagination({
   }
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 bg-slate-800 dark:bg-slate-900 border-t border-slate-700 dark:border-slate-800">
+    <div className="flex items-center justify-between px-6 py-3 bg-slate-800 dark:bg-slate-900 border-t border-slate-700 dark:border-slate-800">
       {/* Left: Showing text */}
       <div className="flex items-center gap-4">
         <span className="text-sm font-medium text-slate-300 dark:text-slate-400">
